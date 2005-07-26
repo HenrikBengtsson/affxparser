@@ -1,0 +1,11 @@
+##
+## NAMESPACE file for affxparser library.
+##
+useDynLib(affxparser)
+
+##
+## export anything w/out a dot in front. (I like to know if it is
+## when reading the code public)
+##
+exportPattern("^[^\\.]")
+
