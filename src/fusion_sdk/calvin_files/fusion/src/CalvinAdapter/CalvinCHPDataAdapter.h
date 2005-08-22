@@ -26,7 +26,8 @@
 #include "FusionCHPDataAdapterInterface.h"
 #include "CHPData.h"
 #include <string>
-#include "ChpFileData.h"	
+//#include "ChpFileData.h"	
+#include "CHPFileData.h"	
 #include "CHPFileReader.h"
 #include "ParameterNameValueType.h"
 #include "CHPExpressionEntry.h"
