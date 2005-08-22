@@ -1,12 +1,11 @@
 Package: affxparser
-Version: 1.0-1
-Date: 2005-05-15
+Version: 1.1-0
+Date: 2005-08-22
 Title: Affymetrix File Parsing SDK
-Author: James Bullard
+Author: James Bullard, Kasper Daniel Hansen
 Maintainer: James Bullard <bullard@berkeley.edu>
 Description: Package for parsing Affymetrix files (CDF, CEL, CHP, BPMAP, BAR)
-License: GPL-2
-Depends: R (>= 2.0), Biobase, affy
+License: LGPL-2
+Depends: R (>= 2.0), Biobase
 SaveImage: yes
 LazyLoad: yes
-Packaged: Thu Jul 14 11:58:31 2005; bullard
