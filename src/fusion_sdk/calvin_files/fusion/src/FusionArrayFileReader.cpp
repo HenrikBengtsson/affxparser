@@ -1,0 +1,137 @@
+/////////////////////////////////////////////////////////////////
+//
+// Copyright (C) 2005 Affymetrix, Inc.
+//
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation; either version 2.1 of the License,
+// or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+//
+/////////////////////////////////////////////////////////////////
+
+#include "FusionArrayFileReader.h"
+#include "EXPFileData.h"
+#include "ArrayFileReader.h"
+#include "DttArrayFileReader.h"
+#include "StringUtils.h"
+
+using namespace affymetrix_fusion_io;
+using namespace affymetrix_calvin_array;
+using namespace affymetrix_calvin_utilities;
+using namespace affymetrix_calvin_io;
+using namespace affymetrix_dttarray;
+using namespace affymetrix_calvin_parameter;
+using namespace affxexp;
+using namespace std;
+
+/*
+ * Clear any members.
+ */
+FusionArrayFileReader::FusionArrayFileReader()
+{
+}
+
+/*
+ * Clear any members.
+ */
+FusionArrayFileReader::~FusionArrayFileReader()
+{
+}
+
+/*
+ * Read the file into the array data parameter.
+ * First try the calvin array file,
+ * next the DTT array file,
+ * lastly the EXP file.
+ *
+ * The DTT array file will contain the probe array type and a list of
+ * user attributes. Copy these attributes plus the array type to the
+ * array data object. The probe array type will go in the physical
+ * array section.
+ *
+ * The EXP array file will contain the probe array type and a list of 
+ * sample parameters. Copy these to the array data object. The probe
+ * array type will go in the physical array section.
+ *
+ */
+bool FusionArrayFileReader::Read(const string &fileName, ArrayData &arrayData)
+{
+	arrayData.Clear();
+
+	// The calvin array file.
+	ArrayFileReader arrayReader;
+	if (ArrayFileReader::IsFileType(fileName, ARRAY_FILE_TYPE_IDENTIFIER) == true)
+	{
+		if (arrayReader.Read(fileName, arrayData) == true)
+			return true;
+	}
+
+	// The probe array type name.
+	wstring probeArrayTypeName = L"Probe Array Type";
+
+	// The DTT or Exporter SDK MAGE-ML file.
+	DttArrayData dttData;
+	DttArrayFileReader dttReader;
+	dttReader.SetFileName(fileName.c_str());
+	if (dttReader.Read(dttData) == true)
+	{
+		ParameterNameValueControlVocabularyVector &userAtts = arrayData.UserAttributes();
+		AttributeNameValueTypeList &atts = dttData.Attributes();
+		userAtts.resize(atts.size());
+		int paramIndex=0;
+		for (AttributeNameValueTypeList::iterator it=atts.begin(); it!=atts.end(); it++, paramIndex++)
+		{
+			AttributeNameValueType param = *it;
+			userAtts[paramIndex].Name = StringUtils::ConvertMBSToWCS(param.name);
+			userAtts[paramIndex].Value = StringUtils::ConvertMBSToWCS(param.value);
+		}
+
+		ArrayAttributesVector &physArrays = arrayData.PhysicalArraysAttributes();
+		physArrays.resize(1);
+		ArrayAttributes &physArray = physArrays[0];
+		ParameterNameValuePair nameValueParam;
+		nameValueParam.Name = probeArrayTypeName;
+		nameValueParam.Value = StringUtils::ConvertMBSToWCS(dttData.GetArrayType());
+		physArray.Attributes().push_back(nameValueParam);
+
+		return true;
+	}
+
+	// The MAS EXP file.
+	CEXPFileData expReader;
+	expReader.SetFileName(fileName.c_str());
+	if (expReader.Read() == true)
+	{
+		ParameterNameValueControlVocabularyVector &userAtts = arrayData.UserAttributes();
+		TagValuePairTypeList &atts = expReader.GetSampleParameters();
+		userAtts.resize(atts.size());
+		int paramIndex=0;
+		for (TagValuePairTypeList::iterator it=atts.begin(); it!=atts.end(); it++, paramIndex++)
+		{
+			TagValuePairType param = *it;
+			userAtts[paramIndex].Name = StringUtils::ConvertMBSToWCS(param.Tag);
+			userAtts[paramIndex].Value = StringUtils::ConvertMBSToWCS(param.Value);
+		}
+
+		ArrayAttributesVector &physArrays = arrayData.PhysicalArraysAttributes();
+		physArrays.resize(1);
+		ArrayAttributes &physArray = physArrays[0];
+		ParameterNameValuePair nameValueParam;
+		nameValueParam.Name = probeArrayTypeName;
+		nameValueParam.Value = StringUtils::ConvertMBSToWCS(expReader.GetArrayType());
+		physArray.Attributes().push_back(nameValueParam);
+
+		return true;
+	}
+
+	return false;
+}
