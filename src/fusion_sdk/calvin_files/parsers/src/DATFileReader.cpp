@@ -1,0 +1,117 @@
+/////////////////////////////////////////////////////////////////
+//
+// Copyright (C) 2005 Affymetrix, Inc.
+//
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation; either version 2.1 of the License,
+// or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+//
+/////////////////////////////////////////////////////////////////
+
+#include "DATFileReader.h"
+#include "GenericFileReader.h"
+
+using namespace affymetrix_calvin_io;
+using namespace affymetrix_calvin_utilities;
+using namespace affymetrix_calvin_exceptions;
+
+/*
+ * Constructor
+ */
+DATFileReader::DATFileReader()
+{
+}
+
+/*
+ * Destructor
+ */
+DATFileReader::~DATFileReader()
+{
+}
+
+/*
+ */
+void DATFileReader::Read(DATData& data)
+{
+	data.Clear();
+	GenericFileReader reader;
+	if (fileName.empty())
+		fileName = data.GetFilename();
+	reader.SetFilename(fileName);
+	reader.Open(data.GetGenericData());
+
+	DataGroupReader dcReader = reader.GetDataGroupReader(0);
+
+	ReadGlobalGrid(data, dcReader);
+	ReadSubgrids(data, dcReader);
+	reader.Close();
+}
+
+/*
+ * UNTESTED - Read the global grid
+ */
+void DATFileReader::ReadGlobalGrid(DATData& data, DataGroupReader& dcReader)
+{
+	try
+	{
+		FRegion rgn;
+		DataSetReader dpReader = dcReader.GetDataSetReader(DAT_GLOBAL_GRID);
+		int32_t cols = dpReader.GetDataSetHeader().GetColumnCnt();
+
+		// coordinates are in floats, assume there is only one row
+		FPoint value;
+		for (int32_t col = 0; col < cols; cols+=2)
+		{
+			dpReader.Read(value.x);
+			dpReader.Read(value.y);
+			rgn.pts.push_back(value);
+		}
+
+		data.SetGlobalGrid(rgn);
+	}
+	catch(DataSetNotFoundException& e)
+	{	// ignore
+	}
+}
+
+/*
+ * UNTESTED - Read the subgrids
+ */
+void DATFileReader::ReadSubgrids(DATData& data, DataGroupReader& dcReader)
+{
+	try
+	{
+		FRegion rgn;
+		DataSetReader dpReader = dcReader.GetDataSetReader(DAT_SUBGRID);
+		int32_t rows = dpReader.GetDataSetHeader().GetRowCnt();
+		int32_t cols = dpReader.GetDataSetHeader().GetColumnCnt();
+
+		// coordinates are in floats, assume there is only one row
+		FPoint value;
+		for (int32_t row = 0; row < rows; ++row)
+		{
+			for (int32_t col = 0; col < cols; cols+=2)
+			{
+				dpReader.Read(value.x);
+				dpReader.Read(value.y);
+				rgn.pts.push_back(value);
+			}
+		}
+
+		data.AddSubgrid(rgn);
+		rgn.Clear();
+	}
+	catch(DataSetNotFoundException& e)
+	{	// ignore
+	}
+}
