@@ -83,7 +83,8 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/utils/src/checksum.cpp
 
 SOURCES.package = \
-	R_affx_parser.cpp
+	R_affx_parser.cpp\
+	R_CDF_test_reader.cpp
 
 OBJS=$(SOURCES.fusion:.cpp=.o) $(SOURCES.package:.cpp=.o)
  
