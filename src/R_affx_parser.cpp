@@ -30,7 +30,7 @@ using namespace affymetrix_fusion_io;
 extern "C" {
 
   /* uncomment for relatively profuse debugging. */
-  /** #define R_AFFX_DEBUG **/
+  /* #define R_AFFX_DEBUG */
 
   #include <R.h>
   #include <Rdefines.h>  
@@ -51,19 +51,29 @@ extern "C" {
 #endif
 
     FusionCELData cel;
-    /** cel.SetFileName(celFileName); **/ 
+    cel.SetFileName(celFileName);
 
 #ifdef R_AFFX_DEBUG
     Rprintf("attempting to read: %s\n", celFileName);
 #endif
+    // celFileName, FusionCELData::CEL_ALL)
 
-    if (cel.ReadEx(celFileName, FusionCELData::CEL_ALL) == false)
+    if (cel.Read() == false)
     {
       Rprintf("Unable to read file: %s\n", celFileName);
       return R_NilValue;
     }
 
+#ifdef R_AFFX_DEBUG
+    Rprintf("sucessfully read: %s\n", celFileName);
+#endif
+
     int numCells = cel.GetNumCells();
+
+
+#ifdef R_AFFX_DEBUG
+    Rprintf("read %d cells.\n", numCells);
+#endif
 
     SEXP matrix = R_NilValue,dim = R_NilValue,outliers = R_NilValue,
       masked = R_NilValue, header = R_NilValue, names = R_NilValue;
@@ -82,22 +92,32 @@ extern "C" {
     }
 
     for (int icel = 0; icel < numCells; icel++) {
-   	/** this works like this because of the column/row flop. **/
-	REAL(matrix)[icel]              = cel.IndexToX(icel);
-	REAL(matrix)[icel + numCells]   = cel.IndexToY(icel);
-	REAL(matrix)[icel + 2*numCells] = cel.GetIntensity(icel);
-	REAL(matrix)[icel + 3*numCells] = cel.GetStdv(icel);
-	REAL(matrix)[icel + 4*numCells] = cel.GetPixels(icel);
+      
+#ifdef R_AFFX_DEBUG            
+      Rprintf("%d -- x:%d, y:%d, intensity:%f, stdv:%f, pixels:%d\n", 
+	      icel, cel.IndexToX(icel),cel.IndexToY(icel),cel.GetIntensity(icel),
+	      cel.GetStdv(icel),cel.GetPixels(icel));
+#endif
+      
+      /** this works like this because of the column/row flop. **/
+      REAL(matrix)[icel]              = cel.IndexToX(icel);
+      REAL(matrix)[icel + numCells]   = cel.IndexToY(icel);
+      REAL(matrix)[icel + 2*numCells] = cel.GetIntensity(icel);
 
-	if (readOutlierAndMaskedFlag != 0) {
-	  if (cel.IsOutlier(icel) == true) {
-	    INTEGER(outliers)[noutlier++] = icel;
-	  }
-
-	  if (cel.IsMasked(icel) == true) {
-	    INTEGER(masked)[nmasked++] = icel;
-	  }
+      // XXX: problem parsing the calvin cel files. 
+      //      REAL(matrix)[icel + 3*numCells] = cel.GetStdv(icel);
+      //      REAL(matrix)[icel + 4*numCells] = cel.GetPixels(icel);
+      
+      
+      if (readOutlierAndMaskedFlag != 0) {
+	if (cel.IsOutlier(icel) == true) {
+	  INTEGER(outliers)[noutlier++] = icel;
 	}
+	
+	if (cel.IsMasked(icel) == true) {
+	  INTEGER(masked)[nmasked++] = icel;
+	}
+      }
     }
 
 #ifdef R_AFFX_DEBUG
