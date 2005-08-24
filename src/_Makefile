@@ -13,7 +13,7 @@ CPPFLAGS=-Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/fusion/src/GCOSAdapter\
  -Ifusion_sdk/calvin_files/fusion/src/CalvinAdapter\
  -I/usr/lib/R/include\
- -DIS_BIG_ENDIAN -D_USE_MEM_MAPPING_
+ -DIS_BIG_ENDIAN -D_USE_MEM_MAPPING_\
 
 CC=g++
 
@@ -84,16 +84,20 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/utils/src/FileUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/StringUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/checksum.cpp\
-	R_affx_parser.cpp\
-	R_CDF_test_reader.cpp
+	R_affx_test_cmd_line.cpp
 
+SOURCES.affxparser = \
+	R_affx_parser.cpp	
+
+OBJECTS.affxparser=$(SOURCES.affxparser:.cpp=.o)
 OBJECTS.fusion=$(SOURCES.fusion:.cpp=.o)
+
 LIB.fusion=./affx_fusion.lib
 
-$(LIB.fusion): $(OBJECTS.fusion)
+$(LIB.fusion): $(OBJECTS.fusion) $(OBJECTS.affxparser)
 	ar -r $(LIB.fusion) $(OBJECTS.fusion)
 
-test_suite: $(OBJECTS.fusion)
+test_cmd: $(OBJECTS.fusion)
 	${CC} ${CPPFLAGS} ${SOURCES.fusion} -o test_prog
 
 clean:

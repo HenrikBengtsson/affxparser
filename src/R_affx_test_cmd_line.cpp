@@ -1,3 +1,11 @@
+/********************************************
+This code is from somewhere in the fusion package
+
+XXX: Kasper where is this from, it certainly does not have to
+be included in any distribution
+
+
+*********************************************/
 #include "FusionCELData.h"
 #include "FusionCDFData.h"
 #include <iostream>
