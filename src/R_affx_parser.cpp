@@ -56,8 +56,12 @@ extern "C" {
 #ifdef R_AFFX_DEBUG
     Rprintf("attempting to read: %s\n", celFileName);
 #endif
-    // celFileName, FusionCELData::CEL_ALL)
-
+    
+    /**
+       XXX: there are three read methods - I do not know which
+       one is the most appropriate here, but this default method
+       seems to read everything. 
+    **/
     if (cel.Read() == false)
     {
       Rprintf("Unable to read file: %s\n", celFileName);
@@ -69,7 +73,6 @@ extern "C" {
 #endif
 
     int numCells = cel.GetNumCells();
-
 
 #ifdef R_AFFX_DEBUG
     Rprintf("read %d cells.\n", numCells);
@@ -91,8 +94,24 @@ extern "C" {
       PROTECT(masked   = NEW_INTEGER(cel.GetNumMasked()));
     }
 
+    if (readHeaderFlag != 0) {
+      const wchar_t* header_wc = cel.GetHeader().c_str();
+      // int sizeof_wc      = strlen(header_wc);
+
+      (cel.GetHeader()).length();
+
+      // header = mkString(cel.GetHeader().c_str());
+    }
+
+    FusionCELFileEntryType entry;
+
     for (int icel = 0; icel < numCells; icel++) {
-      
+      /**
+       * this segfaults 
+       * cel.GetEntry(icel, entry);
+       * Rprintf("%f, %f, %d\n", entry.Intensity, entry.Stdv, entry.Pixels);
+       **/ 
+
 #ifdef R_AFFX_DEBUG            
       Rprintf("%d -- x:%d, y:%d, intensity:%f, stdv:%f, pixels:%d\n", 
 	      icel, cel.IndexToX(icel),cel.IndexToY(icel),cel.GetIntensity(icel),
@@ -104,9 +123,9 @@ extern "C" {
       REAL(matrix)[icel + numCells]   = cel.IndexToY(icel);
       REAL(matrix)[icel + 2*numCells] = cel.GetIntensity(icel);
 
-      // XXX: problem parsing the calvin cel files. 
-      //      REAL(matrix)[icel + 3*numCells] = cel.GetStdv(icel);
-      //      REAL(matrix)[icel + 4*numCells] = cel.GetPixels(icel);
+      /** XXX: problem parsing the calvin cel files. 
+            REAL(matrix)[icel + 3*numCells] = cel.GetStdv(icel);
+            REAL(matrix)[icel + 4*numCells] = cel.GetPixels(icel);
       
       
       if (readOutlierAndMaskedFlag != 0) {
@@ -118,6 +137,8 @@ extern "C" {
 	  INTEGER(masked)[nmasked++] = icel;
 	}
       }
+      **/
+
     }
 
 #ifdef R_AFFX_DEBUG
@@ -173,7 +194,6 @@ extern "C" {
       Rprintf("Failed to read the CDF file.");
       return R_NilValue;
     }
-
 
     header = cdf.GetHeader();
     int nsets = header.GetNumProbeSets();
