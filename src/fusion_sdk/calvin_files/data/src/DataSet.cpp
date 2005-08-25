@@ -206,7 +206,7 @@ bool DataSet::MapDataPosix(u_int32_t start, u_int32_t bytes)
 	struct stat st;
 	if (stat(fileName.c_str(), &st) == 0)
 	{
-		mapLen = bytes;
+	  // COMMENTED OUT Based on Luis' advice.	mapLen = bytes;
 		int fileLen = st.st_size;
 		if (fileLen < page_start + mapLen)
 			mapLen = fileLen - page_start;

@@ -280,8 +280,8 @@ short CalvinCELDataAdapter::GetPixels(int x, int y)
 }
 
 // Accessors for the mask/outlier flags
-/*
- */
+
+/* Replaced based on sugestions from Luis
 bool CalvinCELDataAdapter::IsMasked(int x, int y)
 {
 	BoolVector v;
@@ -289,18 +289,34 @@ bool CalvinCELDataAdapter::IsMasked(int x, int y)
 	calvinCel.GetMasked(index, 1, v);
 	return v.at(0);
 }
-
-/*
- */
 bool CalvinCELDataAdapter::IsMasked(int index)
 {
 	BoolVector v;
 	calvinCel.GetMasked(index, 1, v);
 	return v.at(0);
 }
+*/
 
-/*
- */
+bool CalvinCELDataAdapter::IsMasked(int x, int y)
+{
+      BoolVector v;
+      int32_t index = XYToIndex(x, y);
+      if (calvinCel.GetMasked(index, 1, v))
+            return v.at(0);
+      else
+            return false;
+}
+
+bool CalvinCELDataAdapter::IsMasked(int index)
+{
+      BoolVector v;
+      if (calvinCel.GetMasked(index, 1, v))
+            return v.at(0);
+      else
+            return false;
+}
+
+/* Replaced based on sugestions from Luis
 bool CalvinCELDataAdapter::IsOutlier(int x, int y)
 {
 	BoolVector v;
@@ -308,14 +324,33 @@ bool CalvinCELDataAdapter::IsOutlier(int x, int y)
 	calvinCel.GetOutliers(index, 1, v);
 	return v.at(0);
 }
-
-/*
- */
 bool CalvinCELDataAdapter::IsOutlier(int index)
 {
 	BoolVector v;
 	calvinCel.GetOutliers(index, 1, v);
 	return v.at(0);
+}
+*/
+
+
+
+bool CalvinCELDataAdapter::IsOutlier(int x, int y)
+{
+      BoolVector v;
+      int32_t index = XYToIndex(x, y);
+      if (calvinCel.GetOutliers(index, 1, v))
+            return v.at(0);
+      else
+            return false;
+}
+
+bool CalvinCELDataAdapter::IsOutlier(int index)
+{
+      BoolVector v;
+      if (calvinCel.GetOutliers(index, 1, v))
+            return v.at(0);
+      else
+            return false;
 }
 
 
