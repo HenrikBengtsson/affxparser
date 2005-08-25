@@ -32,6 +32,23 @@ int main(int argc, char **argv)
       for (int i = 0; i < n; i++)
 	{
 	  sum += cel.GetIntensity(i);
+	  /**
+	    cout << 
+	    "intensity: " << cel.GetIntensity(i) <<
+	    " x: " << cel.IndexToX(i) << " y: " << cel.IndexToY(i) <<
+	    " pixels: " << cel.GetPixels(i) << " stdv: " << cel.GetStdv(i) << endl;
+	  **/
+
+
+	  if (cel.IsOutlier(i) == true) {
+	    cout << "Outlier at index: " << i << endl;
+	  }
+	
+	  if (cel.IsMasked(i) == true) {
+	    cout << "Masked at index: " << i << endl;
+	  }
+	  
+	  // printf("%f %f %d\n", cel.GetIntensity(i), cel.GetStdv(i), cel.GetPixels(i));
 	}
       float avg = sum / n;
       cout << "The average intensity is: " << avg << endl;
@@ -68,8 +85,9 @@ int main(int argc, char **argv)
 	  cout << "The average probe set intensity (" << name << ") is " << avg << endl;
 	}
     }
-  catch (...)
+  catch (std::exception& e)
     {
+      cout << e.what() << endl;
       cout << "Error in reading the file.";
     }
 

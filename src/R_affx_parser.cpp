@@ -58,11 +58,11 @@ extern "C" {
 #endif
     
     /**
-       XXX: there are three read methods - I do not know which
+       XXX: there are three Read methods - I do not know which
        one is the most appropriate here, but this default method
-       seems to read everything. 
+       seems to read everything. Ex(celFileName, FusionCELData::CEL_ALL)
     **/
-    if (cel.Read() == false)
+    if (cel.Read(true) == false)
     {
       Rprintf("Unable to read file: %s\n", celFileName);
       return R_NilValue;
@@ -85,60 +85,51 @@ extern "C" {
     PROTECT(matrix = NEW_NUMERIC(numCells * 5));
     
     if (readOutlierAndMaskedFlag != 0) {
-#ifdef R_AFFX_DEBUG
+      //#ifdef R_AFFX_DEBUG
       Rprintf("Reading outlier ( %d ) and masked ( %d ) cells.\n", 
 	      cel.GetNumOutliers(), cel.GetNumMasked());
-#endif
+      //#endif
 
       PROTECT(outliers = NEW_INTEGER(cel.GetNumOutliers()));
       PROTECT(masked   = NEW_INTEGER(cel.GetNumMasked()));
     }
 
     if (readHeaderFlag != 0) {
-      const wchar_t* header_wc = cel.GetHeader().c_str();
-      // int sizeof_wc      = strlen(header_wc);
-
-      (cel.GetHeader()).length();
-
-      // header = mkString(cel.GetHeader().c_str());
+      /**
+	 XXX: the header is stored as a wstr_t, which is a wide string
+	 for multilingual headers. 
+      
+	 header = mkString(cel.GetHeader().c_str());
+      **/
     }
 
     FusionCELFileEntryType entry;
 
     for (int icel = 0; icel < numCells; icel++) {
-      /**
-       * this segfaults 
-       * cel.GetEntry(icel, entry);
-       * Rprintf("%f, %f, %d\n", entry.Intensity, entry.Stdv, entry.Pixels);
-       **/ 
-
 #ifdef R_AFFX_DEBUG            
       Rprintf("%d -- x:%d, y:%d, intensity:%f, stdv:%f, pixels:%d\n", 
-	      icel, cel.IndexToX(icel),cel.IndexToY(icel),cel.GetIntensity(icel),
-	      cel.GetStdv(icel),cel.GetPixels(icel));
+	      icel, cel.IndexToX(icel), cel.IndexToY(icel),
+	      cel.GetIntensity(icel), cel.GetStdv(icel), cel.GetPixels(icel));
 #endif
       
       /** this works like this because of the column/row flop. **/
       REAL(matrix)[icel]              = cel.IndexToX(icel);
       REAL(matrix)[icel + numCells]   = cel.IndexToY(icel);
       REAL(matrix)[icel + 2*numCells] = cel.GetIntensity(icel);
-
-      /** XXX: problem parsing the calvin cel files. 
-            REAL(matrix)[icel + 3*numCells] = cel.GetStdv(icel);
-            REAL(matrix)[icel + 4*numCells] = cel.GetPixels(icel);
-      
+      REAL(matrix)[icel + 3*numCells] = cel.GetStdv(icel);
+      REAL(matrix)[icel + 4*numCells] = cel.GetPixels(icel);
       
       if (readOutlierAndMaskedFlag != 0) {
 	if (cel.IsOutlier(icel) == true) {
+	  Rprintf("got outlier: %d at: %d\n:", noutlier, icel);
 	  INTEGER(outliers)[noutlier++] = icel;
 	}
 	
 	if (cel.IsMasked(icel) == true) {
+	  Rprintf("got masked: %d at: %d\n:", nmasked, icel);
 	  INTEGER(masked)[nmasked++] = icel;
 	}
       }
-      **/
-
     }
 
 #ifdef R_AFFX_DEBUG
@@ -232,14 +223,8 @@ extern "C" {
 	  int x = probe.GetX();
 	  int y = probe.GetY();
 
-	  /**
-	   *return((x - xy.offset) + 1 + nr * (y - xy.offset))
-	   *
-	   *XXX: understand what the offsets do (or just parameterize with them).
-	   *XXX: the groups need to be thought through better.
-	   */
-	   int index = (x + 1) + (nRows * y);
-	   INTEGER(pairs)[icell] = index;
+	  int index = (x + 1) + (nRows * y);
+	  INTEGER(pairs)[icell] = index;
 	}
 
 	/** Set up the dimensions here we are transposed. **/

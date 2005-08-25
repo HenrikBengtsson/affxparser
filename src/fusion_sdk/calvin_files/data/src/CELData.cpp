@@ -22,6 +22,11 @@
 #include "DataSetHeader.h"
 #include "ExceptionBase.h"
 
+#include <iostream>
+
+using namespace std;
+
+
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;
 
@@ -284,6 +289,7 @@ void CelFileData::PrepareOutlierPlane()
 	if (outlierPlaneRead)
 		return;
 
+	cout << "Reading Outlier Data..." << endl;
 	outlierPlaneRead = true;	// Read attempted
 
 	DataSet* dpOutlier = genericData.DataSet(CelDataGroupName, CelOutlierLabel);
@@ -313,6 +319,8 @@ void CelFileData::PrepareMaskedPlane()
 {
 	if (maskPlaneRead)
 		return;
+
+	cout << "Reading Masked Data..." << endl;
 
 	maskPlaneRead = true;	// Read attempted
 
@@ -484,10 +492,14 @@ bool CelFileData::GetMasked(int32_t cellIdxStart, int32_t count, BoolVector& val
  */
 void CelFileData::GetOutlierCoords(XYCoordVector& coords)
 {
+  cout << "in function GetOutlierCoords." << endl;
+
 	std::set<XYCoord>::iterator begin = outliers.begin();
 	std::set<XYCoord>::iterator end = outliers.end();
 	for (std::set<XYCoord>::iterator ii = outliers.begin(); ii != outliers.end(); ++ii)
 	{
+	  cout << "adding coordinate: " << ii->xCoord << endl;
+	  
 		XYCoord xy(ii->xCoord, ii->yCoord);
 		coords.push_back(xy);
 	}
