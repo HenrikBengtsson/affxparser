@@ -35,10 +35,80 @@ extern "C" {
   #include <R.h>
   #include <Rdefines.h>  
  
+   /**
+   * return a list of the meta data associated with this cell
+   * file. This is the information stored in the header. 
+   */
+  SEXP extract_cel_file_meta(FusionCELData cel) {
+    SEXP names, vals;
+
+    PROTECT(names = NEW_CHARACTER(7));
+    PROTECT(vals  = NEW_LIST(7));
+    
+    int i = 0; 
+    SEXP tmp;
+
+    SET_STRING_ELT(names, i, mkChar("version"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = cel.GetVersion();
+    SET_VECTOR_ELT(vals, i++, tmp); 
+
+    SET_STRING_ELT(names, i, mkChar("cols"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = cel.GetCols();
+    SET_VECTOR_ELT(vals, i++, tmp);
+
+    SET_STRING_ELT(names, i, mkChar("rows"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = cel.GetRows();
+    SET_VECTOR_ELT(vals, i++, tmp);
+    
+    SET_STRING_ELT(names, i, mkChar("total"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = cel.GetNumCells();
+    SET_VECTOR_ELT(vals, i++, tmp);
+   
+    /** the wstring stuff. 
+    SET_STRING_ELT(names, i, mkChar("alg"));
+    SET_VECTOR_ELT(vals, i++, mkString(header.GetAlgorithmName().c_str())); 
+        
+    SET_STRING_ELT(names, i, mkChar("Params"));
+    SET_VECTOR_ELT(vals, i++, mkString(header.GetParams().c_str()));
+    
+   
+    SET_STRING_ELT(names, i, mkChar("ChipType"));
+    SET_VECTOR_ELT(vals, i++, mkString(header.GetChipType().c_str()));
+    
+
+    SET_STRING_ELT(names, i, mkChar("header"));
+    SET_VECTOR_ELT(vals, i++, mkString(header.GetHeader().c_str()));
+    **/
+
+    SET_STRING_ELT(names, i, mkChar("CellMargin"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = cel.GetCellMargin();
+    SET_VECTOR_ELT(vals, i++, tmp);
+
+    SET_STRING_ELT(names, i, mkChar("noutliers"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = cel.GetNumOutliers();
+    SET_VECTOR_ELT(vals, i++, tmp);
+
+    SET_STRING_ELT(names, i, mkChar("nmasked"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = cel.GetNumMasked();
+    SET_VECTOR_ELT(vals, i++, tmp);
+
+    setAttrib(vals, R_NamesSymbol, names);
+    UNPROTECT(2);
+    
+    return vals;
+  }
+
   
   SEXP R_affx_get_cel_file(SEXP fname, SEXP readHeader, SEXP readIntensities, SEXP readX,
 			   SEXP readY, SEXP readPixels, SEXP readStdvs, SEXP readOutliers,
-			   SEXP readMasked) 
+			   SEXP readMasked, SEXP indicesToRead) 
   {
     FusionCELData cel;
     int noutlier = 0, nmasked = 0, unp = 0, j = 0;
@@ -65,7 +135,7 @@ extern "C" {
     int i_readStdvs           = INTEGER(readStdvs)[0];
     int i_readOutliers        = INTEGER(readOutliers)[0];
     int i_readMasked          = INTEGER(readMasked)[0];
-   
+    
     /** here we will store the above entries in that order. **/
     SEXP result_list = NEW_LIST(8);
 
@@ -88,8 +158,18 @@ extern "C" {
     Rprintf("sucessfully read: %s\n", celFileName);
 #endif
 
-    // XXX: this we can replace with the index vector .
-    int numCells = cel.GetNumCells();
+    int numCells; 
+    bool readAll = true;
+
+    numCells = cel.GetNumCells();
+
+    if (length(indicesToRead) == 0) {
+      /** get them all, the typical case. **/
+      readAll = true;
+    }
+    else {
+      readAll = false;
+    }
 
 #ifdef R_AFFX_DEBUG
     Rprintf("read %d cells.\n", numCells);
@@ -97,7 +177,7 @@ extern "C" {
    
     /** conditionally allocate space for each vector we want to return. **/
     if (i_readHeader != 0) {
-      // here we will just read the header. 
+      header = extract_cel_file_meta(cel);
     }
     if (i_readIntensities != 0) {
       PROTECT(intensities = NEW_NUMERIC(numCells));
@@ -135,38 +215,40 @@ extern "C" {
       PROTECT(masked = NEW_INTEGER(cel.GetNumMasked()));
       unp++;
     }
+        
+    for (int icel = 0, index = 0; icel < numCells; icel++) {
+      index = icel;
 
-    for (int icel = 0; icel < numCells; icel++) {
 #ifdef R_AFFX_DEBUG            
       Rprintf("index: %d, x: %d, y: %d, intensity: %f, stdv: %f, pixels: %d\n", 
-	      icel, cel.IndexToX(icel), cel.IndexToY(icel),
-	      cel.GetIntensity(icel), cel.GetStdv(icel), cel.GetPixels(icel));
+	      index, cel.IndexToX(index), cel.IndexToY(index),
+	      cel.GetIntensity(index), cel.GetStdv(index), cel.GetPixels(index));
 #endif
 
       if (i_readIntensities != 0) {
-	REAL(intensities)[icel] = cel.GetIntensity(icel);
+	REAL(intensities)[index] = cel.GetIntensity(index);
       }
       if (i_readX != 0) {
-	INTEGER(xvals)[icel] =  cel.IndexToX(icel);
+	INTEGER(xvals)[index] =  cel.IndexToX(index);
       }
       if (i_readY != 0) {
-	INTEGER(yvals)[icel] =  cel.IndexToY(icel);
+	INTEGER(yvals)[index] =  cel.IndexToY(index);
       }
       if (i_readPixels != 0) {
-	INTEGER(pixels)[icel] = cel.GetPixels(icel);
+	INTEGER(pixels)[index] = cel.GetPixels(index);
       }
       if (i_readStdvs != 0) {
-	REAL(stdvs)[icel] = cel.GetStdv(icel);
+	REAL(stdvs)[index] = cel.GetStdv(index);
       }
 
       if (i_readOutliers != 0) {
-	if (cel.IsOutlier(icel)) {
-	  INTEGER(outliers)[noutlier++] = icel;
+	if (cel.IsOutlier(index)) {
+	  INTEGER(outliers)[noutlier++] = index;
 	}
       }
       if (i_readMasked != 0) {
-	if (cel.IsMasked(icel)) {
-	  INTEGER(masked)[nmasked++] = icel;
+	if (cel.IsMasked(index)) {
+	  INTEGER(masked)[nmasked++] = index;
 	}
       }
     }
