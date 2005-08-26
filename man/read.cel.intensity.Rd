@@ -6,13 +6,13 @@
   \code{read.cel.complete} which only reads a single file.
   }
 \usage{
-read.cel.intensity(fnames, indices = NULL, debug = FALSE)
+read.cel.intensity(fnames, indices = NULL, verbose = FALSE)
 }
 \arguments{
   \item{fnames}{the names of the CEL files as a character vector.}
   \item{indices}{a vector of which indices should be read. If the
     argument is \code{NULL} all features will be returned.}
-  \item{debug}{a logical: will debug details be echoed to the R
+  \item{verbose}{a logical: will details be echoed to the R
     prompt.}
 }
 \details{

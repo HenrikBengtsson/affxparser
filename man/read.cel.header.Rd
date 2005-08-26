@@ -26,8 +26,8 @@ read.cel.header(fname)
   \item{headerAsChar}{the header as a character. May contain information
     not present in the other slots.}
 }
-\author{James Bullard <bullard@stat.berkeley.edu>, Kasper Daniel Hansen
-  <khansen@stat.berkeley.edu>} 
+\author{James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel Hansen
+  \email{khansen@stat.berkeley.edu}} 
 \note{
   Memory usage:the Fusion SDK allocates memory for the entire
   CEL file, when the file is accessed. The memory footprint of this
