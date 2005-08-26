@@ -9,8 +9,8 @@
 \usage{
 read.cel.complete(fname, indices = NULL, read.intensity = TRUE,
                   read.std = TRUE, read.npixels = TRUE,
-                  read.outliers = TRUE, read.masked = TRUE, 
-                  debug = FALSE)
+                  read.xy = TRUE, read.outliers = TRUE,
+                  read.masked = TRUE, verbose = FALSE)
 }
 \arguments{
   \item{fname}{the name of the CEL file.}
@@ -19,10 +19,10 @@ read.cel.complete(fname, indices = NULL, read.intensity = TRUE,
   \item{read.intensity}{a logical: will the intensities be returned.}
   \item{read.std}{a logical: will the standard deviations be returned.}
   \item{read.npixels}{a logical: will the number of pixels be returned.}
+  \item{read.xy}{a logical: will the (x,y) coordinates be returned.}
   \item{read.outliers}{a logical: will the outliers be return.}
   \item{read.masked}{a logical: will the masked features be returned.}
-  \item{debug}{a logical: will debug details be echoed to the R
-    prompt.}
+  \item{verbose}{a logical: will details be echoed to the R prompt.}
 }
 \details{
   This function reads everything from a CEL file. It is considered a bug
@@ -59,6 +59,10 @@ read.cel.complete(fname, indices = NULL, read.intensity = TRUE,
   number of pixels associated with each feature, unless
   \code{read.npixels = FALSE} in which case it will be
   \code{NULL}. Restricted to features within the \code{indices} range.}
+  \item{xy}{A matrix with 2 columns named X and Y containing the (x,y)
+  coordinates associated with the feature, unless \code{read.xy = FALSE}
+  in which case it will be \code{NULL}. Restricted to features with the
+  \code{indices} range.
   \item{outliers}{A vector of mode \code{integer} which the indices of
   the features flagged as outliers, unless \code{read.outliers = NULL}
   in which case it will be \code{NULL}. Note that there is a difference
@@ -74,8 +78,8 @@ read.cel.complete(fname, indices = NULL, read.intensity = TRUE,
   masked features. In case an \code{indices} argument is given, only indices
   within the \code{indices} argument are returned.}   
 }
-\author{James Bullard <bullard@stat.berkeley.edu>, Kasper Daniel Hansen
-  <khansen@stat.berkeley.edu>} 
+\author{James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel Hansen
+ \email{khansen@stat.berkeley.edu}} 
 \note{
   Memory usage: the Fusion SDK allocates memory for the entire
   CEL file, when the file is accessed (but does not actually read the
