@@ -59,8 +59,12 @@ read.cel.complete(fname, indices = NULL, read.intensity = TRUE,
   number of pixels associated with each feature, unless
   \code{read.npixels = FALSE} in which case it will be
   \code{NULL}. Restricted to features within the \code{indices} range.}
-  \item{xy}{A matrix with 2 columns named X and Y containing the (x,y)
-  coordinates associated with the feature, unless \code{read.xy = FALSE}
+  \item{x}{A vector of mode \code{integer} containing the x coordinate
+  associated with each feature, unless \code{read.xy = FALSE}
+  in which case it will be \code{NULL}. Restricted to features with the
+  \code{indices} range.
+  \item{y}{A vector of mode \code{integer} containing the y coordinate
+  associated with each feature, unless \code{read.xy = FALSE}
   in which case it will be \code{NULL}. Restricted to features with the
   \code{indices} range.
   \item{outliers}{A vector of mode \code{integer} which the indices of
