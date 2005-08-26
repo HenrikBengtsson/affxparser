@@ -30,28 +30,44 @@ using namespace affymetrix_fusion_io;
 extern "C" {
 
   /* uncomment for relatively profuse debugging. */
-  /* #define R_AFFX_DEBUG */
+  /** #define R_AFFX_DEBUG **/
 
   #include <R.h>
   #include <Rdefines.h>  
  
   
-  SEXP R_affx_get_cel_file(SEXP fname, SEXP readHeader, SEXP readOutlierAndMaskedData) 
+  SEXP R_affx_get_cel_file(SEXP fname, SEXP readHeader, SEXP readIntensities, SEXP readX,
+			   SEXP readY, SEXP readPixels, SEXP readStdvs, SEXP readOutliers,
+			   SEXP readMasked) 
   {
-
-    char* celFileName = CHAR(STRING_ELT(fname,0));
-    int readOutlierAndMaskedFlag = INTEGER(readOutlierAndMaskedData)[0];
-    int readHeaderFlag = INTEGER(readHeader)[0];
-   
-    /** here we will store intensity matrix, header, outliers, and masked information. **/
-    SEXP result_list = NEW_LIST(4);
-    
-#ifdef R_AFFX_DEBUG
-    Rprintf("in R_affx_get_cel_file.\n");
-#endif
-
     FusionCELData cel;
-    cel.SetFileName(celFileName);
+    int noutlier = 0, nmasked = 0, unp = 0, j = 0;
+
+    SEXP  
+      names = R_NilValue,
+      header = R_NilValue,
+      intensities = R_NilValue,
+      xvals = R_NilValue,
+      yvals = R_NilValue,
+      pixels = R_NilValue,
+      stdvs = R_NilValue,
+      outliers = R_NilValue,
+      masked = R_NilValue;
+
+
+    /** extract our arguments.**/
+    char* celFileName         = CHAR(STRING_ELT(fname,0));
+    int i_readHeader          = INTEGER(readHeader)[0];
+    int i_readIntensities     = INTEGER(readIntensities)[0];
+    int i_readX               = INTEGER(readX)[0];
+    int i_readY               = INTEGER(readY)[0];
+    int i_readPixels          = INTEGER(readPixels)[0];
+    int i_readStdvs           = INTEGER(readStdvs)[0];
+    int i_readOutliers        = INTEGER(readOutliers)[0];
+    int i_readMasked          = INTEGER(readMasked)[0];
+   
+    /** here we will store the above entries in that order. **/
+    SEXP result_list = NEW_LIST(8);
 
 #ifdef R_AFFX_DEBUG
     Rprintf("attempting to read: %s\n", celFileName);
@@ -62,8 +78,8 @@ extern "C" {
        one is the most appropriate here, but this default method
        seems to read everything. Ex(celFileName, FusionCELData::CEL_ALL)
     **/
-    if (cel.Read(true) == false)
-    {
+    cel.SetFileName(celFileName);
+    if (cel.Read(true) == false) {
       Rprintf("Unable to read file: %s\n", celFileName);
       return R_NilValue;
     }
@@ -72,97 +88,126 @@ extern "C" {
     Rprintf("sucessfully read: %s\n", celFileName);
 #endif
 
+    // XXX: this we can replace with the index vector .
     int numCells = cel.GetNumCells();
 
 #ifdef R_AFFX_DEBUG
     Rprintf("read %d cells.\n", numCells);
 #endif
-
-    SEXP matrix = R_NilValue,dim = R_NilValue,outliers = R_NilValue,
-      masked = R_NilValue, header = R_NilValue, names = R_NilValue;
-
-    int noutlier = 0, nmasked = 0;
-    PROTECT(matrix = NEW_NUMERIC(numCells * 5));
-    
-    if (readOutlierAndMaskedFlag != 0) {
-      //#ifdef R_AFFX_DEBUG
-      Rprintf("Reading outlier ( %d ) and masked ( %d ) cells.\n", 
-	      cel.GetNumOutliers(), cel.GetNumMasked());
-      //#endif
+   
+    /** conditionally allocate space for each vector we want to return. **/
+    if (i_readHeader != 0) {
+      // here we will just read the header. 
+    }
+    if (i_readIntensities != 0) {
+      PROTECT(intensities = NEW_NUMERIC(numCells));
+      unp++;
+    }
+    if (i_readX != 0) {
+      PROTECT(xvals = NEW_INTEGER(numCells));
+      unp++;
+    }
+    if (i_readY != 0) {
+      PROTECT(yvals = NEW_INTEGER(numCells));
+      unp++;
+    }
+    if (i_readPixels != 0) {
+      PROTECT(pixels = NEW_INTEGER(numCells));
+      unp++;
+    }
+    if (i_readStdvs != 0) {
+      PROTECT(stdvs = NEW_NUMERIC(numCells));
+      unp++;
+    }
+    if (i_readOutliers != 0) {
+#ifdef R_AFFX_DEBUG
+      Rprintf("Number of outliers %d\n", cel.GetNumOutliers());
+#endif
 
       PROTECT(outliers = NEW_INTEGER(cel.GetNumOutliers()));
-      PROTECT(masked   = NEW_INTEGER(cel.GetNumMasked()));
+      unp++;
     }
+    if (i_readMasked != 0) {
+#ifdef R_AFFX_DEBUG
+      Rprintf("Number of masked %d\n", cel.GetNumMasked());
+#endif
 
-    if (readHeaderFlag != 0) {
-      /**
-	 XXX: the header is stored as a wstr_t, which is a wide string
-	 for multilingual headers. 
-      
-	 header = mkString(cel.GetHeader().c_str());
-      **/
+      PROTECT(masked = NEW_INTEGER(cel.GetNumMasked()));
+      unp++;
     }
-
-    FusionCELFileEntryType entry;
 
     for (int icel = 0; icel < numCells; icel++) {
 #ifdef R_AFFX_DEBUG            
-      Rprintf("%d -- x:%d, y:%d, intensity:%f, stdv:%f, pixels:%d\n", 
+      Rprintf("index: %d, x: %d, y: %d, intensity: %f, stdv: %f, pixels: %d\n", 
 	      icel, cel.IndexToX(icel), cel.IndexToY(icel),
 	      cel.GetIntensity(icel), cel.GetStdv(icel), cel.GetPixels(icel));
 #endif
-      
-      /** this works like this because of the column/row flop. **/
-      REAL(matrix)[icel]              = cel.IndexToX(icel);
-      REAL(matrix)[icel + numCells]   = cel.IndexToY(icel);
-      REAL(matrix)[icel + 2*numCells] = cel.GetIntensity(icel);
-      REAL(matrix)[icel + 3*numCells] = cel.GetStdv(icel);
-      REAL(matrix)[icel + 4*numCells] = cel.GetPixels(icel);
-      
-      if (readOutlierAndMaskedFlag != 0) {
-	if (cel.IsOutlier(icel) == true) {
-	  Rprintf("got outlier: %d at: %d\n:", noutlier, icel);
+
+      if (i_readIntensities != 0) {
+	REAL(intensities)[icel] = cel.GetIntensity(icel);
+      }
+      if (i_readX != 0) {
+	INTEGER(xvals)[icel] =  cel.IndexToX(icel);
+      }
+      if (i_readY != 0) {
+	INTEGER(yvals)[icel] =  cel.IndexToY(icel);
+      }
+      if (i_readPixels != 0) {
+	INTEGER(pixels)[icel] = cel.GetPixels(icel);
+      }
+      if (i_readStdvs != 0) {
+	REAL(stdvs)[icel] = cel.GetStdv(icel);
+      }
+
+      if (i_readOutliers != 0) {
+	if (cel.IsOutlier(icel)) {
 	  INTEGER(outliers)[noutlier++] = icel;
 	}
-	
-	if (cel.IsMasked(icel) == true) {
-	  Rprintf("got masked: %d at: %d\n:", nmasked, icel);
+      }
+      if (i_readMasked != 0) {
+	if (cel.IsMasked(icel)) {
 	  INTEGER(masked)[nmasked++] = icel;
 	}
       }
     }
 
-#ifdef R_AFFX_DEBUG
-    Rprintf("read cell file intensities.");
-#endif
-  
-    /** Set up the dimensions here we are transposed. **/
-    PROTECT(dim = NEW_INTEGER(2));
-    INTEGER_POINTER(dim)[1] = 5;
-    INTEGER_POINTER(dim)[0] = numCells;
-    SET_DIM(matrix, dim);
-
-    SET_VECTOR_ELT(result_list, 0, header);
-    SET_VECTOR_ELT(result_list, 1, matrix);
-    SET_VECTOR_ELT(result_list, 2, outliers);
-    SET_VECTOR_ELT(result_list, 3, masked);
-
     /** set up the names of the result list. **/
-    PROTECT(names = NEW_CHARACTER(4));
-    SET_STRING_ELT(names, 0, mkChar("header"));
-    SET_STRING_ELT(names, 1, mkChar("intensities"));
-    SET_STRING_ELT(names, 2, mkChar("outliers"));
-    SET_STRING_ELT(names, 3, mkChar("masked"));
+    PROTECT(names = NEW_CHARACTER(8));
+
+    SET_STRING_ELT(names, j, mkChar("header"));
+    SET_VECTOR_ELT(result_list, j++, header);
+
+    SET_STRING_ELT(names, j, mkChar("intensities"));
+    SET_VECTOR_ELT(result_list, j++, intensities);
+
+    SET_STRING_ELT(names, j, mkChar("x"));    
+    SET_VECTOR_ELT(result_list, j++, xvals);
+
+    SET_STRING_ELT(names, j, mkChar("y"));
+    SET_VECTOR_ELT(result_list, j++, yvals);
+
+    SET_STRING_ELT(names, j, mkChar("pixels"));        
+    SET_VECTOR_ELT(result_list, j++, pixels);
+
+    SET_STRING_ELT(names, j, mkChar("stdvs"));        
+    SET_VECTOR_ELT(result_list, j++, stdvs);
+
+    SET_STRING_ELT(names, j, mkChar("outliers"));
+    SET_VECTOR_ELT(result_list, j++, outliers);
+
+    SET_STRING_ELT(names, j, mkChar("masked"));
+    SET_VECTOR_ELT(result_list, j++, masked);
 
     /** set the names of the list entries. **/
     setAttrib(result_list, R_NamesSymbol, names);
 
-    if (readOutlierAndMaskedFlag != 0) {
-      UNPROTECT(5);
-    }
-    else {
-      UNPROTECT(3);
-    }
+#ifdef R_AFFX_DEBUG
+    Rprintf("finished reading cell file intensities.\n");
+#endif
+
+    /** add one for the result list. **/
+    UNPROTECT(++unp);
+ 
     return result_list;
   }
 
