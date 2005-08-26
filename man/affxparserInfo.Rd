@@ -40,6 +40,6 @@
 \references{\url{http://www.affymetrix.com}, particular the support and
   developer parts of the website.}
 \examples{
-  affxparserInfo{}
+  affxparserInfo()
 }
-
+\keyword{file}
