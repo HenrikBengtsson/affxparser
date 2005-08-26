@@ -28,17 +28,18 @@
 getCelFile <- function(fname, readHeaders = FALSE, readIntensities =
                        TRUE, readX = FALSE, readY = FALSE, readPixels
                        = FALSE, readStdv = FALSE, readOutliers =
-                       FALSE, readMasked = FALSE) {
+                       FALSE, readMasked = FALSE, indices = NULL) {
   fname <- file.path(dirname(fname), basename(fname))
   
   if (!file.exists(fname))
     stop(paste("file:", fname, "does not exist."))
-  
+
   cel.file <- .Call("R_affx_get_cel_file", as.character(fname),
                     as.integer(readHeaders),
                     as.integer(readIntensities), as.integer(readX),
                     as.integer(readY), as.integer(readPixels),
-                    as.integer(readStdv), as.integer(readOutliers), as.integer(readMasked))
+                    as.integer(readStdv), as.integer(readOutliers),
+                    as.integer(readMasked), as.integer(indices))
   return(cel.file)
 }
 
