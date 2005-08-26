@@ -289,7 +289,6 @@ void CelFileData::PrepareOutlierPlane()
 	if (outlierPlaneRead)
 		return;
 
-	cout << "Reading Outlier Data..." << endl;
 	outlierPlaneRead = true;	// Read attempted
 
 	DataSet* dpOutlier = genericData.DataSet(CelDataGroupName, CelOutlierLabel);
@@ -319,8 +318,6 @@ void CelFileData::PrepareMaskedPlane()
 {
 	if (maskPlaneRead)
 		return;
-
-	cout << "Reading Masked Data..." << endl;
 
 	maskPlaneRead = true;	// Read attempted
 
@@ -457,6 +454,7 @@ bool CelFileData::GetNumPixels(int32_t cellIdxStart, int32_t count, Int16Vector&
 bool CelFileData::GetOutliers(int32_t cellIdxStart, int32_t count, BoolVector& values)
 {
 	PrepareOutlierPlane();
+
 	if (outliers.empty())
 		return false;
 
@@ -475,6 +473,7 @@ bool CelFileData::GetOutliers(int32_t cellIdxStart, int32_t count, BoolVector& v
 bool CelFileData::GetMasked(int32_t cellIdxStart, int32_t count, BoolVector& values)
 {
 	PrepareMaskedPlane();
+
 	if (masked.empty())
 		return false;
 
@@ -492,31 +491,33 @@ bool CelFileData::GetMasked(int32_t cellIdxStart, int32_t count, BoolVector& val
  */
 void CelFileData::GetOutlierCoords(XYCoordVector& coords)
 {
-  cout << "in function GetOutlierCoords." << endl;
+  /** added as per luis' fix. **/
+  PrepareOutlierPlane(); 
 
-	std::set<XYCoord>::iterator begin = outliers.begin();
-	std::set<XYCoord>::iterator end = outliers.end();
-	for (std::set<XYCoord>::iterator ii = outliers.begin(); ii != outliers.end(); ++ii)
-	{
-	  cout << "adding coordinate: " << ii->xCoord << endl;
-	  
-		XYCoord xy(ii->xCoord, ii->yCoord);
-		coords.push_back(xy);
-	}
+  std::set<XYCoord>::iterator begin = outliers.begin();
+  std::set<XYCoord>::iterator end = outliers.end();
+  for (std::set<XYCoord>::iterator ii = outliers.begin(); ii != outliers.end(); ++ii)
+    {
+      XYCoord xy(ii->xCoord, ii->yCoord);
+      coords.push_back(xy);
+    }
 }
 
 /*
  * Get the coordinates of all masked cells (i.e. mask flag is true).
  */
 void CelFileData::GetMaskedCoords(XYCoordVector& coords)
-{
-	std::set<XYCoord>::iterator begin = masked.begin();
-	std::set<XYCoord>::iterator end = masked.end();
-	for (std::set<XYCoord>::iterator ii = masked.begin(); ii != masked.end(); ++ii)
-	{
-		XYCoord xy(ii->xCoord, ii->yCoord);
-		coords.push_back(xy);
-	}
+{ 
+  /** added as per luis' fix. **/
+  PrepareMaskedPlane();
+
+  std::set<XYCoord>::iterator begin = masked.begin();
+  std::set<XYCoord>::iterator end = masked.end();
+  for (std::set<XYCoord>::iterator ii = masked.begin(); ii != masked.end(); ++ii)
+    {
+      XYCoord xy(ii->xCoord, ii->yCoord);
+      coords.push_back(xy);
+    }
 }
 
 /*
