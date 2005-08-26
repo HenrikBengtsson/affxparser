@@ -21,9 +21,9 @@ read.cel.intensity(fnames, indices = NULL, debug = FALSE)
   }
 \value{
   A matrix with a number of rows equal to the length of the \code{indices}
-  argument (or the number of features on the entire chip}, and a number
-of columns equal to the number of files. The columns are ordered
-according to the \code{fnames} argument.
+  argument (or the number of features on the entire chip), and a number
+  of columns equal to the number of files. The columns are ordered
+  according to the \code{fnames} argument.
 }
 \author{James Bullard <bullard@stat.berkeley.edu>, Kasper Daniel Hansen
   <khansen@stat.berkeley.edu>} 

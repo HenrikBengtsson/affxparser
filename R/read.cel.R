@@ -38,7 +38,7 @@ read.cel.intensity <- function(fnames, indices = NULL, debug = FALSE){
     if(debug)
         cat(" ...allocating memory for intensity matrix\n") 
     intensities <- matrix(NA, ncol = length(fnames), nrow = intensities.nrow)
-    for(i in length(fnames){
+    for(i in length(fnames)){
         if(debug)
             cat(" ... reading", fnames[i], "\n")
         intensities[, i] <- read.cel.complete(fname = fnames[i],
