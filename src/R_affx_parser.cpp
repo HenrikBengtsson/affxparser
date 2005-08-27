@@ -188,6 +188,10 @@ extern "C" {
     }
     else {
       readAll = false;
+
+      int numIndices = length(indicesToRead);
+      if (numIndices < numCells)
+	numCells = numIndices;
     }
 
     if (i_verboseFlag == R_AFFX_VERBOSE)
@@ -238,25 +242,29 @@ extern "C" {
     for (int icel = 0, index = 0; icel < numCells; icel++) {
       index = icel;
 
+      if (readAll == false) {
+	index = INTEGER(indicesToRead)[icel];
+      }
+
       if (i_verboseFlag == R_AFFX_REALLY_VERBOSE)            
 	Rprintf("index: %d, x: %d, y: %d, intensity: %f, stdv: %f, pixels: %d\n", 
 		index, cel.IndexToX(index), cel.IndexToY(index),
 		cel.GetIntensity(index), cel.GetStdv(index), cel.GetPixels(index));
 
       if (i_readIntensities != 0) {
-	REAL(intensities)[index] = cel.GetIntensity(index);
+	REAL(intensities)[icel] = cel.GetIntensity(index);
       }
       if (i_readX != 0) {
-	INTEGER(xvals)[index] =  cel.IndexToX(index);
+	INTEGER(xvals)[icel] = cel.IndexToX(index);
       }
       if (i_readY != 0) {
-	INTEGER(yvals)[index] =  cel.IndexToY(index);
+	INTEGER(yvals)[icel] = cel.IndexToY(index);
       }
       if (i_readPixels != 0) {
-	INTEGER(pixels)[index] = cel.GetPixels(index);
+	INTEGER(pixels)[icel] = cel.GetPixels(index);
       }
       if (i_readStdvs != 0) {
-	REAL(stdvs)[index] = cel.GetStdv(index);
+	REAL(stdvs)[icel] = cel.GetStdv(index);
       }
 
       if (i_readOutliers != 0) {
@@ -270,6 +278,31 @@ extern "C" {
 	}
       }
     }
+
+    /** 
+	we resize here if we are not reading the whole cel file. 
+	XXX: check whether this macro does the right thing
+	with the memory. 
+    **/
+
+    if (i_readOutliers != 0) {
+      if (noutlier == 0) {
+	outliers = R_NilValue;
+      }
+      else if (noutlier < cel.GetNumOutliers()) {
+	SET_LENGTH(outliers, noutlier);
+      }
+    }
+    
+    if (i_readMasked != 0) {
+      if (nmasked == 0) {
+	masked = R_NilValue;
+      }
+      else if (nmasked < cel.GetNumMasked()) {
+	SET_LENGTH(masked, nmasked);
+      }
+    }
+
 
     /** set up the names of the result list. **/
     PROTECT(names = NEW_CHARACTER(8));
