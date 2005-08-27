@@ -27,17 +27,18 @@ int main(int argc, char **argv)
 	  cout << "Failed to read the file." << endl;
 	  return 0;
 	}
-      int n = cel.GetNumCells();
+      int n = (int) cel.GetNumCells() / 10;
       float sum = 0;
-      for (int i = 0; i < n; i++)
+      for (int i = 1; i < n; i++)
 	{
 	  sum += cel.GetIntensity(i);
-	  /**
-	    cout << 
+
+
+	    cout <<  
 	    "intensity: " << cel.GetIntensity(i) <<
 	    " x: " << cel.IndexToX(i) << " y: " << cel.IndexToY(i) <<
 	    " pixels: " << cel.GetPixels(i) << " stdv: " << cel.GetStdv(i) << endl;
-	  **/
+
 
 
 	  if (cel.IsOutlier(i) == true) {
