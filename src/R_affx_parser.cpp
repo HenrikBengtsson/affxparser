@@ -29,13 +29,16 @@ using namespace affymetrix_fusion_io;
 
 extern "C" {
 
-  /* uncomment for relatively profuse debugging. */
-  /** #define R_AFFX_DEBUG **/
 
   #include <R.h>
   #include <Rdefines.h>  
+
+  /* uncomment for relatively profuse debugging. */
+  int R_AFFX_VERBOSE = 1;
+  int R_AFFX_REALLY_VERBOSE = 2;
+
  
-   /**
+  /**
    * return a list of the meta data associated with this cell
    * file. This is the information stored in the header. 
    */
@@ -69,19 +72,19 @@ extern "C" {
     SET_VECTOR_ELT(vals, i++, tmp);
    
     /** the wstring stuff. 
-    SET_STRING_ELT(names, i, mkChar("alg"));
-    SET_VECTOR_ELT(vals, i++, mkString(header.GetAlgorithmName().c_str())); 
+	SET_STRING_ELT(names, i, mkChar("alg"));
+	SET_VECTOR_ELT(vals, i++, mkString(header.GetAlgorithmName().c_str())); 
         
-    SET_STRING_ELT(names, i, mkChar("Params"));
-    SET_VECTOR_ELT(vals, i++, mkString(header.GetParams().c_str()));
+	SET_STRING_ELT(names, i, mkChar("Params"));
+	SET_VECTOR_ELT(vals, i++, mkString(header.GetParams().c_str()));
     
    
-    SET_STRING_ELT(names, i, mkChar("ChipType"));
-    SET_VECTOR_ELT(vals, i++, mkString(header.GetChipType().c_str()));
+	SET_STRING_ELT(names, i, mkChar("ChipType"));
+	SET_VECTOR_ELT(vals, i++, mkString(header.GetChipType().c_str()));
     
 
-    SET_STRING_ELT(names, i, mkChar("header"));
-    SET_VECTOR_ELT(vals, i++, mkString(header.GetHeader().c_str()));
+	SET_STRING_ELT(names, i, mkChar("header"));
+	SET_VECTOR_ELT(vals, i++, mkString(header.GetHeader().c_str()));
     **/
 
     SET_STRING_ELT(names, i, mkChar("CellMargin"));
@@ -105,10 +108,25 @@ extern "C" {
     return vals;
   }
 
+  SEXP R_affx_get_cel_file_header(SEXP fname) 
+  {
+    FusionCELData cel;
+    char* celFileName = CHAR(STRING_ELT(fname,0));
+
+    cel.SetFileName(celFileName);
+    if (cel.ReadHeader() == false) {
+      Rprintf("Unable to read file: %s\n", celFileName);
+      return R_NilValue;
+    }
+    else {
+      return  extract_cel_file_meta(cel);
+    }
+  }
+
   
   SEXP R_affx_get_cel_file(SEXP fname, SEXP readHeader, SEXP readIntensities, SEXP readX,
 			   SEXP readY, SEXP readPixels, SEXP readStdvs, SEXP readOutliers,
-			   SEXP readMasked, SEXP indicesToRead) 
+			   SEXP readMasked, SEXP indicesToRead, SEXP verbose) 
   {
     FusionCELData cel;
     int noutlier = 0, nmasked = 0, unp = 0, j = 0;
@@ -135,13 +153,14 @@ extern "C" {
     int i_readStdvs           = INTEGER(readStdvs)[0];
     int i_readOutliers        = INTEGER(readOutliers)[0];
     int i_readMasked          = INTEGER(readMasked)[0];
+    int i_verboseFlag         = INTEGER(verbose)[0];
     
     /** here we will store the above entries in that order. **/
     SEXP result_list = NEW_LIST(8);
 
-#ifdef R_AFFX_DEBUG
-    Rprintf("attempting to read: %s\n", celFileName);
-#endif
+    if (i_verboseFlag == R_AFFX_VERBOSE)
+      Rprintf("attempting to read: %s\n", celFileName);
+
     
     /**
        XXX: there are three Read methods - I do not know which
@@ -154,9 +173,9 @@ extern "C" {
       return R_NilValue;
     }
 
-#ifdef R_AFFX_DEBUG
-    Rprintf("sucessfully read: %s\n", celFileName);
-#endif
+    if (i_verboseFlag == R_AFFX_VERBOSE)
+      Rprintf("sucessfully read: %s\n", celFileName);
+
 
     int numCells; 
     bool readAll = true;
@@ -171,9 +190,9 @@ extern "C" {
       readAll = false;
     }
 
-#ifdef R_AFFX_DEBUG
-    Rprintf("read %d cells.\n", numCells);
-#endif
+    if (i_verboseFlag == R_AFFX_VERBOSE)
+      Rprintf("read %d cells.\n", numCells);
+
    
     /** conditionally allocate space for each vector we want to return. **/
     if (i_readHeader != 0) {
@@ -200,17 +219,17 @@ extern "C" {
       unp++;
     }
     if (i_readOutliers != 0) {
-#ifdef R_AFFX_DEBUG
-      Rprintf("Number of outliers %d\n", cel.GetNumOutliers());
-#endif
+      if (i_verboseFlag == R_AFFX_VERBOSE)
+	Rprintf("Number of outliers %d\n", cel.GetNumOutliers());
+
 
       PROTECT(outliers = NEW_INTEGER(cel.GetNumOutliers()));
       unp++;
     }
     if (i_readMasked != 0) {
-#ifdef R_AFFX_DEBUG
-      Rprintf("Number of masked %d\n", cel.GetNumMasked());
-#endif
+      if (i_verboseFlag == R_AFFX_VERBOSE)
+	Rprintf("Number of masked %d\n", cel.GetNumMasked());
+
 
       PROTECT(masked = NEW_INTEGER(cel.GetNumMasked()));
       unp++;
@@ -219,11 +238,10 @@ extern "C" {
     for (int icel = 0, index = 0; icel < numCells; icel++) {
       index = icel;
 
-#ifdef R_AFFX_DEBUG            
-      Rprintf("index: %d, x: %d, y: %d, intensity: %f, stdv: %f, pixels: %d\n", 
-	      index, cel.IndexToX(index), cel.IndexToY(index),
-	      cel.GetIntensity(index), cel.GetStdv(index), cel.GetPixels(index));
-#endif
+      if (i_verboseFlag == R_AFFX_REALLY_VERBOSE)            
+	Rprintf("index: %d, x: %d, y: %d, intensity: %f, stdv: %f, pixels: %d\n", 
+		index, cel.IndexToX(index), cel.IndexToY(index),
+		cel.GetIntensity(index), cel.GetStdv(index), cel.GetPixels(index));
 
       if (i_readIntensities != 0) {
 	REAL(intensities)[index] = cel.GetIntensity(index);
@@ -283,9 +301,9 @@ extern "C" {
     /** set the names of the list entries. **/
     setAttrib(result_list, R_NamesSymbol, names);
 
-#ifdef R_AFFX_DEBUG
-    Rprintf("finished reading cell file intensities.\n");
-#endif
+    if (i_verboseFlag == R_AFFX_VERBOSE)
+      Rprintf("finished reading cell file intensities.\n");
+
 
     /** add one for the result list. **/
     UNPROTECT(++unp);
@@ -294,19 +312,20 @@ extern "C" {
   }
 
 
-  SEXP R_affx_get_pmmm_list(SEXP fname, SEXP complementary_logic) 
+  SEXP R_affx_get_pmmm_list(SEXP fname, SEXP complementary_logic, SEXP verbose) 
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
     SEXP names, dim, pmmm, pairs;
     int nRows = 0, nCols = 0;
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    int i_verboseFlag = INTEGER(verbose)[0];
 
     cdf.SetFileName(cdfFileName);
 
-#ifdef R_AFFX_DEBUG
-    Rprintf("Attempting to read CDF File: %s\n", cdf.GetFileName().c_str());
-#endif
+    if (i_verboseFlag == R_AFFX_VERBOSE)
+      Rprintf("Attempting to read CDF File: %s\n", cdf.GetFileName().c_str());
+
 
     if (cdf.Read() == false) {
       Rprintf("Failed to read the CDF file.");
@@ -325,9 +344,9 @@ extern "C" {
     for (int iset = 0; iset < nsets; iset++) {
       const char* name = cdf.GetProbeSetName(iset).c_str();
 
-#ifdef R_AFFX_DEBUG
-    Rprintf("Processing probeset: %s\n", name);
-#endif
+      if (i_verboseFlag == R_AFFX_VERBOSE)
+	Rprintf("Processing probeset: %s\n", name);
+
 
       SET_STRING_ELT(names, iset, mkChar(name));
 
