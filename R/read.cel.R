@@ -52,6 +52,11 @@ read.cel.header <- function(fname){
   return(cel.file.header)
 }
 
+
+## XXX: right now there is a problem reading some of the header
+## information when you dont read the actual data. I agree that
+## we should have these sanity checks, but i am not so convinced
+
 read.cel.intensity <- function(fnames, indices = NULL, verbose = FALSE){
     fnames <- sapply(fnames, path.expand)
     ## existence of the fnames gets check in the read.cel.header call
@@ -63,8 +68,8 @@ read.cel.intensity <- function(fnames, indices = NULL, verbose = FALSE){
     #if(length(unique(sapply(all.headers, function(x) x$chipName))) != 1)
     #    stop("the associated chipnames are not the same")
     
-#    if(!all(diff(sapply(all.headers, function(x) x$cols))) |
-#       !all(diff(sapply(all.headers, function(x) x$rows))))
+    if(!all(diff(sapply(all.headers, function(x) x$cols))) |
+       !all(diff(sapply(all.headers, function(x) x$rows))))
 #        stop("dimensions of the files do not match")
     if(!is.null(indices))
         intensities.nrow <- length(indices)
@@ -74,7 +79,7 @@ read.cel.intensity <- function(fnames, indices = NULL, verbose = FALSE){
     if(verbose)
         cat(" ...allocating memory for intensity matrix\n") 
     intensities <- matrix(NA, ncol = length(fnames), nrow = intensities.nrow)
-    for(i in length(fnames)){
+    for(i in 1:length(fnames)){
         if(verbose)
             cat(" ... reading", fnames[i], "\n")
         intensities[, i] <- read.cel.complete(fname = fnames[i],
@@ -85,7 +90,7 @@ read.cel.intensity <- function(fnames, indices = NULL, verbose = FALSE){
                                               read.xy = FALSE,
                                               read.outliers = FALSE,
                                               read.masked = FALSE, 
-                                              verbose = verbose)$intensity
+                                              verbose = verbose)$intensities
     }
     return(intensities)
 }
