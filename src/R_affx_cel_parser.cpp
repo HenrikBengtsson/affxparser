@@ -29,10 +29,6 @@ using namespace affymetrix_fusion_io;
 extern "C" {
   #include <R.h>
   #include <Rdefines.h>  
-  
-  
-
-
   #include <wchar.h>
   #include <wctype.h>
  
@@ -43,11 +39,14 @@ extern "C" {
   SEXP R_affx_extract_cel_file_meta(FusionCELData cel) {
     SEXP names, vals;
 
-    PROTECT(names = NEW_CHARACTER(11));
-    PROTECT(vals  = NEW_LIST(11));
+    PROTECT(names = NEW_CHARACTER(12));
+    PROTECT(vals  = NEW_LIST(12));
     
     int i = 0; 
     SEXP tmp;
+
+    SET_STRING_ELT(names, i, mkChar("filename"));
+    SET_VECTOR_ELT(vals, i++, mkString(cel.GetFileName().c_str()));
 
     SET_STRING_ELT(names, i, mkChar("version"));
     tmp = allocVector(INTSXP, 1);
@@ -77,21 +76,21 @@ extern "C" {
     str_length = cel.GetAlg().size();
     cstr = Calloc(str_length, char);
     wcstombs(cstr, cel.GetAlg().c_str(), str_length);
-    SET_STRING_ELT(names, i, mkChar("Algorithm"));
+    SET_STRING_ELT(names, i, mkChar("algorithm"));
     SET_VECTOR_ELT(vals, i++, mkString(cstr)); 
     Free(cstr);
 
     str_length = cel.GetParams().size();
     cstr = Calloc(str_length, char);
     wcstombs(cstr, cel.GetParams().c_str(), str_length);
-    SET_STRING_ELT(names, i, mkChar("Parameters"));
+    SET_STRING_ELT(names, i, mkChar("parameters"));
     SET_VECTOR_ELT(vals, i++, mkString(cstr));
     Free(cstr);
    
     str_length = cel.GetChipType().size();
     cstr = Calloc(str_length, char);
     wcstombs(cstr, cel.GetChipType().c_str(), str_length);
-    SET_STRING_ELT(names, i, mkChar("ChipType"));
+    SET_STRING_ELT(names, i, mkChar("chiptype"));
     SET_VECTOR_ELT(vals, i++, mkString(cstr));
     Free(cstr);
 	
@@ -103,7 +102,7 @@ extern "C" {
     Free(cstr);
 #endif    
 
-    SET_STRING_ELT(names, i, mkChar("CellMargin"));
+    SET_STRING_ELT(names, i, mkChar("cellmargin"));
     tmp = allocVector(INTSXP, 1);
     INTEGER(tmp)[0] = cel.GetCellMargin();
     SET_VECTOR_ELT(vals, i++, tmp);
