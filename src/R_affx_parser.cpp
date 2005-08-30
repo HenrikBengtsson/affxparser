@@ -26,12 +26,15 @@
 using namespace std;
 using namespace affymetrix_fusion_io;
 
-
 extern "C" {
 
 
   #include <R.h>
   #include <Rdefines.h>  
+
+  #include <wchar.h>
+  #include <wctype.h>
+
 
   /* uncomment for relatively profuse debugging. */
   int R_AFFX_VERBOSE = 1;
@@ -42,11 +45,11 @@ extern "C" {
    * return a list of the meta data associated with this cell
    * file. This is the information stored in the header. 
    */
-  SEXP extract_cel_file_meta(FusionCELData cel) {
+  SEXP R_affx_extract_cel_file_meta(FusionCELData cel) {
     SEXP names, vals;
 
-    PROTECT(names = NEW_CHARACTER(7));
-    PROTECT(vals  = NEW_LIST(7));
+    PROTECT(names = NEW_CHARACTER(11));
+    PROTECT(vals  = NEW_LIST(11));
     
     int i = 0; 
     SEXP tmp;
@@ -71,27 +74,45 @@ extern "C" {
     INTEGER(tmp)[0] = cel.GetNumCells();
     SET_VECTOR_ELT(vals, i++, tmp);
    
-    /** the wstring stuff. 
-	SET_STRING_ELT(names, i, mkChar("alg"));
-	SET_VECTOR_ELT(vals, i++, mkString(header.GetAlgorithmName().c_str())); 
-        
-	SET_STRING_ELT(names, i, mkChar("Params"));
-	SET_VECTOR_ELT(vals, i++, mkString(header.GetParams().c_str()));
-    
-   
-	SET_STRING_ELT(names, i, mkChar("ChipType"));
-	SET_VECTOR_ELT(vals, i++, mkString(header.GetChipType().c_str()));
-    
 
-	SET_STRING_ELT(names, i, mkChar("header"));
-	SET_VECTOR_ELT(vals, i++, mkString(header.GetHeader().c_str()));
-    **/
+#ifdef SUPPORT_MBCS
+    int str_length; 
+    char* cstr; 
+    
+    str_length = cel.GetAlg().size();
+    cstr = Calloc(str_length, char);
+    wcstombs(cstr, cel.GetAlg().c_str(), str_length);
+    SET_STRING_ELT(names, i, mkChar("Algorithm"));
+    SET_VECTOR_ELT(vals, i++, mkString(cstr)); 
+    Free(cstr);
+
+    str_length = cel.GetParams().size();
+    cstr = Calloc(str_length, char);
+    wcstombs(cstr, cel.GetParams().c_str(), str_length);
+    SET_STRING_ELT(names, i, mkChar("Parameters"));
+    SET_VECTOR_ELT(vals, i++, mkString(cstr));
+    Free(cstr);
+   
+    str_length = cel.GetChipType().size();
+    cstr = Calloc(str_length, char);
+    wcstombs(cstr, cel.GetChipType().c_str(), str_length);
+    SET_STRING_ELT(names, i, mkChar("ChipType"));
+    SET_VECTOR_ELT(vals, i++, mkString(cstr));
+    Free(cstr);
+	
+    str_length = cel.GetHeader().size();
+    cstr = Calloc(str_length, char);
+    wcstombs(cstr, cel.GetHeader().c_str(), str_length);
+    SET_STRING_ELT(names, i, mkChar("header"));
+    SET_VECTOR_ELT(vals, i++, mkString(cstr));
+    Free(cstr);
+#endif    
 
     SET_STRING_ELT(names, i, mkChar("CellMargin"));
     tmp = allocVector(INTSXP, 1);
     INTEGER(tmp)[0] = cel.GetCellMargin();
     SET_VECTOR_ELT(vals, i++, tmp);
-
+    
     SET_STRING_ELT(names, i, mkChar("noutliers"));
     tmp = allocVector(INTSXP, 1);
     INTEGER(tmp)[0] = cel.GetNumOutliers();
@@ -108,6 +129,7 @@ extern "C" {
     return vals;
   }
 
+  /** This quickly reads only the cel file header. **/
   SEXP R_affx_get_cel_file_header(SEXP fname) 
   {
     FusionCELData cel;
@@ -119,11 +141,11 @@ extern "C" {
       return R_NilValue;
     }
     else {
-      return  extract_cel_file_meta(cel);
+      return  R_affx_extract_cel_file_meta(cel);
     }
   }
 
-  
+  /** read cel file either partially or completely. **/
   SEXP R_affx_get_cel_file(SEXP fname, SEXP readHeader, SEXP readIntensities, SEXP readX,
 			   SEXP readY, SEXP readPixels, SEXP readStdvs, SEXP readOutliers,
 			   SEXP readMasked, SEXP indicesToRead, SEXP verbose) 
@@ -160,7 +182,6 @@ extern "C" {
 
     if (i_verboseFlag == R_AFFX_VERBOSE)
       Rprintf("attempting to read: %s\n", celFileName);
-
     
     /**
        XXX: there are three Read methods - I do not know which
@@ -200,7 +221,7 @@ extern "C" {
    
     /** conditionally allocate space for each vector we want to return. **/
     if (i_readHeader != 0) {
-      header = extract_cel_file_meta(cel);
+      header = R_affx_extract_cel_file_meta(cel);
     }
     if (i_readIntensities != 0) {
       PROTECT(intensities = NEW_NUMERIC(numCells));
@@ -226,14 +247,12 @@ extern "C" {
       if (i_verboseFlag == R_AFFX_VERBOSE)
 	Rprintf("Number of outliers %d\n", cel.GetNumOutliers());
 
-
       PROTECT(outliers = NEW_INTEGER(cel.GetNumOutliers()));
       unp++;
     }
     if (i_readMasked != 0) {
       if (i_verboseFlag == R_AFFX_VERBOSE)
 	Rprintf("Number of masked %d\n", cel.GetNumMasked());
-
 
       PROTECT(masked = NEW_INTEGER(cel.GetNumMasked()));
       unp++;
@@ -279,18 +298,15 @@ extern "C" {
       }
     }
 
-    /** 
-	we resize here if we are not reading the whole cel file. 
-	XXX: check whether this macro does the right thing
-	with the memory. 
-    **/
-
+    /** resize here if we only read part of the cel then we only want the outliers
+	which correspond to that part. **/
     if (i_readOutliers != 0) {
       if (noutlier == 0) {
 	outliers = R_NilValue;
       }
       else if (noutlier < cel.GetNumOutliers()) {
-	SET_LENGTH(outliers, noutlier);
+	PROTECT(outliers = lengthgets(outliers, noutlier));
+	unp++;
       }
     }
     
@@ -299,10 +315,10 @@ extern "C" {
 	masked = R_NilValue;
       }
       else if (nmasked < cel.GetNumMasked()) {
-	SET_LENGTH(masked, nmasked);
+	PROTECT(masked = lengthgets(masked, nmasked));
+	unp++;
       }
     }
-
 
     /** set up the names of the result list. **/
     PROTECT(names = NEW_CHARACTER(8));
@@ -335,7 +351,7 @@ extern "C" {
     setAttrib(result_list, R_NamesSymbol, names);
 
     if (i_verboseFlag == R_AFFX_VERBOSE)
-      Rprintf("finished reading cell file intensities.\n");
+      Rprintf("finished reading reading CEL file.\n");
 
 
     /** add one for the result list. **/
