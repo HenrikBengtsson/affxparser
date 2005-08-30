@@ -175,7 +175,7 @@ extern "C" {
     /** here we will store the above entries in that order. **/
     SEXP result_list = NEW_LIST(8);
 
-    if (i_verboseFlag == R_AFFX_VERBOSE)
+    if (i_verboseFlag >= R_AFFX_VERBOSE)
       Rprintf("attempting to read: %s\n", celFileName);
     
     /**
@@ -189,7 +189,7 @@ extern "C" {
       return R_NilValue;
     }
 
-    if (i_verboseFlag == R_AFFX_VERBOSE)
+    if (i_verboseFlag >= R_AFFX_VERBOSE)
       Rprintf("sucessfully read: %s\n", celFileName);
 
 
@@ -210,7 +210,7 @@ extern "C" {
 	numCells = numIndices;
     }
 
-    if (i_verboseFlag == R_AFFX_VERBOSE)
+    if (i_verboseFlag >= R_AFFX_VERBOSE)
       Rprintf("read %d cells.\n", numCells);
 
    
@@ -239,14 +239,14 @@ extern "C" {
       unp++;
     }
     if (i_readOutliers != 0) {
-      if (i_verboseFlag == R_AFFX_VERBOSE)
+      if (i_verboseFlag >= R_AFFX_VERBOSE)
 	Rprintf("Number of outliers %d\n", cel.GetNumOutliers());
 
       PROTECT(outliers = NEW_INTEGER(cel.GetNumOutliers()));
       unp++;
     }
     if (i_readMasked != 0) {
-      if (i_verboseFlag == R_AFFX_VERBOSE)
+      if (i_verboseFlag >= R_AFFX_VERBOSE)
 	Rprintf("Number of masked %d\n", cel.GetNumMasked());
 
       PROTECT(masked = NEW_INTEGER(cel.GetNumMasked()));
@@ -260,7 +260,7 @@ extern "C" {
 	index = INTEGER(indicesToRead)[icel];
       }
 
-      if (i_verboseFlag == R_AFFX_REALLY_VERBOSE)            
+      if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE)            
 	Rprintf("index: %d, x: %d, y: %d, intensity: %f, stdv: %f, pixels: %d\n", 
 		index, cel.IndexToX(index), cel.IndexToY(index),
 		cel.GetIntensity(index), cel.GetStdv(index), cel.GetPixels(index));
@@ -345,7 +345,7 @@ extern "C" {
     /** set the names of the list entries. **/
     setAttrib(result_list, R_NamesSymbol, names);
 
-    if (i_verboseFlag == R_AFFX_VERBOSE)
+    if (i_verboseFlag >= R_AFFX_VERBOSE)
       Rprintf("finished reading reading CEL file.\n");
 
 
