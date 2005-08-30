@@ -185,8 +185,10 @@ extern "C" {
 
 	PROTECT(xvals = NEW_INTEGER(ncells));
 	PROTECT(yvals = NEW_INTEGER(ncells));
-	PROTECT(pbase = NEW_STRING(ncells));
-	PROTECT(tbase = NEW_STRING(ncells));
+	/**
+	   PROTECT(pbase = NEW_STRING(ncells));
+	   PROTECT(tbase = NEW_STRING(ncells));
+	**/
 	PROTECT(expos = NEW_INTEGER(ncells));
 
 	for (int icell = 0; icell < ncells; icell++) {
@@ -201,11 +203,14 @@ extern "C" {
 	  INTEGER(xvals)[icell] = probe.GetX();
 	  INTEGER(yvals)[icell] = probe.GetY();
 
+	  /**
 	  SET_STRING_ELT(pbase, icell, mkChar(CHARACTER_POINTER(probe.GetPBase())));
 	  SET_STRING_ELT(tbase, icell, mkChar(CHARACTER_POINTER(probe.GetTBase())));
 	  
-	  /*	  CHAR(pbase)[icell] = probe.GetPBase();
-		  CHAR(tbase)[icell] = probe.GetTBase(); */
+	  CHAR(pbase)[icell] = probe.GetPBase();
+	  CHAR(tbase)[icell] = probe.GetTBase(); 
+	  **/
+
 	  INTEGER(expos)[icell] = probe.GetExpos(); 
 	}
 
@@ -219,11 +224,13 @@ extern "C" {
 	SET_VECTOR_ELT(cell_list, unp, yvals);
 	SET_STRING_ELT(cell_list_names, unp++, mkChar("y"));
 	
+	/**
 	SET_VECTOR_ELT(cell_list, unp, pbase);
 	SET_STRING_ELT(cell_list_names, unp++, mkChar("pbase"));
  
 	SET_VECTOR_ELT(cell_list, unp, tbase);
 	SET_STRING_ELT(cell_list_names, unp++, mkChar("tbase"));
+	**/
 
 	SET_VECTOR_ELT(cell_list, unp, expos);
 	SET_STRING_ELT(cell_list_names, unp++, mkChar("expos"));
