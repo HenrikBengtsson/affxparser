@@ -37,6 +37,9 @@
 #include <unistd.h>
 #endif
 
+#include <iostream>
+using namespace std;
+
 using namespace affxcdf;
 
 //////////////////////////////////////////////////////////////////////
@@ -488,8 +491,9 @@ bool CCDFFileData::ReadHeader()
 	// Read the header, close if failed.
 	if (Open(true) == false)
 	{
-		Close();
-		return false;
+	 
+	  Close();
+	  return false;
 	}
 	return true;
 }
@@ -613,20 +617,20 @@ bool CCDFFileData::Read()
 
 bool CCDFFileData::Open(bool bReadHeaderOnly)
 {
-	// First close the file.
+  // First close the file.
 	Close();
 
 	// Open the file.
 	if (IsXDACompatibleFile())
 	{
 #if defined(_USE_MEM_MAPPING_)
-		return ReadXDAFormatUsingMemMap(bReadHeaderOnly);
+	  return ReadXDAFormatUsingMemMap(bReadHeaderOnly);
 #else
-		return ReadXDAFormat(bReadHeaderOnly);
+	  return ReadXDAFormat(bReadHeaderOnly);
 #endif
 	}
 	else
-		return ReadTextFormat(bReadHeaderOnly);
+	  return ReadTextFormat(bReadHeaderOnly);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -814,6 +818,7 @@ bool CCDFFileData::ReadXDAHeader(std::ifstream &instr)
 
 bool CCDFFileData::ReadXDAFormat(bool bReadHeaderOnly)
 {
+
 	// Open the file.
 	std::ifstream instr;
 	instr.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
@@ -988,7 +993,7 @@ bool CCDFFileData::ReadTextFormat(bool bReadHeaderOnly)
 	// Open the file.
 	std::ifstream instr;
 	instr.open(m_FileName.c_str(), std::ios::in);
-
+	
 	// Check if open
 	if (!instr)
 	{
@@ -1011,6 +1016,7 @@ bool CCDFFileData::ReadTextFormat(bool bReadHeaderOnly)
 		return false;
 	}
 
+
 	// Get the version number.
 	ReadNextLine(instr, str, MAXLINELENGTH);
 	subStr=strchr(str,'=')+1;
@@ -1020,6 +1026,7 @@ bool CCDFFileData::ReadTextFormat(bool bReadHeaderOnly)
 		m_Header.m_Version = 2;
 	else if ( strncmp( subStr, CDFVERSION3, strlen(CDFVERSION3)) == 0)
 		m_Header.m_Version = 3;
+
 
 
 	// Get the next section.
@@ -1049,8 +1056,9 @@ bool CCDFFileData::ReadTextFormat(bool bReadHeaderOnly)
 
 
 	// Stop if just reading the header.
-	if (bReadHeaderOnly)
-		return true;
+	if (bReadHeaderOnly) {
+	  return true;
+	}
 
 
 

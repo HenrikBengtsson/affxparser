@@ -6,9 +6,12 @@ read.cdf.complete <- function(fname, verbose = 0){
   .Call("R_affx_get_cdf_file", as.character(fname), as.integer(verbose))
 }
 
-read.cdf.header <- function(fname){
-    read.cdf.complete(fname = fname)
-    print("Placeholder function")
+read.cdf.header <- function(fname, verbose = 0){
+  fname <- path.expand(fname)
+  if(!file.exists(fname))
+    stop(paste(fname, "does not exist."))
+
+  .Call("R_affx_get_cdf_file_header", as.character(fname), as.integer(verbose))
 }
 
 
