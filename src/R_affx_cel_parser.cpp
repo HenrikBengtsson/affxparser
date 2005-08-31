@@ -100,6 +100,21 @@ extern "C" {
     SET_STRING_ELT(names, i, mkChar("header"));
     SET_VECTOR_ELT(vals, i++, mkString(cstr));
     Free(cstr);
+
+#else
+
+    SET_STRING_ELT(names, i, mkChar("algorithm"));
+    SET_VECTOR_ELT(vals, i++, R_NilValue);
+
+    SET_STRING_ELT(names, i, mkChar("parameters"));
+    SET_VECTOR_ELT(vals, i++, R_NilValue);
+
+    SET_STRING_ELT(names, i, mkChar("chiptype"));
+    SET_VECTOR_ELT(vals, i++, R_NilValue);
+
+    SET_STRING_ELT(names, i, mkChar("header"));
+    SET_VECTOR_ELT(vals, i++, R_NilValue);
+
 #endif    
 
     SET_STRING_ELT(names, i, mkChar("cellmargin"));
