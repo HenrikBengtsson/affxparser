@@ -26,6 +26,9 @@
 #include "FusionCDFQCProbeSetNames.h"
 #include <assert.h>
 
+#include <iostream>
+using namespace std;
+
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_utilities;
@@ -1004,8 +1007,8 @@ bool FusionCDFData::ReadHeader()
 	CreateObject();
 	if (gcosData)
 	{
-		gcosData->SetFileName(fileName.c_str());
-		return gcosData->ReadHeader();
+	  gcosData->SetFileName(fileName.c_str());
+	  return gcosData->ReadHeader();
 	}
 	else
 	{

@@ -33,7 +33,8 @@ extern "C" {
   #include <wchar.h>
   #include <wctype.h>
 
-
+  /** This function conforms to the specification for getting an environment
+      for CEL files. **/
   SEXP R_affx_get_pmmm_list(SEXP fname, SEXP complementary_logic, SEXP verbose) 
   {
     FusionCDFData cdf;
@@ -123,6 +124,66 @@ extern "C" {
     
   }
 
+  SEXP R_affx_extract_cdf_file_header(FusionCDFFileHeader header)
+  {
+    int i = 0, header_elts = 5; 
+
+    SEXP names = R_NilValue, 
+      vals = R_NilValue,
+      tmp = R_NilValue;
+    
+    PROTECT(names = NEW_LIST(header_elts));
+    PROTECT(vals  = NEW_LIST(header_elts));
+    
+    SET_STRING_ELT(names, i, mkChar("cols"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = header.GetCols();
+    SET_VECTOR_ELT(vals, i++, tmp); 
+    
+    SET_STRING_ELT(names, i, mkChar("rows"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = header.GetCols();
+    SET_VECTOR_ELT(vals, i++, tmp); 
+    
+    SET_STRING_ELT(names, i, mkChar("probesets"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = header.GetCols();
+    SET_VECTOR_ELT(vals, i++, tmp); 
+    
+    SET_STRING_ELT(names, i, mkChar("qcprobesets"));
+    tmp = allocVector(INTSXP, 1);
+    INTEGER(tmp)[0] = header.GetCols();
+    SET_VECTOR_ELT(vals, i++, tmp); 
+    
+    SET_STRING_ELT(names, i, mkChar("reference"));
+    SET_VECTOR_ELT(vals, i++, mkString(header.GetReference().c_str()));
+    
+    /** set the names down here at the end. **/
+    setAttrib(vals, R_NamesSymbol, names);
+    
+    UNPROTECT(2);
+    
+    return vals; 
+  }
+
+  SEXP R_affx_get_cdf_file_header(SEXP fname, SEXP verbose)
+  {
+    FusionCDFData cdf;
+    FusionCDFFileHeader header;
+
+    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    
+    cdf.SetFileName(cdfFileName);
+    
+    if (cdf.ReadHeader() == false) {
+      Rprintf("Failed to read the CDF file header for: %s\n", cdfFileName);
+      return R_NilValue;
+    }
+    else { 
+      return R_affx_extract_cdf_file_header(cdf.GetHeader());
+    }
+  }
+
   SEXP R_affx_get_cdf_file(SEXP fname, SEXP verbose) 
   {
     FusionCDFData cdf;
@@ -138,14 +199,16 @@ extern "C" {
       tbase = R_NilValue,
       expos = R_NilValue;
     
-
     int nsets = 0; 
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
 
-    /** XXX: I am not sure if this is the optimal solution for dealing with these. **/
-    char* p_base = Calloc(1, char);
-    char* t_base = Calloc(1, char);
+    /** 
+	XXX: I am not sure this is the most elegant way to handle these in R. 
+	I initialize it hear for kicks.
+    **/
+    char p_base[2] = "X";
+    char t_base[2] = "X";
 
     cdf.SetFileName(cdfFileName);
 
@@ -158,7 +221,7 @@ extern "C" {
     }
 
     header = cdf.GetHeader();
-    nsets = header.GetNumProbeSets();
+    nsets  = header.GetNumProbeSets();
 
     PROTECT(names = NEW_CHARACTER(nsets));
     PROTECT(probe_sets = NEW_LIST(nsets)); 
@@ -247,9 +310,6 @@ extern "C" {
     
     /** set the names down here at the end. **/
     setAttrib(probe_sets, R_NamesSymbol, names);
-
-    Free(p_base);
-    Free(t_base);
 
     /** unprotect the names and the main probe set list.**/
     UNPROTECT(2);
