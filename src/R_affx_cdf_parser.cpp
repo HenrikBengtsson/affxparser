@@ -202,6 +202,7 @@ extern "C" {
       pbase = R_NilValue,
       tbase = R_NilValue,
       expos = R_NilValue,
+      ps_group = R_NilValue,
       r_probe_set = R_NilValue, /** one might already want to standardize on this naming scheme... **/
       r_probe_set_names = R_NilValue,
       tmp = R_NilValue; 
@@ -261,7 +262,9 @@ extern "C" {
 	probeset.GetGroupInformation(igroup, group);
 	
 	int ncells = group.GetNumCells();
-	int unp = 0, n_list_elts = 5; 
+	int 
+	  unp = 0, 
+	  n_list_elts = 6; 
 
 	/** XXX: need to understand what this list contains. **/
 	PROTECT(cell_list = NEW_LIST(n_list_elts));
@@ -272,6 +275,7 @@ extern "C" {
 	PROTECT(pbase = NEW_STRING(ncells));
 	PROTECT(tbase = NEW_STRING(ncells));
 	PROTECT(expos = NEW_INTEGER(ncells));
+	PROTECT(ps_group = NEW_INTEGER(ncells));
 
 	for (int icell = 0; icell < ncells; icell++) {
 	  FusionCDFProbeInformation probe;
@@ -292,6 +296,7 @@ extern "C" {
 	  SET_STRING_ELT(tbase, icell, mkChar(t_base));
 	  
 	  INTEGER(expos)[icell] = probe.GetExpos(); 
+	  INTEGER(ps_group)[icell] = igroup; 
 	}
 
 	if (i_verboseFlag >= R_AFFX_VERBOSE)
@@ -312,6 +317,9 @@ extern "C" {
 
 	SET_VECTOR_ELT(cell_list, unp, expos);
 	SET_STRING_ELT(cell_list_names, unp++, mkChar("expos"));
+
+	SET_VECTOR_ELT(cell_list, unp, ps_group);
+	SET_STRING_ELT(cell_list_names, unp++, mkChar("group"));
 	
 	/** set the names of the new list, dont really know if I need to do
 	    this each and every time. **/
