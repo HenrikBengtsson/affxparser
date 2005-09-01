@@ -1426,10 +1426,19 @@ bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 		instr.getline(pszHeader, MAXLINELENGTH);
 		sscanf(pszHeader,"Cols=%d",&iCols);
 		m_HeaderData.SetCols(iCols);
+
+		// added fix for the reading of the header. jhb
+		m_HeaderData.SetCells(iCols*iRows);
+
 		m_HeaderData.SetHeader(pszHeader);
 		instr.getline(pszHeader, MAXLINELENGTH);
 		sscanf(pszHeader,"Rows=%d",&iRows);
+
 		m_HeaderData.SetRows(iRows);
+
+		// added fix for the reading of the header. JHb
+		m_HeaderData.SetCells(iCols*iRows);
+
 		m_HeaderData.AppendHeader(pszHeader);
 
 		//Now read the rest of the header
@@ -1439,9 +1448,10 @@ bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 			if (!instr.getline(pszHeader, MAXLINELENGTH))
 				return false;
 			if (strncmp(pszHeader,"DatHeader=",10)==0) //Last line of the header
-			{
-                if (pszHeader[strlen(pszHeader) - 1] == '\r') pszHeader[strlen(pszHeader) - 1] = '\0';
-				m_HeaderData.SetDatHeader(pszHeader + 10);
+			  {
+			    if (pszHeader[strlen(pszHeader) - 1] == '\r') 
+			      pszHeader[strlen(pszHeader) - 1] = '\0';
+			    m_HeaderData.SetDatHeader(pszHeader + 10);
 			}
 
 			if (strncmp(pszHeader,"Algorithm=",10)==0) //Last line of the header
