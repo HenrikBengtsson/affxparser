@@ -30,7 +30,7 @@ read.cdf.header(fname)
   Daniel Hansen \email{khansen@stat.berkeley.edu}}
 \note{
 }
-\seealso{\code{\link{read.cdf.complete}} for the basic function.
+\seealso{\code{\link{read.cdf.complete}} for the basic function.}
 \examples{
 \dontrun{
 read.cdf.header(fname = "~/test.CDF")

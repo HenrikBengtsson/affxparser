@@ -28,20 +28,23 @@ read.cel.header <- function(fname){
     return(.Call("R_affx_get_cel_file_header", as.character(fname)))
 }
 
-read.cel.complete <- function(fname, indices = NULL, read.intensity = TRUE,
-                              read.std = TRUE, read.npixels = TRUE,
+read.cel.complete <- function(fname, indices = NULL,
+                              read.intensities = TRUE,
+                              read.stdvs = TRUE, read.pixels = TRUE,
                               read.xy = FALSE, read.outliers = TRUE,
                               read.masked = TRUE, verbose = 0){
-    fname <- file.path(path.expand(dirname(fname)), basename(fname))
+    fname <- file.path(dirname(fname), basename(fname))
+    if(length(fname) != 1)
+        stop("This function only reads a single cel file.")
     if (!file.exists(fname))
         stop(paste("file:", fname, "does not exist."))
     cel.file <- .Call("R_affx_get_cel_file", fname,
                       readHeader = TRUE,
-                      readIntensities = read.intensity,
+                      readIntensities = read.intensities,
                       readX = read.xy,
                       readY = read.xy,
-                      readPixels = read.npixels,
-                      readStdvs = read.std,
+                      readPixels = read.pixels,
+                      readStdvs = read.stdvs,
                       readOutliers = read.outliers,
                       readMasked = read.masked,
                       indicesToRead = indices,
@@ -49,49 +52,41 @@ read.cel.complete <- function(fname, indices = NULL, read.intensity = TRUE,
     return(cel.file)
 }
 
-
-## XXX: right now there is a problem reading some of the header
-## information when you dont read the actual data. I agree that
-## we should have these sanity checks, but i am not so convinced
-
-## I agree, seems to be a problem with the SDK, anyway, it should be warnings
-##   and not errors.
-
 read.cel.intensity <- function(fnames, indices = NULL, verbose = 0){
-     fnames <- file.path(path.expand(dirname(fnames)), basename(fnames))
-     if(any(!file.exists(fnames)))
-         stop(paste(paste("file:", fnames[!file.exists(fnames)], "does not exist.")),
-              collapse = "\n")
+     fnames <- file.path(dirname(fnames), basename(fnames))
+     if(!all(file.exists(fnames)))
+         stop(paste(c(" ", paste("file:",fnames[!file.exists(fnames)],
+                          "does not exist.")), collapse = "\n"))
      if(verbose > 0)
          cat("Entering read.cel.intensity\n ... reading headers\n")
+     all.headers <- lapply(as.list(fnames), read.cel.header)
+     nrows <- unique(sapply(all.headers, function(x) x$rows))
+     ncols <- unique(sapply(all.headers, function(x) x$cols))
+     chiptype <- unique(sapply(all.headers, function(x) x$chiptype))
+     nfiles <- length(fnames)
+     if(length(nrows) != 1 || length(ncols) != 1)
+         stop("The CEL files dimension do not match.")
+     if(length(chiptype) != 1)
+         warning("The CEL files do not have the same chiptype.")
+     if(verbose > 0)
+         cat(" ...allocating memory for intensity matrix\n")
+     if(is.null(indices))
+         intensities <- matrix(NA, nrow = nrows * ncols, ncol = nfiles)
+     else
+         intensities <- matrix(NA, nrow = length(indices), ncol = nfiles)
+     colnames(intensities) <- fnames
+     for(i in 1:nfiles){
+         if(verbose > 0)
+            cat(" ... reading", fnames[i], "\n")
+         intensities[, i] <- read.cel.complete(fname = fnames[i],
+                                               indices = indices,
+                                               read.intensities = TRUE,
+                                               read.stdvs = FALSE,
+                                               read.pixels = FALSE,
+                                               read.xy = FALSE,
+                                               read.outliers = FALSE,
+                                               read.masked = FALSE, 
+                                 verbose = (verbose - 1))$intensities
+     }
+     return(intensities)
  }
-##     all.headers <- lapply(as.list(fnames), read.cel.header)
-##     ## XXX: need to fix the reading of the header. 
-##     #if(length(unique(sapply(all.headers, function(x) x$chipName))) != 1)
-##     #    stop("the associated chipnames are not the same")
-##     if(!all(diff(sapply(all.headers, function(x) x$cols))) |
-##        !all(diff(sapply(all.headers, function(x) x$rows))))
-## #        stop("dimensions of the files do not match")
-##     if(!is.null(indices))
-##         intensities.nrow <- length(indices)
-##     else
-##         intensities.nrow <-
-##           all.headers[[1]]$rows * all.headers[[1]]$rows  # numberOfFeatures
-##     if(verbose)
-##         cat(" ...allocating memory for intensity matrix\n") 
-##     intensities <- matrix(NA, ncol = length(fnames), nrow = intensities.nrow)
-##     for(i in 1:length(fnames)){
-##         if(verbose)
-##             cat(" ... reading", fnames[i], "\n")
-##         intensities[, i] <- read.cel.complete(fname = fnames[i],
-##                                               indices = indices,
-##                                               read.intensity = TRUE,
-##                                               read.std = FALSE,
-##                                               read.npixels = FALSE,
-##                                               read.xy = FALSE,
-##                                               read.outliers = FALSE,
-##                                               read.masked = FALSE, 
-##                                               verbose = verbose)$intensities
-##     }
-##     return(intensities)
-

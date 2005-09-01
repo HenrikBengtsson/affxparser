@@ -1,12 +1,12 @@
-\name{read.cel.intensity}
-\alias{read.cel.intensity}
+\name{read.cel.intensities}
+\alias{read.cel.intensities}
 \title{Reads the intensities contained in several Affymetrix CEL files}
 \description{
   Reads the intensities of several Affymetrix CEL files (as opposed to
   \code{read.cel.complete} which only reads a single file.
   }
 \usage{
-read.cel.intensity(fnames, indices = NULL, verbose = FALSE)
+read.cel.intensities(fnames, indices = NULL, verbose = FALSE)
 }
 \arguments{
   \item{fnames}{the names of the CEL files as a character vector.}
@@ -17,7 +17,7 @@ read.cel.intensity(fnames, indices = NULL, verbose = FALSE)
 }
 \details{
   The function will initially allocate a matrix with the same memory
-  footprint as the final object.
+  footprint as the final object. 
   }
 \value{
   A matrix with a number of rows equal to the length of the \code{indices}
@@ -38,7 +38,7 @@ read.cel.intensity(fnames, indices = NULL, verbose = FALSE)
   } 
 \examples{
 \dontrun{
-read.cel.intensity(fnames = c("~/testFile1.CEL", "~/testFile2.CEL"))
+read.cel.intensities(fnames = c("~/testFile1.CEL", "~/testFile2.CEL"))
 }
 }
 \keyword{file}
