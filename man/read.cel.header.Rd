@@ -2,8 +2,7 @@
 \alias{read.cel.header}
 \title{Parsing the header of an Affymetrix CEL file}
 \description{
-  A convinience function build on \code{read.cel.complete}. Parses (part
-  of) an Affymetrix CEL file using the Fusion SDK.
+  Reads in the header of an Affymetrix CEL file using the Fusion SDK.
 }
 \usage{
 read.cel.header(fname)
@@ -12,30 +11,52 @@ read.cel.header(fname)
   \item{fname}{the name of the CEL file.}
 }
 \details{
-  This function returns the header of a CEL file.
-  }
-\value{
-  A named list with components described
-  below. The entries are obtained from the Fusion SDK interface
-  functions, hence the \code{numberOffeatures} component.
-  \item{chipName}{the name of the chip}
-  \item{numberOffeatures}{the number of features on the chip, should be
-    equal to \code{numberOfRows} times \code{numberOfCols}.}
-  \item{numberOfCols}{the number of columns on the chip.}
-  \item{numberOfRows}{the number of rows on the chip.}
-  \item{headerAsChar}{the header as a character. May contain information
-    not present in the other slots.}
+  This function returns the header of a CEL file. Affymetrix operates
+  with different versions of this file format. Depending on what version
+  is being read, different information is accessible.
+
+  Affymetrix is supporting multi-byte characters in the CEL file, so
+  character components is only accessible on systems which actually
+  supports this. In more detail, it requires that the C++ compiler, used
+  to compile the package has SUPPORT_MCBS set to true.
 }
-\author{James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel Hansen
-  \email{khansen@stat.berkeley.edu}} 
-\note{
-  Memory usage:the Fusion SDK allocates memory for the entire
-  CEL file, when the file is accessed. The memory footprint of this
-  function will therefore seem to be (rather) large.
+\value{
+  A named list with components described below. The entries are
+  obtained from the Fusion SDK interface functions. We try to obtain all
+  relevant information from the file.
+  \item{filename}{the name of the cel file.}
+  \item{version}{the version of the cel file. (FIXME: add description).}
+  \item{cols}{the number of columns on the chip.}
+  \item{rows}{the number of rows on the chip.}
+  \item{total}{the total number of features on the chip. Usually equal
+  to \code{rows} times \code{cols}, but since it is a separate attribute
+  in the SDK we decided to include it anyway.}
+  \item{algorithm}{the algorithm used to create the CEL file.}
+  \item{parameters}{the parameters used to in the algorithm. Seems to be
+    semi-colon separated.}
+  \item{chiptype}{the type of the chip.}
+  \item{header}{the entire header of the CEL file. Only available for
+    non-calvin format files.}
+  \item{cellmargin}{a parameter used to generate the CEL file. According
+  to Affymetrix, it designates the number of pixels to ignore around the
+  feature border when calculating the intensity value (the number of
+  pixels ignored are cellmargin divided by 2).}
+  \item{noutliers}{the number of features reported as outliers.}
+  \item{nmasked}{the number of features reported as masked.}
+}
+\author{
+  James Bullard \email{bullard@stat.berkeley.edu},
+  Kasper Daniel Hansen \email{khansen@stat.berkeley.edu}
+}
+\note{ Memory usage:the Fusion SDK
+  allocates memory for the entire CEL file, when the file is
+  accessed. The memory footprint of this function will therefore seem to
+  be (rather) large.
 }
 \seealso{
-  \code{\link{read.cel.complete}} for the basic function.
-  } 
+  \code{\link{read.cel.complete}} for reading in the entire CEL
+  file. That function also returns the header.
+}
 \examples{
 \dontrun{
 read.cel.header("~/testFile.CEL")
