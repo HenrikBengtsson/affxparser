@@ -118,7 +118,11 @@ extern "C" {
     return pmmm;
   }
 
-
+  /** 
+   * XXX: This might look very similar to the code for reading of the normal
+   * probe sets ; so i am going to wait until i am confident that i have that
+   * implemented nicely.
+   */
   SEXP R_affx_get_cdf_file_qc(SEXP fname, SEXP verbose) 
   {
     
@@ -197,8 +201,12 @@ extern "C" {
       yvals = R_NilValue,
       pbase = R_NilValue,
       tbase = R_NilValue,
-      expos = R_NilValue;
+      expos = R_NilValue,
+      r_probe_set = R_NilValue, /** one might already want to standardize on this naming scheme... **/
+      r_probe_set_names = R_NilValue,
+      tmp = R_NilValue; 
     
+
     int nsets = 0; 
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
@@ -209,9 +217,14 @@ extern "C" {
     **/
     char p_base[2] = "X";
     char t_base[2] = "X";
+    
+    /** pointer to the name of the probeset. **/
+    const char* name;
+    int probeSetType, direction;
+    
+    FusionCDFProbeSetInformation probeset;
 
     cdf.SetFileName(cdfFileName);
-
     if (i_verboseFlag >= R_AFFX_VERBOSE)
       Rprintf("Attempting to read CDF File: %s\n", cdf.GetFileName().c_str());
 
@@ -227,21 +240,25 @@ extern "C" {
     PROTECT(probe_sets = NEW_LIST(nsets)); 
 
     for (int iset = 0; iset < nsets; iset++) {
-      const char* name = cdf.GetProbeSetName(iset).c_str();
+      cdf.GetProbeSetInformation(iset, probeset);
+      
+      /** i am not sure why there is not a method on ProbeSetInformation for the name. **/
+      name = cdf.GetProbeSetName(iset).c_str();
+      
+      probeSetType = probeset.GetProbeSetType();
+      direction = probeset.GetDirection();
 
       if (i_verboseFlag >= R_AFFX_VERBOSE)
-	Rprintf("Processing probeset: %s\n", name);
+	Rprintf("Processing probeset: %s with type: %d, direction: %d\n ", name, 
+		probeSetType, direction);
       
       /** the probe set names. **/
       SET_STRING_ELT(names, iset, mkChar(name));
-
-      FusionCDFProbeSetInformation set;
-      cdf.GetProbeSetInformation(iset, set);
 	
-      int ngroups = set.GetNumGroups();
+      int ngroups = probeset.GetNumGroups();
       for (int igroup = 0; igroup < ngroups; igroup++) {
 	FusionCDFProbeGroupInformation group;
-	set.GetGroupInformation(igroup, group);
+	probeset.GetGroupInformation(igroup, group);
 	
 	int ncells = group.GetNumCells();
 	int unp = 0, n_list_elts = 5; 
@@ -303,9 +320,32 @@ extern "C" {
 	/** unprotect the vectors stored in our list. **/
 	UNPROTECT(unp + 2);
       }
+      
+      int rpsi = 0;
+      PROTECT(r_probe_set = NEW_LIST(3));
+      PROTECT(r_probe_set_names = NEW_LIST(3));
 
-      /** now set the cell_list for each probe set. **/
-      SET_VECTOR_ELT(probe_sets, iset, cell_list);
+      SET_VECTOR_ELT(r_probe_set, rpsi, cell_list);
+      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("celllist"));
+            
+      tmp = allocVector(INTSXP, 1);
+      INTEGER(tmp)[0] = probeSetType;
+      SET_VECTOR_ELT(r_probe_set, rpsi, tmp);
+      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("type"));
+      
+      tmp = allocVector(INTSXP, 1);
+      INTEGER(tmp)[0] = direction;
+      SET_VECTOR_ELT(r_probe_set, rpsi, tmp);
+      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("direction"));
+
+      /** set up the names. **/
+      setAttrib(r_probe_set, R_NamesSymbol, r_probe_set_names);
+
+      /** now set the probe_set in the main probe_set list. **/
+      SET_VECTOR_ELT(probe_sets, iset, r_probe_set);
+
+      /** pop the names and the probe_set of the stack. **/
+      UNPROTECT(2);
     }
     
     /** set the names down here at the end. **/
