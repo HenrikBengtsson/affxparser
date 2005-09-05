@@ -14,11 +14,6 @@ read.cel.header(fname)
   This function returns the header of a CEL file. Affymetrix operates
   with different versions of this file format. Depending on what version
   is being read, different information is accessible.
-
-  Affymetrix is supporting multi-byte characters in the CEL file, so
-  character components is only accessible on systems which actually
-  supports this. In more detail, it requires that the C++ compiler, used
-  to compile the package has SUPPORT_MCBS set to true.
 }
 \value{
   A named list with components described below. The entries are
@@ -52,10 +47,15 @@ read.cel.header(fname)
   allocates memory for the entire CEL file, when the file is
   accessed. The memory footprint of this function will therefore seem to
   be (rather) large.
+
+  Speed: CEL files of version 2 (standard text files) needs to be
+  completely read in order to report the number of outliers and masked
+  features.
 }
 \seealso{
   \code{\link{read.cel.complete}} for reading in the entire CEL
-  file. That function also returns the header.
+  file. That function also returns the header. See \code{affxparserInfo}
+  for general comments on the package and the Fusion SDK.
 }
 \examples{
 \dontrun{
