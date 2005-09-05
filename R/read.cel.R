@@ -33,6 +33,7 @@ read.cel.complete <- function(fname, indices = NULL,
                               read.stdvs = TRUE, read.pixels = TRUE,
                               read.xy = FALSE, read.outliers = TRUE,
                               read.masked = TRUE, verbose = 0){
+    ## Need sanity check on indices argument and other.
     fname <- file.path(dirname(fname), basename(fname))
     if(length(fname) != 1)
         stop("This function only reads a single cel file.")
@@ -52,7 +53,7 @@ read.cel.complete <- function(fname, indices = NULL,
     return(cel.file)
 }
 
-read.cel.intensity <- function(fnames, indices = NULL, verbose = 0){
+read.cel.intensities <- function(fnames, indices = NULL, verbose = 0){
      fnames <- file.path(dirname(fnames), basename(fnames))
      if(!all(file.exists(fnames)))
          stop(paste(c(" ", paste("file:",fnames[!file.exists(fnames)],

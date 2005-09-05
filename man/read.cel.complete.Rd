@@ -9,7 +9,7 @@
 \usage{
 read.cel.complete(fname, indices = NULL, read.intensities = TRUE,
                   read.stdvs = TRUE, read.pixels = TRUE,
-                  read.xy = TRUE, read.outliers = TRUE,
+                  read.xy = FALSE, read.outliers = TRUE,
                   read.masked = TRUE, verbose = 0)
 }
 \arguments{
