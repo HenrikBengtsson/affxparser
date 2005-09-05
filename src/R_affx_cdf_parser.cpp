@@ -118,26 +118,34 @@ extern "C" {
     return pmmm;
   }
 
+
+  SEXP R_affx_get_cdf_file_qc(SEXP fname, SEXP verbose) 
+  {
   /** 
    * XXX: This might look very similar to the code for reading of the normal
    * probe sets ; so i am going to wait until i am confident that i have that
    * implemented nicely.
    */
-  SEXP R_affx_get_cdf_file_qc(SEXP fname, SEXP verbose) 
-  {
-    
   }
 
-  SEXP R_affx_extract_cdf_file_header(FusionCDFFileHeader header)
-  {
-    int i = 0, header_elts = 5; 
+  SEXP R_affx_extract_cdf_file_meta(FusionCDFFileHeader header) {
 
     SEXP names = R_NilValue, 
       vals = R_NilValue,
       tmp = R_NilValue;
     
-    PROTECT(names = NEW_LIST(header_elts));
-    PROTECT(vals  = NEW_LIST(header_elts));
+    PROTECT(names = NEW_CHARACTER(5));
+    PROTECT(vals  = NEW_LIST(5));
+      
+    int i = 0;
+
+    /* 
+     * Luis should add a version number
+     */
+
+    /*
+     * Need to add "filename" element
+     */
     
     SET_STRING_ELT(names, i, mkChar("cols"));
     tmp = allocVector(INTSXP, 1);
@@ -146,31 +154,38 @@ extern "C" {
     
     SET_STRING_ELT(names, i, mkChar("rows"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = header.GetCols();
+    INTEGER(tmp)[0] = header.GetRows();
     SET_VECTOR_ELT(vals, i++, tmp); 
     
     SET_STRING_ELT(names, i, mkChar("probesets"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = header.GetCols();
+    INTEGER(tmp)[0] = header.GetNumProbeSets();
     SET_VECTOR_ELT(vals, i++, tmp); 
     
     SET_STRING_ELT(names, i, mkChar("qcprobesets"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = header.GetCols();
+    INTEGER(tmp)[0] = header.GetNumQCProbeSets();
     SET_VECTOR_ELT(vals, i++, tmp); 
     
+    /*
+     * Possible problem with "reference" and multibyte char set...
+     */
+
     SET_STRING_ELT(names, i, mkChar("reference"));
     SET_VECTOR_ELT(vals, i++, mkString(header.GetReference().c_str()));
-    
+
+    /*
+     * Need to add chiptype elemen with check for SUPPORT_MCBS
+     */
+
     /** set the names down here at the end. **/
     setAttrib(vals, R_NamesSymbol, names);
-    
     UNPROTECT(2);
     
     return vals; 
   }
 
-  SEXP R_affx_get_cdf_file_header(SEXP fname, SEXP verbose)
+  SEXP R_affx_get_cdf_file_header(SEXP fname)
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
@@ -178,13 +193,12 @@ extern "C" {
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     
     cdf.SetFileName(cdfFileName);
-    
     if (cdf.ReadHeader() == false) {
       Rprintf("Failed to read the CDF file header for: %s\n", cdfFileName);
       return R_NilValue;
     }
     else { 
-      return R_affx_extract_cdf_file_header(cdf.GetHeader());
+	return R_affx_extract_cdf_file_meta(cdf.GetHeader());
     }
   }
 
@@ -192,6 +206,10 @@ extern "C" {
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
+    
+    /*
+     * What about returning the header as well?
+     */
 
     SEXP names = R_NilValue, 
       probe_sets = R_NilValue,

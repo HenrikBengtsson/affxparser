@@ -26,12 +26,14 @@ read.affybatch2 <- function(..., filenames = character(0),
         description@preprocessing$affyversion <-
             library(help = affy)$info[[2]][[2]][2]
     }
+    filenames <- unlist(filenames)
     one.header <- read.cel.header(filenames[1])
-    return(new("AffyBatch", exprs = read.cel.intensity(fnames = filenames,
-                            indices = NULL, debug = verbose),
-               cdfName = one.header$chipName,
-               phenoData = phenoData, nrow = one.header$numberOfRows,
-               ncol = one.header$numberOfCols,
-               annotation = cleancdfname(one.header$chipName, addcdf = FALSE), 
+    return(new("AffyBatch", exprs = read.cel.intensities(fnames =
+                            unlist(filenames), indices = NULL,
+                            verbose = as.integer(verbose)),
+               cdfName = one.header$chiptype,
+               phenoData = phenoData, nrow = one.header$rows,
+               ncol = one.header$cols,
+               annotation = cleancdfname(one.header$chiptype, addcdf = FALSE), 
                description = description, notes = notes))
 }
