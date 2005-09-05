@@ -2,8 +2,7 @@
 \alias{read.cdf.header}
 \title{Reads the header associated with an Affymetrix CDF file}
 \description{
-Reads the header of an Affymetrix CDF file using the Fusion SDK. A
-convenience function.
+Reads the header of an Affymetrix CDF file using the Fusion SDK. 
 }
 \usage{
 read.cdf.header(fname)
@@ -15,22 +14,23 @@ read.cdf.header(fname)
 }
 \value{
   A named list with the following components
-  \item{chipName}{name of the associated chip.}
-  \item{numberOfRows}{the number of rows for chips associated with the
-    CDF file.}
-  \item{numberOfColumns}{the number of columns for chips associated with
-    the CDF file.}
-  \item{numberOfProbesets}{}
-  \item{numberOfQCProbesets}{}
-  \item{referenceSequence}{the reference sequence. This slot is only
-    non-empty if the chip in question is a resequencing chip.} 
-}
+  \item{filename}{the name of the cdf file.}
+  \item{rows}{the number of rows on the chip.}
+  \item{cols}{the number of columns on the chip.}
+  \item{probesets}{the number of probesets on the chip.}
+  \item{qcprobesets}{the number of QC probesets on the chip.}
+  \item{reference}{the reference sequence (this component only exists
+    for resequencing chips).}
+  \item{chiptype}{the type of the chip.}
+  }
 \references{}
 \author{James Bullard \email{bullard@stat.berkeley.edu} and Kasper
   Daniel Hansen \email{khansen@stat.berkeley.edu}}
 \note{
 }
-\seealso{\code{\link{read.cdf.complete}} for the basic function.}
+\seealso{\code{\link{affxparserInfo}} for general information about the
+  package and \code{\link{read.cdf.complete}} for information about CDF
+  files.}
 \examples{
 \dontrun{
 read.cdf.header(fname = "~/test.CDF")

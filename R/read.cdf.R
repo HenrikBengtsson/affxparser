@@ -1,33 +1,32 @@
-read.cdf.complete <- function(fname, verbose = 0){
-  fname <- path.expand(fname)
-  if(!file.exists(fname))
-    stop(paste(fname, "does not exist."))
-
-  .Call("R_affx_get_cdf_file", as.character(fname), as.integer(verbose))
-}
-
 read.cdf.header <- function(fname){
-  fname <- path.expand(fname)
-  if(!file.exists(fname))
-    stop(paste(fname, "does not exist."))
-
-  .Call("R_affx_get_cdf_file_header", as.character(fname), as.integer(verbose))
+    fname <- file.path(dirname(fname), basename(fname))
+    if (!file.exists(fname))
+        stop(paste("file:", fname, "does not exist."))
+    return(.Call("R_affx_get_cdf_file_header", as.character(fname)))
 }
 
-read.cdf.env <- function(fname) {
-  pmmm <- .parse.cdffile(fname, complementary.logic)
-  e <- new.env()
-  multiassign(names(pmmm), value = pmmm, e)
-  e
+read.cdf.complete <- function(fname, verbose = 0){
+    fname <- file.path(dirname(fname), basename(fname))
+    if (!file.exists(fname))
+        stop(paste("file:", fname, "does not exist."))
+    return(.Call("R_affx_get_cdf_file",
+                 as.character(fname),
+                 as.integer(verbose)))
 }
 
-.get.cdf.env <- function(fname) {
-  fname <- file.path(dirname(fname), basename(fname))
-
-  if (!file.exists(fname))
-    stop(paste("file:", fname, "does not exist."))
-  pmmm <- .Call("R_affx_get_pmmm_list", as.character(fname), as.integer(complementary.logic))
-  if (is.null(pmmm) || length(pmmm) == 0)
-    stop(paste("Error parsing:", fname))
-  lapply(pmmm, t)
+read.cdf.env <- function(fname, complementary.logic = TRUE, verbose = 0) {
+    fname <- file.path(dirname(fname), basename(fname))
+    if (!file.exists(fname))
+        stop(paste("file:", fname, "does not exist."))
+    pmmm <- .Call("R_affx_get_pmmm_list",
+                  as.character(fname),
+                  complementary.logic,
+                  verbose = verbose)
+    if (is.null(pmmm) || length(pmmm) == 0)
+        stop(paste("Error parsing:", fname))
+    ## lapply(pmmm, t)
+    ## Hmm need to add mm,pm column names
+    e <- new.env(hash = TRUE)
+    multiassign(names(pmmm), value = pmmm, e)
+    return(e)
 }
