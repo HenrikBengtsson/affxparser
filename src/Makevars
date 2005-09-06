@@ -12,7 +12,8 @@ PKG_CPPFLAGS+=-Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/fusion/src\
  -Ifusion_sdk/calvin_files/fusion/src/GCOSAdapter\
  -Ifusion_sdk/calvin_files/fusion/src/CalvinAdapter\
- -DIS_BIG_ENDIAN -D_USE_MEM_MAPPING_
+ -D_USE_MEM_MAPPING_\
+# -DIS_BIG_ENDIAN
 
 SOURCES.fusion = \
 	fusion_sdk/file/BARFileData.cpp\
