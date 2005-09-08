@@ -101,7 +101,7 @@ test_cmd: $(OBJECTS.fusion)
 	${CC} ${CPPFLAGS} ${SOURCES.fusion} -o test_prog
 
 clean:
-	-rm -rf $(OBJECTS.fusion) $(LIB.fusion)
+	-rm -rf $(OBJECTS.fusion) $(LIB.fusion) *.o *.so
 
 
 ## The files below are the ones left out of the 

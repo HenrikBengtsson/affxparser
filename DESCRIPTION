@@ -1,6 +1,6 @@
 Package: affxparser
-Version: 1.1-1
-Date: 2005-08-25
+Version: 1.1-2
+Date: 2005-09-07
 Title: Affymetrix File Parsing SDK
 Author: James Bullard, Kasper Daniel Hansen
 Maintainer: James Bullard <bullard@berkeley.edu>
@@ -10,3 +10,4 @@ Depends: R (>= 2.0), Biobase
 Suggests: affy
 SaveImage: yes
 LazyLoad: yes
+biocViews: DataImport
