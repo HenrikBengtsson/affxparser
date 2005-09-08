@@ -121,84 +121,76 @@ extern "C" {
 
   SEXP R_affx_get_cdf_file_qc(SEXP fname, SEXP verbose) 
   {
-  /** 
-   * XXX: This might look very similar to the code for reading of the normal
-   * probe sets ; so i am going to wait until i am confident that i have that
-   * implemented nicely.
-   */
-  }
-
-  SEXP R_affx_extract_cdf_file_meta(FusionCDFFileHeader header) {
-
-    SEXP names = R_NilValue, 
-      vals = R_NilValue,
-      tmp = R_NilValue;
-    
-    PROTECT(names = NEW_CHARACTER(5));
-    PROTECT(vals  = NEW_LIST(5));
-      
-    int i = 0;
-
-    /* 
-     * Luis should add a version number
-     */
-
-    /*
-     * Need to add "filename" element
-     */
-    
-    SET_STRING_ELT(names, i, mkChar("cols"));
-    tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = header.GetCols();
-    SET_VECTOR_ELT(vals, i++, tmp); 
-    
-    SET_STRING_ELT(names, i, mkChar("rows"));
-    tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = header.GetRows();
-    SET_VECTOR_ELT(vals, i++, tmp); 
-    
-    SET_STRING_ELT(names, i, mkChar("probesets"));
-    tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = header.GetNumProbeSets();
-    SET_VECTOR_ELT(vals, i++, tmp); 
-    
-    SET_STRING_ELT(names, i, mkChar("qcprobesets"));
-    tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = header.GetNumQCProbeSets();
-    SET_VECTOR_ELT(vals, i++, tmp); 
-    
-    /*
-     * Possible problem with "reference" and multibyte char set...
-     */
-
-    SET_STRING_ELT(names, i, mkChar("reference"));
-    SET_VECTOR_ELT(vals, i++, mkString(header.GetReference().c_str()));
-
-    /*
-     * Need to add chiptype elemen with check for SUPPORT_MCBS
-     */
-
-    /** set the names down here at the end. **/
-    setAttrib(vals, R_NamesSymbol, names);
-    UNPROTECT(2);
-    
-    return vals; 
+    /** 
+     * XXX: This might look very similar to the code for reading of the normal
+     * probe sets ; so i am going to wait until i am confident that i have that
+     * implemented nicely.
+     **/
   }
 
   SEXP R_affx_get_cdf_file_header(SEXP fname)
   {
     FusionCDFData cdf;
-    FusionCDFFileHeader header;
-
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     
     cdf.SetFileName(cdfFileName);
+   
     if (cdf.ReadHeader() == false) {
       Rprintf("Failed to read the CDF file header for: %s\n", cdfFileName);
       return R_NilValue;
     }
     else { 
-	return R_affx_extract_cdf_file_meta(cdf.GetHeader());
+      FusionCDFFileHeader header;
+
+      SEXP names = R_NilValue, 
+	vals = R_NilValue,
+	tmp = R_NilValue;
+    
+      int i = 0, LIST_ELTS = 7;
+      
+      header = cdf.GetHeader();
+
+      PROTECT(names = NEW_CHARACTER(LIST_ELTS));
+      PROTECT(vals  = NEW_LIST(LIST_ELTS));
+
+      /* 
+       * Luis should add a version number
+       */
+
+      SET_STRING_ELT(names, i, mkChar("cols"));
+      tmp = allocVector(INTSXP, 1);
+      INTEGER(tmp)[0] = header.GetCols();
+      SET_VECTOR_ELT(vals, i++, tmp); 
+      
+      SET_STRING_ELT(names, i, mkChar("rows"));
+      tmp = allocVector(INTSXP, 1);
+      INTEGER(tmp)[0] = header.GetRows();
+      SET_VECTOR_ELT(vals, i++, tmp); 
+      
+      SET_STRING_ELT(names, i, mkChar("probesets"));
+      tmp = allocVector(INTSXP, 1);
+      INTEGER(tmp)[0] = header.GetNumProbeSets();
+      SET_VECTOR_ELT(vals, i++, tmp); 
+      
+      SET_STRING_ELT(names, i, mkChar("qcprobesets"));
+      tmp = allocVector(INTSXP, 1);
+      INTEGER(tmp)[0] = header.GetNumQCProbeSets();
+      SET_VECTOR_ELT(vals, i++, tmp); 
+      
+      SET_STRING_ELT(names, i, mkChar("reference"));
+      SET_VECTOR_ELT(vals, i++, mkString(header.GetReference().c_str()));
+
+      SET_STRING_ELT(names, i, mkChar("chiptype"));
+      SET_VECTOR_ELT(vals, i++, mkString(cdf.GetChipType().c_str()));
+
+      SET_STRING_ELT(names, i, mkChar("filename"));
+      SET_VECTOR_ELT(vals, i++, mkString(cdf.GetFileName().c_str()));
+
+      /** set the names down here at the end. **/
+      setAttrib(vals, R_NamesSymbol, names);
+      UNPROTECT(2);
+    
+      return vals; 
     }
   }
 
@@ -210,7 +202,7 @@ extern "C" {
     /*
      * What about returning the header as well?
      */
-
+    
     SEXP names = R_NilValue, 
       probe_sets = R_NilValue,
       cell_list = R_NilValue,
@@ -220,7 +212,8 @@ extern "C" {
       pbase = R_NilValue,
       tbase = R_NilValue,
       expos = R_NilValue,
-      ps_group = R_NilValue,
+      r_group_list = R_NilValue, 
+      r_group_names = R_NilValue, 
       r_probe_set = R_NilValue, /** one might already want to standardize on this naming scheme... **/
       r_probe_set_names = R_NilValue,
       tmp = R_NilValue; 
@@ -275,6 +268,10 @@ extern "C" {
       SET_STRING_ELT(names, iset, mkChar(name));
 	
       int ngroups = probeset.GetNumGroups();
+      
+      PROTECT(r_group_list = NEW_LIST(ngroups));
+      PROTECT(r_group_names = NEW_CHARACTER(ngroups));
+
       for (int igroup = 0; igroup < ngroups; igroup++) {
 	FusionCDFProbeGroupInformation group;
 	probeset.GetGroupInformation(igroup, group);
@@ -282,9 +279,8 @@ extern "C" {
 	int ncells = group.GetNumCells();
 	int 
 	  unp = 0, 
-	  n_list_elts = 6; 
-
-	/** XXX: need to understand what this list contains. **/
+	  n_list_elts = 5; 
+	
 	PROTECT(cell_list = NEW_LIST(n_list_elts));
 	PROTECT(cell_list_names = NEW_STRING(n_list_elts));
 
@@ -293,7 +289,6 @@ extern "C" {
 	PROTECT(pbase = NEW_STRING(ncells));
 	PROTECT(tbase = NEW_STRING(ncells));
 	PROTECT(expos = NEW_INTEGER(ncells));
-	PROTECT(ps_group = NEW_INTEGER(ncells));
 
 	for (int icell = 0; icell < ncells; icell++) {
 	  FusionCDFProbeInformation probe;
@@ -314,7 +309,6 @@ extern "C" {
 	  SET_STRING_ELT(tbase, icell, mkChar(t_base));
 	  
 	  INTEGER(expos)[icell] = probe.GetExpos(); 
-	  INTEGER(ps_group)[icell] = igroup; 
 	}
 
 	if (i_verboseFlag >= R_AFFX_VERBOSE)
@@ -336,23 +330,28 @@ extern "C" {
 	SET_VECTOR_ELT(cell_list, unp, expos);
 	SET_STRING_ELT(cell_list_names, unp++, mkChar("expos"));
 
-	SET_VECTOR_ELT(cell_list, unp, ps_group);
-	SET_STRING_ELT(cell_list_names, unp++, mkChar("group"));
 	
 	/** set the names of the new list, dont really know if I need to do
 	    this each and every time. **/
 	setAttrib(cell_list, R_NamesSymbol, cell_list_names);
-	  
+	
+	/** set these cells in the group list. **/
+	SET_VECTOR_ELT(r_group_list, igroup, cell_list);
+	SET_STRING_ELT(r_group_names, igroup, mkChar(group.GetName().c_str()));
+	
 	/** unprotect the vectors stored in our list. **/
 	UNPROTECT(unp + 2);
       }
       
+      /** set the group names. **/
+      setAttrib(r_group_list, R_NamesSymbol, r_group_names);
+
       int rpsi = 0;
       PROTECT(r_probe_set = NEW_LIST(3));
       PROTECT(r_probe_set_names = NEW_LIST(3));
 
-      SET_VECTOR_ELT(r_probe_set, rpsi, cell_list);
-      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("celllist"));
+      SET_VECTOR_ELT(r_probe_set, rpsi, r_group_list);
+      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("groups"));
             
       tmp = allocVector(INTSXP, 1);
       INTEGER(tmp)[0] = probeSetType;
@@ -371,7 +370,7 @@ extern "C" {
       SET_VECTOR_ELT(probe_sets, iset, r_probe_set);
 
       /** pop the names and the probe_set of the stack. **/
-      UNPROTECT(2);
+      UNPROTECT(4);
     }
     
     /** set the names down here at the end. **/
