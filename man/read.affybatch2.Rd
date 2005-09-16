@@ -32,9 +32,9 @@ read.affybatch2(..., filenames = character(0),
   An \code{AffyBatch} object.
 }
 \author{The author of the original \code{read.affybatch} function:
-  Ben Bolstad bolstad <stat.berkeley.edu> as well as 
-  James Bullard <bullard@stat.berkeley.edu>, Kasper Daniel Hansen
-  <khansen@stat.berkeley.edu>
+  Ben Bolstad, \email{bolstad@stat.berkeley.edu} as well as 
+  James Bullard, \email{bullard@stat.berkeley.edu} and Kasper Daniel Hansen
+  \email{khansen@stat.berkeley.edu}
 } 
 \seealso{\code{\link{read.affybatch}} in \pkg{affy} as well as
   \code{\link{read.cel.intensities}} and \code{\link{read.cel.complete}}.}

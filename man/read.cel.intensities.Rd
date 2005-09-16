@@ -28,8 +28,8 @@ read.cel.intensities(fnames, indices = NULL, verbose = 0)
   columns are ordered according to the \code{fnames} argument.
 }
 \author{
-  James Bullard \email{bullard@stat.berkeley.edu},
-  Kasper Daniel Hansen \email{khansen@stat.berkeley.edu}
+  James Bullard, \email{bullard@stat.berkeley.edu} and
+  Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}
 }
 \note{
   Currently this function builds on \code{read.cel.complete}, and simply

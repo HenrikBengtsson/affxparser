@@ -40,8 +40,8 @@ read.cel.header(fname)
   \item{nmasked}{the number of features reported as masked.}
 }
 \author{
-  James Bullard \email{bullard@stat.berkeley.edu},
-  Kasper Daniel Hansen \email{khansen@stat.berkeley.edu}
+  James Bullard, \email{bullard@stat.berkeley.edu} and
+  Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}
 }
 \note{ Memory usage:the Fusion SDK
   allocates memory for the entire CEL file, when the file is
