@@ -24,8 +24,10 @@ read.cdf.env <- function(fname, complementary.logic = TRUE, verbose = 0) {
                   verbose = verbose)
     if (is.null(pmmm) || length(pmmm) == 0)
         stop(paste("Error parsing:", fname))
-    ## lapply(pmmm, t)
-    ## Hmm need to add mm,pm column names
+    pmmm <- lapply(pmmm, function(x) {
+        tmp <- t(x)
+        colnames(tmp) <- c("pm", "mm")
+        tmp})
     e <- new.env(hash = TRUE)
     multiassign(names(pmmm), value = pmmm, e)
     return(e)

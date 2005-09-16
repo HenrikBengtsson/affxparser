@@ -84,8 +84,8 @@ read.cel.complete(fname, indices = NULL, read.intensities = TRUE,
   masked features. In case an \code{indices} argument is given, only indices
   within the \code{indices} argument are returned.}   
 }
-\author{James Bullard \email{bullard@stat.berkeley.edu}, Kasper Daniel Hansen
- \email{khansen@stat.berkeley.edu}} 
+\author{James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
+  Daniel Hansen, \email{khansen@stat.berkeley.edu}} 
 \note{
   Memory usage: the Fusion SDK allocates memory for the entire
   CEL file, when the file is accessed (but does not actually read the
@@ -104,8 +104,8 @@ read.cel.complete(fname, indices = NULL, read.intensities = TRUE,
   \code{\link{read.cel.header}} for a description of the header
   output. Often a user only wants to read the intensities, look at
   \code{\link{read.cel.intensities}} for a function specialized for that
-  use. See \code{\link{xy2indices}} from \pkg{affy} and
-  \code{\link{xy2i}} from \pkg{makePlatformDesign} for a discussion of
+  use. See \code{\link[affy]{xy2indices}} from \pkg{affy} and
+  \code{\link[makePlatformDesign]{xy2i}} from \pkg{makePlatformDesign} for a discussion of
   the index approach.  }
 \examples{
 \dontrun{
