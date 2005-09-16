@@ -6,7 +6,12 @@
   Affymetrix.com.
 }
 \usage{
-  affxparserInfo()
+  affxparserInfo(fusion.license = FALSE, file.changes = FALSE)
+}
+\arguments{
+  \item{fusion.license}{display the license of the Fusion SDK (this will
+    happen in a browser).}
+  \item{file.changes}{display the changes made to the Fusion SDK.}
 }
 \details{
   This package implements an interface to the Fusion SDK from

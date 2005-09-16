@@ -1,7 +1,7 @@
-Using Fusion SDK version pre-release 1 obtained from 
-Affymetrix.com the 10th of August, 2005.
+Changes to the Affymetrix Fusion SDK:
 
-From the original zip archive, the following have been removed
+From the original zip archive (fusion_source.zip), 
+the following have been removed
 (. refers to cvs_head/affy/sdk):
 the file
   ./fusion_sdk_readme.html
@@ -15,6 +15,6 @@ and the following directories, including subdirectories
   ./calvin_files/fusion/swig-java
   ./calvin_files/fusion/swig-perl
  
-A couple of bug fixes have been incorporated, these have been reported
-to devnet@affymetrix.com and will likely be included in the next
-release.
+There have been a number of bugfixes, all of them reported to 
+devnet@affymetrix.com. These will likely be included in the next 
+release of the SDK.
