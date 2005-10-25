@@ -25,6 +25,7 @@
  */
 
 #include "AffymetrixBaseTypes.h"
+#include <stddef.h>
 
 namespace affymetrix_calvin_utilities
 {

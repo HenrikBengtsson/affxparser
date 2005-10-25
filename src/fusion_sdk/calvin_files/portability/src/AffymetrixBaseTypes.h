@@ -27,6 +27,8 @@
 /* Define the type for the Windows platform. */
 #ifdef WIN32
 
+#ifndef __MINGW32__
+
 /*! An 8 bit signed number */
 typedef	char int8_t;
 
@@ -50,6 +52,22 @@ typedef	unsigned int u_int32_t;
 
 /*! A 64 bit unsigned number */
 typedef unsigned long long int u_int64_t;
+
+#else
+
+/*! An 8 bit unsigned number */
+typedef unsigned char u_int8_t;
+
+/*! A 16 bit unsigned number */
+typedef unsigned short int u_int16_t;
+
+/*! A 32 bit unsigned number */
+typedef unsigned int u_int32_t;
+
+/*! A 64 bit unsigned number */
+typedef unsigned long long int u_int64_t;
+
+#endif
 
 #else
 

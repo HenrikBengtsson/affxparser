@@ -59,6 +59,8 @@
 
 #else
 
+#ifndef __MINGW32__
+
 /* We are on windows -- define the types. */
 #ifndef __int8_t_defined
 #define __int8_t_defined 1
@@ -92,6 +94,8 @@ typedef unsigned long long int uint64_t;
 #endif /* __VC60__ */
 
 #endif /* __int8_t_defined */
+
+#endif /* __MINGW32__ */
 
 #endif /* WIN32 */
 #endif /* affy-base-types.h */

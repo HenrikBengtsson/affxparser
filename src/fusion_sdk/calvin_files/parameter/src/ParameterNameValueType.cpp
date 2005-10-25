@@ -333,6 +333,12 @@ void ParameterNameValueType::IntToValue(u_int32_t value, const wchar_t* type)
 	Value.SetValue(buf, NUMBER_BUFFER_LEN);
 }
 
+#ifdef __MINGW32__
+#define FormatString(buffer, count, format, value) swprintf(buffer, format, value)
+#else
+#define FormatString(buffer, count, format, value) swprintf(buffer, count, format, value)
+#endif
+
 std::wstring ParameterNameValueType::ToString()
 {
 	const int32_t bufSize = 100;
@@ -341,31 +347,31 @@ std::wstring ParameterNameValueType::ToString()
 	switch(GetParameterType())
 	{
 		case Int8Type:
-			swprintf(buf, bufSize, L"%d", GetValueInt8());
+			FormatString(buf, bufSize, L"%d", GetValueInt8());
 			result = buf;
 			break;
 		case Int16Type:
-			swprintf(buf, bufSize, L"%d", GetValueInt16());
+			FormatString(buf, bufSize, L"%d", GetValueInt16());
 			result = buf;
 			break;
 		case Int32Type:
-			swprintf(buf, bufSize, L"%d", GetValueInt32());
+			FormatString(buf, bufSize, L"%d", GetValueInt32());
 			result = buf;
 			break;
 		case UInt8Type:
-			swprintf(buf, bufSize, L"%u", GetValueUInt8());
+			FormatString(buf, bufSize, L"%u", GetValueUInt8());
 			result = buf;
 			break;
 		case UInt16Type:
-			swprintf(buf, bufSize, L"%u", GetValueUInt16());
+			FormatString(buf, bufSize, L"%u", GetValueUInt16());
 			result = buf;
 			break;
 		case UInt32Type:
-			swprintf(buf, bufSize, L"%u", GetValueUInt32());
+			FormatString(buf, bufSize, L"%u", GetValueUInt32());
 			result = buf;
 			break;
 		case FloatType:
-			swprintf(buf, bufSize, L"%f", GetValueFloat());
+			FormatString(buf, bufSize, L"%f", GetValueFloat());
 			result = buf;
 			break;
 		case TextType:
