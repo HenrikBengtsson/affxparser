@@ -160,7 +160,7 @@ bool DataSet::MapDataWin32(u_int32_t start, u_int32_t bytes)
 
 	SYSTEM_INFO sysinfo;
 	GetSystemInfo (&sysinfo);
-	__int64 qwFileOffset = __int64(start);
+	u_int64_t qwFileOffset = u_int64_t(start);
 	DWORD dwOffset = DWORD(qwFileOffset % sysinfo.dwAllocationGranularity);
 	qwFileOffset = (qwFileOffset / sysinfo.dwAllocationGranularity) *
 								sysinfo.dwAllocationGranularity;
