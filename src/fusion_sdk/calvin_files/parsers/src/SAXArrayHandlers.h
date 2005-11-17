@@ -34,16 +34,16 @@
 namespace affymetrix_calvin_io
 {
 /*! The name of the DTD for the array file. */
-#define ARRAY_FILE_DTD std::wstring(L"Array.dtd")
+#define ARRAY_FILE_DTD std::wstring(L"ArraySetAndTemplateFile.dtd")
 
 /*! The encoding to use for array files. */
 #define ARRAY_FILE_ENCODING std::wstring(L"UTF-16")
 
 /*! The name of the element that contains the array file id, type and version data. */
-#define ARRAY_FILE_ELEMENT std::wstring(L"ArrayFile")
+#define ARRAY_FILE_ELEMENT std::wstring(L"ArraySetFile")
 
 /*! The attribute name of the ID field for the array file. */
-#define ARRAY_FILE_ELEMENT_ID_ATTRIBUTE std::wstring(L"ID")
+#define ARRAY_FILE_ELEMENT_ID_ATTRIBUTE std::wstring(L"GUID")
 
 /*! The attribute name of the type field for the array file. */
 #define ARRAY_FILE_ELEMENT_TYPE_ATTRIBUTE std::wstring(L"Type")
@@ -51,17 +51,68 @@ namespace affymetrix_calvin_io
 /*! The attribute name of the version field for the array file. */
 #define ARRAY_FILE_ELEMENT_VERSION_ATTRIBUTE std::wstring(L"Version")
 
+/*! The attribute name of the original project field for the array file. */
+#define ARRAY_FILE_ELEMENT_PROJECT_ATTRIBUTE std::wstring(L"OriginalProjectName")
+
+/*! The attribute name of the creation date field for the array file. */
+#define ARRAY_FILE_ELEMENT_CREATE_DATE_TIME_ATTRIBUTE std::wstring(L"CreatedDateTime")
+
+/*! The attribute name of the create by field for the array file. */
+#define ARRAY_FILE_ELEMENT_CREATED_BY_ATTRIBUTE std::wstring(L"CreatedBy")
+
+/*! The attribute name of the create step field for the array file. */
+#define ARRAY_FILE_ELEMENT_CREATED_STEP_ATTRIBUTE std::wstring(L"CreatedStep")
+
 /*! The name of the element that contains the list of physical arrays. */
 #define PHYSICAL_ARRAYS_ELEMENT std::wstring(L"PhysicalArrays")
 
 /*! The name of the element that contains the attributes of a single physical array. */
 #define PHYSICAL_ARRAY_ELEMENT std::wstring(L"PhysicalArray")
 
+/*! The attribute name of the type field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_ARRAY_TYPE_ATTRIBUTE std::wstring(L"Type")
+
 /*! The attribute name of the ID field for a physical array. */
-#define PHYSICAL_ARRAY_ELEMENT_ID_ATTRIBUTE std::wstring(L"ID")
+#define PHYSICAL_ARRAY_ELEMENT_ID_ATTRIBUTE std::wstring(L"GUID")
+
+/*! The attribute name of the array name field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_NAME_ATTRIBUTE std::wstring(L"ArrayName")
+
+/*! The attribute name of the barcode field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_BARCODE_ATTRIBUTE std::wstring(L"AffyBarcode")
+
+/*! The attribute name of the type field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_TYPE_ATTRIBUTE std::wstring(L"MediaType")
+
+/*! The attribute name of the row field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_ROW_ATTRIBUTE std::wstring(L"MediaRow")
+
+/*! The attribute name of the col field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_COL_ATTRIBUTE std::wstring(L"MediaCol")
+
+/*! The attribute name of the customer barcode field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_CUSTOMER_BARCODE_ATTRIBUTE std::wstring(L"CustomerBarcode")
+
+	/*! The attribute name of the master file field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_MASTERFILE_ATTRIBUTE std::wstring(L"MasterFileName")
+
+	/*! The attribute name of the master file guid field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_MASTERFILE_GUID_ATTRIBUTE std::wstring(L"MasterFileGUID")
+
+/*! The attribute name of the pat assignment field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_PAT_ASSIGNMENT_ATTRIBUTE std::wstring(L"PATAssignmentMethod")
+
+/*! The attribute name of the creation date field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_CREATION_DATE_ATTRIBUTE std::wstring(L"CreatedDateTime")
+
+/*! The attribute name of the creation user field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_CREATED_BY_ATTRIBUTE std::wstring(L"CreatedBy")
+
+/*! The attribute name of the comment field for a physical array. */
+#define PHYSICAL_ARRAY_ELEMENT_COMMENT_ATTRIBUTE std::wstring(L"Comment")
 
 /*! The name of the element that contains a single attribute of a single physical array. */
-#define PHYSICAL_ARRAY_ATTRIBUTE_ELEMENT std::wstring(L"Attribute")
+#define PHYSICAL_ARRAY_ATTRIBUTE_ELEMENT std::wstring(L"ArrayAttribute")
 
 /*! The attribute name of the name field for a physical array attribute. */
 #define PHYSICAL_ARRAY_ATTRIBUTE_ELEMENT_NAME_ATTRIBUTE std::wstring(L"Name")
@@ -73,10 +124,22 @@ namespace affymetrix_calvin_io
 #define USER_ATTRIBUTES_ELEMENT std::wstring(L"UserAttributes")
 
 /*! The name of the element that contains a single user attribute. */
-#define USER_ATTRIBUTES_ATTRIBUTE_ELEMENT std::wstring(L"Attribute")
+#define USER_ATTRIBUTES_ATTRIBUTE_ELEMENT std::wstring(L"UserAttribute")
+
+/*! The name of the element that contains a single user attribute. */
+#define USER_ATTRIBUTES_ATTRIBUTE_VALUE_ELEMENT std::wstring(L"UserAttributeValue")
 
 /*! The attribute name of the name field for a user attribute. */
 #define USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_NAME_ATTRIBUTE std::wstring(L"Name")
+
+/*! The attribute name of the type field for a user attribute. */
+#define USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_TYPE_ATTRIBUTE std::wstring(L"Type")
+
+/*! The attribute name of the default value field for a user attribute. */
+#define USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_DEFAULT_ATTRIBUTE std::wstring(L"DefaultValue")
+
+/*! The attribute name of the required field for a user attribute. */
+#define USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_REQUIRED_ATTRIBUTE std::wstring(L"Required")
 
 /*! The attribute name of the value field for a user attribute. */
 #define USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_VALUE_ATTRIBUTE std::wstring(L"Value")
@@ -95,6 +158,7 @@ typedef enum {
 	PHYSICAL_ARRAY_ATTRIBUTES,
 	USER_ATTRIBUTES,
 	USER_ATTRIBUTES_ATTRIBUTE,
+	USER_ATTRIBUTES_ATTRIBUTE_VALUE,
 	USER_ATTRIBUTES_ATTRIBUTE_CONTROL
 } ArrayFileElements;
 
@@ -117,7 +181,7 @@ private:
 	ArrayFileElements currentElement;
 
 	/*! The files version number. */
-	u_int8_t fileVersionNumber;
+	std::wstring fileVersionNumber;
 
 	/*! An identifier to the type of data stored in the file */
 	affymetrix_calvin_utilities::AffymetrixGuidType dataTypeIdentifier;
@@ -128,11 +192,11 @@ private:
 	 */
 	void StoreArrayFileAttributes(std::map<std::wstring, std::wstring> &attributes);
 
-	/*! Stores the ID from the physical array element.
+	/*! Stores the attrobites from the physical array element.
 	 *
 	 * @param attributes The name/value attributes.
 	 */
-	void StorePhysicalArrayID(std::map<std::wstring, std::wstring> &attributes);
+	void StorePhysicalArrayElementAttributes(std::map<std::wstring, std::wstring> &attributes);
 
 	/*! Stores an attribute from the physical array attribute element.
 	 *
@@ -182,6 +246,12 @@ public:
 	/*! Called at the end of the document */
 	void endDocument();
 
+	/*! Receive notification of character data inside an element.
+	 * @param chars The character data.
+	 * @param length The length of the character string.
+	 */
+	void characters(const XMLCh *const chars, const unsigned int length);
+
 	/*! Called at the start of each element.
 	 *
 	 * @param name The name of the element.
@@ -205,7 +275,7 @@ public:
 	 *
 	 * @return The file version.
 	 */
-	u_int8_t FileVersionNumber() const { return fileVersionNumber; }
+	std::wstring FileVersionNumber() const { return fileVersionNumber; }
 };
 
 };

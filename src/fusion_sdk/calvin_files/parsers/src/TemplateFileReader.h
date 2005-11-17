@@ -24,14 +24,53 @@
 /*! \file TemplateFileReader.h This file provides interfaces to read a template file.
  */
 
-#include "ArrayFileReader.h"
+#include "AffymetrixBaseTypes.h"
+#include "AffymetrixGuid.h"
+#include "Parameter.h"
+#include "TemplateData.h"
+#include <string>
+#include <fstream>
 
 namespace affymetrix_calvin_io
 {
 
 /*! This class provides interfaces to read a template file. */
-class TemplateFileReader : public ArrayFileReader
+class TemplateFileReader
 {
+public:
+	/*! Constructor */
+	TemplateFileReader();
+
+	/*! Destructor */
+	~TemplateFileReader();
+
+protected:
+	/*! The files version number. */
+	std::wstring fileVersionNumber;
+
+public:
+	/*! Reads the entire contents of the file.
+	 *
+	 * @param fileName The name of the template file to read.
+	 * @param templateData The template data to read from the file.
+ 	 * @param headerOnly Flag to indicate that the header line should only be read.
+	 */
+	bool Read(const std::string &fileName, affymetrix_calvin_template::TemplateData &templateData, bool headerOnly=false);
+
+	/*! Determines if a file is of the specified type.
+	 *
+	 * @param fileName The name of the file to check.
+	 * @param dataTypeId An identifier to the type of data.
+	 * @return True if the file matches the type desired.
+	 */
+	static bool IsFileType(const std::string &fileName, const affymetrix_calvin_utilities::AffymetrixGuidType &dataTypeId);
+
+	/*! The identifier of the type of data stored in the file.
+	 *
+ 	 * @param fileName The name of the file to check.
+	 * @return The identifier of the type of data.
+	 */
+	static affymetrix_calvin_utilities::AffymetrixGuidType DataTypeIdentifier(const std::string &fileName);
 };
 
 };

@@ -46,19 +46,19 @@ void DATFileReader::Read(DATData& data)
 	data.Clear();
 	GenericFileReader reader;
 	if (fileName.empty())
+	{
 		fileName = data.GetFilename();
+	}
 	reader.SetFilename(fileName);
 	reader.Open(data.GetGenericData());
-
 	DataGroupReader dcReader = reader.GetDataGroupReader(0);
-
 	ReadGlobalGrid(data, dcReader);
 	ReadSubgrids(data, dcReader);
 	reader.Close();
 }
 
 /*
- * UNTESTED - Read the global grid
+ * Read the global grid
  */
 void DATFileReader::ReadGlobalGrid(DATData& data, DataGroupReader& dcReader)
 {
@@ -68,16 +68,22 @@ void DATFileReader::ReadGlobalGrid(DATData& data, DataGroupReader& dcReader)
 		DataSetReader dpReader = dcReader.GetDataSetReader(DAT_GLOBAL_GRID);
 		int32_t cols = dpReader.GetDataSetHeader().GetColumnCnt();
 
+		u_int32_t gridStatus = 0;
+		if (cols > 0)
+		{
+			dpReader.Read(gridStatus);
+		}
+
 		// coordinates are in floats, assume there is only one row
 		FPoint value;
-		for (int32_t col = 0; col < cols; cols+=2)
+		for (int32_t i = 1; i < cols; i+=2)
 		{
 			dpReader.Read(value.x);
 			dpReader.Read(value.y);
 			rgn.pts.push_back(value);
 		}
 
-		data.SetGlobalGrid(rgn);
+		data.SetGlobalGrid(gridStatus, rgn);
 	}
 	catch(DataSetNotFoundException& e)
 	{	// ignore
@@ -85,7 +91,7 @@ void DATFileReader::ReadGlobalGrid(DATData& data, DataGroupReader& dcReader)
 }
 
 /*
- * UNTESTED - Read the subgrids
+ * Read subgrids
  */
 void DATFileReader::ReadSubgrids(DATData& data, DataGroupReader& dcReader)
 {
@@ -98,18 +104,23 @@ void DATFileReader::ReadSubgrids(DATData& data, DataGroupReader& dcReader)
 
 		// coordinates are in floats, assume there is only one row
 		FPoint value;
-		for (int32_t row = 0; row < rows; ++row)
+		for (int32_t n = 0; n < rows; n++)
 		{
-			for (int32_t col = 0; col < cols; cols+=2)
+			u_int32_t gridStatus = 0;
+			if (cols > 0)
+			{
+				dpReader.Read(gridStatus);
+			}
+
+			for (int32_t i = 1; i < cols; i+=2)
 			{
 				dpReader.Read(value.x);
 				dpReader.Read(value.y);
 				rgn.pts.push_back(value);
 			}
+			data.AddSubgrid(gridStatus, rgn);
+			rgn.Clear();
 		}
-
-		data.AddSubgrid(rgn);
-		rgn.Clear();
 	}
 	catch(DataSetNotFoundException& e)
 	{	// ignore

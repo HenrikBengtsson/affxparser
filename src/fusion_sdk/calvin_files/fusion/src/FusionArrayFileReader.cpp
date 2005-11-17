@@ -69,7 +69,7 @@ bool FusionArrayFileReader::Read(const string &fileName, ArrayData &arrayData)
 
 	// The calvin array file.
 	ArrayFileReader arrayReader;
-	if (ArrayFileReader::IsFileType(fileName, ARRAY_FILE_TYPE_IDENTIFIER) == true)
+	if (ArrayFileReader::IsFileType(fileName, ARRAY_SET_FILE_TYPE_IDENTIFIER) == true)
 	{
 		if (arrayReader.Read(fileName, arrayData) == true)
 			return true;
@@ -84,15 +84,17 @@ bool FusionArrayFileReader::Read(const string &fileName, ArrayData &arrayData)
 	dttReader.SetFileName(fileName.c_str());
 	if (dttReader.Read(dttData) == true)
 	{
-		ParameterNameValueControlVocabularyVector &userAtts = arrayData.UserAttributes();
+		ParameterNameValueDefaultRequiredTypeList &userAtts = arrayData.UserAttributes();
+		ParameterNameValueDefaultRequiredType userAtt;
 		AttributeNameValueTypeList &atts = dttData.Attributes();
-		userAtts.resize(atts.size());
 		int paramIndex=0;
 		for (AttributeNameValueTypeList::iterator it=atts.begin(); it!=atts.end(); it++, paramIndex++)
 		{
 			AttributeNameValueType param = *it;
-			userAtts[paramIndex].Name = StringUtils::ConvertMBSToWCS(param.name);
-			userAtts[paramIndex].Value = StringUtils::ConvertMBSToWCS(param.value);
+
+			userAtt.SetName(StringUtils::ConvertMBSToWCS(param.name));
+			userAtt.SetValueText(StringUtils::ConvertMBSToWCS(param.value));
+			userAtts.push_back(userAtt);
 		}
 
 		ArrayAttributesVector &physArrays = arrayData.PhysicalArraysAttributes();
@@ -111,15 +113,16 @@ bool FusionArrayFileReader::Read(const string &fileName, ArrayData &arrayData)
 	expReader.SetFileName(fileName.c_str());
 	if (expReader.Read() == true)
 	{
-		ParameterNameValueControlVocabularyVector &userAtts = arrayData.UserAttributes();
+		ParameterNameValueDefaultRequiredTypeList &userAtts = arrayData.UserAttributes();
+		ParameterNameValueDefaultRequiredType userAtt;
 		TagValuePairTypeList &atts = expReader.GetSampleParameters();
-		userAtts.resize(atts.size());
 		int paramIndex=0;
 		for (TagValuePairTypeList::iterator it=atts.begin(); it!=atts.end(); it++, paramIndex++)
 		{
 			TagValuePairType param = *it;
-			userAtts[paramIndex].Name = StringUtils::ConvertMBSToWCS(param.Tag);
-			userAtts[paramIndex].Value = StringUtils::ConvertMBSToWCS(param.Value);
+			userAtt.SetName(StringUtils::ConvertMBSToWCS(param.Tag));
+			userAtt.SetValueText(StringUtils::ConvertMBSToWCS(param.Value));
+			userAtts.push_back(userAtt);
 		}
 
 		ArrayAttributesVector &physArrays = arrayData.PhysicalArraysAttributes();

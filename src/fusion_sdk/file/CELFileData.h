@@ -144,9 +144,9 @@ private:
 	///  Cell margin
 	int m_Margin;
 	///  Number of outliers
-  uint32_t m_nOutliers;
+  	uint32_t m_nOutliers;
 	///  Number of masked cells
-  uint32_t m_nMasked;
+  	uint32_t m_nMasked;
 	///  Grid coordinates of array
 	GridCoordinatesType m_CellGrid;
 
@@ -372,7 +372,7 @@ public:
 	///  \brief Retrieve number of outliers
 	///  @return unsigned int32_t	Number of outliers
 	///////////////////////////////////////////////////////////////////////////////
-  uint32_t GetOutliers() { return m_nOutliers; }
+  	uint32_t GetOutliers() { return m_nOutliers; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  IncrementOutliers
@@ -437,6 +437,18 @@ public:
 	 * @param value The parameter value.
 	 */
 	void SetAlgorithmParameter(const char *tag, const char *value);
+
+	/*! Set or Update the parameter value.
+	 * @param tag The parameter name.
+	 * @param value The parameter value.
+	 */
+	void SetAddAlgorithmParameter(std::string& tag, std::string& value);
+
+	/*! Set or Update the parameter value.
+	 * @param tag The parameter name.
+	 * @param value The parameter value.
+	 */
+	void SetAddAlgorithmParameter(const char *tag, const char *value);
 
 	/*! Retrieves a parameter value.
 	 * @param tag The parameter name.
@@ -512,6 +524,7 @@ public:
 	/// CEL file formats
 	enum
 	{
+		UNKNOWN = 0,
 		TEXT_CEL = 1,
 		XDA_BCEL = 2,
 		TRANSCRIPTOME_BCEL = 3,
@@ -952,6 +965,11 @@ public:
 	 */
 	bool IsXDACompatibleFile();
 
+	/*! Checks if the file type is version 3.
+	 * @return True if version 3 type.
+	 */
+	bool IsVersion3CompatibleFile();
+
 	/*! Checks if the file type is transcriptome.
 	 * @return True if transcriptome type.
 	 */
@@ -961,6 +979,11 @@ public:
 	 * @return True if compact type.
 	 */
 	bool IsCompactCelFile();
+
+	/*! Checks if the file type is previous unspported version of compact.
+	 * @return True if compact type.
+	 */
+	bool IsUnsupportedCompactCelFile();
 
 	/*! Determine CEL file format and call appropriate function to read file using the specified file name.
 	 * @param filename The name of the file.
@@ -1001,10 +1024,22 @@ public:
 	void SetAlgorithmName(const char *str);
 
 	/*! Adds a parameter to the parameter list.
-	 * @param tag The parameter name.
-	 * @param value The parameter value.
-	 */
+ 	* @param tag The parameter name.
+ 	* @param value The parameter value.
+ 	*/
+	void SetAlgorithmParameter(const char *tag, const char *value);
+
+	/*! Adds a parameter to the parameter list.
+ 	* @param tag The parameter name.
+ 	* @param value The parameter value.
+ 	*/
 	void AddAlgorithmParameter(const char *tag, const char *value);
+
+	/*! Adds a parameter to the parameter list.
+ 	* @param tag The parameter name.
+ 	* @param value The parameter value.
+ 	*/
+	void SetAddAlgorithmParameter(const char *tag, const char *value);
 
 	/*! Sets dimentions (rows/cols) of the CEL file.
 	 * @param rows The number of rows.

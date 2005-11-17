@@ -34,7 +34,6 @@ GCOSCHPHeaderAdapter::GCOSCHPHeaderAdapter(affxchp::CCHPFileData* chp): gcosChp(
 
 GCOSCHPHeaderAdapter::~GCOSCHPHeaderAdapter()
 {
-
 }
 
 
@@ -192,6 +191,7 @@ GCOSCHPDataAdapter::GCOSCHPDataAdapter()
  */
 GCOSCHPDataAdapter::~GCOSCHPDataAdapter()
 {
+	gcosChp.Clear();
 	delete header;
 }
 

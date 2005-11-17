@@ -35,7 +35,6 @@ void GenericDataHeader::Clear()
 	fileTypeId.clear();
 	fileId.clear();
 	fileCreationTime.clear();
-	locale.clear();
 	nameValParams.clear();
 	GenericDataHdrs.clear();
 }
@@ -116,7 +115,7 @@ void GenericDataHeader::AddParent(const GenericDataHeader &hdr)
 	GenericDataHdrs.push_back(hdr);
 }
 
-void GenericDataHeader::GetParentIterators(std::vector<GenericDataHeader>::iterator &begin, std::vector<GenericDataHeader>::iterator &end)
+void GenericDataHeader::GetParentIterators(GenDataHdrVectorIt &begin, GenDataHdrVectorIt &end)
 {
 	begin = GenericDataHdrs.begin();
 	end = GenericDataHdrs.end();
@@ -130,6 +129,25 @@ int32_t GenericDataHeader::GetParentCnt() const
 GenericDataHeader GenericDataHeader::GetParent(int32_t index) const
 {
 	return GenericDataHdrs[index];
+}
+
+/*
+ * Find an immediate parent GenericDataHeader based on file type id.  Does not search grand-parents or above.
+ */
+GenericDataHeader* GenericDataHeader::FindParent(const std::string& fileTypeId)
+{
+	GenericDataHeader* parentGDH = 0;
+	GenDataHdrVectorIt begin, end;
+	GetParentIterators(begin, end);
+	for (GenDataHdrVectorIt ii = begin; ii != end; ++ii)
+	{
+		if (ii->GetFileTypeId() == fileTypeId)
+		{
+			parentGDH = &(*ii);
+			break;
+		}
+	}
+	return parentGDH;
 }
 
 bool GenericDataHeader::FindNameValParam(const std::wstring& name, ParameterNameValueType& result)

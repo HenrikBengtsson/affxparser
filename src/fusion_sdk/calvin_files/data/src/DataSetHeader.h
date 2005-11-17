@@ -21,12 +21,16 @@
 #ifndef _DataSetHeader_HEADER_
 #define _DataSetHeader_HEADER_
 
+/*! \file DataSetHeader.h This file defines the data container for DataSetHeader information.
+ */
+
 #include <string>
 #include <list>
 #include "ParameterNameValueType.h"
 #include "GenericDataHeader.h"
 #include "AffyStlCollectionTypes.h"
-#include "ColumnTypes.h"
+#include "ColumnInfo.h"
+#include "BitFlag.h"
 
 #ifdef WIN32
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
@@ -37,6 +41,7 @@ using namespace affymetrix_calvin_parameter;
 namespace affymetrix_calvin_io
 {
 
+/*! The DataSetHeader information container class. */
 class DataSetHeader
 {
 public:
@@ -52,12 +57,14 @@ private:
 	std::wstring name;
 	/*! name/value pairs */
 	ParameterNameValueTypeVector nameValParams;
-	/*! column types */
-	ColTypeVector columnTypes;
-	/*! file position of the start of the data dataSet header*/
+	/*! column information */
+	ColInfoVector columnTypes;
+	/*! file position of the start of the dataSet header */
 	u_int32_t headerStartFilePos;
 	/*! file position of the start of the data */
 	u_int32_t dataStartFilePos;
+	/*! file position of the next dataSet header */
+	u_int32_t nextSetFilePos;
 
 public:
 
@@ -85,31 +92,32 @@ public:
 	bool FindNameValParam(const std::wstring& name, ParameterNameValueType& result) const;
 
 	/*!  */
-	void AddColumnType(const ColumnType& colType);
+	void AddColumn(const ColumnInfo& colInfo);
 	/*!  */
-	void AddIntColumnType();
+	void AddIntColumn(const std::wstring& name);
 	/*!  */
-	void AddUIntColumnType();
+	void AddUIntColumn(const std::wstring& name);
 	/*!  */
-	void AddShortColumnType();
+	void AddShortColumn(const std::wstring& name);
 	/*!  */
-	void AddUShortColumnType();
+	void AddUShortColumn(const std::wstring& name);
 	/*!  */
-	void AddByteColumnType();
+	void AddByteColumn(const std::wstring& name);
 	/*!  */
-	void AddUByteColumnType();
+	void AddUByteColumn(const std::wstring& name);
 	/*!  */
-	void AddFloatColumnType();
+	void AddFloatColumn(const std::wstring& name);
 	/*!
 *	@param len Maximum number of char in string
 */
-	void AddAsciiColumnType(int32_t len);
+	void AddAsciiColumn(const std::wstring& name, int32_t len);
 	/*!
+	*   @param name The name of the column.
 	*	@param len Maximum number of wchar_t in string
 	*/
-	void AddUnicodeColumnType(int32_t len);
+	void AddUnicodeColumn(const std::wstring& name, int32_t len);
 	/*!  */
-	ColumnType GetColumnType(int32_t index) const;
+	ColumnInfo GetColumnInfo(int32_t index) const;
 	/*!  */
 	int32_t GetRowCnt() const;
 	/*!  */
@@ -131,9 +139,14 @@ public:
 	/*! Get the file position of the start of the DataSet data. */
 	u_int32_t GetDataStartFilePos() const { return dataStartFilePos; }
 
+	/*! Set the file position of the next DataSet header. */
+	void SetNextSetFilePos(u_int32_t pos) { nextSetFilePos = pos; }
+	/*! Get the file position of the next DataSet header. */
+	u_int32_t GetNextSetFilePos() const { return nextSetFilePos; }
+
 protected:
 	/*! Finds a ParameterNameValueType by name in the nameValPairs collection
-	 *	@param nv The ParameterNameValueType to find
+	 *	@param p The ParameterNameValueType to find
 	 *	@return An iterator referencing the NameValPair if it exists, otherwise it returns nameValPairs.end()
 	 */
 	ParameterNameValueTypeConstIt FindNameValParam(const ParameterNameValueType& p) const;

@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <istream>
 #include <fstream>
+#include <assert.h>
 
 #ifndef WIN32
 #include <sys/mman.h>
@@ -44,8 +45,8 @@ CGDACSequenceResultItem::CGDACSequenceResultItem() :
 	m_NumberColumns(0),
 	m_NumberParameters(0),
 	m_pColumnTypes(NULL),
-	m_pppData(NULL),
 	m_ppData(NULL),
+	m_pppData(NULL),
 	m_bMapped(false),
 	m_lpData(NULL),
 	m_DataStartPosition(0)
@@ -141,12 +142,24 @@ void CGDACSequenceResultItem::AddParameter(std::string tag, std::string value)
 
 //////////////////////////////////////////////////////////////////////
 
+std::string CGDACSequenceResultItem::GetFullName() const
+{
+	if (m_Version.length() > 0)
+	{
+		return (m_GroupName + ":" + m_Version + ";" + m_Name);
+	}
+	else
+		return m_Name;
+}
+
+//////////////////////////////////////////////////////////////////////
+
 CBARFileData::CBARFileData() :
 	m_Version(0), m_NumberSequences(0), m_NumberColumns(0),
 	m_NumberParameters(0),
-	m_bFileOpen(false),
 	m_lpFileMap(NULL),
 	m_lpData(NULL),
+	m_bFileOpen(false),
 	m_bFileMapped(false)
 {
 #ifdef WIN32
@@ -211,7 +224,7 @@ bool CBARFileData::Read()
 
 bool CBARFileData::ReadFile(bool bReadHeaderOnly)
 {
-	bool retVal = false;
+	//bool retVal = false;
 
 	// First close the file.
 	Close();
@@ -320,6 +333,9 @@ int CBARFileData::GetDataRowSize()
 		case BAR_DATA_UCHAR:
 			size += CHAR_SIZE;
 			break;
+		// BAR_DATA_DOUBLE is not handled.
+		default:
+			assert(0); // case not handled
 		}
 	}
 	return size;
@@ -339,9 +355,6 @@ bool CBARFileData::ReadDataSection()
 		m_strError = "Unable to open the file.";
 		return false;
 	}
-
-	// Determine the size of each row
-	int rowSize = GetDataRowSize();
 
 	// Skip to the data section
 	instr.seekg(m_DataStartPosition);
@@ -397,6 +410,9 @@ bool CBARFileData::ReadDataSection()
 		}
 
 #else
+
+    // Determine the size of each row
+    int rowSize = GetDataRowSize();
 
 		m_Results[i].m_ppData = NULL;
 		m_Results[i].m_pppData = NULL;

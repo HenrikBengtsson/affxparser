@@ -23,243 +23,119 @@
 
 /*! \file FusionCHPData.h This file provides CHP file reading capabilities.*/
 
-//////////////////////////////////////////////////////////////////////
-
-#ifdef WIN32
-#pragma warning(disable: 4786) // identifier was truncated in the debug information
-#endif
-
-//////////////////////////////////////////////////////////////////////
-
 #include <string>
 #include <vector>
 #include <list>
 #include <fstream>
-
-#include "CHPFileData.h"	// path required to distinguish between Calvin and GCOS files.
-#include "CalvinCHPDataAdapter.h"
-#include "FusionCHPDataAdapterInterface.h"
-
-using namespace affxchp;
-
-//////////////////////////////////////////////////////////////////////
+#include "AffymetrixGuid.h"
 
 namespace affymetrix_fusion_io
 {
-	class IFusionCHPDataAdapter;
 
-//////////////////////////////////////////////////////////////////////
-
-/*! This class provides storage for the CHP file header */
-class FusionCHPHeader
+/*! A base class for all CHP data objects. */
+class FusionCHPData
 {
-	friend class FusionCHPData;
-public:
-	/*! Constructor */
-	FusionCHPHeader();
-
-	/*! Destructor */
-	~FusionCHPHeader();
-
-public:
-	/*! Defines the assay type for the array */
-
-public:
-	/*! Gets the number of feature columns
-	 * @return The number of feature columns
-	 */
-	int GetCols() const;
-
-	/*! Gets the number of feature rows
-	 * @return The number of feature rows
-	 */
-	int GetRows() const;
-
-	/*! Gets the number of probe sets
-	 * @return The number of probe sets
-	 */
-	int GetNumProbeSets() const;
-
-	/*! Gets the assay type
-	 * @return The assay type
-	 */
-	AssayType GetAssayType() const;
-
-	/*! Gets the chip type
-	 * @return The chip type
-	 */
-	std::wstring GetChipType() const;
-
-	/*! Gets the algorithm name
-	 * @return The algorithm name
-	 */
-	std::wstring GetAlgName() const;
-
-	/*! Gets the algorithm version
-	 * @return The algorithm version
-	 */
-	std::wstring GetAlgVersion() const;
-
-	/*! Gets the algorithm parameters
-    * @param values The fusion tag value pair type list
-	 */
-	void AlgorithmParameters(FusionTagValuePairTypeList& values);
-
-	/*! Gets the algorithm parameters count
-    * @param values The fusion tag value pair type list
-	 */
-	u_int32_t AlgorithmParameterCount();
-
-	/*! Gets the summary parameters
-	 * @return The summary parameters
-	 */
-	void SummaryParameters(FusionTagValuePairTypeList& p);
-
-	/*! Gets the parent CEL file
-	 * @return The parent CEL file
-	 */
-	std::wstring GetParentCellFile() const;
-
-	/*! Gets the prog ID
-	 * @return The prog ID
-	 */
-	std::wstring GetProgID() const;
-
-	/*! Gets a specific algorithm parameter given a name/tag
-	 * @return The specific algorithm parameter given a name/tag
-	 */
-	std::wstring GetAlgorithmParameter(const wchar_t* tag);
-
-	/*! Gets a specific summary parameter given a name/tag
-	 * @return The specific summary parameter given a name/tag
-	 */
-	std::wstring GetSummaryParameter(const wchar_t* tag);
-
-	/*! Gets the background zone information
-	 * @return The background zone information
-	 */
-	void GetBackgroundZoneInfo(BackgroundZoneInfo& info);
-
-	/*! Gets the list of background zone positions and values
-	 * @return The list of background zone positions and values
-	 */
-	void GetBackgroundZones(BackgroundZoneTypeList& zones);
-
-	/*! Gets the background value for a given center coordinate
-	 * @return The background value for a given center coordinate
-	 */
-	void GetBackgroundZone(BackgroundZoneType& type, int x, int y);
-
-	/*! Gets the magic number
-	 * @return The magic number
-	 */
-	int GetMagic() const;
-
-	/*! Gets the version number
-	 * @return The version number
-	 */
-	int GetVersion() const;
-
-	/*! Check the adapter and throw exception if not set
-	 *	@exception FileNotOpenException
-	 */
-	void CheckAdapter() const;
-
-	void FusionCHPHeader::Clear();
-
 protected:
-	IFusionCHPDataAdapter* adapter;
-};
-
-////////////////////////////////////////////////////////////////////
-
-/*! This class provides storage and reading capabilities for CHP files */
-class FusionCHPData  
-{
-public:
-	/*! Constructor */
-	FusionCHPData();
-
-	/*! Destructor */
-	~FusionCHPData();
-
-protected:
-	/*! Opens the file for reading.
-	 * @param bReadHeaderOnly Flag to indicate if the header is to be read only.
-	 * @return True if successful.
-	 */
-	bool Open(bool bReadHeaderOnly=false);
-
-public:
-
-	/*! Returns the expression probe set result
-	 * @param index The index to the result object of interest.
-	 * @param result The expression result.
-	 * @return True if the expression result was found.
-	 */ 
-	bool GetExpressionResults(int index, FusionExpressionProbeSetResults& result);
-
-	/*! Returns the genotyping probe set result
-	 * @param index The index to the result object of interest.
-	 * @param result The genotyping result.
-	 * @return True if the genotyping result was found.
-	 */
-	bool GetGenotypingResults(int index, FusionGenotypeProbeSetResults& result);
-
-	/*! Returns the universal (tag array) probe set result
-	 * @param index The index to the result object of interest.
-	 * @param result The universal result.
-	 * @return True if the universal result was found.
-	 */
-	bool GetUniversalResults(int index, FusionUniversalProbeSetResults& result);
-
-	// Functions to read file.
-	bool Read();
-
-	/*! Reads the header of the CHP file
-	 * @return True if successful
-	 */
-	bool ReadHeader();
-
-	/*! Determines if the file specified by the FileName property exists.
-	 * @return True if the file exists.
-	 */
-	bool Exists();
 
 	/*! Sets the file name.
-	 * @param name The full path to the CHP file
+	 * @param str The file name.
 	 */
-	void SetFileName(const char *name);
+	void SetFileName(const char *str) { filename = str; }
 
 	/*! Gets the file name.
-	 * @return The full path to the CHP file.
+	 * @return The file name.
 	 */
-	std::string GetFileName() const;
+	std::string GetFileName() const { return filename; }
 
-	/*! Deallocates any memory used by the class object */
-	void Clear();
+	/*! The CHP file name. */
+	std::string filename;
 
-	/*! Check the adapter and throw exception if not set
-	 *	@exception FileNotOpenException
+	/*! Reads the contents of the file.
+	 * @return True if successfully read.
 	 */
-	void CheckAdapter() const;
-	void CreateAdapter();
-	void DeleteAdapter();
+	virtual bool Read() = 0;
 
-    FusionCHPHeader& GetHeader();
+	/*! Reads the header.
+	 * @return True if successfully read.
+	 */
+	virtual bool ReadHeader() = 0;
 
+	/*! Friend to the registration class as it will call the Read function. */
+	friend class FusionCHPDataReg;
 
-private:
-		IFusionCHPDataAdapter* adapter;
-		FusionCHPHeader header;
-		std::string filename;
+	/*! The file type identifiers associated with the CHP files the reader can parse. */
+	affymetrix_calvin_utilities::AffymetrixGuidTypeList fileTypeIdentifiers;
 
+	/*! The actual file type identifier in the file. */
+	affymetrix_calvin_utilities::AffymetrixGuidType fileTypeIdentifier;
+
+public:
+	/*! Destructor */
+	virtual ~FusionCHPData() {}
+
+	/*! Gets the file type identifiers associated with the CHP files the reader can parse.
+	 * @return The ids
+	 */
+	affymetrix_calvin_utilities::AffymetrixGuidTypeList FileTypeIdentifiers() const { return fileTypeIdentifiers; }
+
+	/*! Gets the file type identifier in the file (blank for GCOS files).
+	 * @return The id of the file.
+	 */
+	affymetrix_calvin_utilities::AffymetrixGuidType FileTypeIdentifier() { return fileTypeIdentifier; }
 };
 
-////////////////////////////////////////////////////////////////////
+/*! A class used to self register CHP data classes. */
+class FusionCHPDataReg
+{
+public:
+	/*! Constructor */
+	FusionCHPDataReg();
 
-} // namespace
+	/*! Destructor */
+	virtual ~FusionCHPDataReg();
 
-////////////////////////////////////////////////////////////////////
+	/* Sets the file type ids.
+	 * @param fileTypeIds The identifiers that the CHP object is compatible with.
+	 */
+	void SetFileTypeIds(const affymetrix_calvin_utilities::AffymetrixGuidTypeList &fileTypeIds);
 
-#endif // _AffymetrixFusionCHPData_HEADER_
+	/*! Reads the contents of a CHP file.
+	 * @param fileName The full path to the input CHP file.
+	 * @return A pointer to the CHP data object. NULL if the read failed.
+	 */
+	static FusionCHPData *Read(const std::string &fileName);
+
+	/*! Reads the header of a CHP file.
+	 * @param fileName The full path to the input CHP file.
+	 * @return A pointer to the CHP data object. NULL if the read failed.
+	 */
+	static FusionCHPData *ReadHeader(const std::string &fileName);
+
+private:
+
+	/*! Creates a CHP reading object.
+	 * @param fileTypeId The file type in the CHP file.
+	 * @return The CHP object, NULL if not able to read the file.
+	 */
+	static FusionCHPData *CreateObject(const affymetrix_calvin_utilities::AffymetrixGuidType &fileTypeId);
+
+	/*! Makes an CHP data object.
+	 * @return The CHP data object.
+	 */
+	virtual FusionCHPData *MakeObject() = 0;
+
+	/*! A pointer to the first registered CHP reader. */
+	static FusionCHPDataReg *m_Head;
+
+	/*! A pointer to the next registered CHP reader. */
+	FusionCHPDataReg *m_Next;
+
+	/*! The file type identifiers associated with the CHP files the reader can parse. */
+	affymetrix_calvin_utilities::AffymetrixGuidTypeList fileTypeIdentifiers;
+};
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+#endif

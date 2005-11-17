@@ -28,9 +28,31 @@
 #ifdef WIN32
 #pragma warning(disable: 4996) // ignore deprecated functions warning
 #include <winsock2.h>
+#include <process.h>
+#define getpid _getpid
+#endif
+
+#ifndef WIN32
+#include <unistd.h>
 #endif
 
 using namespace affymetrix_calvin_utilities;
+
+/*
+ * Initialize the seed
+ */
+void InitializeRandomNumberGenerator()
+{
+	// Get the current time as a starting point for a seed.
+	unsigned int seed = (unsigned int) time(NULL);
+
+	// Multiply the time by its address and the process id.
+	seed *= (unsigned int)(&seed);
+	seed *= getpid();
+
+	// Initialize the random number generator.
+	srand(seed);
+}
 
 /*
  * Initialize the socket library.
@@ -43,9 +65,7 @@ AffymetrixGuid::AffymetrixGuid()
 	WORD wVersionRequested = MAKEWORD(1, 1);
 	int nResult = WSAStartup(wVersionRequested, &wsaData);
 #endif
-
-	// initialize the random number generator
-	srand( (unsigned int) time(NULL) );
+	InitializeRandomNumberGenerator();
 }
 
 /*

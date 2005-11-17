@@ -21,7 +21,7 @@
 #ifndef _DataSetReader_HEADER_
 #define _DataSetReader_HEADER_
 
-/*! \file DataGroupReader.h This file provides methods to read a data dataGroup.
+/*! \file DataSetReader.h This file provides methods to read the data of a DataSet.
  */
 
 #include <fstream>
@@ -41,8 +41,8 @@ class DataSetReader
 public:
 
 	/*! Constructor
-	 *	@param Reference to an open ifstream
-	 *	@param Reference to a DataSetHeader that has been initialized
+	 *	@param s Reference to an open ifstream
+	 *	@param d Reference to a DataSetHeader that has been initialized
 	 */
 	DataSetReader(std::ifstream& s, DataSetHeader& d);
 

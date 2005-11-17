@@ -81,43 +81,74 @@ void DataSetHeaderReader::ReadAll(std::ifstream& fileStream, DataGroupHeader& dc
 /*
 	* Reads the minimum DataSetHeader information.
 	*/
-u_int32_t DataSetHeaderReader::ReadMinimumInfo(std::ifstream& fileStream, DataSetHeader& dph)
+u_int32_t DataSetHeaderReader::ReadMinimumInfo(std::ifstream& fileStream, DataSetHeader& dsh)
 {
-	// Set the file position of the start of the DataSet.
-	dph.SetHeaderStartFilePos(fileStream.tellg());
-
-	// Read the file offset to the start of the data
-	dph.SetDataStartFilePos(FileInput::ReadUInt32(fileStream));
-
-	// Read the file offset to the next DataSet 
-	u_int32_t nextDataSetFilePos = FileInput::ReadUInt32(fileStream);
-		
-	// Read the DataSetHeader name
-	std::wstring name = FileInput::ReadString16(fileStream);
-	dph.SetName(name);
-
+	ReadDataSetStartFilePos(fileStream, dsh);
+	ReadDataFilePos(fileStream, dsh);
+	u_int32_t nextDataSetFilePos = ReadNextDataSetFilePos(fileStream, dsh);
+	ReadName(fileStream, dsh);
+	
 	return nextDataSetFilePos;
 }
 
 /*
  * Reads the complete DataSetHeader information.
  */
-u_int32_t DataSetHeaderReader::Read(std::ifstream& fileStream, DataSetHeader& dph)
+u_int32_t DataSetHeaderReader::Read(std::ifstream& fileStream, DataSetHeader& dsh)
 {
-	// Set the file position of the start of the DataSet.
-	dph.SetHeaderStartFilePos(fileStream.tellg());
+	ReadDataSetStartFilePos(fileStream, dsh);
+	ReadDataFilePos(fileStream, dsh);
+	u_int32_t nextDataSetFilePos = ReadNextDataSetFilePos(fileStream, dsh);
+	ReadName(fileStream, dsh);
+	ReadParameters(fileStream, dsh);
+	ReadColumns(fileStream, dsh);
+	ReadRowCount(fileStream, dsh);
 
-	// Read the file offset to the start of the data
-	dph.SetDataStartFilePos(FileInput::ReadUInt32(fileStream));
+//	dph.SetDataStartFilePos(fileStream.tellg());	// set the offset to the start of the data
 
-	// Read the file offset to the next DataSet 
+	return nextDataSetFilePos;
+}
+
+/*
+ * Read the file position of the start of the DataSet.
+ */
+void DataSetHeaderReader::ReadDataSetStartFilePos(std::ifstream& fileStream, DataSetHeader& dsh)
+{
+	dsh.SetHeaderStartFilePos(fileStream.tellg());
+}
+
+/*
+ * Read the file position to the start of the data.
+ */
+void DataSetHeaderReader::ReadDataFilePos(std::ifstream& fileStream, DataSetHeader& dsh)
+{
+	dsh.SetDataStartFilePos(FileInput::ReadUInt32(fileStream));
+}
+
+/*
+ * Read the file position to the next DataSet.
+ */
+u_int32_t DataSetHeaderReader::ReadNextDataSetFilePos(std::ifstream& fileStream, DataSetHeader& dsh)
+{
 	u_int32_t nextDataSetFilePos = FileInput::ReadUInt32(fileStream);
-		
-	// Read the DataSetHeader name
-	std::wstring name = FileInput::ReadString16(fileStream);
-	dph.SetName(name);
+	dsh.SetNextSetFilePos(nextDataSetFilePos);
+	return nextDataSetFilePos;
+}
 
-	// Read the name-value pairs
+/*
+ * Read the DataSetHeader name.
+ */
+void DataSetHeaderReader::ReadName(std::ifstream& fileStream, DataSetHeader& dsh)
+{
+	std::wstring name = FileInput::ReadString16(fileStream);
+	dsh.SetName(name);
+}
+
+/*
+ * Read the parameter list (name-value-type).
+ */
+void DataSetHeaderReader::ReadParameters(std::ifstream& fileStream, DataSetHeader& dsh)
+{
 	u_int32_t params = FileInput::ReadUInt32(fileStream);
 	for (u_int32_t iparam = 0; iparam < params; ++iparam)
 	{
@@ -127,27 +158,36 @@ u_int32_t DataSetHeaderReader::Read(std::ifstream& fileStream, DataSetHeader& dp
 		std::wstring paramType = FileInput::ReadString16(fileStream);
 		ParameterNameValueType nvt(paramName, mimeValue, mimeSize, paramType);
 		delete[] mimeValue;
-		dph.AddNameValParam(nvt);
+		dsh.AddNameValParam(nvt);
 	}
+}
 
+/*
+ * Read column information.
+ */
+void DataSetHeaderReader::ReadColumns(std::ifstream& fileStream, DataSetHeader& dsh)
+{
 	// Read the number of columns
 	u_int32_t columns = FileInput::ReadUInt32(fileStream);
 
 	for (u_int32_t icol = 0; icol < columns; ++icol)
 	{
+		// Read the name
+		std::wstring name = FileInput::ReadString16(fileStream);
 		// Read the type
 		int8_t type = FileInput::ReadInt8(fileStream);
 		// Read the size
 		int32_t size = FileInput::ReadInt32(fileStream);
 
-		dph.AddColumnType(ColumnType((DataSetColumnTypes)type, size));
+		dsh.AddColumn(ColumnInfo(name, (DataSetColumnTypes)type, size));
 	}
+}
 
-	// Read the number of rows
+/*
+ * Read the number of rows.
+ */
+void DataSetHeaderReader::ReadRowCount(std::ifstream& fileStream, DataSetHeader& dsh)
+{
 	int32_t numRows = FileInput::ReadInt32(fileStream);
-
-	dph.SetRowCnt(numRows);
-//	dph.SetDataStartFilePos(fileStream.tellg());	// set the offset to the start of the data
-
-	return nextDataSetFilePos;
+	dsh.SetRowCnt(numRows);
 }

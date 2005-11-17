@@ -14,7 +14,7 @@
 //
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 /////////////////////////////////////////////////////////////////
 
@@ -25,6 +25,7 @@
  */
 
 #include "AffymetrixBaseTypes.h"
+#include "AffyStlCollectionTypes.h"
 #include "DataSetHeader.h"
 #include "DataException.h"
 #include <string>
@@ -44,12 +45,24 @@ class GenericData;
 class DataSet
 {
 public:
-	/*! Constructor
+	/*! Constructor. Use this constructor do access the data using memory-mapping.
+	 *	On Windows, memory-mapping will be restricted to 200MB view of the DataSet data.
 	 *	@param fileName The name of the generic file to access.
 	 *	@param header The DataSetHeader of the DataSet to access.
 	 *	@param handle A handle to the file mapping object
+	 *	@param loadEntireDataSetHint Indicate if DataSet will attempt to read the entire DataSet data into a memory buffer.
 	 */
-	DataSet(const std::string& fileName, const affymetrix_calvin_io::DataSetHeader& header, void* handle);
+	DataSet(const std::string& fileName, const affymetrix_calvin_io::DataSetHeader& header, void* handle, bool loadEntireDataSetHint=false);
+
+
+	/*! Constructor. Use this constructor do access the data using std::ifstream.
+	 *	With fstream access the entire DataSet data will be read into memory.
+	 *	@param fileName The name of the generic file to access.
+	 *	@param header The DataSetHeader of the DataSet to access.
+	 *	@param ifs A reference to an open ifstream.
+	 *	@param loadEntireDataSetHint Indicate if DataSet will attempt to read the entire DataSet data into a memory buffer.
+	 */
+	DataSet(const std::string& fileName, const affymetrix_calvin_io::DataSetHeader& header, std::ifstream& ifs, bool loadEntireDataSetHint=false);
 
 public:
 	/*! Method to release memory held by this object.  Closes object before deleting. */
@@ -77,7 +90,7 @@ public:
 	/*! Determines if the DataSet is open
 	 *	@return true if the DataSet is open
 	 */
-	bool IsOpen() { return (data != 0); }
+	bool IsOpen() { return (isOpen); }
 
 	/*! Provides access to single data elements
 	 *	@param row Row index.
@@ -109,7 +122,7 @@ public:
 	 *	@param col Column index.
 	 *	@param startRow Row index of the data to be inserted into the vector at [0].
 	 *	@param count Number of elements to retrieve. -1 indicates to read all
-	 *	@param value Reference to the data type to fill with the data.
+	 *	@param values Reference to the data type to fill with the data.
 	 *	@exception affymetrix_calvin_exceptions::DataSetNotOpenException The file is not memory-mapped.
 	 */
 
@@ -138,7 +151,7 @@ public:
 	 *	@param col Column index.
 	 *	@param startRow Row index of the data to be inserted into the vector at [0].
 	 *	@param count Number of elements to retrieve. -1 indicates to read all
-	 *	@param value Reference to the data type to fill with the data.
+	 *	@param values Reference to the data type to fill with the data.
 	 *	@return Number of elements read.
 	 *	@exception affymetrix_calvin_exceptions::DataSetNotOpenException The file is not memory-mapped.
 	*/
@@ -172,8 +185,6 @@ public:
 	 */
 	void CheckRowColumnAndType(int32_t row, int32_t col, affymetrix_calvin_io::DataSetColumnTypes type);
 
-	// Figure out how to present a row of data
-
 //protected:
 
 	/*! Return the bytes per row.
@@ -185,23 +196,20 @@ protected:
 	/*! Destructor. */
 	~DataSet();
 
+	/*! Open the DataSet using memory-mapping
+	 *	@return True if the DataSet was successully mapped.
+	 */
+	bool OpenMM();
+
+	/*! Read the DataSet data into a buffer using ifstream::read.
+	 */
+	void ReadDataSetUsingStream();
 
 	/*! Close the memory mapped file. */
 	void UnmapFile();
 
-	/*! Map a part of the file.
-	 *	@param start File position to start mapping.
-	 *	@param btyes Number of bytes to map.
-	 */
-//	bool MapData(u_int32_t start, u_int32_t bytes);
-
-	/*! Returns the address of a data element given a row and column.
-	 *	@param row Row index
-	 *	@param col Column index
-	 *	@return pointer to the data element
-	 *	@exception affymetrix_calvin_exceptions::DataSetNotOpenException The file is not memory-mapped.
-	 */
-//	char* FilePosition(int32_t row, int32_t col);
+	/*! Delete the DataSet data read in by ifstream::read */
+	void ClearStreamData();
 
 	/*! Returns the address of a data element given a row and column.  Ensures that data from rowStart
 	 *	to rowCount+rowStart are mapped unless that is larger than the mapped window.
@@ -209,9 +217,21 @@ protected:
 	 *	@param col Column index
 	 *	@param rowCount The number of rows to ensure are mapped starting at rowStart
 	 *	@return Pointer to the data element at rowStart
-	 *	@exception affymetrix_calvin_exceptions::DataSetNotOpenException The file is not memory-mapped.
+	 *	@exception affymetrix_calvin_exceptions::DataSetNotOpenException The file is not open.
 	 */
 	char* FilePosition(int32_t rowStart, int32_t col, int32_t rowCount=1);
+
+	/*! Returns the address of a data element given a row and column.  Ensures that data from rowStart
+	 *	to rowCount+rowStart are copied from the file into a memory buffer.  The memory buffer will
+	 *	remain intact until the next call to LoadDataAndReturnFilePosition.
+	 *	@param rowStart Row index
+	 *	@param col Column index
+	 *	@param rowCount The number of rows to ensure are mapped starting at rowStart
+	 *	@return Pointer to the data element at rowStart
+	 *	@exception affymetrix_calvin_exceptions::DataSetNotOpenException The file is not open.
+	 */
+	char* LoadDataAndReturnFilePosition(int32_t rowStart, int32_t col, int32_t rowCount);
+
 
 	/*! Updates the columnByteOffsets member. */
 	void UpdateColumnByteOffsets();
@@ -231,9 +251,13 @@ protected:
 
 	/*! Platform specific memory-mapping method */
 #ifdef WIN32
+
 	bool MapDataWin32(u_int32_t start, u_int32_t bytes);
+
 #else
+
 	bool MapDataPosix(u_int32_t start, u_int32_t bytes);
+
 #endif
 
 protected:
@@ -246,33 +270,40 @@ protected:
 	/*! pointer to the mapped data, doesn't account for allocation granularity. */
 	void*	mappedData;
 
-	/*! pointer to the mapped data, allocation granularity has been accounted for. */
+	/*! pointer to the data.  In memory-mapping mode, the pointer has been adjusted for the allocation granularity. */
 	char*	data;
 
 	/*! Array of column byte offsets.  Updated when the file is opened.
 	 *  There are columns + 1 elements
 	 */
-	std::vector<int32_t> columnByteOffsets;
+	Int32Vector columnByteOffsets;
 
 #ifdef WIN32
+
 	/*! Handle returned by CreateFileMapping */
 	HANDLE fileMapHandle;
 	/*! Maximum size of the view to map */
 	static const u_int32_t MaxViewSize = 200*1024*1024;	// 200MB
+
 #else
+
 	FILE *fp;
+
 #endif
 
+	/*! Indicates if the DataSet is open*/
+	bool isOpen;
 	/*! Byte offset to the start of the view */
 	u_int32_t mapStart;
 	/*! Number of bytes mapped to the view */
 	u_int32_t mapLen;
+	/*! A flag the indicates the data access mode.  True = access the data using memory-mapping.  False = access the data using std::ifstream */
+	bool useMemoryMapping;
+	/*! An open ifstream object */
+	std::ifstream* fileStream;
+	/*! Indicates whether to attempt to read all data into a memory buffer. */
+	bool loadEntireDataSetHint;
 
-	/*! Indicates if the file has been opened. */
-//	bool fileOpen;
-
-	/*! Indicates if the file has been successfully mapped. */
-//	bool fileMapped;
 };
 
 }

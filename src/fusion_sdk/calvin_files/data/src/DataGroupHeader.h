@@ -46,8 +46,8 @@ private:
 	std::wstring name;
 	/*! file position of the 1st data dataSet */
 	u_int32_t dataSetPos;
-/*! file position of the next dataGroup */
-u_int32_t nextCubePos;
+	/*! file position of the next dataGroup */
+	u_int32_t nextGrpPos;
 	/*! data dataSets in this dataGroup */
 	DataSetHdrVector dataSetHdrs;
 
@@ -77,9 +77,9 @@ public:
 	/*! Get the file position of the DataSet header. */
 	u_int32_t GetDataSetPos() const { return dataSetPos; }
 	/*! Set the file position of the next DataGroup header. */
-	void SetNextCubePos(u_int32_t pos) { nextCubePos  = pos; }
+	void SetNextGroupPos(u_int32_t pos) { nextGrpPos  = pos; }
 	/*! Get the file position of the next DataGroup header. */
-	u_int32_t GetNextCubePos() const { return nextCubePos; }
+	u_int32_t GetNextGroupPos() const { return nextGrpPos; }
 	/*!
 	 */
 	affymetrix_calvin_io::DataSetHeader* FindDataSetHeader(const std::wstring& dataSetName);

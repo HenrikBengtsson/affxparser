@@ -625,9 +625,9 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 		}
 
 		// Read the probe set data
-		m_ProbeSetResults.resize(m_Header.m_NumProbeSets);
 		if (m_Header.m_AssayType == CCHPFileHeader::Expression)
 		{
+			m_ProbeSetResults.resize(m_Header.m_NumProbeSets);
 			// Get the type of analysis
 			ReadUInt8(instr, ucval); // EXPRESSION_ABSOLUTE_STAT_ANALYSIS or EXPRESSION_COMPARISON_STAT_ANALYSIS
 			ReadInt32_I(instr, ival);
@@ -691,6 +691,7 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 		}
 		else if (m_Header.m_AssayType == CCHPFileHeader::Genotyping)
 		{
+			m_ProbeSetResults.resize(m_Header.m_NumProbeSets);
 			const int DM_ALG_RESULT_SIZE = 21;
 			int32_t dataSize=0;
 			ReadInt32_I(instr, dataSize);
@@ -726,6 +727,7 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 		}
 		else if (m_Header.m_AssayType == CCHPFileHeader::Universal)
 		{
+			m_ProbeSetResults.resize(m_Header.m_NumProbeSets);
 			int32_t dataSize=0;
 			float bg;
 			ReadInt32_I(instr, dataSize);
@@ -910,7 +912,7 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 			m_Header.m_AssayType = CCHPFileHeader::Resequencing;
 
 		// Check for valid versions.
-		if ((m_Header.m_Version < 12 && (m_Header.m_AssayType == CCHPFileHeader::Expression || m_Header.m_AssayType == CCHPFileHeader::Genotyping)) ||
+		if ((m_Header.m_Version < 12 && (m_Header.m_AssayType == CCHPFileHeader::Expression || m_Header.m_AssayType == CCHPFileHeader::Genotyping )) ||
 			(m_Header.m_Version < 10 && m_Header.m_AssayType == CCHPFileHeader::Universal))
 		{
 			m_strError = "This version of the CHP file is not supported by the parser.";
@@ -960,10 +962,10 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 		}
 
 		// Read the probe set data
-		m_ProbeSetResults.resize(m_Header.m_NumProbeSets);
 		if (m_Header.m_AssayType == CCHPFileHeader::Expression)
 		{
 			// Read each probe set result.
+			m_ProbeSetResults.resize(m_Header.m_NumProbeSets);
 			for (int iset=0; iset<m_Header.m_NumProbeSets; iset++)
 			{
 				CExpressionProbeSetResults * pResults = new CExpressionProbeSetResults;
@@ -1096,6 +1098,7 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 		}
 		else if (m_Header.m_AssayType == CCHPFileHeader::Genotyping)
 		{
+			m_ProbeSetResults.resize(m_Header.m_NumProbeSets);
 			for (int iset=0; iset<m_Header.m_NumProbeSets; iset++)
 			{
 				CGenotypeProbeSetResults * pResults = new CGenotypeProbeSetResults;
@@ -1217,6 +1220,7 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 		}
 		else if (m_Header.m_AssayType == CCHPFileHeader::Universal)
 		{
+			m_ProbeSetResults.resize(m_Header.m_NumProbeSets);
 			int32_t unused_32;
 			uint16_t unused_u16;
 			int8_t unused_8;

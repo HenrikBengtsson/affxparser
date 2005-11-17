@@ -61,19 +61,62 @@ public:
 
 	/*! Reads the minimum DataSetHeader information.
 	 *	@param fileStream Open fstream positioned at the start of the DataSetHeader.
-	 *	@param dph Reference to the DataSetHeader object to fill.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
 	 *	@return The file position of the next DataSet.
 	 */
-	u_int32_t ReadMinimumInfo(std::ifstream& fileStream, DataSetHeader& dph);
+	u_int32_t ReadMinimumInfo(std::ifstream& fileStream, DataSetHeader& dsh);
 
 	/*! Reads the complete DataSetHeader information.
 	 *	@param fileStream Open fstream positioned at the start of the DataSetHeader.
-	 *	@param dph Reference to the DataSetHeader object to fill.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
 	 *	@return The file position of the next DataSet.
 	 */
-	u_int32_t Read(std::ifstream& fileStream, DataSetHeader& dph);
+	u_int32_t Read(std::ifstream& fileStream, DataSetHeader& dsh);
 
 protected:
+	/*! Read the file position of the start of the DataSet.
+	 *	@param fileStream Open fstream positioned at the start of the DataSetHeader.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
+	 */
+	void ReadDataSetStartFilePos(std::ifstream& fileStream, DataSetHeader& dsh);
+
+	/*! Read the file position to the start of the data.
+	 *	@param fileStream Open fstream positioned at the start of the data file position.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
+	 */
+	void ReadDataFilePos(std::ifstream& fileStream, DataSetHeader& dsh);
+
+	/*! Read the file position to the next DataSet.
+	 *	@param fileStream Open fstream positioned at the start of the next DataSet file position.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
+	 *	@return The file position of the next data set.
+	 */
+	u_int32_t ReadNextDataSetFilePos(std::ifstream& fileStream, DataSetHeader& dsh);
+
+	/*! Read the DataSetHeader name.
+	 *	@param fileStream Open fstream positioned at the start of the DataSetHeader name.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
+	 */
+	void ReadName(std::ifstream& fileStream, DataSetHeader& dsh);
+
+	/*! Read the parameter list (name-value-type).
+	 *	@param fileStream Open fstream positioned at the start of the DataSetHeader parameter list count.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
+	 */
+	void ReadParameters(std::ifstream& fileStream, DataSetHeader& dsh);
+
+	/*! Read column information.
+	 *	@param fileStream Open fstream positioned at the start of the DataSetHeader column count.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
+	 */
+	void ReadColumns(std::ifstream& fileStream, DataSetHeader& dsh);
+
+	/*! Read the number of rows.
+	 *	@param fileStream Open fstream positioned at the start of the DataSetHeader row count.
+	 *	@param dsh Reference to the DataSetHeader object to fill.
+	 */
+	void ReadRowCount(std::ifstream& fileStream, DataSetHeader& dsh);
+
 };
 
 }

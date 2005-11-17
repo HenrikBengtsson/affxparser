@@ -27,6 +27,7 @@ using namespace affymetrix_calvin_array;
  */
 ArrayAttributes::ArrayAttributes()
 {
+	Clear();
 }
 
 /*
@@ -43,5 +44,17 @@ ArrayAttributes::~ArrayAttributes()
 void ArrayAttributes::Clear()
 {
 	attributes.clear();
-	identifier="";
+	id.clear();
+	arrayName.clear();
+	arrayBarcode.clear();
+	media=CartridgeMedia;
+	mediaRow=0;
+	mediaCol=0;
+	customerBarcode.clear();
+	masterFile.clear();
+	masterFileId.clear();
+	patAssignment = NoAssignment;
+	creationDateTime.clear();
+	createdBy.clear();
+	comment.clear();
 }

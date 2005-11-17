@@ -29,14 +29,14 @@
 namespace affymetrix_calvin_exceptions
 {
 
-/*! This exception is thrown when the parameter does not match the requested value
+/*! This exception indicates the parameter does not match the requested value
  *	TODO: Add member to say what type is expected
  */
 class ParameterMismatchException : public CalvinException
 {
 };
 
-/*! This exception is thrown when the parameter type does not match the expected type
+/*! This exception indicates the parameter type does not match the expected type
  *
  */
 class UnexpectedParameterException : public CalvinException
@@ -48,15 +48,31 @@ protected:
 	std::wstring expectedType;
 };
 
-/*! This exception is thrown when a parameter value is out-of-range */
+/*! This exception indicates a parameter value is out-of-range */
 class OutOfRangeParameterException : public CalvinException
 {
 public:
+	/*! Constructor
+	 *	@param lower_ lower limit of the range
+	 *	@param upper_ upper limit of the range
+	 */
 	OutOfRangeParameterException(const std::wstring& lower_, const std::wstring& upper_):
 		lower(lower_), upper(upper_) {}
 protected:
 	std::wstring lower;
 	std::wstring upper;
+};
+
+/*! This exception indicates that the parameter string is too long */
+class ParameterStringTooLongException : public CalvinException
+{
+public:
+	/*! Constructor
+	 *	@param len Max length of the string
+	 */
+	ParameterStringTooLongException(int32_t len): maxLen(len) {}
+protected:
+	int32_t maxLen;
 };
 
 }

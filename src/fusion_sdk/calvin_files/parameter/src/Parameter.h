@@ -119,51 +119,6 @@ typedef std::vector<ParameterNameValueControlVocabulary> ParameterNameValueContr
 /*! An STL list or parameter name value pairs. */
 typedef std::list<ParameterNameValueControlVocabulary> ParameterNameValueControlVocabularyList;
 
-
-/*! Defines a signed integral number type */
-#define PARAMETER_VALUE_SIGNED_INTEGRAL 0
-
-/*! Defines an unsigned integral number type */
-#define PARAMETER_VALUE_UNSIGNED_INTEGRAL 1
-
-/*! Defines a floating point number type */
-#define PARAMETER_VALUE_FLOATING_POINT 2
-
-/*! Defines a 8 bit string type */
-#define PARAMETER_VALUE_STRING8_TYPE 3
-
-/*! Defines a 16 bit string type */
-#define PARAMETER_VALUE_STRING16_TYPE 3
-
-/*! A type for defining the type of parameter value. */
-typedef u_int8_t ParameterValueType;
-
-/*! The possible data types for a parameter value. */
-typedef union _ParameterDataValue
-{
-	int8_t			i8;		/*! 8 bit integer. */
-	int16_t			i16;	/*! 16 bit integer. */
-	int32_t			i32;	/*! 32 bit integer. */
-	u_int8_t		iu8;	/*! 8 bit unsigned integer. */
-	u_int16_t		iu16;	/*! 16 bit unsigned integer. */
-	u_int32_t		iu32;	/*! 32 bit unsigned integer. */
-	float			f32;	/*! 32 bit floating point. */
-} ParameterDataValue;
-
-/*! A structure to store a parameter value - of varying types */
-typedef struct _tagParameterValue
-{
-	/*! The type of parameter value */
-	ParameterValueType paramValueType;
-
-	/*! The size of the value object. For strings this is the length of the string. */
-	int32_t valueSize;
-
-	/*! A union of all possible data types. */
-	ParameterDataValue paramValue;
-
-} ParameterValue;
-
 }
 
 #endif // _Parameter_HEADER_

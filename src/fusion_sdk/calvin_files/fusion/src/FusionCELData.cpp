@@ -44,7 +44,8 @@ FusionCELData::FusionCELData()
  */
 FusionCELData::~FusionCELData()
 {
-
+	Clear();
+	DeleteAdapter();
 }
 
 /*
@@ -198,6 +199,15 @@ FusionTagValuePairTypeList &FusionCELData::GetParameters()
 }
 
 /*
+ * Get the DatHeader string.
+ */
+std::wstring FusionCELData::GetDatHeader()
+{
+	CheckAdapter();
+	return adapter->GetDatHeader();
+}
+
+/*
  * Retrieve chip type.
  */
 std::wstring FusionCELData::GetChipType()
@@ -231,6 +241,15 @@ unsigned int FusionCELData::GetNumMasked()
 {
 	CheckAdapter();
 	return adapter->GetNumMasked();
+}
+
+/*
+ * Get the grid coordinates.
+ */
+affymetrix_fusion_io::FGridCoords FusionCELData::GetGridCorners()
+{
+	CheckAdapter();
+	return adapter->GetGridCorners();
 }
 
 // Index/position conversions
@@ -452,160 +471,11 @@ int FusionCELData::GetReadState()
  */
 void FusionCELData::Clear()
 {
-	CheckAdapter();
-	adapter->Clear();
+	if (adapter)
+		adapter->Clear();
 	parameterListRead = false;
 	parameterList.clear();
 }
-
-/*
- * Sets the name of the algorithm used to create the CEL file.
- */
-void FusionCELData::SetAlgorithmName(const wchar_t *str)
-{
-	CheckAdapter();
-	adapter->SetAlgorithmName(str);
-}
-
-/*
- * Adds a parameter to the parameter list.
- */
-void FusionCELData::AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value)
-{
-	CheckAdapter();
-	adapter->AddAlgorithmParameter(tag, value);
-	FillParameterList();
-	FusionTagValuePairType tvp;
-	tvp.Tag = tag;
-	tvp.Value = value;
-	parameterList.push_back(tvp);
-}
-
-/*
- * Sets dimentions (rows/cols) of the CEL file.
- */
-void FusionCELData::SetDimensions(int rows, int cols)
-{
-	CheckAdapter();
-	adapter->SetDimensions(rows, cols);
-}
-
-/*
- * Sets probe array (chip) type.
- */
-void FusionCELData::SetChipType(const wchar_t *str)
-{
-	CheckAdapter();
-	adapter->SetChipType(str);
-}
-
-/*
- * Sets the margin used in creating the CEL file.
- */
-void FusionCELData::SetMargin(int margin)
-{
-	CheckAdapter();
-	adapter->SetMargin(margin);
-}
-
-// Sets the data values
-/*
- * Sets a CEL file entry.
- */
-//void FusionCELData::SetCellEntry(int x, int y, CELFileEntryType *pEntry)
-//{
-//
-//}
-
-/*
- * Sets a CEL file entry.
- */
-//void FusionCELData::SetCellEntry(int index, CELFileEntryType *pEntry)
-//{
-//
-//}
-
-/*
- *  Allocates entries for a text or XDA file.
- */
-//void FusionCELData::AllocateEntries()
-//{
-//
-//}
-
-/*
- * Sets the intensity value.
- */
-//void FusionCELData::SetIntensity(int index, float intensity)
-//{
-//}
-
-/*
- * Sets the intensity value.
- */
-//void FusionCELData::SetIntensity(int x, int y, float intensity)
-//{
-//}
-
-/*
- * Sets the stdev value.
- */
-//void FusionCELData::SetStdv(int index, float stdev)
-//{
-//}
-
-/*
- * Sets the stdev value.
- */
-//void FusionCELData::SetStdv(int x, int y, float stdev)
-//{
-//}
-
-/*
- * Sets the pixel count.
- */
-//void FusionCELData::SetPixels(int index, short pixels)
-//{
-//}
-
-/*
- * Sets the pixel count.
- */
-//void FusionCELData::SetPixels(int x, int y, short pixels)
-//{
-//}
-
-/*
- * Sets the mask flag.
- */
-//void FusionCELData::SetMask(int x, int y, bool mask)
-//{
-//
-//}
-
-/*
- * Sets the mask flag.
- */
-//void FusionCELData::SetMask(int index, bool mask)
-//{
-//
-//}
-
-/*
- * Sets the outlier flag.
- */
-//void FusionCELData::SetOutlier(int x, int y, bool outlier)
-//{
-//
-//}
-
-/*
- * Sets the outlier flag.
- */
-//void FusionCELData::SetOutlier(int index, bool outlier)
-//{
-//
-//}
 
 /*
  */

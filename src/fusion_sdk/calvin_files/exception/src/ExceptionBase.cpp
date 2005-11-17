@@ -24,6 +24,7 @@
 #include "ExceptionBase.h"
 
 using namespace affymetrix_calvin_exceptions;
+using namespace affymetrix_calvin_utilities;
 
 /*! Constructor
  * Default constructor. Initializes all variables to 0 if numeric, "" if string and the date to the current date and time.

@@ -21,7 +21,7 @@
 #ifndef _DataGroupReader_HEADER_
 #define _DataGroupReader_HEADER_
 
-/*! \file DataGroupReader.h This file provides methods to read a data dataGroup.
+/*! \file DataGroupReader.h This file provides methods to read the data of a DataGroup.
  */
 
 #include "DataGroupHeader.h"
@@ -41,8 +41,8 @@ class DataGroupReader
 public:
 
 	/*! Constructor
-	 *	@param Reference to an open ifstream
-	 *	@param Reference to a DataGroupHeader that has been initialized
+	 *	@param o Reference to an open ifstream
+	 *	@param hdr Reference to a DataGroupHeader that has been initialized
 	 */
 	DataGroupReader(std::ifstream& o, DataGroupHeader& hdr);
 

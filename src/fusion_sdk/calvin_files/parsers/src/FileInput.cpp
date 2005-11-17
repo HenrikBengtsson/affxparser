@@ -245,15 +245,17 @@ std::wstring FileInput::ReadString16(std::ifstream &instr)
 std::wstring FileInput::ReadString16(std::ifstream &instr, int32_t len)
 {
 	u_int16_t cvalue;
-	std::wstring s;
-	s.resize(len);
+	wchar_t* s = new wchar_t[len+1];
+	s[len] = 0;
 	for (int i=0; i<len; i++)
 	{
 		instr.read((char *)&cvalue, sizeof(int16_t));
 		cvalue = ntohs(cvalue);
 		s[i] = cvalue;
 	}
-	return s;
+	std::wstring result = s;	// assign wchar_t array to wstring because it will trunc string len to first 0 which may not be the same as len.
+	delete [] s;
+	return result;
 }
 
 /*
@@ -271,14 +273,16 @@ std::wstring FileInput::ReadString16(char * &instr)
 std::wstring FileInput::ReadString16(char * &instr, int32_t len)
 {
 	u_int16_t *cvalue = (u_int16_t *)instr;
-	std::wstring s;
-	s.resize(len);
+	wchar_t* s = new wchar_t[len+1];
+	s[len] = 0;
 	for (int i=0; i<len; i++)
 	{
 		s[i] = (wchar_t) ntohs(cvalue[i]);
 	}
 	instr += (sizeof(u_int16_t)*len);
-	return s;
+	std::wstring result = s;	// assign wchar_t array to wstring because it will trunc string len to first 0 which may not be the same as len.
+	delete [] s;
+	return result;
 }
 
 /*

@@ -93,6 +93,16 @@ typedef struct _GDACSequenceHitItemType
 	/*! Packed PM probe sequence */
 	char PackedPMProbe[PROBE_STORAGE_BUFFER_LENGTH+1];
 
+	/*! Returns the genomic position relative to the center of the probe.
+	 * @return The genomic position.
+	 */
+	unsigned int getCenterPosition() { return Position + (ProbeLength-1)/2; }
+
+	/*! Returns the genomic position relative to the start of the probe.
+	 * @return The genomic position.
+	 */
+	unsigned int getStartPosition() { return Position; }
+
 } GDACSequenceHitItemType;
 
 /*! The size of the hit item in the BPMAP file when both PM and MM are present. */
@@ -166,6 +176,11 @@ public:
 	 * @return The group name.
 	 */
 	std::string GroupName() const { return m_GroupName; }
+
+	/*! Returns the full name (name, group, version).
+	 * @return The full name.
+	 */
+	std::string FullName() const;
 
 	/*! Gets the version number.
 	 * @return The version number.
