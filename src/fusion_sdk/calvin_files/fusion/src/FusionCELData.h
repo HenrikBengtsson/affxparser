@@ -62,7 +62,7 @@ public:
 	std::string GetFileName() const;
 
 	/*! Set the error string.
-	 * @param str The error.
+	 * @param value The error.
 	 */
 	void SetError(const wchar_t* value);
 
@@ -131,10 +131,15 @@ public:
 	 */
 	std::wstring GetAlgorithmParameters();
 
-	/*! Retreive the algorithm parameters in a list. Add for Calvin.  TBD: Do we keep?
+	/*! Retreive the algorithm parameters in a list.
 	 *	@return An STL list of algorithm parameters
 	 */
 	FusionTagValuePairTypeList &GetParameters();
+
+	/*! Get the DatHeader string.
+	 *	@return The DatHeader string.
+	 */
+	virtual std::wstring GetDatHeader();
 
 	/*!	Retrieve chip type
 	 *	@return	Chip type
@@ -155,6 +160,11 @@ public:
 	 *	@return Number of masked cells
 	 */
 	unsigned int GetNumMasked();
+
+	/*! Get the grid coordinates.
+	 *  @return Returns the grid coordinates.
+	 */
+	FGridCoords GetGridCorners();
 
 	// Index/position conversions
 	/*!	Get x coordinates from index
@@ -313,32 +323,6 @@ public:
 	/*! Clears the members. */
 	void Clear();
 
-	/*! Sets the name of the algorithm used to create the CEL file.
-	 * @param str The algorithm name.
-	 */
-	void SetAlgorithmName(const wchar_t *value);
-
-	/*! Adds a parameter to the parameter list.
-	 * @param tag The parameter name.
-	 * @param value The parameter value.
-	 */
-	void AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value);
-
-	/*! Sets dimentions (rows/cols) of the CEL file.
-	 * @param rows The number of rows.
-	 * @param cols The number of columns.
-	 */
-	void SetDimensions(int rows, int cols);
-
-	/*! Sets probe array (chip) type.
-	 * @param str The probe array type.
-	 */
-	void SetChipType(const wchar_t *value);
-
-	/*! Sets the margin used in creating the CEL file.
-	 * @param margin The margin used in creating the CEL file.
-	 */
-	void SetMargin(int margin);
 
 protected:
 	/*! Factory method to create the appropriate adapter class.
@@ -360,6 +344,7 @@ protected:
 private:
 	/*! Pointer to the adapter */
 	IFusionCELDataAdapter* adapter;
+	/*! CEL file name including a relative path or the full path. */
 	std::string filename;
 	/*! A separate parallel parameter list that is sync'ed with the list in the adapter */
 	FusionTagValuePairTypeList parameterList;

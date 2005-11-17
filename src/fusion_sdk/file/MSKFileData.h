@@ -28,7 +28,6 @@
 
 #include <string>
 #include <list>
-#include <map>
 #include <fstream>
 
 //////////////////////////////////////////////////////////////////////
@@ -88,7 +87,7 @@ protected:
 	/*! The list of probe set indicies */
 	ProbeSetIndiciesList m_Indicies;
 
-	/*! The list of probe sets */
+	/*! The List of probe sets */
 	ProbeSetList m_Sets;
 
 public:

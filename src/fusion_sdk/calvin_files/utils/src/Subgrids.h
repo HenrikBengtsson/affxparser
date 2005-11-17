@@ -37,8 +37,8 @@ class Subgrid
 public:
 	int32_t row;	// ???
 	int32_t col;	// ???
-	FRect pixelgrid;
-	Rect cellgrid;
+	FGridCoords pixelgrid;
+	GridCoords cellgrid;
 	//bool operator==( Subgrid& rhs );
 };
 

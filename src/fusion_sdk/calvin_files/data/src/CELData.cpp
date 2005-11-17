@@ -21,19 +21,10 @@
 #include "CELData.h"
 #include "DataSetHeader.h"
 #include "ExceptionBase.h"
-
-#include <iostream>
-
-using namespace std;
-
+#include "GenericDataTypes.h"
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;
-
-static const std::wstring CelRowsLabel = L"affymetrix-calvin-cel-rows";
-static const std::wstring CelColsLabel = L"affymetrix-calvin-cel-cols";
-/*! The attribute name of the cel file version number */
-static const std::wstring CelFileVersionNumberName = L"affymetrix-cel-file-version";
 
 /*
  * Default constructor
@@ -57,6 +48,7 @@ CelFileData::CelFileData(const std::string &filename)
 
 	Clear();
 	SetFilename(filename);
+	genericData.Header().GetGenericDataHdr()->SetFileTypeId(INTENSITY_DATA_TYPE);
 	DataGroupHeader dcHdr(CelDataGroupName);
 	genericData.Header().AddDataGroupHdr(dcHdr);
 }
@@ -90,6 +82,7 @@ void CelFileData::Clear()
 	masked.clear();
 	cachedRows = -1;
 	cachedCols = -1;
+	intensityColumnType = -1;
 }
 
 /*
@@ -113,7 +106,7 @@ void CelFileData::SetIntensityCount(int32_t ln)
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	dpHdr.SetName(CelIntensityLabel);
-	dpHdr.AddFloatColumnType();
+	dpHdr.AddFloatColumn(CelIntensityLabel);
 	if(setIntensityMetaData)
 	{
 		UpdateDataSetRowCount(dpHdr);
@@ -130,7 +123,7 @@ void CelFileData::SetStdDevCount(int32_t ln)
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	dpHdr.SetName(CelStdDevLabel);
-	dpHdr.AddFloatColumnType();
+	dpHdr.AddFloatColumn(CelStdDevLabel);
 	if(setStdDevMetaData)
 	{
 		UpdateDataSetRowCount(dpHdr);
@@ -147,7 +140,7 @@ void CelFileData::SetPixelCount(int32_t ln)
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	dpHdr.SetName(CelPixelLabel);
-	dpHdr.AddShortColumnType();
+	dpHdr.AddShortColumn(CelPixelLabel);
 	if(setPixelMetaData)
 	{
 		UpdateDataSetRowCount(dpHdr);
@@ -164,8 +157,8 @@ void CelFileData::SetOutlierCount(int32_t ln)
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	dpHdr.SetName(CelOutlierLabel);
-	dpHdr.AddShortColumnType();
-	dpHdr.AddShortColumnType();
+	dpHdr.AddShortColumn(L"X");
+	dpHdr.AddShortColumn(L"Y");
 	if(setOutlierMetaData)
 	{
 		UpdateDataSetRowCount(dpHdr);
@@ -182,8 +175,8 @@ void CelFileData::SetMaskCount(int32_t ln)
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	dpHdr.SetName(CelMaskLabel);
-	dpHdr.AddShortColumnType();
-	dpHdr.AddShortColumnType();
+	dpHdr.AddShortColumn(L"X");
+	dpHdr.AddShortColumn(L"Y");
 	if(setMaskMetaData)
 	{
 		UpdateDataSetRowCount(dpHdr);
@@ -251,7 +244,10 @@ void CelFileData::PrepareIntensityPlane()
 	{
 		dpInten = genericData.DataSet(CelDataGroupName, CelIntensityLabel);
 		if (dpInten)
+		{
 			dpInten->Open();
+			intensityColumnType = dpInten->Header().GetColumnInfo(0).GetColumnType();
+		}
 	}
 }
 
@@ -365,7 +361,14 @@ void CelFileData::GetData(int32_t cellIdx, float& intensity, float& stdev, int16
 	if (dpInten)
 	{
 		// if out-of-bounds, forward the exception
-		dpInten->GetData(cellIdx, 0, intensity);
+		if (intensityColumnType == FloatColType)
+			dpInten->GetData(cellIdx, 0, intensity);
+		else	// try u_int16_t or throw
+		{
+			u_int16_t int16Inten;
+			dpInten->GetData(cellIdx, 0, int16Inten);
+			intensity = (float)int16Inten;
+		}
 	}
 
 	if (dpStdev)
@@ -414,7 +417,17 @@ bool CelFileData::GetIntensities(int32_t cellIdxStart, int32_t count, FloatVecto
 	PrepareIntensityPlane();
 	if (dpInten && dpInten->IsOpen())
 	{
-		dpInten->GetData(0, cellIdxStart, count, values);
+		if (intensityColumnType == FloatColType)
+			dpInten->GetData(0, cellIdxStart, count, values);
+		else	// try u_int16_t or throw
+		{
+			Uint16Vector uint16Vector;
+			dpInten->GetData(0, cellIdxStart, count, uint16Vector);
+			values.resize(uint16Vector.size());
+			for (int32_t i = 0; i < uint16Vector.size(); ++i)
+				values[i] = (float)uint16Vector[i];
+		}
+
 		return (count == values.size());
 	}
 	return false;
@@ -454,7 +467,6 @@ bool CelFileData::GetNumPixels(int32_t cellIdxStart, int32_t count, Int16Vector&
 bool CelFileData::GetOutliers(int32_t cellIdxStart, int32_t count, BoolVector& values)
 {
 	PrepareOutlierPlane();
-
 	if (outliers.empty())
 		return false;
 
@@ -473,7 +485,6 @@ bool CelFileData::GetOutliers(int32_t cellIdxStart, int32_t count, BoolVector& v
 bool CelFileData::GetMasked(int32_t cellIdxStart, int32_t count, BoolVector& values)
 {
 	PrepareMaskedPlane();
-
 	if (masked.empty())
 		return false;
 
@@ -491,33 +502,29 @@ bool CelFileData::GetMasked(int32_t cellIdxStart, int32_t count, BoolVector& val
  */
 void CelFileData::GetOutlierCoords(XYCoordVector& coords)
 {
-  /** added as per luis' fix. **/
-  PrepareOutlierPlane(); 
-
-  std::set<XYCoord>::iterator begin = outliers.begin();
-  std::set<XYCoord>::iterator end = outliers.end();
-  for (std::set<XYCoord>::iterator ii = outliers.begin(); ii != outliers.end(); ++ii)
-    {
-      XYCoord xy(ii->xCoord, ii->yCoord);
-      coords.push_back(xy);
-    }
+	PrepareOutlierPlane();
+	std::set<XYCoord>::iterator begin = outliers.begin();
+	std::set<XYCoord>::iterator end = outliers.end();
+	for (std::set<XYCoord>::iterator ii = outliers.begin(); ii != outliers.end(); ++ii)
+	{
+		XYCoord xy(ii->xCoord, ii->yCoord);
+		coords.push_back(xy);
+	}
 }
 
 /*
  * Get the coordinates of all masked cells (i.e. mask flag is true).
  */
 void CelFileData::GetMaskedCoords(XYCoordVector& coords)
-{ 
-  /** added as per luis' fix. **/
-  PrepareMaskedPlane();
-
-  std::set<XYCoord>::iterator begin = masked.begin();
-  std::set<XYCoord>::iterator end = masked.end();
-  for (std::set<XYCoord>::iterator ii = masked.begin(); ii != masked.end(); ++ii)
-    {
-      XYCoord xy(ii->xCoord, ii->yCoord);
-      coords.push_back(xy);
-    }
+{
+	PrepareMaskedPlane();
+	std::set<XYCoord>::iterator begin = masked.begin();
+	std::set<XYCoord>::iterator end = masked.end();
+	for (std::set<XYCoord>::iterator ii = masked.begin(); ii != masked.end(); ++ii)
+	{
+		XYCoord xy(ii->xCoord, ii->yCoord);
+		coords.push_back(xy);
+	}
 }
 
 /*
@@ -548,7 +555,7 @@ bool CelFileData::HasNumPixels()
 void CelFileData::SetVersion(u_int8_t value)
 {
 	ParameterNameValueType paramType;
-	paramType.SetName(CelFileVersionNumberName);
+	paramType.SetName(FILE_VERSION_PARAM_NAME);
 	paramType.SetValueUInt8(value);
 	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
 	hdr->AddNameValParam(paramType);
@@ -562,7 +569,7 @@ u_int8_t CelFileData::GetVersion()
 	u_int8_t result = 0;
 	ParameterNameValueType paramType;
 	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
-	if (hdr->FindNameValParam(CelFileVersionNumberName, paramType))
+	if (hdr->FindNameValParam(FILE_VERSION_PARAM_NAME, paramType))
 	{
 		result = paramType.GetValueUInt8();
 	}
@@ -574,7 +581,7 @@ u_int8_t CelFileData::GetVersion()
  */
 void CelFileData::SetArrayType(const std::wstring& value)
 {
-	SetWStringToGenericHdr(ARRAY_TYPE_PARAM_NAME, value);
+	SetWStringToGenericHdr(ARRAY_TYPE_PARAM_NAME, value, ARRAY_TYPE_MAX_LEN);
 }
 
 /*
@@ -606,7 +613,7 @@ std::wstring CelFileData::GetAlgorithmName()
  */
 void CelFileData::SetRows(int32_t value)
 {
-	SetInt32ToGenericHdrParameterList(CelRowsLabel, value);
+	SetInt32ToGenericHdrParameterList(CEL_ROWS_PARAM_NAME, value);
 	cachedRows = value;
 }
 
@@ -616,7 +623,7 @@ void CelFileData::SetRows(int32_t value)
 int32_t CelFileData::GetRows()
 {
 	if (cachedRows == -1)
-		cachedRows = GetInt32FromGenericHdrParameterList(CelRowsLabel);
+		cachedRows = GetInt32FromGenericHdrParameterList(CEL_ROWS_PARAM_NAME);
 	return cachedRows;
 }
 
@@ -625,7 +632,7 @@ int32_t CelFileData::GetRows()
  */
 void CelFileData::SetCols(int32_t value)
 {
-	SetInt32ToGenericHdrParameterList(CelColsLabel, value);
+	SetInt32ToGenericHdrParameterList(CEL_COLS_PARAM_NAME, value);
 	cachedCols = value;
 }
 
@@ -634,8 +641,8 @@ void CelFileData::SetCols(int32_t value)
  */
 int32_t CelFileData::GetCols()
 {
-	if (cachedCols)
-		cachedCols = GetInt32FromGenericHdrParameterList(CelColsLabel);
+	if (cachedCols == -1)
+		cachedCols = GetInt32FromGenericHdrParameterList(CEL_COLS_PARAM_NAME);
 	return cachedCols;
 }
 
@@ -685,11 +692,11 @@ std::wstring CelFileData::GetWStringFromGenericHdr(const std::wstring& name)
 /*
  * Set a wstring value into the GenericDataHeader parameter list.
  */
-void CelFileData::SetWStringToGenericHdr(const std::wstring& name, const std::wstring value)
+void CelFileData::SetWStringToGenericHdr(const std::wstring& name, const std::wstring value, int32_t reserve)
 {
 	ParameterNameValueType paramType;
 	paramType.SetName(name);
-	paramType.SetValueText(value);
+	paramType.SetValueText(value, reserve);
 	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
 	hdr->AddNameValParam(paramType);
 }

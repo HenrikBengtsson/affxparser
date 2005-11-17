@@ -95,6 +95,11 @@ public:
 	GenericDataHeader GetParent(int32_t index) const;
 	/*!  */
 	void GetParentIterators(std::vector<GenericDataHeader>::iterator &begin, std::vector<GenericDataHeader>::iterator &end);
+	/*! Find an immediate parent GenericDataHeader based on file type id.  Does not search grand-parents or above.
+	 *	@param fileTypeId The fileTypeId of the parent header to find.
+	 *	@return Returns a pointer to the parent GenericDataHeader if found, otherwise returns 0.
+	 */
+	GenericDataHeader* FindParent(const std::string& fileTypeId);
 	/*! Finds a ParameterNameValueType by name in the nameValPairs collection
 	 *	@param name The name of the NameValPair to find
 	 *	@param result Reference to a ParameterNameValueType to fill with the found ParameterNameValueType.
@@ -109,7 +114,7 @@ public:
 
 protected:
 	/*! Finds a ParameterNameValueType by name in the nameValPairs collection
-	 *	@param nv The ParameterNameValueType to find
+	 *	@param p The ParameterNameValueType to find
 	 *	@return An iterator referencing the NameValPair if it exists, otherwise it returns nameValPairs.end()
 	 */
 	ParameterNameValueTypeIt FindNameValParam(const ParameterNameValueType& p);

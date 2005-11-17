@@ -21,6 +21,9 @@
 
 #include "CalvinCELDataAdapter.h"
 #include "CelFileReader.h"
+#include "CELAlgorithmParameterNames.h"
+#include "GenericDataTypes.h"
+#include "StringUtils.h"
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;
@@ -38,6 +41,7 @@ CalvinCELDataAdapter::CalvinCELDataAdapter()
  */
 CalvinCELDataAdapter::~CalvinCELDataAdapter()
 {
+	calvinCel.Clear();
 }
 
 /*
@@ -50,7 +54,7 @@ bool CalvinCELDataAdapter::CanReadFile()
 	{
 		reader.Read(calvinCel);
 	}
-	catch(InvalidFileTypeException&)
+	catch(...)
 	{
 		return false;
 	}
@@ -153,18 +157,191 @@ void CalvinCELDataAdapter::GetParameters(FusionTagValuePairTypeList& values)
 	}
 }
 
+/*
+ */
+std::wstring CalvinCELDataAdapter::GetDatHeader()
+{
+	std::wstring datHeader;
+
+	GenDataHdrVectorIt begin, end; 
+	GenericDataHeader* gdh = calvinCel.GetFileHeader()->GetGenericDataHdr()->FindParent(SCAN_ACQUISITION_DATA_TYPE);
+	if (gdh)
+	{
+		// found the right header, now look for the parameter
+		ParameterNameValueType nvt;
+		if (gdh->FindNameValParam(DAT_HEADER_PARAM_NAME, nvt))
+		{
+			if (nvt.GetParameterType() == ParameterNameValueType::TextType)
+				datHeader = nvt.GetValueText();
+		}
+		else if (gdh->FindNameValParam(PARTIAL_DAT_HEADER_PARAM_NAME, nvt))
+		{
+			if (nvt.GetParameterType() == ParameterNameValueType::TextType)
+			{
+				std::wstring partialDatHeader = nvt.GetValueText();
+
+				u_int16_t min = 0;
+				u_int16_t max = 0;
+
+				// Find the max and min parameters and append to the string.
+				if (gdh->FindNameValParam(MAX_PIXEL_INTENSITY_PARAM_NAME, nvt))
+				{
+					if (nvt.GetParameterType() == ParameterNameValueType::UInt16Type)
+						max = nvt.GetValueUInt16();
+				}
+
+				if (gdh->FindNameValParam(MIN_PIXEL_INTENSITY_PARAM_NAME, nvt))
+				{
+					if (nvt.GetParameterType() == ParameterNameValueType::UInt16Type)
+						min = nvt.GetValueUInt16();
+				}
+
+				wchar_t buf[30]=L"";
+				FormatString2(buf, 30, L"[%d..%d]", min, max);
+				datHeader = buf;
+				datHeader += partialDatHeader;
+			}
+		}
+	}
+	return datHeader;
+}
+
+/*
+ */
+int CalvinCELDataAdapter::GetCellMargin()
+{
+	ParameterNameValueType nvt;
+	if (calvinCel.FindAlgorithmParameter(CELLMARGIN_PARAM_NAME, nvt))
+	{
+		switch(nvt.GetParameterType())
+		{
+		case ParameterNameValueType::Int32Type:
+			return nvt.GetValueInt32();
+			break;
+		case ParameterNameValueType::Int16Type:
+			return (int)nvt.GetValueInt16();
+			break;
+		case ParameterNameValueType::Int8Type:
+			return (int)nvt.GetValueInt8();
+			break;
+		case ParameterNameValueType::UInt32Type:
+			return (int)nvt.GetValueUInt32();
+			break;
+		case ParameterNameValueType::UInt16Type:
+			return (int)nvt.GetValueUInt16();
+			break;
+		case ParameterNameValueType::UInt8Type:
+			return (int)nvt.GetValueUInt8();
+			break;
+		case ParameterNameValueType::AsciiType:
+			return (int)atoi(nvt.GetValueAscii().c_str());
+		default:
+			return 0;
+			break;
+		}
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 unsigned int CalvinCELDataAdapter::GetNumOutliers()
 {
 	XYCoordVector coords;
 	calvinCel.GetOutlierCoords(coords);
-	return (int)coords.size();
+	return (unsigned int)coords.size();
 }
 
 unsigned int CalvinCELDataAdapter::GetNumMasked()
 {
 	XYCoordVector coords;
 	calvinCel.GetMaskedCoords(coords);
-	return (int)coords.size();
+	return (unsigned int)coords.size();
+}
+
+/*
+ * Get the grid coordinates.
+ */
+affymetrix_fusion_io::FGridCoords CalvinCELDataAdapter::GetGridCorners()
+{
+	affymetrix_fusion_io::FGridCoords zeroGrid;
+	affymetrix_fusion_io::FGridCoords grid;
+	ParameterNameValueType nvt;
+
+	if (calvinCel.FindAlgorithmParameter(GRIDULX_PARAM_NAME, nvt) && nvt.GetParameterType() == ParameterNameValueType::FloatType)
+	{
+		grid.upperleft.x = nvt.GetValueFloat();
+	}
+	else
+	{
+		return zeroGrid;
+	}
+
+	if (calvinCel.FindAlgorithmParameter(GRIDULY_PARAM_NAME, nvt) && nvt.GetParameterType() == ParameterNameValueType::FloatType)
+	{
+		grid.upperleft.y = nvt.GetValueFloat();
+	}
+	else
+	{
+		return zeroGrid;
+	}
+
+	if (calvinCel.FindAlgorithmParameter(GRIDURX_PARAM_NAME, nvt) && nvt.GetParameterType() == ParameterNameValueType::FloatType)
+	{
+		grid.upperright.x = nvt.GetValueFloat();
+	}
+	else
+	{
+		return zeroGrid;
+	}
+
+	if (calvinCel.FindAlgorithmParameter(GRIDURY_PARAM_NAME, nvt) && nvt.GetParameterType() == ParameterNameValueType::FloatType)
+	{
+		grid.upperright.y = nvt.GetValueFloat();
+	}
+	else
+	{
+		return zeroGrid;
+	}
+
+	if (calvinCel.FindAlgorithmParameter(GRIDLRX_PARAM_NAME, nvt) && nvt.GetParameterType() == ParameterNameValueType::FloatType)
+	{
+		grid.lowerright.x = nvt.GetValueFloat();
+	}
+	else
+	{
+		return zeroGrid;
+	}
+
+	if (calvinCel.FindAlgorithmParameter(GRIDLRY_PARAM_NAME, nvt) && nvt.GetParameterType() == ParameterNameValueType::FloatType)
+	{
+		grid.lowerright.y = nvt.GetValueFloat();
+	}
+	else
+	{
+		return zeroGrid;
+	}
+
+	if (calvinCel.FindAlgorithmParameter(GRIDLLX_PARAM_NAME, nvt) && nvt.GetParameterType() == ParameterNameValueType::FloatType)
+	{
+		grid.lowerleft.x = nvt.GetValueFloat();
+	}
+	else
+	{
+		return zeroGrid;
+	}
+
+	if (calvinCel.FindAlgorithmParameter(GRIDLLY_PARAM_NAME, nvt) && nvt.GetParameterType() == ParameterNameValueType::FloatType)
+	{
+		grid.lowerleft.y = nvt.GetValueFloat();
+	}
+	else
+	{
+		return zeroGrid;
+	}
+	return grid;
+
 }
 
 // Index/position conversions
@@ -280,77 +457,50 @@ short CalvinCELDataAdapter::GetPixels(int x, int y)
 }
 
 // Accessors for the mask/outlier flags
-
-/* Replaced based on sugestions from Luis
+/*
+ */
 bool CalvinCELDataAdapter::IsMasked(int x, int y)
 {
 	BoolVector v;
 	int32_t index = XYToIndex(x, y);
-	calvinCel.GetMasked(index, 1, v);
-	return v.at(0);
+	if (calvinCel.GetMasked(index, 1, v))
+		return v.at(0);
+	else
+		return false;
 }
+
+/*
+ */
 bool CalvinCELDataAdapter::IsMasked(int index)
 {
 	BoolVector v;
-	calvinCel.GetMasked(index, 1, v);
-	return v.at(0);
-}
-*/
-
-bool CalvinCELDataAdapter::IsMasked(int x, int y)
-{
-      BoolVector v;
-      int32_t index = XYToIndex(x, y);
-      if (calvinCel.GetMasked(index, 1, v))
-            return v.at(0);
-      else
-            return false;
+	if (calvinCel.GetMasked(index, 1, v))
+		return v.at(0);
+	else
+		return false;
 }
 
-bool CalvinCELDataAdapter::IsMasked(int index)
-{
-      BoolVector v;
-      if (calvinCel.GetMasked(index, 1, v))
-            return v.at(0);
-      else
-            return false;
-}
-
-/* Replaced based on sugestions from Luis
+/*
+ */
 bool CalvinCELDataAdapter::IsOutlier(int x, int y)
 {
 	BoolVector v;
 	int32_t index = XYToIndex(x, y);
-	calvinCel.GetOutliers(index, 1, v);
-	return v.at(0);
+	if (calvinCel.GetOutliers(index, 1, v))
+		return v.at(0);
+	else
+		return false;
 }
+
+/*
+ */
 bool CalvinCELDataAdapter::IsOutlier(int index)
 {
 	BoolVector v;
-	calvinCel.GetOutliers(index, 1, v);
-	return v.at(0);
-}
-*/
-
-
-
-bool CalvinCELDataAdapter::IsOutlier(int x, int y)
-{
-      BoolVector v;
-      int32_t index = XYToIndex(x, y);
-      if (calvinCel.GetOutliers(index, 1, v))
-            return v.at(0);
-      else
-            return false;
-}
-
-bool CalvinCELDataAdapter::IsOutlier(int index)
-{
-      BoolVector v;
-      if (calvinCel.GetOutliers(index, 1, v))
-            return v.at(0);
-      else
-            return false;
+	if (calvinCel.GetOutliers(index, 1, v))
+		return v.at(0);
+	else
+		return false;
 }
 
 
@@ -394,18 +544,18 @@ bool CalvinCELDataAdapter::ReadEx(const char *filename, int /*state*/)
 
 /*
  */
-void CalvinCELDataAdapter::SetDimensions(int rows, int cols)
-{
-	calvinCel.SetRows(rows);
-	calvinCel.SetCols(cols);
-}
+//void CalvinCELDataAdapter::SetDimensions(int rows, int cols)
+//{
+//	calvinCel.SetRows(rows);
+//	calvinCel.SetCols(cols);
+//}
 
 /*
  */
-void CalvinCELDataAdapter::AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value)
-{
-	ParameterNameValueType nvt;
-	nvt.SetName(tag);
-	nvt.SetValueText(value);
-	calvinCel.AddAlgorithmParameter(nvt);
-}
+//void CalvinCELDataAdapter::AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value)
+//{
+//	ParameterNameValueType nvt;
+//	nvt.SetName(tag);
+//	nvt.SetValueText(value);
+//	calvinCel.AddAlgorithmParameter(nvt);
+//}

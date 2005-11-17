@@ -44,6 +44,7 @@ CDFFileReader::~CDFFileReader()
 void CDFFileReader::Read(CDFData& data, ReadMode mode)
 {
 	data.Clear();
+	//data.GetGenericData().UseMemoryMapping(false);
 	GenericFileReader reader;
 	if (fileName.empty())
 		fileName = data.GetFilename();

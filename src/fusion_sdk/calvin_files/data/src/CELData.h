@@ -27,6 +27,7 @@
 #include "GenericData.h"
 //#include "FileHeader.h"
 #include "AffymetrixBaseTypes.h"
+#include "Coords.h"
 #include <set>
 
 #ifdef WIN32
@@ -57,43 +58,6 @@ namespace affymetrix_calvin_io
 /*! Cel file version */
 #define CurrentCelFileVersion u_int8_t(1)
 
-/*! This is a class for holding x-y coordinates.  Move to utility? */
-class XYCoord
-{
-public:
-
-	/*! Constructor */
-	XYCoord() { xCoord = 0; yCoord = 0; }
-
-	/*! Constructor */
-	XYCoord(int16_t x, int16_t y) { xCoord = x; yCoord = y; }
-	/*! Destructor */
-	~XYCoord() {}
-
-	/*! x-coordinate */
-	int16_t xCoord;
-	/*! y-coordinate */
-	int16_t yCoord;
-
-	/*! Assignment operator */
-	XYCoord operator=(const XYCoord &p) { xCoord = p.xCoord; yCoord = p.yCoord; return *this; }
-	/*! equality operator */
-	bool operator==(const XYCoord &p) const { return (xCoord == p.xCoord && yCoord == p.yCoord); }
-	/*! inequality operator */
-	bool operator!=(const XYCoord &p) const { return (xCoord != p.xCoord || yCoord != p.yCoord); }
-	/*! less than operator */
-	bool operator<(const XYCoord& p) const { return (yCoord < p.yCoord ? true : ((yCoord == p.yCoord && xCoord < p.xCoord) ? true : false)); }
-};
-
-/*! vector of XYCoord */
-typedef std::vector<XYCoord> XYCoordVector;
-
-/*! constant iterator of XYCoord */
-typedef std::vector<XYCoord>::iterator XYCoordIt;
-
-/*! constant iterator of XYCoord */
-typedef std::vector<XYCoord>::const_iterator XYCoordConstIt;
-
 /*! This is the container class for CEL data. */
 class CelFileData
 {
@@ -119,6 +83,7 @@ private:
 	bool setPixelMetaData;
 	bool setOutlierMetaData;
 	bool setMaskMetaData;
+	int32_t intensityColumnType;
 
 	// DataSet cache - initialized on first use and Delete in destructor
 	/*! Intensity DataSet */
@@ -234,7 +199,7 @@ public:
 	bool FindAlgorithmParameter(const std::wstring& name, ParameterNameValueType& param);
 
 	/*! Add an algorithm parameter.  The algorithm parameter prefix will be added by the method.
-	 *	@param param Algorithm parameter to add to the list.
+	 *	@param nvt Algorithm parameter to add to the list.
 	 */
 	void AddAlgorithmParameter(ParameterNameValueType& nvt);
 
@@ -356,8 +321,9 @@ private:
 	/*! Set a wstring value into the GenericDataHeader parameter list.
 	 *	@param name of the parameter to set
 	 *	@param value wstring value to set
+	 *	@param reserve The total number of characters to reserve for the value. -1 indicates not to reserve any extra space.
 	*/
-	void SetWStringToGenericHdr(const std::wstring& name, const std::wstring value);
+	void SetWStringToGenericHdr(const std::wstring& name, const std::wstring value, int32_t reserve=-1);
 	/*! Check if the cell is an outlier (outlier flag is true)
 	 *	@param cellIdx Cell index
 	 *	@return True if the cell outlier flag is true

@@ -31,9 +31,6 @@ using namespace affymetrix_calvin_parameter;
 using namespace affymetrix_calvin_utilities;
 XERCES_CPP_NAMESPACE_USE;
 
-/*! The expected version number */
-#define DATA_FILE_VERSION_NUMBER 1
-
 /*
  * Initialize the class.
  */
@@ -82,13 +79,12 @@ bool ArrayFileReader::Read(const std::string &fileName, affymetrix_calvin_array:
 		if (errorCount == 0)
 		{
 			status = true;
-			dataTypeIdentifier = handler.DataTypeIdentifier();
 			fileVersionNumber = handler.FileVersionNumber();
 		}
 	}
 	catch (SAXArrayStopParsingException)
 	{
-		dataTypeIdentifier = handler.DataTypeIdentifier();
+		status = true;
 		fileVersionNumber = handler.FileVersionNumber();
 	}
 	catch (...)
@@ -119,5 +115,5 @@ affymetrix_calvin_utilities::AffymetrixGuidType ArrayFileReader::DataTypeIdentif
 	ArrayFileReader reader;
 	ArrayData arrayData;
 	reader.Read(fileName, arrayData, true);
-	return reader.DataTypeIdentifier();
+	return arrayData.DataTypeIdentifier();
 }

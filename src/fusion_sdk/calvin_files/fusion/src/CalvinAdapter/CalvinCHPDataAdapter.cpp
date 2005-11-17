@@ -29,12 +29,12 @@ using namespace affymetrix_calvin_utilities;
 /*! Constructor */
 CalvinCHPHeaderAdapter::CalvinCHPHeaderAdapter(CHPData* chp) : calvinChp(chp)
 {
-	//calvinChp = chp;
 }
 
 /*! Destructor */
 CalvinCHPHeaderAdapter::~CalvinCHPHeaderAdapter()
-{}
+{
+}
 
 /*! Gets the assay type
 * @return The assay type (FusionExpression, FusionGenotyping, FusionResequencing, FusionUniversal, FusionUnknown)
@@ -133,6 +133,7 @@ FusionTagValuePairTypeList CalvinCHPHeaderAdapter::Convert(ParameterNameValueTyp
 	{
 		type.Tag = nvt[i].GetName();
 		type.Value = nvt[i].GetValueText();
+		type.DetailedType() = nvt[i];
 		list.push_back(type);
 	}
 	return list;
@@ -202,10 +203,6 @@ void CalvinCHPHeaderAdapter::GetBackgroundZoneInfo(BackgroundZoneInfo& info)
 {
 	int32_t count = calvinChp->GetBackgroundZoneCnt();
 	info.number_zones = (int)count;
-
-	//TODO: Del, you need to fix the calvin background classes so that the smoothing factor is
-	// part of the information and not ofeach zone. I have set this to 0.0 until you fix this, 
-	// once you do, change this so that it uses a call from your code.
 	info.smooth_factor = 0.0f;
 	
 	CHPBackgroundZoneVector zones;
@@ -213,6 +210,10 @@ void CalvinCHPHeaderAdapter::GetBackgroundZoneInfo(BackgroundZoneInfo& info)
 
 	CHPBackgroundZoneVector::iterator begin = zones.begin();
 	CHPBackgroundZoneVector::iterator end = zones.end();
+
+	// Get the smooth factor from the first zone.
+	if (begin != end)
+		info.smooth_factor = begin->GetSmoothFactor();
 
 	for(;begin != end; ++begin)
 	{
@@ -273,6 +274,7 @@ CalvinCHPDataAdapter::CalvinCHPDataAdapter()
  */
 CalvinCHPDataAdapter::~CalvinCHPDataAdapter()
 {
+	calvinChp.Clear();
 	delete header;
 }
 
@@ -296,7 +298,7 @@ bool CalvinCHPDataAdapter::GetExpressionResults(int index, FusionExpressionProbe
 		CHPExpressionEntry entry;
 
 		// row is the same as index
-		calvinChp.GetExpressionEntry(index, entry);
+		calvinChp.GetEntry(index, entry);
 		result.SetDetectionPValue(entry.GetDetectionPValue());
 
 		/*! The signal value */
@@ -312,7 +314,7 @@ bool CalvinCHPDataAdapter::GetExpressionResults(int index, FusionExpressionProbe
 		result.SetDetection(entry.GetDetection());
 
 		/*! Flag indicating that comparison results exist */
-		result.SetHasCompResults(0); //entry.???;
+		result.SetHasCompResults(entry.GetHasComparisonData());
 
 		/*! The change p-value */
 		result.SetChangePValue(entry.GetChangePValue());
@@ -347,7 +349,7 @@ bool CalvinCHPDataAdapter::GetGenotypingResults(int index, FusionGenotypeProbeSe
 	if(calvinChp.GetAssayType() == CHP_GENOTYPING_ASSAY_TYPE)
 	{
 		CHPGenotypeEntry entry;
-		calvinChp.GetGenotypeEntry(index, entry);
+		calvinChp.GetEntry(index, entry);
 		result.SetAlleleCall(entry.GetCall());
 		result.SetConfidence(entry.GetConfidence());
 		result.SetRAS1(entry.GetRAS1());
@@ -371,7 +373,7 @@ bool CalvinCHPDataAdapter::GetUniversalResults(int index, FusionUniversalProbeSe
 	if(calvinChp.GetAssayType() == CHP_UNIVERSAL_ASSAY_TYPE)
 	{
 		CHPUniversalEntry entry;
-		calvinChp.GetUniversalEntry(index, entry);
+		calvinChp.GetEntry(index, entry);
 		result.SetBackground(entry.GetBackground());
 		return true;
 	}
@@ -382,9 +384,36 @@ bool CalvinCHPDataAdapter::GetResequencingResults(FusionResequencingResults& res
 {
 	if(calvinChp.GetAssayType() == CHP_RESEQUENCING_ASSAY_TYPE)
 	{
-		//TODO: implement this feature
-		//CHPResequencingEntry entry;
-		//calvinChp.GetResequencingEntry(entry);
+		CHPReseqEntry entry;
+		int32_t sz = calvinChp.GetEntryCount();
+		results.ResizeCalledBases(sz);
+		results.ResizeScores(sz);
+		for(int i = 0; i < sz; i++)
+		{
+			calvinChp.GetEntry(i, entry);
+			results.SetCalledBase(i, entry.call);
+			results.SetScore(i, entry.score);
+		}
+
+		sz = calvinChp.GetForceCnt();
+		results.ResizeForceCalls(sz);
+		CHPReseqForceCall f;
+		for(int i = 0; i < sz; i++)
+		{
+			calvinChp.GetForceCall(i, f);
+			FusionForceCallType fusionType(f.position, f.call, f.reason);
+			results.SetForceCall(i, fusionType);
+		}
+
+		sz = calvinChp.GetOrigCnt();
+		results.ResizeOrigCalls(sz);
+		CHPReseqOrigCall b;
+		for(int i = 0; i < sz; i++)
+		{
+			calvinChp.GetOrigCall(i, b);
+			FusionBaseCallType fusionType(b.position, b.call);
+			results.SetOrigCall(i, fusionType);
+		}
 		return true;
 	}
 	return false;

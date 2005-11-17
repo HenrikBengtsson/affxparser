@@ -42,6 +42,7 @@ void DataSetHeader::Clear()
 	columnTypes.clear();
 	headerStartFilePos = 0;
 	dataStartFilePos = 0;
+	nextSetFilePos = 0;
 }
 
 int32_t DataSetHeader::GetDataSize() const
@@ -55,7 +56,7 @@ int32_t DataSetHeader::GetRowSize() const
 	int32_t sz = GetColumnCnt();
 	for(int i = 0; i < sz; i++)
 	{
-		result += GetColumnType(i).GetSize();
+		result += GetColumnInfo(i).GetSize();
 	}
 	return result;
 }
@@ -86,57 +87,57 @@ void DataSetHeader::GetNameValIterators(ParameterNameValueTypeConstIt &begin, Pa
 	end = nameValParams.end();
 }
 
-void DataSetHeader::AddColumnType(const ColumnType& colType)
+void DataSetHeader::AddColumn(const ColumnInfo& colInfo)
 {
-columnTypes.push_back(colType);
+columnTypes.push_back(colInfo);
 }
 
-void DataSetHeader::AddIntColumnType()
+void DataSetHeader::AddIntColumn(const std::wstring& name)
 {
-	columnTypes.push_back(IntColumnType());
+	columnTypes.push_back(IntColumn(name));
 }
 
-void DataSetHeader::AddUIntColumnType()
+void DataSetHeader::AddUIntColumn(const std::wstring& name)
 {
-	columnTypes.push_back(UIntColumnType());
+	columnTypes.push_back(UIntColumn(name));
 }
 
-void DataSetHeader::AddShortColumnType()
+void DataSetHeader::AddShortColumn(const std::wstring& name)
 {
-	columnTypes.push_back(ShortColumnType());
+	columnTypes.push_back(ShortColumn(name));
 }
 
-void DataSetHeader::AddUShortColumnType()
+void DataSetHeader::AddUShortColumn(const std::wstring& name)
 {
-	columnTypes.push_back(UShortColumnType());
+	columnTypes.push_back(UShortColumn(name));
 }
 
-void DataSetHeader::AddByteColumnType()
+void DataSetHeader::AddByteColumn(const std::wstring& name)
 {
-	columnTypes.push_back(ByteColumnType());
+	columnTypes.push_back(ByteColumn(name));
 }
 
-void DataSetHeader::AddUByteColumnType()
+void DataSetHeader::AddUByteColumn(const std::wstring& name)
 {
-	columnTypes.push_back(UByteColumnType());
+	columnTypes.push_back(UByteColumn(name));
 }
 
-void DataSetHeader::AddFloatColumnType()
+void DataSetHeader::AddFloatColumn(const std::wstring& name)
 {
-	columnTypes.push_back(FloatColumnType());
+	columnTypes.push_back(FloatColumn(name));
 }
 
-void DataSetHeader::AddAsciiColumnType(int32_t len)
+void DataSetHeader::AddAsciiColumn(const std::wstring& name, int32_t len)
 {
-	columnTypes.push_back(ASCIIColumnType(len));
+	columnTypes.push_back(ASCIIColumn(name, len));
 }
 
-void DataSetHeader::AddUnicodeColumnType(int32_t len)
+void DataSetHeader::AddUnicodeColumn(const std::wstring& name, int32_t len)
 {
-	columnTypes.push_back(UnicodeColumnType(len));
+	columnTypes.push_back(UnicodeColumn(name, len));
 }
 
-ColumnType DataSetHeader::GetColumnType(int32_t index) const
+ColumnInfo DataSetHeader::GetColumnInfo(int32_t index) const
 {  
 	return columnTypes[index];
 }

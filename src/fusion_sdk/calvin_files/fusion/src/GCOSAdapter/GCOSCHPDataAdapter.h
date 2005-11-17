@@ -179,7 +179,7 @@ public:
 
 	/*! \brief Returns the universal (tag array) probe set result
 	 *	\param index Index to the result object of interest.
-	 *	\param Universal result.
+	 *	\param result Universal result.
 	 *	\return True if the universal result was found.
 	 */
 	virtual bool GetUniversalResults(int index, FusionUniversalProbeSetResults& result);
@@ -201,7 +201,7 @@ public:
 	virtual bool ReadHeader();
 
 	/*! \brief Sets the file name.
-	 *	\param name Full path to the CHP file
+	 *	\param value Full path to the CHP file
 	 */
 	virtual void SetFileName(const std::string& value);
 

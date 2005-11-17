@@ -29,22 +29,11 @@
 namespace affymetrix_calvin_data
 {
 /*! Defines an identifier for the scan acquisition data file. */
-static const affymetrix_calvin_utilities::AffymetrixGuidType SCAN_ACQUISITION_DATA_TYPE = "affymetrix-calvin-scan-acquisition";
+#define SCAN_ACQUISITION_DATA_TYPE affymetrix_calvin_utilities::AffymetrixGuidType("affymetrix-calvin-scan-acquisition")
 
 /*! Defines an identifier for the intensity data file. */
-static const affymetrix_calvin_utilities::AffymetrixGuidType INTENSITY_DATA_TYPE = "affymetrix-calvin-intensity";
+#define INTENSITY_DATA_TYPE affymetrix_calvin_utilities::AffymetrixGuidType("affymetrix-calvin-intensity")
 
-/*! Defines an identifier for the expression results data file. */
-static const affymetrix_calvin_utilities::AffymetrixGuidType EXPRESSION_RESULTS_DATA_TYPE = "affymetrix-calvin-expression";
-
-/*! Defines an identifier for the genotyping results data file. */
-static const affymetrix_calvin_utilities::AffymetrixGuidType GENOTYPING_RESULTS_DATA_TYPE = "affymetrix-calvin-genotyping";
-
-/*! Defines an identifier for the resequencing results data file. */
-static const affymetrix_calvin_utilities::AffymetrixGuidType RESEQUENCING_RESULTS_DATA_TYPE = "affymetrix-calvin-resequencing";
-
-/* Defines an identifier for the tag/universal results data file. */
-static const affymetrix_calvin_utilities::AffymetrixGuidType TAG_RESULTS_DATA_TYPE = "affymetrix-calvin-tag";
 }
 
 #endif // _GenericDataTypes_HEADER_

@@ -26,6 +26,7 @@
 
 #include "FusionCELDataAdapterInterface.h"
 #include "CELFileData.h"
+#include "StringUtils.h"
 #include <string>
 
 namespace affymetrix_fusion_io
@@ -52,12 +53,12 @@ public:
 	 *	\param value The cell file name to be set
 	 */
 	virtual void SetFileName(const std::string& value);
-	/*! \breif Get the cell file name. 
+	/*! \brief Get the cell file name. 
 	 *	\return The currently set cell file name.
 	 */
 	virtual std::string GetFileName() const;
 
-	/*! \breif Set the error message.
+	/*! \brief Set the error message.
 	 *	\param value The error message to be set.
 	 */
 	virtual void SetError(const wchar_t* value);
@@ -103,24 +104,27 @@ public:
 	 *	\return The parameter value.
 	 */
 	virtual std::wstring GetAlgorithmParameter(const wchar_t *tag);
-	/*! \brief Get parameter index.
-	 *	\param tag Parameter name.
-	 *	\return The index where the parameter value is located.
+	/*! \brief Get a parameter.
+	 *	\param index The index to the parameter.
+	 *	\return The parameter value.
 	 */
 	virtual std::wstring GetAlgorithmParameterTag(int index);
 	/*! \brief Get number of parameters.
-	 *	\param index Index assocaited with parameter name.
-	 *	\return The Parameter name.
+	 *	\return The number of parameters.
 	 */
 	virtual int GetNumberAlgorithmParameters() { return gcosCel.GetNumberAlgorithmParameters(); }
 	/*! \brief Get the number of parameters.
-	 *	\return The number of parameters.
+	 *	\return The parameters.
 	*/
 	virtual std::wstring GetAlgorithmParameters();
-	/*! \breif Get parameters.
+	/*! \brief Get parameters.
 	 *	\param values Collection of name/value type parameter list.
 	 */
 	virtual void GetParameters(FusionTagValuePairTypeList& values);
+	/*! \brief Get the DatHeader string.
+	 *	\return The DatHeader string.
+	 */
+	virtual std::wstring GetDatHeader() { return affymetrix_calvin_utilities::StringUtils::ConvertMBSToWCS(gcosCel.GetDatHeader()); }
 	/*! \brief Get chip type.
 	 *	\return The chip type of the cell.
 	 */
@@ -129,7 +133,7 @@ public:
 		\return The cell margin.
 	 */
 	virtual int GetCellMargin() { return gcosCel.GetCellMargin(); }
-	/*! \breif Get number of outliers.
+	/*! \brief Get number of outliers.
 	 *	\return The number of outliers.
 	 */
 	virtual unsigned int GetNumOutliers() { return gcosCel.GetNumOutliers(); }
@@ -137,6 +141,10 @@ public:
 	 *	\return The number of masked cells.
 	 */
 	virtual unsigned int GetNumMasked() { return gcosCel.GetNumMasked(); }
+	/*! \brief Get the grid coordinates.
+	 *  \return Returns the grid coordinates.
+	 */
+	virtual FGridCoords GetGridCorners();
 
 	// Index/position conversions
 	/*! \brief Translate index to X.
@@ -232,7 +240,7 @@ public:
 	/*! \brief Close cell file. */
 	virtual bool ReadHeader();
 	/*! \brief Read the cell file.
-	 *	\param bIncludeMaskAndOutliers Flag indicates whether to include in the read, the reading of outliers and masked items.
+	 *	\param bIncludeMaskAndOutlier Flag indicates whether to include in the read, the reading of outliers and masked items.
 	 *	\return If the read completed successfully.
 	 */
 	virtual bool Read(bool bIncludeMaskAndOutlier);
@@ -260,25 +268,25 @@ public:
 	/*! \brief Sets the name of the algorithm used to create the CEL file. 
 	 *	\param str The algorithm name.
 	 */
-	virtual void SetAlgorithmName(const wchar_t *str);
+//	virtual void SetAlgorithmName(const wchar_t *str);
 	/*! \brief Add algorithm parameter.
 	 *	\param tag Parameter name.
 	 *	\param value Parameter value.
 	 */
-	virtual void AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value);
+//	virtual void AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value);
 	/*! \brief Set the number of rows and columns.
 	 *	\param rows Number of rows.
 	 *	\param cols Number of columns.
 	 */
-	virtual void SetDimensions(int rows, int cols) { gcosCel.SetDimensions(rows, cols); }
+//	virtual void SetDimensions(int rows, int cols) { gcosCel.SetDimensions(rows, cols); }
 	/*! \brief Set the chip type.
 	 *	\param str Chip type.
 	 */
-	virtual void SetChipType(const wchar_t *str);
+//	virtual void SetChipType(const wchar_t *str);
 	/*! \brief Set the margin.
 	 *	\param margin Margin value to set.
 	 */
-	virtual void SetMargin(int margin) { gcosCel.SetMargin(margin); }
+//	virtual void SetMargin(int margin) { gcosCel.SetMargin(margin); }
 
 protected:
 	/*! \brief Covert an GCOS entry type to an Calvin entry type.

@@ -71,9 +71,9 @@ bool GDACSequenceHitItemType::operator<(const GDACSequenceHitItemType &rhs) cons
 
 CBPMAPFileData::CBPMAPFileData() :
 	m_NumberSequences(0),
-	m_bFileOpen(false),
 	m_lpFileMap(NULL),
 	m_lpData(NULL),
+	m_bFileOpen(false),
 	m_bFileMapped(false)
 {
 #ifdef WIN32
@@ -541,12 +541,12 @@ void CBPMAPFileData::GetSequenceItem(int index, CGDACSequenceItem &seq)
 
 CGDACSequenceItem::CGDACSequenceItem() :
 	m_Number(0),
+	m_ProbePairs(PM_MM),
 	m_NumberHits(0),
 	m_pHits(NULL),
 	m_bMapped(false),
 	m_lpData(NULL),
-	m_HitStartPosition(0),
-	m_ProbePairs(PM_MM)
+	m_HitStartPosition(0)
 {
 }
 
@@ -637,5 +637,17 @@ void CGDACSequenceItem::GetHitItem(int index, GDACSequenceHitItemType &hit, bool
 TagValuePairType CGDACSequenceItem::GetParameter(int index) { 
 	  return m_Parameters[index];
  }
+
+//////////////////////////////////////////////////////////////////////
+
+std::string CGDACSequenceItem::FullName() const
+{
+	if (m_SeqVersion.length() > 0)
+	{
+		return (m_GroupName + ":" + m_SeqVersion + ";" + m_Name);
+	}
+	else
+		return m_Name;
+}
 
 //////////////////////////////////////////////////////////////////////

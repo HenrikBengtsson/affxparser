@@ -99,6 +99,11 @@ public:
 	 */
 	bool IsUTC();
 
+	/*! Sets if the DateTime is UTC or not.
+	 *	@param value True if the DateTime should be considered UTC.
+	 */
+	void UTC(bool value) { coordinateduniversaltime = value; }
+
 	/*! Gets the current date and time and concatinates both together.
 	 *
 	 * @return The string representation of the date and time.
@@ -111,6 +116,48 @@ public:
 	 *	@exception FormatException
 	 */
 	static DateTime Parse(std::wstring value);
+
+	/*! Get a properly formatted Date string.
+	 *	@param year A four digit year.
+	 *	@param month A one-based month of the year.
+	 *	@param day A one-based day of month
+	 *	@return A properly formatted date string.
+	 */
+	static std::wstring FormatDate(u_int32_t year, u_int32_t month, u_int32_t day);
+
+	/*! Get a properly formatted Time string.
+	 *	@param hour Zero-based hour of day.
+	 *	@param minute Zero-based minute of hour.
+	 *	@param second Zero-based second of minute.
+	 *	@return A properly formatted time string.
+	 */
+	static std::wstring FormatTime(u_int32_t hour, u_int32_t minute, u_int32_t second);
+
+	/*! Get a properly formatted date-time string.
+	 *	@param year A four digit year.
+	 *	@param month A one-based month of the year.
+	 *	@param day A one-based day of month
+	 *	@param hour Zero-based hour of day.
+	 *	@param minute Zero-based minute of hour.
+	 *	@param second Zero-based second of minute.
+	 *	@param utc Indicates if the time is Universal Coordinated Time.
+	 *	@return A properly formatted date-time string.
+	 */
+	static std::wstring FormatDateTime(u_int32_t year, u_int32_t month, u_int32_t day, u_int32_t hour, u_int32_t minute, u_int32_t second, bool utc);
+
+
+protected:
+	/*! Check the date format and may modify it.
+	 *	@param date The formatted date string.
+	 *	@exception FormatException
+	 */
+	static void CheckDateFormat(std::wstring& date);
+
+	/*! Check the itme format.
+	 *	@param time The formatted time string.
+	 *	@exception FormatException
+	 */
+	static void CheckTimeFormat(std::wstring& time);
 };
 
 }

@@ -20,150 +20,201 @@
 #ifndef _CHPData_HEADER_
 #define _CHPData_HEADER_
 
+/*! \file CHPData.h Defines a class to use as a base class for older CHP file data (expression, genotyping, reseq, universal). */
+
 #include <string>
 #include "FileHeader.h"
 #include "GenericData.h"
 #include "Coords.h"
 #include "AffymetrixBaseTypes.h"
 #include "CHPBackgroundZone.h"
+#include "CHPUniversalEntry.h"
 #include "CHPExpressionEntry.h"
 #include "CHPGenotypeEntry.h"
-#include "CHPUniversalEntry.h"
-
-#ifdef WIN32
-#pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
-#endif
+#include "CHPReseqEntry.h"
 
 namespace affymetrix_calvin_io
 {
 
+/*! The id for the expression CHP files. */
 #define CHP_EXPRESSION_ASSAY_TYPE std::string("affymetrix-expression-probeset-analysis")
-#define CHP_GENOTYPING_ASSAY_TYPE std::string("affymetrix-genotyping-probeset-analysis")
+
+/*! The id for the expression CHP file data group. */
+#define CHP_EXPR_GROUP std::wstring(L"Expression Results")
+
+/*! The id for the resequencing CHP files. */
 #define CHP_RESEQUENCING_ASSAY_TYPE std::string("affymetrix-resequencing-probeset-analysis")
+
+/*! The id for the resequencing CHP file data group. */
+#define CHP_RESEQ_GROUP std::wstring(L"Resequencing Results")
+
+/*! The id for the genotyping CHP files. */
+#define CHP_GENOTYPING_ASSAY_TYPE std::string("affymetrix-genotyping-probeset-analysis")
+
+/*! The id for the genotyping CHP file data group. */
+#define CHP_GENO_GROUP std::wstring(L"Genotyping Results")
+
+/*! The id for the universal CHP files. */
 #define CHP_UNIVERSAL_ASSAY_TYPE std::string("affymetrix-universal-probeset-analysis")
 
-#define CHP_EXPRESSION_ARRAY_TYPE std::wstring(L"affymetrix-expression-probeset-analysis")
-#define CHP_GENOTYPING_ARRAY_TYPE std::wstring(L"affymetrix-genotyping-probeset-analysis")
-#define CHP_RESEQUENCING_ARRAY_TYPE std::wstring(L"affymetrix-resequencing-probeset-analysis")
-#define CHP_UNIVERSAL_ARRAY_TYPE std::wstring(L"affymetrix-universal-probeset-analysis")
-
-#define CHP_ROWS std::wstring(L"Rows")
-#define CHP_COLS std::wstring(L"Cols")
-#define CHP_PROGID std::wstring(L"ProgId")
-#define CHP_ARRAY_TYPE std::wstring(L"ArrayType")
-#define CHP_ALG_NAME std::wstring(L"AlgName")
-#define CHP_ALG_VERSION std::wstring(L"AlgVersion")
-#define CHP_ALG_PARAM std::wstring(L"AlgParam-")
-#define CHP_CHIP_SUM std::wstring(L"ChipSummary-") 
-#define CHP_PARENT_CELL std::wstring(L"ParentCellFile")
-#define CHP_EXPR_GROUP std::wstring(L"Expression Results")
-#define CHP_GENO_GROUP std::wstring(L"Genotyping Results")
-#define CHP_RESEQ_GROUP std::wstring(L"Resequencing Results")
+/*! The id for the universal CHP file data group. */
 #define CHP_UNIV_GROUP std::wstring(L"Universal Results")
+
+/*! The id for the prog ID. */
+#define CHP_PROGID std::wstring(L"affymetrix-progid")
+
+/*! A prefix for chip summary parameter ids. */
+#define CHP_CHIP_SUM std::wstring(L"affymetrix-chipsummary-") 
+
+/*! The id for the parent cel file. */
+#define CHP_PARENT_CELL std::wstring(L"affymetrix-parent-celfile")
+
+/*! The group name for the background zone group. */
 #define CHP_BG_ZONE_GROUP std::wstring(L"Background Zone Data")
 
+/*! The group name for the force call group (for resequencing only). */
+#define CHP_RESEQ_FORCE_CALL_GROUP std::wstring(L"Force Call Data")
+
+/*! The group name for the orig call group (for resequencing only). */
+#define CHP_RESEQ_ORIG_CALL_GROUP std::wstring(L"Orig Call Data")
+
+/*! Defines a base class for older CHP file data. */ 
 class CHPData
 {
 public:
-
+	/*! Constructor */
 	CHPData();
 
-	CHPData(const std::string& filename, const std::string& type);
+	/*! Constructor with file and type.
+	 * @param filename The name of the CHP file.
+	 * @param assayType The type of data in the CHP file.
+	 */
+	CHPData(const std::string& filename, const std::string &assayType);
 
-	~CHPData();
+	/*! Destructor */
+	virtual ~CHPData();
 
-private:
-
+protected:
+	/*! The generic file data object. */
 	GenericData genericData;
-
 	/*! keep rows from being read from the header all the time */
 	int32_t cachedRows;
 	/*! keep cols from being read from the header all the time */
 	int32_t cachedCols;
-	/*! chp entries DataSet */
-	DataSet* entries;
+	/*! expression entries DataSet */
+	DataSet* entriesExp;
+	/*! genotyping entries DataSet */
+	DataSet* entriesGeno;
+	/*! universal entries DataSet */
+	DataSet* entriesUniv;
+	/*! resequencing entries DataSet */
+	DataSet* entriesReseq;
 	/*! chp background zones DataSet */
 	DataSet* bgZones;
+	/*! chp force call DataSet */
+	DataSet* forceSet;
+	/*! chp orig DataSet */
+	DataSet* origSet;
 
 public:
 
-	/*!  */
+	/*! Clears the members. */
 	void Clear();
-	/*!  */
+	
+	/*! Sets the name of the CHP file. */
 	void SetFilename(const std::string &p);
-	/*!  */
+
+	/*! The name of the CHP file. */
 	std::string GetFilename() const;
 
+	/*! Gets the version in the file. */
 	u_int8_t GetVersion();
 
+	/*! Gets the files magic number. */
 	u_int8_t GetMagic();
-		/*!  */
+
+	/*! Gets the number of rows of features on the array. */
 	int32_t GetRows();
-	/*!  */
+
+	/*! Sets the number of rows of features on the array. */
 	void SetRows(int32_t value);
-	/*!  */
+	
+	/*! Gets the number of columns of features on the array. */
 	int32_t GetCols();
-	/*!  */
+
+	/*! Sets the number of columns of features on the array. */
 	void SetCols(int32_t value);
-	/*!  */
+	
+	/*! Gets the CHP file prog Id. */
 	std::wstring GetProgId();
-	/*!  */
+
+	/*! Sets the prog ID for the CHP file. */
 	void SetProgId(const std::wstring& value);
-	/*!  */
+	
+	/*! Sets the array type */
 	std::wstring GetArrayType();
-	/*!  */
+
+	/*! Gets the assay type */
 	std::string GetAssayType();
-	/*!  */
+
+	/*! Sets the array type.  */
 	void SetArrayType(const std::wstring& value);
-	/*!  */
+	
+	/*! Gets the algorithm name  */
 	std::wstring GetAlgName();
-	/*!  */
+
+	/*! Sets the algorithm name. */
 	void SetAlgName(const std::wstring& value);
-	/*!  */
+	
+	/*! Gets the name of the parent CEL file. */
 	std::wstring GetParentCell();
-	/*!  */
+
+	/*! Sets the name of the parent CEL file */
 	void SetParentCell(const std::wstring& value);
-	/*!  */
+	
+	/*! Gets the algorithm version.  */
 	std::wstring GetAlgVersion();
-	/*!  */
+
+	/*! Sets the algorithm version. */
 	void SetAlgVersion(const std::wstring& value);
-	/*!  */
+
+	/*! Adds a parameter to the alg parameters section */
 	void AddAlgParam(const std::wstring& name, const std::wstring& param);
-	/*!  */
-	ParameterNameValueTypeVector CHPData::GetAlgParams();
-	/*!  */
+
+	/*! Gets the alg parameters */
+	ParameterNameValueTypeVector GetAlgParams();
+
+	/*! Gets a single algorithm parameter by name. */
 	ParameterNameValueType GetAlgParam(const std::wstring& tag);
-	/*!  */
+
+	/*! Adds a parameter to the chip summary section */
 	void AddChipSum(const std::wstring& name, const std::wstring& param);
-	/*!  */
+
+	/*! Gets all the chip summary parameters */
 	ParameterNameValueTypeVector GetChipSums();
-	/*!  */
+
+	/*! Gets a chip summary parameter by name  */
 	ParameterNameValueType GetChipSum(const std::wstring& tag);
-	/*!  */
+
+	/*! Gets the file header */
 	FileHeader* GetFileHeader() { return &genericData.Header(); }
-	/*!  */
+
+	/*! Gets the file data object. */
 	GenericData& GetGenericData() { return genericData; }	// should be a friend method only
-	/*!  */
-	void SetEntryCount(int32_t ln);
-	/*!  */
+
+	/*! Sets the number of entries (probe sets)
+	 * @param ln The number of probe sets.
+	 * @param hasCompData A flag for expression results, true if comparison data exists.
+	 */
+	void SetEntryCount(int32_t ln, bool hasCompData = false);
+
+	/*! Gets the number of entries (probe sets) */
 	int32_t GetEntryCount();
 
-	/*! Gets CHP value
-	 *	@param row The row from which to start copying
-	 *	@param entry The data object to be filled
-	 */
-	//void GetEntry(int32_t row, CHPEntry& entry);
-
-	//void GetEntries(int32_t row, int32_t rowCnt, CHPEntryVector& entries);
-
-	void GetExpressionEntry(int32_t row, CHPExpressionEntry& e);
-
-	void GetGenotypeEntry(int32_t row, CHPGenotypeEntry& e);
-
-	void GetUniversalEntry(int32_t row, CHPUniversalEntry& e);
-
+	/*! Gets the number of background zones. */
 	int32_t GetBackgroundZoneCnt();
 
+	/*! Sets the number of background zones. */
 	void SetBackgroundZoneCnt(int32_t ln);
 
 	/*! Gets CHP background zone value
@@ -172,41 +223,96 @@ public:
 	 */
 	void GetBackgroundZone(int32_t row, CHPBackgroundZone& zone);
 
+	/*! Gets the background zones. */
 	void GetBackgroundZones(int32_t row, int32_t rowCnt, CHPBackgroundZoneVector& zones);
 
-private:
+	/*! Gets the expression entry (probe set). */
+	void GetEntry(int32_t row, CHPUniversalEntry& e);
 
-	void InsertDataSetHeader(const DataSetHeader &hdr);
+	/*! Gets the expression entry (probe set). */
+	void GetEntry(int32_t row, CHPGenotypeEntry& e);
 
-	void UpdateDataSetRowCount(const DataSetHeader &hdr);
+	/*! Gets the expression entry (probe set). */
+	void GetEntry(int32_t row, CHPExpressionEntry& e);
 
-	std::wstring GetWStringFromGenericHdr(const std::wstring& name);
+	/*! Gets the resequence entry. */
+	void GetEntry(int32_t row, CHPReseqEntry& e);
 
-	void SetWStringToGenericHdr(const std::wstring& name, const std::wstring value);
+	/*! Gets the number of force calls. */
+	int32_t GetForceCnt();
 
-	int32_t GetInt32FromGenericHdr(const std::wstring& name);
+	/*! Sets the number of force calls. */
+	void SetForceCnt(int32_t ln);
 
-	void SetInt32ToGenericHdr(const std::wstring& name, int32_t value);
+	/*! Gets the force call value
+	 *	@param row The row index
+	 *	@param force The data object to be filled
+	 */
+	void GetForceCall(int32_t row, CHPReseqForceCall& force);
 
-	void PrepareUnivEntryDataSet();
+	/*! Gets the number of orig calls. */
+	int32_t GetOrigCnt();
 
-	void PrepareExprEntryDataSet();
+	/*! Sets the number of orig calls. */
+	void SetOrigCnt(int32_t ln);
 
+	/*! Gets the original call value from the orig set.
+	 *	@param row The row index
+	 *	@param orig The orginal call value.
+	 */
+	void GetOrigCall(int32_t row, CHPReseqOrigCall &orig);
+
+protected:
+
+	/*! Prepares the data set. */
 	void PrepareGenoEntryDataSet();
 
+	/*! Prepares the data set. */
+	void PrepareExprEntryDataSet();
+
+	/*! Prepares the data set. */
+	void PrepareUnivEntryDataSet();
+
+	/*! Prepares the data set. */
+	void PrepareReseqEntryDataSet();
+
+	/*! Adds columns to the data set. */
+	void AddUnivColumns(DataSetHeader& hdr);
+
+	/*! Adds columns to the data set. */
+	void AddExprColumns(DataSetHeader& hdr, bool hasCompData);
+
+	/*! Adds columns to the data set. */
+	void AddGenoColumns(DataSetHeader& hdr);
+
+	/*! Adds columns to the data set. */
+	void AddReseqColumns(DataSetHeader& hdr);
+
+	/*! Gets a string parameter to the header. */
+	std::wstring GetWStringFromGenericHdr(const std::wstring& name);
+
+	/*! Adds a string parameter to the header. */
+	void SetWStringToGenericHdr(const std::wstring& name, const std::wstring value, int32_t reserve=-1);
+
+	/*! Gets an integer parameter from the header. */
+	int32_t GetInt32FromGenericHdr(const std::wstring& name);
+
+	/*! Adds an integer parameter to the header. */
+	void SetInt32ToGenericHdr(const std::wstring& name, int32_t value);
+
+	/*! Prepares the data set for the bg set. */
 	void PrepareBackgroundZoneDataSet();
 
-	void AddExpressionColumns(DataSetHeader& hdr);
+	/*! Prepares the data set for the force call set. */
+	void PrepareForceDataSet();
 
-	void AddResequencingColumns(DataSetHeader& hdr);
+	/*! Prepares the data set for the orig call set. */
+	void PrepareOrigDataSet();
 
-	void AddUniversalColumns(DataSetHeader& hdr);
-
-	void AddGenotypingColumns(DataSetHeader& hdr);
-
-	void AddColumns(DataSetHeader& hdr);
+	/*! Adds columns to the data set. */
+	void AddColumns(DataSetHeader& hdr, bool hasCompData);
 };
 
 }
 
-#endif // _FileHeader_HEADER_
+#endif

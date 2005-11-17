@@ -26,7 +26,6 @@
 #include "AffymetrixBaseTypes.h"
 #include "DateTime.h"
 
-using namespace affymetrix_calvin_utilities;
 
 /*! \file ExceptionBase.h This file provides base class definition for the exception class.
 */ 

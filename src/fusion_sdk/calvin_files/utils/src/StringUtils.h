@@ -26,6 +26,10 @@
 
 #include <string>
 
+#ifdef __MINGW32__
+#define USE_OLD_SWPRINTF
+#endif
+
 namespace affymetrix_calvin_utilities
 {
 
@@ -91,5 +95,77 @@ public:
 };
 
 }
+
+
+	/*! Formats the data into a string.
+	 * @param buffer The buffer to fill.
+	 * @param count The size of the buffer.
+	 * @param format The format string.
+	 * @param value1 The first value to add.
+	 */
+#ifdef USE_OLD_SWPRINTF
+#define FormatString1(buffer, count, format, value1) swprintf(buffer, format, value1)
+#else
+#define FormatString1(buffer, count, format, value1) swprintf(buffer, count, format, value1)
+#endif
+
+	/*! Formats the data into a string.
+	 * @param buffer The buffer to fill.
+	 * @param count The size of the buffer.
+	 * @param format The format string.
+	 * @param value1 The first value to add.
+	 * @param value2 The second value to add.
+	 */
+#ifdef USE_OLD_SWPRINTF
+#define FormatString2(buffer, count, format, value1, value2) swprintf(buffer, format, value1, value2)
+#else
+#define FormatString2(buffer, count, format, value1, value2) swprintf(buffer, count, format, value1, value2)
+#endif
+
+	/*! Formats the data into a string.
+	 * @param buffer The buffer to fill.
+	 * @param count The size of the buffer.
+	 * @param format The format string.
+	 * @param value1 The first value to add.
+	 * @param value2 The second value to add.
+	 * @param value3 The third value to add.
+	 */
+#ifdef USE_OLD_SWPRINTF
+#define FormatString3(buffer, count, format, value1, value2, value3) swprintf(buffer, format, value1, value2, value3)
+#else
+#define FormatString3(buffer, count, format, value1, value2, value3) swprintf(buffer, count, format, value1, value2, value3)
+#endif
+
+	/*! Formats the data into a string.
+	 * @param buffer The buffer to fill.
+	 * @param count The size of the buffer.
+	 * @param format The format string.
+	 * @param value1 The first value to add.
+	 * @param value2 The second value to add.
+	 * @param value3 The third value to add.
+	 * @param value4 The fourth value to add.
+	 */
+#ifdef USE_OLD_SWPRINTF
+#define FormatString4(buffer, count, format, value1, value2, value3, value4) swprintf(buffer, format, value1, value2, value3, value4)
+#else
+#define FormatString4(buffer, count, format, value1, value2, value3, value4) swprintf(buffer, count, format, value1, value2, value3, value4)
+#endif
+
+	/*! Formats the data into a string.
+	 * @param buffer The buffer to fill.
+	 * @param count The size of the buffer.
+	 * @param format The format string.
+	 * @param value1 The first value to add.
+	 * @param value2 The second value to add.
+	 * @param value3 The third value to add.
+	 * @param value4 The fourth value to add.
+	 * @param value5 The fifth value to add.
+	 */
+#ifdef USE_OLD_SWPRINTF
+#define FormatString5(buffer, count, format, value1, value2, value3, value4, value5) swprintf(buffer, format, value1, value2, value3, value4, value5)
+#else
+#define FormatString5(buffer, count, format, value1, value2, value3, value4, value5) swprintf(buffer, count, format, value1, value2, value3, value4, value5)
+#endif
+
 
 #endif //__STRINGUTIL_H__INCLUDED

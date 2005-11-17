@@ -20,32 +20,36 @@
 
 #include "DATData.h"
 #include "DataSetHeader.h"
+#include "GenericDataTypes.h"
+#include "ArrayId.h"
 
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;
 using namespace affymetrix_calvin_utilities;
 
-static const std::wstring PIXEL_SIZE_PARAM_NAME = L"affymetrix-pixel-size";
-static const std::wstring SCANNER_TYPE_PARAM_NAME = L"affymetrix-scanner-type";
-static const std::wstring SCANNER_ID_PARAM_NAME = L"affymetrix-scanner-id";
-static const std::wstring SCAN_DATE_PARAM_NAME = L"affymetrix-scan-date";
-static const std::wstring ROWS_PARAM_NAME = L"affymetrix-pixel-rows";
-static const std::wstring COLS_PARAM_NAME = L"affymetrix-pixel-cols";
+// Constant column names.
+static const std::wstring MinIntensityColName = L"Min Intensity";
+static const std::wstring MaxIntensityColName = L"Max Intensity";
 
 DATData::DATData()
 {
-	dpPixel = 0;
-	dpStats = 0;
+	globalGridStatus = 0;
+	dsPixel = 0;
+	dsSMPixel = 0;
+	dsStats = 0;
 	Clear();
 }
 
 DATData::DATData(const std::string &filename) 
 { 
-	dpPixel = 0;
-	dpStats = 0;
+	globalGridStatus = 0;
+	dsPixel = 0;
+	dsStats = 0;
+	dsSMPixel = 0;
 	Clear();
 	SetFilename(filename);
+	genericData.Header().GetGenericDataHdr()->SetFileTypeId(SCAN_ACQUISITION_DATA_TYPE);
 	DataGroupHeader dcHdr(DAT_DATAGROUP);
 	genericData.Header().AddDataGroupHdr(dcHdr);
 }
@@ -57,8 +61,9 @@ DATData::~DATData()
 
 void DATData::Clear()
 {
-	if (dpPixel){ dpPixel->Delete();  dpPixel = 0; }
-	if (dpStats){ dpStats->Delete(); dpStats = 0; }
+	if (dsPixel){ dsPixel->Delete();  dsPixel = 0; }
+	if (dsSMPixel){ dsSMPixel->Delete();  dsSMPixel = 0; }
+	if (dsStats){ dsStats->Delete(); dsStats = 0; }
 	globalGrid.Clear();
 	subgrids.clear();
 
@@ -84,7 +89,7 @@ void DATData::SetPixelCount(int32_t ln)
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	dpHdr.SetName(DAT_PIXEL);
-	dpHdr.AddUShortColumnType();
+	dpHdr.AddUShortColumn(DAT_PIXEL);
 	if(setPixelMetaData)
 	{
 		UpdateDataSetRowCount(dpHdr);
@@ -101,8 +106,8 @@ void DATData::SetStatsCount(int32_t ln)
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	dpHdr.SetName(DAT_STATS);
-	dpHdr.AddShortColumnType();
-	dpHdr.AddShortColumnType();
+	dpHdr.AddUShortColumn(MinIntensityColName);
+	dpHdr.AddUShortColumn(MaxIntensityColName);
 	if(setStatsMetaData)
 	{
 		UpdateDataSetRowCount(dpHdr);
@@ -148,7 +153,63 @@ std::wstring DATData::GetArrayType()
 
 void DATData::SetArrayType(const std::wstring& value)
 {
-	SetWStringToGenericHdr(ARRAY_TYPE_PARAM_NAME, value);
+	SetWStringToGenericHdr(ARRAY_TYPE_PARAM_NAME, value, ARRAY_TYPE_MAX_LEN);
+}
+
+/*
+ * Get the array id.
+ */
+AffymetrixGuidType DATData::GetArrayId()
+{
+	AffymetrixGuidType guid;
+	GenericDataHeader *parentGDH = GetParentArrayGenericDataHeader();
+	ParameterNameValueType nvt;
+	if (parentGDH->FindNameValParam(ARRAY_ID_PARAM_NAME, nvt))
+	{
+		guid = nvt.GetValueAscii();
+	}
+
+	return guid;
+}
+
+/*
+ * Set the array id.
+ */
+void DATData::SetArrayId(AffymetrixGuidType& value)
+{
+	ParameterNameValueType nvt;
+	nvt.SetName(ARRAY_ID_PARAM_NAME);
+	nvt.SetValueAscii(value);
+	GenericDataHeader *parentGDH = GetParentArrayGenericDataHeader();
+	parentGDH->AddNameValParam(nvt);
+}
+
+/*
+ * Get the array barcode.
+ */
+std::wstring DATData::GetArrayBarcode()
+{
+	std::wstring result;
+	GenericDataHeader *parentGDH = GetParentArrayGenericDataHeader();
+	ParameterNameValueType nvt;
+	if (parentGDH->FindNameValParam(ARRAY_BARCODE_PARAM_NAME, nvt))
+	{
+		result = nvt.GetValueText();
+	}
+
+	return result;
+}
+
+/*
+ * Set the array barcode.
+ */
+void DATData::SetArrayBarcode(std::wstring& value)
+{
+	ParameterNameValueType nvt;
+	nvt.SetName(ARRAY_BARCODE_PARAM_NAME);
+	nvt.SetValueText(value);
+	GenericDataHeader *parentGDH = GetParentArrayGenericDataHeader();
+	parentGDH->AddNameValParam(nvt);
 }
 
 float DATData::GetPixelSize()
@@ -231,6 +292,12 @@ void DATData::SetCols(int32_t value)
 	cachedCols = value;
 }
 
+void DATData::AddSubgrid(u_int32_t status, const FRegion& subgrid)
+{
+	subgridsStatus.push_back(status);
+	subgrids.push_back(subgrid);
+}
+
 std::wstring DATData::GetWStringFromGenericHdr(const std::wstring& name)
 {
 	std::wstring result;
@@ -243,11 +310,11 @@ std::wstring DATData::GetWStringFromGenericHdr(const std::wstring& name)
 	return result;
 }
 
-void DATData::SetWStringToGenericHdr(const std::wstring& name, const std::wstring value)
+void DATData::SetWStringToGenericHdr(const std::wstring& name, const std::wstring value, int32_t reserve)
 {
 	ParameterNameValueType paramType;
 	paramType.SetName(name);
-	paramType.SetValueText(value);
+	paramType.SetValueText(value, reserve);
 	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
 	hdr->AddNameValParam(paramType);
 }
@@ -278,16 +345,16 @@ void DATData::SetInt32ToGenericHdr(const std::wstring& name, int32_t value)
 */
 bool DATData::GetPixels(u_int16_t* pixelBuffer, u_int32_t startRow, u_int32_t rowCnt)
 {
-	PreparePixelPlane();
-	if (dpPixel && dpPixel->IsOpen())
+	PreparePixelSet();
+	if (dsPixel && dsPixel->IsOpen())
 	{
 		if (rowCnt+startRow <= (u_int32_t)GetRows())
 		{
 			int32_t startIdx = startRow*GetCols();
 			int32_t count = rowCnt*GetCols();
-			if (startIdx+count <= dpPixel->Rows())
+			if (startIdx+count <= dsPixel->Rows())
 			{
-				int32_t returned = dpPixel->GetDataRaw(0, startIdx, count, pixelBuffer);
+				int32_t returned = dsPixel->GetDataRaw(0, startIdx, count, pixelBuffer);
 				return (count == returned);
 			}
 		}
@@ -295,37 +362,93 @@ bool DATData::GetPixels(u_int16_t* pixelBuffer, u_int32_t startRow, u_int32_t ro
 	return false;
 }
 
-bool DATData::GetRange(u_int16_t& min, u_int16_t& max)
+/*
+ * Fills the array with requested pixel values.	
+ */
+bool DATData::GetPixels(u_int16_t* pixelBuffer, u_int32_t startRow, u_int32_t startCol, u_int32_t rowCnt, u_int32_t colCnt)
 {
-	PrepareStatsPlane();
-	if (dpStats && dpStats->IsOpen())
+	PrepareSmallMemoryPixelSet();
+	if (dsSMPixel && dsSMPixel->IsOpen())
 	{
-		if (dpStats->Rows() > 0)
+		if (rowCnt+startRow <= (u_int32_t)GetRows() && colCnt+startCol <= (u_int32_t)GetCols())
 		{
-			dpStats->GetData(0, 0, min);
-			dpStats->GetData(0, 1, max);
+			u_int16_t* pb = pixelBuffer;
+
+			// Copy one row at a time into the buffer.
+			for (int32_t row = startRow; row < startRow+rowCnt; ++row)
+			{
+				int32_t dsRow = row*GetCols() + startCol;
+				if (dsRow+colCnt <= dsSMPixel->Rows())
+				{
+					int32_t returned = dsSMPixel->GetDataRaw(0, dsRow, colCnt, pb);
+					if (returned != colCnt)
+						return false;
+
+					pb += colCnt;
+				}
+			}
+
 			return true;
 		}
 	}
 	return false;
 }
 
-void DATData::PreparePixelPlane()
+bool DATData::GetRange(u_int16_t& min, u_int16_t& max)
 {
-	PreparePlane(DAT_PIXEL, dpPixel);
-}
-
-void DATData::PrepareStatsPlane()
-{
-	PreparePlane(DAT_STATS, dpStats);
-}
-
-void DATData::PreparePlane(const std::wstring& name, DataSet*& dp)
-{
-	if (dp == 0)
+	PrepareStatsSet();
+	if (dsStats && dsStats->IsOpen())
 	{
-		dp = genericData.DataSet(DAT_DATAGROUP, name);
-		if (dp)
-			dp->Open();
+		if (dsStats->Rows() > 0)
+		{
+			dsStats->GetData(0, 0, min);
+			dsStats->GetData(0, 1, max);
+			return true;
+		}
 	}
+	return false;
+}
+
+void DATData::PreparePixelSet()
+{
+	PrepareSet(DAT_PIXEL, dsPixel);
+}
+
+void DATData::PrepareSmallMemoryPixelSet()
+{
+	genericData.UseMemoryMapping(false);
+	genericData.LoadEntireDataSetHint(false);
+	PrepareSet(DAT_PIXEL, dsSMPixel);
+	genericData.UseMemoryMapping(true);
+}
+
+void DATData::PrepareStatsSet()
+{
+	PrepareSet(DAT_STATS, dsStats);
+}
+
+void DATData::PrepareSet(const std::wstring& name, DataSet*& ds)
+{
+	if (ds == 0)
+	{
+		ds = genericData.DataSet(DAT_DATAGROUP, name);
+		if (ds)
+			ds->Open();
+	}
+}
+
+GenericDataHeader* DATData::GetParentArrayGenericDataHeader()
+{
+	GenericDataHeader* parentGDH = genericData.Header().GetGenericDataHdr()->FindParent(ARRAY_TYPE_IDENTIFIER);
+
+	if (parentGDH == 0)
+	{
+		// Create a new parent GenericDataHeader and add to the current GenericDataHeader
+		GenericDataHeader gdh;
+		gdh.SetFileTypeId(ARRAY_TYPE_IDENTIFIER);
+		genericData.Header().GetGenericDataHdr()->AddParent(gdh);
+		parentGDH = genericData.Header().GetGenericDataHdr()->FindParent(ARRAY_TYPE_IDENTIFIER);
+	}
+
+	return parentGDH;
 }

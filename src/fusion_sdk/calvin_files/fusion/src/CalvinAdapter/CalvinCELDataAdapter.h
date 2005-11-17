@@ -51,12 +51,12 @@ public:
 	 *	\param value The cell file name to be set
 	 */
 	virtual void SetFileName(const std::string& value);
-	/*! \breif Get the cell file name. 
+	/*! \brief Get the cell file name. 
 	 *	\return The currently set cell file name.
 	 */
 	virtual std::string GetFileName() const;
 
-	/*! \breif Set the error message.
+	/*! \brief Set the error message.
 	 *	\param value The error message to be set.
 	 */
 	virtual void SetError(const wchar_t* value) {}	// do nothing
@@ -101,24 +101,28 @@ public:
 	 *	\return The parameter value.
 	 */
 	virtual std::wstring GetAlgorithmParameter(const wchar_t *tag);
-	/*! \brief Get parameter index.
-	 *	\param tag Parameter name.
-	 *	\return The index where the parameter value is located.
+	/*! \brief Get parameter.
+	 *	\param index The index to the parameter array.
+	 *	\return The parameter value.
 	 */
 	virtual std::wstring GetAlgorithmParameterTag(int index);
 	/*! \brief Get number of parameters.
-	 *	\param index Index assocaited with parameter name.
-	 *	\return The Parameter name.
+	 *	\return The number of parameters.
 	 */
 	virtual int GetNumberAlgorithmParameters() ;
 	/*! \brief Get the number of parameters.
 	 *	\return The number of parameters.
 	*/
 	virtual std::wstring GetAlgorithmParameters();
-	/*! \breif Get parameters.
+	/*! \brief Get parameters.
 	 *	\param values Collection of name/value type parameter list.
 	 */
 	virtual void GetParameters(FusionTagValuePairTypeList& values);
+	/*! \brief Get the DatHeader string.
+	 *	Attempts to read the DatHeader parameter of the DAT generic data header.
+	 *	\return The DatHeader parameter value if found, otherwise an empty string.
+	 */
+	virtual std::wstring GetDatHeader();
 	/*! \brief Get chip type.
 	 *	\return The chip type of the cell.
 	 */
@@ -126,8 +130,8 @@ public:
 	/*! \brief Get cell margin.
 		\return The cell margin.
 	 */
-	virtual int GetCellMargin() { return 0; }
-	/*! \breif Get number of outliers.
+	virtual int GetCellMargin();
+	/*! \brief Get number of outliers.
 	 *	\return The number of outliers.
 	 */
 	virtual unsigned int GetNumOutliers();
@@ -135,6 +139,10 @@ public:
 	 *	\return The number of masked cells.
 	 */
 	virtual unsigned int GetNumMasked();
+	/*! \brief Get the grid coordinates.
+	 *  \return Returns the grid coordinates.
+	 */
+	virtual FGridCoords GetGridCorners();
 
 	// Index/position conversions
 	/*! \brief Translate index to X.
@@ -259,25 +267,25 @@ public:
 	/*! \brief Sets the name of the algorithm used to create the CEL file. 
 	 *	\param str The algorithm name.
 	 */
-	virtual void SetAlgorithmName(const wchar_t *str) { calvinCel.SetAlgorithmName(str); }
+//	virtual void SetAlgorithmName(const wchar_t *str) { calvinCel.SetAlgorithmName(str); }
 	/*! \brief Add algorithm parameter.
 	 *	\param tag Parameter name.
 	 *	\param value Parameter value.
 	 */
-	virtual void AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value);
+//	virtual void AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value);
 	/*! \brief Set the number of rows and columns.
 	 *	\param rows Number of rows.
 	 *	\param cols Number of columns.
 	 */
-	virtual void SetDimensions(int rows, int cols);
+//	virtual void SetDimensions(int rows, int cols);
 	/*! \brief Set the chip type.
 	 *	\param str Chip type.
 	 */
-	virtual void SetChipType(const wchar_t *str) { calvinCel.SetArrayType(str); }
+//	virtual void SetChipType(const wchar_t *str) { calvinCel.SetArrayType(str); }
 	/*! \brief Set the margin.
 	 *	\param margin Margin value to set.
 	 */
-	virtual void SetMargin(int margin) {}
+//	virtual void SetMargin(int margin) {}
 
 protected:
 	/*! The underlying data access object */

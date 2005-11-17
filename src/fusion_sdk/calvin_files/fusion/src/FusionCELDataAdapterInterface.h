@@ -23,6 +23,7 @@
 
 #include "FusionTagValuePairType.h"
 #include "ParameterNameValueType.h"
+#include "FusionCoords.h"
 #include <string>
 #include <list>
 
@@ -34,7 +35,7 @@ namespace affymetrix_fusion_io
 {
 
 /*! Fusion Entry Type */
-struct FusionCELFileEntryType
+typedef struct _FusionCELFileEntryType
 {
 	/*! Intensity value */
 	float Intensity;
@@ -42,12 +43,16 @@ struct FusionCELFileEntryType
 	float Stdv;
 	/*! pixels */
 	short Pixels;
-};
+} FusionCELFileEntryType;
 
 /*! \brief Adapter that wraps both GCOS and Calvin cell file readers and contains the interfaces to the data.*/
 class IFusionCELDataAdapter
 {
 public:
+
+	/*! \brief Virtual destructor. */
+	virtual ~IFusionCELDataAdapter() {};
+
 	/*! \brief Can this object read the file 
 	 *	\return If the cell file can be read.
 	 */
@@ -56,11 +61,11 @@ public:
 	 *	\param value The cell file name to be set
 	 */
 	virtual void SetFileName(const std::string& value) = 0;
-	/*! \breif Get the cell file name. 
+	/*! \brief Get the cell file name. 
 	 *	\return The currently set cell file name.
 	 */
 	virtual std::string GetFileName() const = 0;
-	/*! \breif Set the error message.
+	/*! \brief Set the error message.
 	 *	\param value The error message to be set.
 	 */
 	virtual void SetError(const wchar_t* value) = 0;
@@ -106,13 +111,12 @@ public:
 	 *	\return The parameter value.
 	 */
 	virtual std::wstring GetAlgorithmParameter(const wchar_t *tag) = 0;
-	/*! \brief Get parameter index.
-	 *	\param tag Parameter name.
-	 *	\return The index where the parameter value is located.
+	/*! \brief Gets a parameter.
+	 *	\param index The index to the parameter array.
+	 *	\return The parammeter value.
 	 */
 	virtual std::wstring GetAlgorithmParameterTag(int index) = 0;
 	/*! \brief Get number of parameters.
-	 *	\param index Index assocaited with parameter name.
 	 *	\return The Parameter name.
 	 */
 	virtual int GetNumberAlgorithmParameters() = 0;
@@ -120,10 +124,14 @@ public:
 	 *	\return The number of parameters.
 	*/
 	virtual std::wstring GetAlgorithmParameters() = 0;
-	/*! \breif Get parameters.
+	/*! \brief Get parameters.
 	 *	\param values Collection of name/value type parameter list.
 	 */
 	virtual void GetParameters(FusionTagValuePairTypeList& values) = 0;
+	/*! \brief Get the DatHeader string.
+	 *	\return The DatHeader string.
+	 */
+	virtual std::wstring GetDatHeader() = 0;
 	/*! \brief Get chip type.
 	 *	\return The chip type of the cell.
 	 */
@@ -132,7 +140,7 @@ public:
 		\return The cell margin.
 	 */
 	virtual int GetCellMargin() = 0;
-	/*! \breif Get number of outliers.
+	/*! \brief Get number of outliers.
 	 *	\return The number of outliers.
 	 */
 	virtual unsigned int GetNumOutliers() = 0;
@@ -140,6 +148,11 @@ public:
 	 *	\return The number of masked cells.
 	 */
 	virtual unsigned int GetNumMasked() = 0;
+
+	/*! \brief Get the grid coordinates.
+	 *  \return Returns the grid coordinates.
+	 */
+	virtual FGridCoords GetGridCorners() = 0;
 
 	// Index/position conversions
 	/*! \brief Translate index to X.
@@ -259,30 +272,6 @@ public:
 	virtual int GetReadState() = 0;
 	/*! \brief clears the members. */
 	virtual void Clear() = 0;
-
-	// Sets the data values
-	/*! \brief Sets the name of the algorithm used to create the CEL file. 
-	 *	\param str The algorithm name.
-	 */
-	virtual void SetAlgorithmName(const wchar_t *str) = 0;
-	/*! \brief Add algorithm parameter.
-	 *	\param tag Parameter name.
-	 *	\param value Parameter value.
-	 */
-	virtual void AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value) = 0;
-	/*! \brief Set the number of rows and columns.
-	 *	\param rows Number of rows.
-	 *	\param cols Number of columns.
-	 */
-	virtual void SetDimensions(int rows, int cols) = 0;
-	/*! \brief Set the chip type.
-	 *	\param str Chip type.
-	 */
-	virtual void SetChipType(const wchar_t *str) = 0;
-	/*! \brief Set the margin.
-	 *	\param margin Margin value to set.
-	 */
-	virtual void SetMargin(int margin) = 0;
 };
 
 }

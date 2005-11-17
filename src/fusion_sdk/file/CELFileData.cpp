@@ -31,6 +31,7 @@
 
 #ifdef WIN32
 #pragma warning(disable: 4996) // don't show deprecated warnings.
+#define snprintf _snprintf
 #endif
 
 using namespace affxcel;
@@ -81,7 +82,9 @@ using namespace affxcel;
 #define BCEL_CHUNK_TAIL "TAIL"
 
 /// Compact cel format identifier
-#define CCEL_HEADER_BYTES "CCEL\r\n\064\n"
+#define CCEL_HEADER_BYTES "CCEL\r\n\128\n"
+/// Unspported version of compact cel format identifier
+#define OLD_CCEL_HEADER_BYTES "CCEL\r\n\064\n"
 /// Size of compact cel format identifier
 #define CCEL_HEADER_LEN 8
 
@@ -192,11 +195,10 @@ void CCELFileHeaderData::Clear()
 std::string CCELFileHeaderData::GetHeader()
 {
 	SetDatHeader();
-	char paramString[1024];
-	sprintf(paramString, "Cols=%d\nRows=%d\nTotalX=%d\nTotalY=%d\nOffsetX=%d\nOffsetY=%d\n"
+	char paramString[2000];
+	snprintf(paramString,sizeof(paramString), "Cols=%d\nRows=%d\nTotalX=%d\nTotalY=%d\nOffsetX=%d\nOffsetY=%d\n"
 				"GridCornerUL=%d %d\nGridCornerUR=%d %d\nGridCornerLR=%d %d\nGridCornerLL=%d %d\n"
-				"Axis-invertX=%d\nAxisInvertY=%d\nswapXY=%d\nDatHeader=%s"
-				"\nAlgorithm=%s\nAlgorithmParameters=%s\n",
+				"Axis-invertX=%d\nAxisInvertY=%d\nswapXY=%d\nDatHeader=%s\nAlgorithm=%s\n",
 				m_nCols, m_nRows,
 				m_nCols, m_nRows,
 				0,0,
@@ -206,10 +208,12 @@ std::string CCELFileHeaderData::GetHeader()
 				m_CellGrid.lowerleft.x, m_CellGrid.lowerleft.y,
 				0,0,0,
 				m_DatHeader.c_str(),
-				m_Alg.c_str(),
-				GetAlgorithmParameters().c_str());
+				m_Alg.c_str());
 
 	m_Header = paramString;
+	m_Header += "AlgorithmParameters=";
+	m_Header += GetAlgorithmParameters();
+	m_Header += "\n";
 	return m_Header;
 }
 
@@ -223,8 +227,8 @@ void CCELFileHeaderData::SetDatHeader()
 {
 	if ((m_ChipType.length() > 0) && (m_DatHeader.length() == 0))
 	{
-		char scanInfo[512];
-		sprintf(scanInfo, " %c %c %s.1sq %c %c %c %c %c %c %c %c %c ",
+		char scanInfo[2000];
+		snprintf(scanInfo,sizeof(scanInfo), " %c %c %s.1sq %c %c %c %c %c %c %c %c %c ",
 			DELIMCHAR,
 			DELIMCHAR,
 			m_ChipType.c_str(),
@@ -238,6 +242,52 @@ void CCELFileHeaderData::SetDatHeader()
 			DELIMCHAR,
 			DELIMCHAR);
 		m_DatHeader = scanInfo;
+	}
+	else if ((m_ChipType.length() > 0) && (m_DatHeader.length() > 0))
+	{
+		std::string temp = "";
+		std::string::size_type index = m_DatHeader.find(DELIMCHAR);
+		if (index != std::string::npos)
+		{
+			index = m_DatHeader.find(DELIMCHAR, index + 1);
+			if (index != std::string::npos)
+			{
+				std::string::size_type indexEnd = m_DatHeader.find(".1sq", index);
+				if (indexEnd != std::string::npos)
+				{
+					if (m_DatHeader.substr(index + 2, indexEnd - index) != m_ChipType)
+					{
+						temp = m_DatHeader.substr(0, index + 2);
+						temp += m_ChipType;
+						temp += m_DatHeader.substr(indexEnd);
+					}
+					else 
+						temp = m_DatHeader;
+				}
+				else
+				{
+					indexEnd = m_DatHeader.find(DELIMCHAR, index + 1);
+					if (indexEnd != std::string::npos)
+					{
+						if (m_DatHeader.substr(index + 2, indexEnd - index - 1) != m_ChipType)
+						{
+							temp = m_DatHeader.substr(0, index + 2);
+							temp += m_ChipType;
+							temp += ".1sq";
+							temp += m_DatHeader.substr(indexEnd);
+						}
+						else 
+							temp = m_DatHeader;
+					}
+				}
+			}
+			else
+				temp = m_DatHeader;
+		}
+		else
+			temp = m_DatHeader;
+
+		m_DatHeader = temp;
 	}
 }
 
@@ -403,6 +453,49 @@ void CCELFileHeaderData::SetAlgorithmParameter(const char *tag, const char *valu
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+///  public  SetAddAlgorithmParameter
+///  \brief Set or Add algorithm parameter value
+///
+///  @param  tag const char * 	Algorithm parameter tag
+///  @param  value const char * 	Algorithm parameter value
+///  @return void	
+///////////////////////////////////////////////////////////////////////////////
+void CCELFileHeaderData::SetAddAlgorithmParameter(const char *tag, const char *value)
+{
+	assert(tag != NULL);
+	assert(value != NULL);
+
+	std::string strTag = tag;
+	std::string strValue = value;
+
+	SetAddAlgorithmParameter(strTag, strValue);
+}
+	
+
+///////////////////////////////////////////////////////////////////////////////
+///  public  SetAddAlgorithmParameter
+///  \brief Set or Add algorithm parameter value
+///
+///  @param  tag const char * 	Algorithm parameter tag
+///  @param  value const char * 	Algorithm parameter value
+///  @return void	
+///////////////////////////////////////////////////////////////////////////////
+void CCELFileHeaderData::SetAddAlgorithmParameter(std::string& tag, std::string& value)
+{
+	assert(tag != "");
+	assert(value != "");
+
+	std::map<std::string, std::string>::iterator pos = m_Parameters.find(tag);
+	if (pos != m_Parameters.end()) {
+		pos->second = value;
+	} else {
+		int index = (int) m_Parameters.size() + 1;
+		m_ParameterIndices.insert(std::make_pair(index, tag));
+		m_Parameters.insert(std::make_pair(tag, value));
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
 ///  public  GetAlgorithmParameter
 ///  \brief Retrieve algorithm parameter value of specified tag
 ///
@@ -484,7 +577,7 @@ void CCELFileHeaderData::SetMargin(int i)
 {
 	m_Margin = i; 
 	char sz[1024]; 
-	sprintf(sz, "%d", i); 
+	snprintf(sz,sizeof(sz), "%d", i); 
 	AddAlgorithmParameter("CellMargin", sz); 
 }
 
@@ -603,6 +696,11 @@ bool CCELFileData::Open(bool bReadHeaderOnly)
 		retVal = ReadTranscriptomeBCel(bReadHeaderOnly);
 	else if (IsCompactCelFile())
 		retVal = ReadCompactBCel(bReadHeaderOnly);
+	else if (IsUnsupportedCompactCelFile())
+	{
+		SetError("This version of compact cel file is no longer supported.");
+		retVal = false;
+	}
 	else
 		retVal = ReadTextCel(bReadHeaderOnly);
 
@@ -946,14 +1044,14 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 	m_HeaderData.SetParams(sval.c_str());
 	ReadUInt32_N(instr, ulValue);							
 
-	char paramString[1024];
-	sprintf(paramString, 
+	char paramString[2000];
+	snprintf(paramString,sizeof(paramString), 
           "Cols=%d\nRows=%d\n"
           "TotalX=%u\nTotalY=%u\nOffsetX=%u\nOffsetY=%u\n"
           "GridCornerUL=%d %d\nGridCornerUR=%d %d\n"
           "GridCornerLR=%d %d\nGridCornerLL=%d %d\n"
           "Axis-invertX=%d\nAxisInvertY=%d\nswapXY=%d\nDatHeader=%s\n"
-          "Algorithm=%s\nAlgorithmParameters=%s\n",
+          "Algorithm=%s\nAlgorithmParameters=",
           m_HeaderData.GetCols(),m_HeaderData.GetRows(),
           totalx,totaly,offsetx,offsety,
           grid.upperleft.x,grid.upperleft.y,
@@ -962,9 +1060,11 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
           grid.lowerleft.x,grid.lowerleft.y,
           axisinvertx,axisinverty,swapxy,
           scanInfo.c_str(),
-          m_HeaderData.GetAlg().c_str(),
-          m_HeaderData.GetParams().c_str());
-	m_HeaderData.SetHeader(paramString);
+          m_HeaderData.GetAlg().c_str());
+	std::string param = paramString;
+	param += m_HeaderData.GetParams();
+	param += "\n";
+	m_HeaderData.SetHeader(param.c_str());
 
 	// Read cell size
 	ReadUInt32_N(instr, ulValue);
@@ -1029,6 +1129,9 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 
     size_t cellf_page_start = PAGE_TRUNC(ftell(m_File));
     size_t cellf_page_offset = ftell(m_File) - cellf_page_start;
+#ifdef __CYGWIN__
+	cellf_page_offset -= 1;
+#endif
     m_MapLen = lFileSize - cellf_page_start;
     m_lpFileMap = mmap(NULL, m_MapLen, PROT_READ, MAP_SHARED, fileno(m_File), cellf_page_start);
     if (m_lpFileMap == MAP_FAILED)
@@ -1181,11 +1284,19 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 	ReadInt32_I(instr, iValue);
 	iHeaderBytes += INT_SIZE;
 	m_HeaderData.SetMargin(iValue);
+
+	// Added -- causes backwards compatability issues w/ earlier pre-releases
 	ReadUInt32_I(instr, ulValue);
 	iHeaderBytes += UINT32_SIZE;
 	m_HeaderData.SetMasked(ulValue);
+
 	ReadInt32_I(instr, nSubGrids);
 	iHeaderBytes += INT_SIZE;
+	// This hack needs to be changed. In short, the application of ccel to date
+	// is on chips with 0 sub grids reported. If we are dealing with a ccel file
+	// from a pre inclusion of mask values we will get non-zero subgrids. Hence
+	// the assert:
+	assert(nSubGrids == 0);
 
 	// Set the chip type and DatHeader
 	m_HeaderData.ParseChipType();
@@ -1243,6 +1354,9 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 
     size_t cellf_page_start = PAGE_TRUNC(ftell(m_File));
     size_t cellf_page_offset = ftell(m_File) - cellf_page_start;
+#ifdef __CYGWIN__
+	cellf_page_offset -= 1;
+#endif
     m_MapLen = lFileSize - cellf_page_start;
     m_lpFileMap = mmap(NULL, m_MapLen, PROT_READ, MAP_SHARED, fileno(m_File), cellf_page_start);
     if (m_lpFileMap == MAP_FAILED)
@@ -1409,6 +1523,7 @@ bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 		sscanf(m_HeaderData.GetHeader().c_str(), "COLS/ROWS=%d %d", &iCols, &iRows);
 		m_HeaderData.SetCols(iCols);
 		m_HeaderData.SetRows(iRows);
+		m_HeaderData.SetCells(iCols*iRows);
 	}
 	else
 	{
@@ -1426,20 +1541,12 @@ bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 		instr.getline(pszHeader, MAXLINELENGTH);
 		sscanf(pszHeader,"Cols=%d",&iCols);
 		m_HeaderData.SetCols(iCols);
-
-		// added fix for the reading of the header. jhb
-		m_HeaderData.SetCells(iCols*iRows);
-
 		m_HeaderData.SetHeader(pszHeader);
 		instr.getline(pszHeader, MAXLINELENGTH);
 		sscanf(pszHeader,"Rows=%d",&iRows);
-
 		m_HeaderData.SetRows(iRows);
-
-		// added fix for the reading of the header. JHb
-		m_HeaderData.SetCells(iCols*iRows);
-
 		m_HeaderData.AppendHeader(pszHeader);
+		m_HeaderData.SetCells(iRows*iCols);
 
 		//Now read the rest of the header
 		bool moreHeader=true;
@@ -1448,10 +1555,9 @@ bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 			if (!instr.getline(pszHeader, MAXLINELENGTH))
 				return false;
 			if (strncmp(pszHeader,"DatHeader=",10)==0) //Last line of the header
-			  {
-			    if (pszHeader[strlen(pszHeader) - 1] == '\r') 
-			      pszHeader[strlen(pszHeader) - 1] = '\0';
-			    m_HeaderData.SetDatHeader(pszHeader + 10);
+			{
+                if (pszHeader[strlen(pszHeader) - 1] == '\r') pszHeader[strlen(pszHeader) - 1] = '\0';
+				m_HeaderData.SetDatHeader(pszHeader + 10);
 			}
 
 			if (strncmp(pszHeader,"Algorithm=",10)==0) //Last line of the header
@@ -1480,12 +1586,12 @@ bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 	// Set grid coordinates
 	m_HeaderData.ParseCorners();
 
-	char paramString[1024];
+	char paramString[2000];
 	GridCoordinatesType grid = m_HeaderData.GetGridCorners();
-	sprintf(paramString, "Cols=%d\nRows=%d\nTotalX=%d\nTotalY=%d\nOffsetX=%d\nOffsetY=%d\n"
+	snprintf(paramString,sizeof(paramString), "Cols=%d\nRows=%d\nTotalX=%d\nTotalY=%d\nOffsetX=%d\nOffsetY=%d\n"
 				"GridCornerUL=%d %d\nGridCornerUR=%d %d\nGridCornerLR=%d %d\nGridCornerLL=%d %d\n"
 				"Axis-invertX=%d\nAxisInvertY=%d\nswapXY=%d\nDatHeader=%s"
-				"\nAlgorithm=%s\nAlgorithmParameters=%s\n",
+				"\nAlgorithm=%s\nAlgorithmParameters=",
 				m_HeaderData.GetCols(),m_HeaderData.GetRows(),
 				m_HeaderData.GetCols(),m_HeaderData.GetRows(),
 				0,0,
@@ -1495,10 +1601,11 @@ bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 				grid.lowerleft.x, grid.lowerleft.y,
 				0,0,0,
 				m_HeaderData.GetDatHeader().c_str(),
-				m_HeaderData.GetAlg().c_str(),
-				m_HeaderData.GetAlgorithmParameters().c_str());
-
-	m_HeaderData.SetHeader(paramString);
+				m_HeaderData.GetAlg().c_str());
+	std::string param = paramString;
+	param += m_HeaderData.GetAlgorithmParameters();
+	param += "\n";
+	m_HeaderData.SetHeader(param.c_str());
 
 	// Don't continue if just reading the header.
 	if (bReadHeaderOnly)
@@ -1823,6 +1930,10 @@ bool CCELFileData::ReadEx(const char *filename, int nState)
 	return true;
 }
 
+
+/// Length of buffer for GetHeaderKey.
+#define SVALUE_LENGTH 50
+
 ///////////////////////////////////////////////////////////////////////////////
 ///  public  GetHeaderKey
 ///  \brief Retrieve header value in string by specifying header key
@@ -1830,6 +1941,7 @@ bool CCELFileData::ReadEx(const char *filename, int nState)
 ///  @param  key const char * 	Header section key
 ///  @return std::string	Header section value
 ///////////////////////////////////////////////////////////////////////////////
+
 std::string CCELFileData::GetHeaderKey(const char* key)
 {
 	assert(key != NULL);
@@ -1837,60 +1949,62 @@ std::string CCELFileData::GetHeaderKey(const char* key)
 	std::string strKey = key;
 	std::transform(strKey.begin(), strKey.end(), strKey.begin(), toupper);
 
+
+
 	if (strKey == "HEADER")
 		return GetHeaderString();
 	else if (strKey == "VERSION")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "%d", GetVersion());
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "%d", GetVersion());
 		return sValue;
 	}
 	else if (strKey == "COLS")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "%d", GetCols());
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "%d", GetCols());
 		return sValue;
 	}
 	else if (strKey == "ROWS")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "%d", GetRows());
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "%d", GetRows());
 		return sValue;
 	}
 	else if (strKey == "TOTALX")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "%d", GetCols());
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "%d", GetCols());
 		return sValue;
 	}
 	else if (strKey == "TOTALY")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "%d", GetRows());
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "%d", GetRows());
 		return sValue;
 	}
 	else if (strKey == "GRIDCORNERUL")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "(%d, %d)", GetGridCorners().upperleft.x, GetGridCorners().upperleft.y);
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().upperleft.x, GetGridCorners().upperleft.y);
 		return sValue;
 	}
 	else if (strKey == "GRIDCORNERUR")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "(%d, %d)", GetGridCorners().upperright.x, GetGridCorners().upperright.y);
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().upperright.x, GetGridCorners().upperright.y);
 		return sValue;
 	}
 	else if (strKey == "GRIDCORNERLL")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "(%d, %d)", GetGridCorners().lowerleft.x, GetGridCorners().lowerleft.y);
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().lowerleft.x, GetGridCorners().lowerleft.y);
 		return sValue;
 	}
 	else if (strKey == "GRIDCORNERLR")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "(%d, %d)", GetGridCorners().lowerright.x, GetGridCorners().lowerright.y);
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().lowerright.x, GetGridCorners().lowerright.y);
 		return sValue;
 	}
 	else if (strKey == "OFFSETX")
@@ -1911,24 +2025,27 @@ std::string CCELFileData::GetHeaderKey(const char* key)
 		return GetParams();
 	else if (strKey == "NUMBERCELLS")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "%d", GetNumCells());
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "%d", GetNumCells());
 		return sValue;
 	}
 	else if (strKey == "NUMBERMASKEDCELLS")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "%d", GetNumMasked());
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "%d", GetNumMasked());
 		return sValue;
 	}
 	else if (strKey == "NUMBEROUTLIERCELLS")
 	{
-		char* sValue = new char[50];
-		sprintf(sValue, "%d", GetNumOutliers());
+		char* sValue = new char[SVALUE_LENGTH];
+		snprintf(sValue,SVALUE_LENGTH, "%d", GetNumOutliers());
 		return sValue;
 	}
 	return "";
 }
+
+#undef SVALUE_LENGTH // dont need this any more.
+
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  public  GetEntry
@@ -2232,6 +2349,32 @@ bool CCELFileData::IsXDACompatibleFile()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+///  public  IsVersion3CompatibleFile
+///  \brief Determine if CEL file is in text (version 3) format
+///
+///  @return bool	true if version 3; false otherwise
+///////////////////////////////////////////////////////////////////////////////
+bool CCELFileData::IsVersion3CompatibleFile()
+{
+	// Open the file.
+	std::ifstream instr(m_FileName.c_str(), std::ios::in);
+	if (!instr)
+		return false;
+
+	bool status = false;
+	const char *Version3Line = "[CEL]";
+	const int MAXLINELENGTH = 16;
+	char pszHeader[MAXLINELENGTH];
+
+	// Extract the first line which should be [CEL] for a version 3 file
+	instr.getline(pszHeader, MAXLINELENGTH);
+	if (strncmp(pszHeader,Version3Line,strlen(Version3Line))==0)
+		status = true;
+	instr.close();
+	return status;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 ///  public  IsTranscriptomeBcelFile
 ///  \brief Determine if CEL file is in transcriptome binary format
 ///
@@ -2274,6 +2417,32 @@ bool CCELFileData::IsCompactCelFile()
 	bool bCompactCelFile = false;
 	if (strncmp(szMarker, CCEL_HEADER_BYTES, CCEL_HEADER_LEN) == 0)
 		bCompactCelFile = true;
+
+	instr.close();
+
+	return bCompactCelFile;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///  public  IsUnsupportedCompactCelFile
+///  \brief Determine if CEL file is in unsupported compact binary format
+///
+///  @return bool	true if unsupported compact; false otherwise
+///////////////////////////////////////////////////////////////////////////////
+bool CCELFileData::IsUnsupportedCompactCelFile()
+{
+	// Open the file.
+	std::ifstream instr(m_FileName.c_str(), std::ios::in | std::ios::binary);
+	if (!instr)
+		return 0;
+
+	// Read the header marker from the file.
+	char szMarker[CCEL_HEADER_LEN];
+	ReadFixedCString(instr, szMarker, CCEL_HEADER_LEN);
+	bool bCompactCelFile = false;
+	if (strncmp(szMarker, OLD_CCEL_HEADER_BYTES, CCEL_HEADER_LEN) == 0)
+		bCompactCelFile = true;
+
 	instr.close();
 
 	return bCompactCelFile;
@@ -2295,6 +2464,8 @@ void CCELFileData::DetermineFileFormat()
 		m_FileFormat = TRANSCRIPTOME_BCEL;
 	else if (IsCompactCelFile())
 		m_FileFormat = COMPACT_BCEL;
+	else if (IsUnsupportedCompactCelFile())
+		m_FileFormat = 0;
 	else
 		m_FileFormat = TEXT_CEL;
 }
@@ -2405,6 +2576,34 @@ void CCELFileData::SetAlgorithmName(const char *str)
 void CCELFileData::AddAlgorithmParameter(const char *tag, const char *value)
 {
 	m_HeaderData.AddAlgorithmParameter(tag, value);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///  public  SetAlgorithmParameter
+///  \brief Call CCELFileHeaderData::SetAlgorithmParameter() to add algorithm parameter
+///
+///  @param  tag const char * 	Algorithm parameter tag
+///  @param  value const char * 	Algorithm paramter value
+///  @return void	
+///  \see CCELFileHeaderData::SetAlgorithmParameter
+///////////////////////////////////////////////////////////////////////////////
+void CCELFileData::SetAlgorithmParameter(const char *tag, const char *value)
+{
+	m_HeaderData.SetAlgorithmParameter(tag, value);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+///  public  SetAddAlgorithmParameter
+///  \brief Call CCELFileHeaderData::SetAddAlgorithmParameter() to add algorithm parameter
+///
+///  @param  tag const char * 	Algorithm parameter tag
+///  @param  value const char * 	Algorithm paramter value
+///  @return void	
+///  \see CCELFileHeaderData::SetAddAlgorithmParameter
+///////////////////////////////////////////////////////////////////////////////
+void CCELFileData::SetAddAlgorithmParameter(const char *tag, const char *value)
+{
+	m_HeaderData.SetAddAlgorithmParameter(tag, value);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

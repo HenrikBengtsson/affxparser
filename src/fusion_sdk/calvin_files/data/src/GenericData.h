@@ -25,19 +25,21 @@
  */
 
 #include "AffymetrixBaseTypes.h"
+#include "AffyStlCollectionTypes.h"
 #include "AffymetrixGuid.h"
 #include "FileHeader.h"
 #include "DataSet.h"
 #include "DataGroup.h"
 #include "DataException.h"
 #include "FileException.h"
-#include "ArrayId.h"
 #include <string>
 #include <vector>
 
 #ifdef WIN32
 #include <windows.h>
 #endif
+
+using namespace affymetrix_calvin_utilities;
 
 namespace affymetrix_calvin_io
 {
@@ -51,20 +53,26 @@ public:
 	/*! Destructor */
 	~GenericData();
 
-public:
-	/*! Returns a const reference to the file identifier.
+	/*! Returns the file identifier.
+	 *	@return The file identifier.
 	 */
-	affymetrix_calvin_utilities::AffymetrixGuidType FileIdentifier();
+	AffymetrixGuidType FileIdentifier();
 
-	/*! Returns a const reference to the parent array file identifier.
+	/*! Returns the parent array file identifier.
+	 *	@return The parent array file identifier.
 	 */
-	affymetrix_calvin_utilities::AffymetrixGuidType ArrayFileIdentifier();
+	AffymetrixGuidType ArrayFileIdentifier();
+
+	/*! Returns the parent array identifier.
+	 *	@return The parent array identifier.
+	 */
+	AffymetrixGuidType ArrayIdentifier();
 
 	/*! Returns a reference to the file header object
 	 *
 	 * @return File header object 
 	 */
-	affymetrix_calvin_io::FileHeader& Header() { return header; }
+	FileHeader& Header() { return header; }
 
 	/*! Return the number of DataGroups in the GenericData object.
 	 *  @return Number of DataGroups.
@@ -74,17 +82,17 @@ public:
 	/*! Return the names of the DataGroups in the generic data object.
 	 *  @param names An [in,out] vector that will receive the names of all DataGroups.
 	 */
-	void DataGroupNames(std::vector<std::wstring>& names);
+	void DataGroupNames(WStringVector& names);
 
 	/*! Return the number of DataSets in the DataGroup referenced by index.
-	 *	@param dataGroupIndex Index of the DataGroup.
+	 *	@param dataGroupIdx Index of the DataGroup.
 	 *	@return Number of DataSets associated with the DataGroup.
 	 *	@exception affymetrix_calvin_exceptions::DataGroupNotFoundException DataGroup not found.
 	 */
 	u_int32_t DataSetCnt(u_int32_t dataGroupIdx);
 
 	/*! Return the number of DataSets in the DataGroup referenced by name.
-	 *	@param name Name of the DataGroup.
+	 *	@param dataGroupName Name of the DataGroup.
 	 *	@return Number of DataSets associated with the DataGroup.
 	 *	@exception affymetrix_calvin_exceptions::DataGroupNotFoundException DataGroup not found.
 	 */
@@ -95,14 +103,14 @@ public:
 	 *  @param names An [in,out] vector that will receive the names of all DataSets.
 	 *	@exception affymetrix_calvin_exceptions::DataGroupNotFoundException DataGroup not found.
 	 */
-	void DataSetNames(u_int32_t dataGroupIdx, std::vector<std::wstring>& names);
+	void DataSetNames(u_int32_t dataGroupIdx, WStringVector& names);
 
 	/*! Return the DataSet names associated with a DataGroup.
 	 *	@param dataGroupName Name of the DataGroup from which to retrieve the DataSet names.
 	 *  @param names An [in,out] vector that will receive the names of all DataSets.
 	 *	@exception affymetrix_calvin_exceptions::DataGroupNotFoundException DataGroup not found.
 	 */
-	void DataSetNames(const std::wstring& dataGroupName, std::vector<std::wstring>& names);
+	void DataSetNames(const std::wstring& dataGroupName, WStringVector& names);
 
 	/*! Returns a pointer to the DataSet object by DataGroup and DataSet index.
 	 *  Each call will return a new DataSet object.
@@ -128,15 +136,28 @@ public:
 	 */
 	affymetrix_calvin_io::DataSet* DataSet(const std::wstring& dataGroupName, const std::wstring& dataSetName);
 
-	/*! Returns a DataGroup object based on a DataGroup file position
+	/*! Returns a DataGroup object based on a DataGroup file position.
+	 *	This is useful when there are many DataGroups and the file position of each DataGroup is known (Calvin CDF).
+	 *	In this case the GenericFileReader::ReadHeader() method should be called with the ReadNoDataGroupHeader flag.
 	 *	@param dataGroupFilePos File position of the DataGroup in the current file
 	 *	@return DataGroup object.
 	*/
 	affymetrix_calvin_io::DataGroup DataGroup(u_int32_t dataGroupFilePos);
 
-
 	/*! Clears the contents of the class.*/
 	void Clear();
+
+	/*! Sets the file access method when reading data.  Set this value before getting the first DataSet or DataGroup.
+	 *	The default is to use memory-mapping.
+	 *	@param value If value is true the file will be accessed with memory-mapping, if false, STL fstream will be used
+	 */
+	void UseMemoryMapping(bool value) { useMemoryMapping = value; }
+
+	/*! Set the data loading policy for DataSets and DataGroups created by GenericData.
+	 *	This is considered on a hint to DataSet.  Default value is false.
+	 *	@param value If value is true, DataSets created subsequently will attempt to read the entire DataSet data into a memory buffer.
+	 */
+	void LoadEntireDataSetHint(bool value) { loadEntireDataSetHint = value; }
 
 	// Protected members
 public:
@@ -144,15 +165,18 @@ public:
 	/*! Read the full DataSetHeader if it has only been parially read.
 	 *	@param dph Pointer to the DataSetHeader to read
 	 */
-	void ReadFullDataSetHeader(affymetrix_calvin_io::DataSetHeader* dph);
+	void ReadFullDataSetHeader(DataSetHeader* dph);
 
 	/*! Determine if the DataSetHeader has been partially read.
 	 *	@param dph Pointer to the DataSetHeader to check
 	 *	@return true if the dph has only been partially read or is 0, otherwise false.
 	 */
-	bool IsDPHPartiallyRead(const affymetrix_calvin_io::DataSetHeader* dph);
+	bool IsDSHPartiallyRead(const affymetrix_calvin_io::DataSetHeader* dph);
 
-	void OpenFStream(std::ifstream& fileStream);
+	/*! Opens a ifstream object on the file set on the Header() method
+	 *	@param ifs The stream to open on the file.
+	 */
+	void OpenFStream(std::ifstream& ifs);
 
 	/*! Finds a DataSetHeader by name.
 	 *	@param name The name of the DataGroup
@@ -166,16 +190,42 @@ public:
 	 */
 	affymetrix_calvin_io::DataGroupHeader* FindDataGroupHeader(int32_t index);
 
-	/*!
+	/*! Finds a DataSetHeader by index.
+	 *	@param dch The DataGroupHeader of the DataGroup to which the DataSet belongs.
+	 *	@param dataSetIdx The DataSet index of the DataSetHeader to find.
+	 *	@return A pointer to the DataSetHeader if it is found, otherwise 0.
 	 */
 	static affymetrix_calvin_io::DataSetHeader* FindDataSetHeader(affymetrix_calvin_io::DataGroupHeader* dch, u_int32_t dataSetIdx);
 
-	/*!
+	/*!	Finds a DataSetHeader by name.
+	 *	@param dch The DataGroupHeader of the DataGroup to which the DataSet belongs.
+	 *	@param dataSetName The DataSet name of the DataSetHeader to find.
+	 *	@return A pointer to the DataSetHeader if it is found, otherwise 0.
 	 */
 	static affymetrix_calvin_io::DataSetHeader* FindDataSetHeader(affymetrix_calvin_io::DataGroupHeader* dch, const std::wstring& dataSetName);
 
+	/*! Opens the file for access.  Has no effect on non-Windows systems.
+	 *	@return True if the memory-mapping was opened successfully.
+	*/
+	bool Open();
+
+	/*! Closes the file.
+	 */
+	void Close();
+
+	/*! Opens a memory map on the file.  Has no effect on non-Windows systems.
+	 *	@return True if the memory-mapping was opened successfully.
+	 */
 	bool MapFile();
+
+	/*! Closes the memory map.  Windows only */
 	void UnmapFile();
+
+/*! Creates a new DataSet
+ *	@param dsh The DataSetHeader of the DataSet to create.
+ *	@return The new DataSet
+ */
+	affymetrix_calvin_io::DataSet* CreateDataSet(DataSetHeader* dsh);
 
 protected:
 	/*! The header and generic header objects */
@@ -188,6 +238,15 @@ protected:
 	/*! Handle returned by CreateFile */
 	HANDLE fileHandle;
 #endif
+
+	/*! Flag that indicates the file access technique; true = use memory-mapping, false = use ifstream */
+	bool useMemoryMapping;
+
+	/*! fstream file access member */
+	std::ifstream fileStream;
+
+	/*! Indicates whether DataSets and DataGroups created by GenericData should attempt to read all data into a memory buffer. */
+	bool loadEntireDataSetHint;
 
 	friend class DataGroup;
 };

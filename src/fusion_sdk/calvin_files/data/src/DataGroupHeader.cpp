@@ -26,13 +26,13 @@ using namespace affymetrix_calvin_io;
 DataGroupHeader::DataGroupHeader() 
 {
 	dataSetPos = 0;
-	nextCubePos = 0;
+	nextGrpPos = 0;
 }
 DataGroupHeader::DataGroupHeader(const std::wstring &n) 
 {
 	name = n;
 	dataSetPos = 0;
-	nextCubePos = 0;
+	nextGrpPos = 0;
 }
 
 DataGroupHeader::~DataGroupHeader() 
@@ -44,7 +44,7 @@ void DataGroupHeader::Clear()
 {
 	name.clear();
 	dataSetPos = 0;
-	nextCubePos = 0;
+	nextGrpPos = 0;
 	dataSetHdrs.clear();
 }
 

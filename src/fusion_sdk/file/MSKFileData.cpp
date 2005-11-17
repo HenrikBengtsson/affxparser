@@ -24,7 +24,10 @@
 #include <istream>
 #include <fstream>
 
+
+#ifdef WIN32
 #pragma warning(disable: 4996) // don't show deprecated warnings.
+#endif
 
 #ifdef _INCLUDE_UNISTD_HEADER_
 #include <unistd.h>

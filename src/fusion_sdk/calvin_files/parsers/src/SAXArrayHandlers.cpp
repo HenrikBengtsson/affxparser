@@ -30,21 +30,34 @@ using namespace affymetrix_calvin_utilities;
 using namespace std;
 XERCES_CPP_NAMESPACE_USE;
 
+#ifdef WIN32
+#pragma warning(disable: 4996) // don't show deprecated warnings.
+#endif
+
 /*! Converts a string to an integer.
  * @param wstr The string to convert
  * @return The integer representation of the string.
  */
 static int WideToInt(wstring const &wstr)
-{   
-	int i = 0;
-	int result = 0;
-	int length = (int) wstr.length();
-	while (i<length)
-	{
-		result = result*10 + (int)wstr[i];
-		i++;
-	}      
-	return result;
+{
+	if (wstr.length() == 0)
+		return 0;
+	int val = 0;
+	swscanf(wstr.c_str(), L"%d", &val);
+	return val;
+}
+
+/*! Converts a string to an integer.
+ * @param wstr The string to convert
+ * @return The float representation of the string.
+ */
+static float WideToFloat(wstring const &wstr)
+{
+	if (wstr.length() == 0)
+		return 0.0f;
+	float val=0.0f;
+	swscanf(wstr.c_str(), L"%f", &val);
+	return val;
 }
 
 /*! Converts a XML character string to wide string.
@@ -86,7 +99,6 @@ static bool operator==(const XMLCh* const &c1, wstring c2)
 SAXArrayHandlers::SAXArrayHandlers(ArrayData *data, bool headerOnly) :
 	arrayData(data),
 	currentElement(ARRAY_FILE),
-	fileVersionNumber(0),
 	readHeaderOnly(headerOnly)
 {
 }
@@ -140,7 +152,10 @@ void SAXArrayHandlers::MoveCurrentElementBack(const XMLCh* const name)
 	else if (name == USER_ATTRIBUTES_ATTRIBUTE_CONTROL_ELEMENT && currentElement == USER_ATTRIBUTES_ATTRIBUTE_CONTROL)
 		currentElement = USER_ATTRIBUTES_ATTRIBUTE;
 
-	else if (name == USER_ATTRIBUTES_ATTRIBUTE_ELEMENT && currentElement == USER_ATTRIBUTES_ATTRIBUTE)
+	else if (name == USER_ATTRIBUTES_ATTRIBUTE_VALUE_ELEMENT && currentElement == USER_ATTRIBUTES_ATTRIBUTE_VALUE)
+		currentElement = USER_ATTRIBUTES_ATTRIBUTE;
+
+	else if (name == USER_ATTRIBUTES_ATTRIBUTE_ELEMENT && currentElement == USER_ATTRIBUTES_ATTRIBUTE_VALUE)
 		currentElement = USER_ATTRIBUTES;
 
 	else if (name == USER_ATTRIBUTES_ELEMENT)
@@ -173,6 +188,9 @@ bool SAXArrayHandlers::MoveCurrentElementForward(const XMLCh* const name)
 	else if (name == USER_ATTRIBUTES_ATTRIBUTE_ELEMENT && currentElement == USER_ATTRIBUTES)
 		currentElement = USER_ATTRIBUTES_ATTRIBUTE;
 
+	else if (name == USER_ATTRIBUTES_ATTRIBUTE_VALUE_ELEMENT && currentElement == USER_ATTRIBUTES_ATTRIBUTE)
+		currentElement = USER_ATTRIBUTES_ATTRIBUTE_VALUE;
+
 	else if (name == USER_ATTRIBUTES_ATTRIBUTE_CONTROL_ELEMENT && currentElement == USER_ATTRIBUTES_ATTRIBUTE)
 		currentElement = USER_ATTRIBUTES_ATTRIBUTE_CONTROL;
 
@@ -182,6 +200,7 @@ bool SAXArrayHandlers::MoveCurrentElementForward(const XMLCh* const name)
 		name == PHYSICAL_ARRAY_ATTRIBUTE_ELEMENT ||
 		name == USER_ATTRIBUTES_ELEMENT ||
 		name == USER_ATTRIBUTES_ATTRIBUTE_ELEMENT ||
+		name == USER_ATTRIBUTES_ATTRIBUTE_VALUE_ELEMENT ||
 		name == USER_ATTRIBUTES_ATTRIBUTE_CONTROL_ELEMENT)
 	{
 	}
@@ -215,7 +234,7 @@ void SAXArrayHandlers::startElement(const XMLCh* const name, AttributeList&  att
 		break;
 
 	case PHYSICAL_ARRAY:
-		StorePhysicalArrayID(atts);
+		StorePhysicalArrayElementAttributes(atts);
 		break;
 
 	case PHYSICAL_ARRAY_ATTRIBUTES:
@@ -242,14 +261,109 @@ void SAXArrayHandlers::startElement(const XMLCh* const name, AttributeList&  att
 }
 
 /*
+ * Based on the current element, assign the value.
+ */
+void SAXArrayHandlers::characters(const XMLCh *const chars, const unsigned int length)
+{
+	wstring str = XMLChToWString(chars);
+	if (currentElement == PHYSICAL_ARRAY_ATTRIBUTES)
+	{
+		int n = (int) arrayData->PhysicalArraysAttributes().size();
+		ParameterNameValuePairVector &arrayAtts = arrayData->PhysicalArraysAttributes()[n-1].Attributes();
+		n = (int) arrayAtts.size();
+		arrayAtts[n-1].Value = str;
+	}
+	else if (currentElement == USER_ATTRIBUTES_ATTRIBUTE_VALUE)
+	{
+		ParameterNameValueDefaultRequiredType *param = &(*arrayData->UserAttributes().rbegin());
+		switch (param->ValueType())
+		{
+		case ParameterNameValueDefaultRequiredType::IntegerParameterType:
+			param->SetValueInt32(WideToInt(str));
+			break;
+
+		case ParameterNameValueDefaultRequiredType::FloatParameterType:
+			param->SetValueFloat(WideToFloat(str));
+			break;
+
+		case ParameterNameValueDefaultRequiredType::TextParameterType:
+		case ParameterNameValueDefaultRequiredType::DateParameterType:
+		case ParameterNameValueDefaultRequiredType::TimeParameterType:
+		case ParameterNameValueDefaultRequiredType::DateTimeParameterType:
+		case ParameterNameValueDefaultRequiredType::ControlSingleParameterType:
+			param->SetValueText(str);
+			break;
+
+		case ParameterNameValueDefaultRequiredType::ControlMultiParameterType:
+			param->ControlMultiValues().push_back(str);
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+/*
  * Store the user attribute.
  */
 void SAXArrayHandlers::StoreUserAttribute(map<wstring, wstring> &attributes)
 {
-	int n = (int) arrayData->UserAttributes().size();
-	arrayData->UserAttributes().resize(n+1);
-	arrayData->UserAttributes()[n].Name = attributes[USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_NAME_ATTRIBUTE];
-	arrayData->UserAttributes()[n].Value = attributes[USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_VALUE_ATTRIBUTE];
+	ParameterNameValueDefaultRequiredType param;
+	param.SetName(attributes[USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_NAME_ATTRIBUTE]);
+	wstring value = attributes[USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_TYPE_ATTRIBUTE];
+	wstring defvalue = attributes[USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_DEFAULT_ATTRIBUTE];
+
+	if (value == ParameterNameValueDefaultRequiredType::ParameterValueTypeToString(ParameterNameValueDefaultRequiredType::IntegerParameterType))
+	{
+		param.SetValueInt32(0);
+		param.ValueType() = ParameterNameValueDefaultRequiredType::IntegerParameterType;
+		if (defvalue.length() > 0)
+			param.SetDefaultValueInt32(WideToInt(defvalue));
+	}
+	else if (value == ParameterNameValueDefaultRequiredType::ParameterValueTypeToString(ParameterNameValueDefaultRequiredType::FloatParameterType))
+	{
+		param.SetValueFloat(0.0f);
+		param.ValueType() = ParameterNameValueDefaultRequiredType::FloatParameterType;
+		if (defvalue.length() > 0)
+			param.SetDefaultValueFloat(WideToFloat(defvalue));
+	}
+	else
+	{
+		if (value == ParameterNameValueDefaultRequiredType::ParameterValueTypeToString(ParameterNameValueDefaultRequiredType::TextParameterType))
+		{
+			param.ValueType() = ParameterNameValueDefaultRequiredType::TextParameterType;
+		}
+		else if (value == ParameterNameValueDefaultRequiredType::ParameterValueTypeToString(ParameterNameValueDefaultRequiredType::DateParameterType))
+		{
+			param.ValueType() = ParameterNameValueDefaultRequiredType::DateParameterType;
+		}
+		else if (value == ParameterNameValueDefaultRequiredType::ParameterValueTypeToString(ParameterNameValueDefaultRequiredType::TimeParameterType))
+		{
+			param.ValueType() = ParameterNameValueDefaultRequiredType::TimeParameterType;
+		}
+		else if (value == ParameterNameValueDefaultRequiredType::ParameterValueTypeToString(ParameterNameValueDefaultRequiredType::DateTimeParameterType))
+		{
+			param.ValueType() = ParameterNameValueDefaultRequiredType::DateTimeParameterType;
+		}
+		else if (value == ParameterNameValueDefaultRequiredType::ParameterValueTypeToString(ParameterNameValueDefaultRequiredType::ControlSingleParameterType))
+		{
+			param.ValueType() = ParameterNameValueDefaultRequiredType::ControlSingleParameterType;
+		}
+		else if (value == ParameterNameValueDefaultRequiredType::ParameterValueTypeToString(ParameterNameValueDefaultRequiredType::ControlMultiParameterType))
+		{
+			param.ValueType() = ParameterNameValueDefaultRequiredType::ControlMultiParameterType;
+		}
+		param.SetValueText(L"");
+		if (defvalue.length() > 0)
+			param.SetDefaultValueText(defvalue);
+	}
+	value = attributes[USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_REQUIRED_ATTRIBUTE];
+	if (value == L"Yes")
+		param.RequiredFlag() = true;
+	else
+		param.RequiredFlag() = false;
+	arrayData->UserAttributes().push_back(param);
 }
 
 /*
@@ -257,9 +371,8 @@ void SAXArrayHandlers::StoreUserAttribute(map<wstring, wstring> &attributes)
  */
 void SAXArrayHandlers::StoreUserAttributeControl(map<wstring, wstring> &attributes)
 {
-	int n = (int) arrayData->UserAttributes().size();
-	arrayData->UserAttributes()[n-1].ControlledVocabulary.push_back(
-		attributes[USER_ATTRIBUTES_ATTRIBUTE_CONTROL_ELEMENT_VALUE_ATTRIBUTE]);
+	ParameterNameValueDefaultRequiredType *param = &(*arrayData->UserAttributes().rbegin());
+	param->ControlledVocabulary().push_back(attributes[USER_ATTRIBUTES_ATTRIBUTE_CONTROL_ELEMENT_VALUE_ATTRIBUTE]);
 }
 
 /*
@@ -278,12 +391,67 @@ void SAXArrayHandlers::StorePhysicalArrayAttribute(map<wstring, wstring> &attrib
 /*
  * Create a new entry in the physical array and store the ID.
  */
-void SAXArrayHandlers::StorePhysicalArrayID(map<wstring, wstring> &attributes)
+void SAXArrayHandlers::StorePhysicalArrayElementAttributes(map<wstring, wstring> &attributes)
 {
 	int n = (int) arrayData->PhysicalArraysAttributes().size();
 	arrayData->PhysicalArraysAttributes().resize(n+1);
 	arrayData->PhysicalArraysAttributes()[n].Identifier() =
 		StringUtils::ConvertWCSToMBS(attributes[PHYSICAL_ARRAY_ELEMENT_ID_ATTRIBUTE]);
+
+	wstring str;
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_ROW_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].MediaRow() = WideToInt(str);
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_COL_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].MediaCol() = WideToInt(str);
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_NAME_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].ArrayName() = StringUtils::ConvertWCSToMBS(str);
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_BARCODE_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].ArrayBarcode() = StringUtils::ConvertWCSToMBS(str);
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_TYPE_ATTRIBUTE];
+	arrayData->PhysicalArraysAttributes()[n].Media() = MediaFromString(str);
+	
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_CUSTOMER_BARCODE_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].CustomerBarcode() = StringUtils::ConvertWCSToMBS(str);;
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_MASTERFILE_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].MasterFile() = StringUtils::ConvertWCSToMBS(str);;
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_PAT_ASSIGNMENT_ATTRIBUTE];
+	arrayData->PhysicalArraysAttributes()[n].PatAssignment() = PATAssignmentMethodFromString(str);
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_MASTERFILE_GUID_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].MasterFileId() = StringUtils::ConvertWCSToMBS(str);
+	}
+	arrayData->PhysicalArraysAttributes()[n].CreationDateTime() = attributes[PHYSICAL_ARRAY_ELEMENT_CREATION_DATE_ATTRIBUTE];
+	arrayData->PhysicalArraysAttributes()[n].CreatedBy() = attributes[PHYSICAL_ARRAY_ELEMENT_CREATED_BY_ATTRIBUTE];
+	arrayData->PhysicalArraysAttributes()[n].Comment() = attributes[PHYSICAL_ARRAY_ELEMENT_COMMENT_ATTRIBUTE];
+
+	str = attributes[ARRAY_FILE_ELEMENT_CREATED_STEP_ATTRIBUTE];
+	arrayData->PhysicalArraysAttributes()[n].CreatedStep() = CreateStepFromString(str);
 }
 
 /*
@@ -291,17 +459,21 @@ void SAXArrayHandlers::StorePhysicalArrayID(map<wstring, wstring> &attributes)
  */
 void SAXArrayHandlers::StoreArrayFileAttributes(map<wstring, wstring> &attributes)
 {
+
 	wstring str;
-	arrayData->ArraySetIdentifier() = StringUtils::ConvertWCSToMBS(attributes[ARRAY_FILE_ELEMENT_ID_ATTRIBUTE]);
-	str = attributes[ARRAY_FILE_ELEMENT_VERSION_ATTRIBUTE];
-	if (str.length() > 0)
-	{
-		fileVersionNumber = WideToInt(str);
-	}
 	str = attributes[ARRAY_FILE_ELEMENT_TYPE_ATTRIBUTE];
 	if (str.length() > 0)
 	{
-		dataTypeIdentifier = StringUtils::ConvertWCSToMBS(str);
+		arrayData->DataTypeIdentifier() = StringUtils::ConvertWCSToMBS(str);
 	}
+
+	fileVersionNumber = attributes[ARRAY_FILE_ELEMENT_VERSION_ATTRIBUTE];
+	arrayData->ArraySetFileIdentifier() = StringUtils::ConvertWCSToMBS(attributes[ARRAY_FILE_ELEMENT_ID_ATTRIBUTE]);
+	arrayData->InitialProject() = attributes[ARRAY_FILE_ELEMENT_PROJECT_ATTRIBUTE];
+	arrayData->CreationDateTime() = attributes[ARRAY_FILE_ELEMENT_CREATE_DATE_TIME_ATTRIBUTE];
+	arrayData->CreatedBy() = attributes[ARRAY_FILE_ELEMENT_CREATED_BY_ATTRIBUTE];
+
+	str = attributes[ARRAY_FILE_ELEMENT_CREATED_STEP_ATTRIBUTE];
+	arrayData->CreatedStep() = CreateStepFromString(str);
 }
 

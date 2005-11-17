@@ -20,108 +20,197 @@
 #ifndef _CHPExpressionEntry_HEADER_
 #define _CHPExpressionEntry_HEADER_
 
+/*! \file CHPExpressionEntry.h Defines a class to store the expression analyis results. */
+
 #include <string>
 #include <vector>
 #include "AffymetrixBaseTypes.h"
 
-#ifdef WIN32
-#pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
-#endif
-
 namespace affymetrix_calvin_io
 {
 
-/*! This class stores a zone's background value */
+/*! This class stores the expression probe set analysis results. */
 class CHPExpressionEntry
 {
-
 private:
 
+	/*! The probe set name. */
 	std::wstring probeSetName;
+
+	/*! The detection call. */
 	u_int8_t detection;
+
+	/*! The detection p-value. */
 	float detectionPValue;
+
+	/*! The signal. */
 	float signal;
+
+	/*! The number of probe pairs in the probe set. */
 	u_int16_t numPairs;
+
+	/*! The number of probe pairs used in the analysis. */
 	u_int16_t numPairsUsed;
+
+	/*! A flag to indicate if comparison data exists. */
+	bool hasComparisonData;
+
+	/*! The change call. */
 	u_int8_t change;
+
+	/*! The change p-value. */
 	float changePValue;
+
+	/*! The signal log ratio. */
 	float sigLogRatio;
+
+	/*! The signal log ratio low. */
 	float sigLogRatioLo;
+
+	/*! The signal log ratio high. */
 	float sigLogRatioHi;
+
+	/*! The number of probe pairs in common between control and experiment. */
 	u_int16_t commonPairs;
 
 public:
 
+	/*! Constructor. */
 	CHPExpressionEntry();
+
+	/*! Constructor with absolute and comparison data.
+	 * @param probeSetname The probe set name
+	 * @param detection The detection
+	 * @param detectionPValue The detection p-value
+	 * @param signal The signal
+	 * @param numPairs The number of probe pairs in the set.
+	 * @param numPairsUsed The number of probe pairs used in the analysis
+	 * @param compData Flag indicating if comp data exists.
+	 * @param change The change call
+	 * @param changePValue The change p-value
+	 * @param sigLogRatio The signal log ratio
+	 * @param sigLogRatioLo The signal log ratio low
+	 * @param sigLogRatioHi The signal log ratio high
+	 * @param commonPairs The number of probe pairs in common between control and experiment
+	 */
 	CHPExpressionEntry(const std::wstring& probeSetname,
 										u_int8_t detection,
 										float detectionPValue,
 										float signal,
 										u_int16_t numPairs,
 										u_int16_t numPairsUsed,
+										bool compData,
 										u_int8_t change,
 										float changePValue,
 										float sigLogRatio,
 										float sigLogRatioLo,
 										float sigLogRatioHi,
 										u_int16_t commonPairs);
+
+	/*! Constructor with absolute data only.
+	 * @param probeSetname The probe set name
+	 * @param detection The detection
+	 * @param detectionPValue The detection p-value
+	 * @param signal The signal
+	 * @param numPairs The number of probe pairs in the set.
+	 * @param numPairsUsed The number of probe pairs used in the analysis
+	 */
+	CHPExpressionEntry(const std::wstring& probeSetname,
+										u_int8_t detection,
+										float detectionPValue,
+										float signal,
+										u_int16_t numPairs,
+										u_int16_t numPairsUsed);
+
+	/*! Destructor */
 	~CHPExpressionEntry();
 
+	/*! Clears the members. */
 	void Clear();
 
 	/*! Assignment operator
-	 * @param zn The zone to copy
-	 * @return The new zone object
+	 * @param e The entry to copy
+	 * @return The new object
 	 */
-	CHPExpressionEntry operator=(CHPExpressionEntry zn);
+	CHPExpressionEntry operator=(CHPExpressionEntry e);
 
-	std::wstring GetProbeSetName() const;
+	/*! Gets the probe set name. */
+	std::wstring GetProbeSetName() const { return probeSetName; }
 
-	u_int8_t GetDetection() const;
+	/*! Get the detection call. */
+	u_int8_t GetDetection() const { return detection; }
 
-	float GetDetectionPValue() const;
+	/*! Gets the detection p-value. */
+	float GetDetectionPValue() const { return detectionPValue; }
 
-	float GetSignal() const;
+	/*! Gets the signal value. */
+	float GetSignal() const { return signal; }
 
-	u_int16_t GetNumPairs() const;
+	/*! Gets the number of probe pairs in the set. */
+	u_int16_t GetNumPairs() const { return numPairs; }
 
-	u_int16_t GetNumPairsUsed() const;
+	/*! Gets the number of probe pairs used in the analysis. */
+	u_int16_t GetNumPairsUsed() const { return numPairsUsed; }
 
-	u_int8_t GetChange() const;
+	/*! A flag to indicate if comparison data exists. */
+	bool GetHasComparisonData() const { return hasComparisonData; }
 
-	float GetChangePValue() const;
+	/*! Gets the change call. */
+	u_int8_t GetChange() const { return change; }
 
-	float GetSigLogRatio() const;
+	/*! Gets the change p-value. */
+	float GetChangePValue() const { return changePValue; }
 
-	float GetSigLogRatioLo() const;
+	/*! Gets the signal log ratio. */
+	float GetSigLogRatio() const { return sigLogRatio; }
 
-	float GetSigLogRatioHi() const;
+	/*! Gets the signal log ratio low. */
+	float GetSigLogRatioLo() const { return sigLogRatioLo; }
 
-	u_int16_t GetCommonPairs() const;
+	/*! Gets the signal log ratio high. */
+	float GetSigLogRatioHi() const { return sigLogRatioHi; }
 
-	void SetProbeSetName(const std::wstring& p);
+	/*! Gets the number of probe pairs in common between control and experiment. */
+	u_int16_t GetCommonPairs() const { return commonPairs; }
 
-	void SetDetection(u_int8_t p);
+	/*! Sets the probe set name. */
+	void SetProbeSetName(const std::wstring& p) { probeSetName = p; }
 
-	void SetDetectionPValue(float p);
+	/*! Sets the detection value. */
+	void SetDetection(u_int8_t p) { detection = p; }
 
-	void SetSignal(float p);
+	/*! Sets the detection p-value. */
+	void SetDetectionPValue(float p) { detectionPValue = p; }
 
-	void SetNumPairs(u_int16_t p);
+	/*! Sets the signal value. */
+	void SetSignal(float p) { signal = p; }
 
-	void SetNumPairsUsed(u_int16_t p);
+	/*! Sets the number of pairs in the probe sets. */
+	void SetNumPairs(u_int16_t p) { numPairs = p; }
 
-	void SetChange(u_int8_t p);
+	/*! Sets the number of pairs used in the analysis. */
+	void SetNumPairsUsed(u_int16_t p) { numPairsUsed = p; }
 
-	void SetChangePValue(float p);
+	/*! Sets the flag to indicate if comparison data exists. */
+	void SetHasComparisonData(bool b) { hasComparisonData = b; }
 
-	void SetSigLogRatio(float p);
+	/*! Sets the change call. */
+	void SetChange(u_int8_t p) { change = p; }
 
-	void SetSigLogRatioLo(float p);
+	/*! Sets the change p-value. */
+	void SetChangePValue(float p) { changePValue = p; }
 
-	void SetSigLogRatioHi(float p);
+	/*! Sets the signal log ratio. */
+	void SetSigLogRatio(float p) { sigLogRatio = p; }
 
-	void SetCommonPairs(u_int16_t p);
+	/*! Sets the signal log ratio low. */
+	void SetSigLogRatioLo(float p) { sigLogRatioLo = p; }
+
+	/*! Sets the signal log ratio high. */
+	void SetSigLogRatioHi(float p) { sigLogRatioHi = p; }
+
+	/*! Sets the number of probe pairs in common between control and experiment. */
+	void SetCommonPairs(u_int16_t p) { commonPairs = p; }
 };
 
 /*! An STL list of zones */

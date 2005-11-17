@@ -33,6 +33,7 @@ CHPExpressionEntry::CHPExpressionEntry(const std::wstring& psName,
 									float sig,
 									u_int16_t nPairs,
 									u_int16_t nPairsUsed,
+									bool compData,
 									u_int8_t chg,
 									float chgPValue,
 									float sLogRatio,
@@ -46,12 +47,35 @@ CHPExpressionEntry::CHPExpressionEntry(const std::wstring& psName,
 	signal = sig;
 	numPairs = nPairs;
 	numPairsUsed = nPairsUsed;
+	hasComparisonData = compData;
 	change = chg;
 	changePValue = chgPValue;
 	sigLogRatio = sLogRatio;
 	sigLogRatioLo = sLogRatioLo;
 	sigLogRatioHi = sLogRatioHi;
 	commonPairs = commonPrs;
+}
+
+CHPExpressionEntry::CHPExpressionEntry(const std::wstring& psName,
+									u_int8_t detect,
+									float detectPValue,
+									float sig,
+									u_int16_t nPairs,
+									u_int16_t nPairsUsed)
+{
+	probeSetName = psName;
+	detection = detect;
+	detectionPValue = detectPValue;
+	signal = sig;
+	numPairs = nPairs;
+	numPairsUsed = nPairsUsed;
+	hasComparisonData = false;
+	change = 0;
+	changePValue = 0;
+	sigLogRatio = 0;
+	sigLogRatioLo = 0;
+	sigLogRatioHi = 0;
+	commonPairs = 0;
 }
 
 CHPExpressionEntry::~CHPExpressionEntry() {}
@@ -64,6 +88,7 @@ void CHPExpressionEntry::Clear()
 	signal = 0;
 	numPairs = 0;
 	numPairsUsed = 0;
+	hasComparisonData = false;
 	change = 0;
 	changePValue = 0;
 	sigLogRatio = 0;
@@ -72,139 +97,20 @@ void CHPExpressionEntry::Clear()
 	commonPairs = 0;
 }
 
-CHPExpressionEntry CHPExpressionEntry::operator=(CHPExpressionEntry zn)
-	{
-		probeSetName = zn.GetProbeSetName();
-		detection = zn.GetDetection();
-		detectionPValue = zn.GetDetectionPValue();
-		signal = zn.GetSignal();
-		numPairs = zn.GetNumPairs();
-		numPairsUsed = zn.GetNumPairsUsed();
-		change = zn.GetChange();
-		changePValue = zn.GetChangePValue();
-		sigLogRatio = zn.GetSigLogRatio();
-		sigLogRatioLo = zn.GetSigLogRatioLo();
-		sigLogRatioHi = zn.GetSigLogRatioHi();
-		commonPairs = zn.GetCommonPairs();
-		return *this; 
-	}
-
-	std::wstring CHPExpressionEntry::GetProbeSetName() const
-	{
-		return probeSetName;
-	}
-
-	u_int8_t CHPExpressionEntry::GetDetection() const
-	{
-		return detection;
-	}
-
-	float CHPExpressionEntry::GetDetectionPValue() const
-	{
-		return detectionPValue;
-	}
-
-	float CHPExpressionEntry::GetSignal() const
-	{
-		return signal;
-	}
-
-	u_int16_t CHPExpressionEntry::GetNumPairs() const
-	{
-		return numPairs;
-	}
-
-	u_int16_t CHPExpressionEntry::GetNumPairsUsed() const
-	{
-		return numPairsUsed;
-	}
-
-	u_int8_t CHPExpressionEntry::GetChange() const
-	{
-		return change;
-	}
-
-	float CHPExpressionEntry::GetChangePValue() const
-	{
-		return changePValue;
-	}
-
-	float CHPExpressionEntry::GetSigLogRatio() const
-	{
-		return sigLogRatio;
-	}
-
-	float CHPExpressionEntry::GetSigLogRatioLo() const
-	{
-		return sigLogRatioLo;
-	}
-
-	float CHPExpressionEntry::GetSigLogRatioHi() const
-	{
-		return sigLogRatioHi;
-	}
-
-	u_int16_t CHPExpressionEntry::GetCommonPairs() const
-	{
-		return commonPairs;
-	}
-
-	void CHPExpressionEntry::SetProbeSetName(const std::wstring& p)
-	{
-		probeSetName = p;
-	}
-
-	void CHPExpressionEntry::SetDetection(u_int8_t p)
-	{
-		detection = p;
-	}
-
-	void CHPExpressionEntry::SetDetectionPValue(float p)
-	{
-		detectionPValue = p;
-	}
-
-	void CHPExpressionEntry::SetSignal(float p)
-	{
-		signal = p;
-	}
-
-	void CHPExpressionEntry::SetNumPairs(u_int16_t p)
-	{
-		numPairs = p;
-	}
-
-	void CHPExpressionEntry::SetNumPairsUsed(u_int16_t p)
-	{
-		numPairsUsed = p;
-	}
-
-	void CHPExpressionEntry::SetChange(u_int8_t p)
-	{
-		change = p;
-	}
-
-	void CHPExpressionEntry::SetChangePValue(float p)
-	{
-		changePValue = p;
-	}
-
-	void CHPExpressionEntry::SetSigLogRatio(float p)
-	{
-		sigLogRatio = p;
-	}
-
-	void CHPExpressionEntry::SetSigLogRatioLo(float p)
-	{
-		sigLogRatioLo = p;
-	}
-
-	void CHPExpressionEntry::SetSigLogRatioHi(float p)
-	{
-		sigLogRatioHi = p;
-	}
-
-	void CHPExpressionEntry::SetCommonPairs(u_int16_t p)
-	{
-		commonPairs = p;
-	}
+CHPExpressionEntry CHPExpressionEntry::operator=(CHPExpressionEntry e)
+{
+	probeSetName = e.GetProbeSetName();
+	detection = e.GetDetection();
+	detectionPValue = e.GetDetectionPValue();
+	signal = e.GetSignal();
+	numPairs = e.GetNumPairs();
+	numPairsUsed = e.GetNumPairsUsed();
+	hasComparisonData = e.GetHasComparisonData();
+	change = e.GetChange();
+	changePValue = e.GetChangePValue();
+	sigLogRatio = e.GetSigLogRatio();
+	sigLogRatioLo = e.GetSigLogRatioLo();
+	sigLogRatioHi = e.GetSigLogRatioHi();
+	commonPairs = e.GetCommonPairs();
+	return *this; 
+}

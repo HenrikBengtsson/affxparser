@@ -85,7 +85,7 @@ u_int32_t DataGroupHeaderReader::ReadMinimumInfo(std::ifstream& fileStream, Data
 	// Read the DataSets
 	DataSetHeaderReader dphReader;
 	dphReader.ReadAllMinimumInfo(fileStream, dch, dataSetCnt);
-	return dch.GetNextCubePos();
+	return dch.GetNextGroupPos();
 }
 
 /*
@@ -98,7 +98,7 @@ u_int32_t DataGroupHeaderReader::Read(std::ifstream& fileStream, DataGroupHeader
 	// Read the DataSets
 	DataSetHeaderReader dphReader;
 	dphReader.ReadAll(fileStream, dch, dataSetCnt);
-	return dch.GetNextCubePos();
+	return dch.GetNextGroupPos();
 }
 
 /*
@@ -118,7 +118,10 @@ u_int32_t DataGroupHeaderReader::ReadHeader(std::ifstream& fileStream, DataGroup
  */
 void DataGroupHeaderReader::ReadNextDataGroupFilePos(std::ifstream& fileStream, DataGroupHeader& dch)
 {
-	dch.SetNextCubePos(FileInput::ReadUInt32(fileStream));
+	//DEBUG
+	u_int32_t z = fileStream.tellg();
+
+	dch.SetNextGroupPos(FileInput::ReadUInt32(fileStream));
 }
 
 /*
@@ -126,6 +129,9 @@ void DataGroupHeaderReader::ReadNextDataGroupFilePos(std::ifstream& fileStream, 
  */
 void DataGroupHeaderReader::ReadFirstDataSetFilePos(std::ifstream& fileStream, DataGroupHeader& dch)
 {
+	//DEBUG
+	u_int32_t z = fileStream.tellg();
+
 	dch.SetDataSetPos(FileInput::ReadUInt32(fileStream));
 }
 
@@ -134,6 +140,9 @@ void DataGroupHeaderReader::ReadFirstDataSetFilePos(std::ifstream& fileStream, D
  */
 u_int32_t DataGroupHeaderReader::ReadDataSetCnt(std::ifstream& fileStream, DataGroupHeader& dch)
 {
+	//DEBUG
+	u_int32_t z = fileStream.tellg();
+
 	return FileInput::ReadUInt32(fileStream);
 }
 
@@ -142,5 +151,8 @@ u_int32_t DataGroupHeaderReader::ReadDataSetCnt(std::ifstream& fileStream, DataG
  */
 void DataGroupHeaderReader::ReadDataGroupName(std::ifstream& fileStream, DataGroupHeader& dch)
 {
+		//DEBUG
+	u_int32_t z = fileStream.tellg();
+
 	dch.SetName(FileInput::ReadString16(fileStream));
 }

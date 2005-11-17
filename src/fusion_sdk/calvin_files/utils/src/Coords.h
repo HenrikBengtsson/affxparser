@@ -53,6 +53,8 @@ struct FPoint
 	bool operator!=(const FPoint& lhs)const { return !(*this==lhs); }
 };
 
+typedef std::vector<FPoint> FPointVector;
+
 /*! Defines a region with floating point coordinates */
 struct FRegion
 {
@@ -60,17 +62,37 @@ struct FRegion
 	void Clear(){ pts.clear(); }
 
 	/*! A vector of points */
-	std::vector<FPoint> pts;
+	FPointVector pts;
+
+	/*! Equality test */
+	bool operator==(const FRegion& lhs) const 
+	{ 
+		if(lhs.pts.size() == pts.size())
+		{
+			size_t sz = pts.size();
+			for(size_t i = 0; i < sz; i++)
+			{
+				if(lhs.pts[i] == pts[i]) continue;
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	bool operator!=(const FRegion& lhs)const { return !(*this==lhs); }
 };
 
-/*! Defines a floating point rectangle */
-struct FRect
+typedef std::vector<FRegion> FRegionVector;
+
+/*! Defines a floating point grid coords */
+struct FGridCoords
 {
 	/* Empty constructor */
-	FRect() { upperleft.x = 0.0f, upperleft.y = 0.0f; upperright = lowerright = lowerleft = upperleft; }
+	FGridCoords() { upperleft.x = 0.0f, upperleft.y = 0.0f; upperright = lowerright = lowerleft = upperleft; }
 
 	/*! Cast constructor from FRegion */
-	FRect(const FRegion& r)
+	FGridCoords(const FRegion& r)
 	{
 		upperleft.x = 0.0f, upperleft.y = 0.0f; upperright = lowerright = lowerleft = upperleft;
 		if (r.pts.size()>=4)
@@ -146,13 +168,13 @@ struct Region
 };
 
 /*! Defines an integral rectagle */
-struct Rect
+struct GridCoords
 {
 	/*! Empty constructor */
-	Rect() { upperleft.x = 0; upperleft.y = 0; upperright = lowerright = lowerleft = upperleft; }
+	GridCoords() { upperleft.x = 0; upperleft.y = 0; upperright = lowerright = lowerleft = upperleft; }
 
 	/*! Cast constructor from a Region */
-	Rect(const Region& r)
+	GridCoords(const Region& r)
 	{
 		upperleft.x = 0; upperleft.y = 0; upperright = lowerright = lowerleft = upperleft;
 		if (r.pts.size()>=4)
@@ -197,6 +219,44 @@ typedef std::vector<FRegion> FRegionVector;
 
 /*! An STL vector of regions. */
 typedef std::vector<Region> RegionVector;
+
+
+/*! This is a class for holding x-y coordinates.*/
+class XYCoord
+{
+public:
+
+	/*! Constructor */
+	XYCoord() { xCoord = 0; yCoord = 0; }
+
+	/*! Constructor */
+	XYCoord(int16_t x, int16_t y) { xCoord = x; yCoord = y; }
+	/*! Destructor */
+	~XYCoord() {}
+
+	/*! x-coordinate */
+	int16_t xCoord;
+	/*! y-coordinate */
+	int16_t yCoord;
+
+	/*! Assignment operator */
+	XYCoord operator=(const XYCoord &p) { xCoord = p.xCoord; yCoord = p.yCoord; return *this; }
+	/*! equality operator */
+	bool operator==(const XYCoord &p) const { return (xCoord == p.xCoord && yCoord == p.yCoord); }
+	/*! inequality operator */
+	bool operator!=(const XYCoord &p) const { return (xCoord != p.xCoord || yCoord != p.yCoord); }
+	/*! less than operator */
+	bool operator<(const XYCoord& p) const { return (yCoord < p.yCoord ? true : ((yCoord == p.yCoord && xCoord < p.xCoord) ? true : false)); }
+};
+
+/*! vector of XYCoord */
+typedef std::vector<XYCoord> XYCoordVector;
+
+/*! constant iterator of XYCoord */
+typedef std::vector<XYCoord>::iterator XYCoordIt;
+
+/*! constant iterator of XYCoord */
+typedef std::vector<XYCoord>::const_iterator XYCoordConstIt;
 
 }
 

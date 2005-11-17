@@ -184,6 +184,11 @@ public:
 	 */
 	std::string GetGroupName() const { return m_GroupName; }
 
+	/*! Returns the full name (name, group, version).
+	 * @return The full name.
+	 */
+	std::string GetFullName() const;
+
 	/*! Gets the number of data points (rows).
 	 * @return The number of data points (rows).
 	 */

@@ -47,7 +47,7 @@ public:
 
 public:
 	/*! Reads all the DataGroupHeaders in a file and the minimum information for each DataSetHeader in every DataGroup.
-	 *	@param fileStream Open fstream positioned at the start of the first DataGroupHeader in the file.
+	 *	@param fs Open fstream positioned at the start of the first DataGroupHeader in the file.
 	 *	@param fh FileHeader object to fill.
 	 *	@param dataGroupCnt Number of DataGroup in the file.
 	 */

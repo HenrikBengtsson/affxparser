@@ -28,6 +28,7 @@
 #include "AffymetrixBaseTypes.h"
 #include "AffymetrixGuid.h"
 #include "Parameter.h"
+#include "ParameterNameValueType.h"
 #include "ArrayAttributes.h"
 #include <string>
 
@@ -46,32 +47,70 @@ public:
 
 protected:
 	/*! A unique idendifier for the array set object */
-	affymetrix_calvin_utilities::AffymetrixGuidType setIdentifier;
+	affymetrix_calvin_utilities::AffymetrixGuidType fileId;
+
+	/*! An identifier to the type of data stored in the file */
+	affymetrix_calvin_utilities::AffymetrixGuidType dataTypeId;
+
+	/*! The step in Calvin that created the array set data. */
+	CreateStep createdStep;
+
+	/*! The name of the project that initially created the array set data. */
+	std::wstring initialProject;
+
+	/*! The date and time of initial creation. */
+	std::wstring creationDateTime;
+
+	/*! The user who created the data object. */
+	std::wstring createdBy;
 
 	/*! The arrays attributes for the arrays in the set */
 	ArrayAttributesVector physicalArraysAttributes;
 
 	/*! The user attributes */
-	affymetrix_calvin_parameter::ParameterNameValueControlVocabularyVector userAttributes;
+	affymetrix_calvin_parameter::ParameterNameValueDefaultRequiredTypeList userAttributes;
 
 public:
+
 	/*! The unique idendifier for the array set.
-	 *
 	 * @return The unique idendifier for the array set.
 	 */
-	affymetrix_calvin_utilities::AffymetrixGuidType &ArraySetIdentifier() { return setIdentifier; }
+	affymetrix_calvin_utilities::AffymetrixGuidType &ArraySetFileIdentifier() { return fileId; }
+
+	/*! The identifier of the type of data stored in the file.
+	 * @return The identifier of the type of data.
+	 */
+	affymetrix_calvin_utilities::AffymetrixGuidType &DataTypeIdentifier() { return dataTypeId; }
+
+	/*! The step in Calvin that created the array set data.
+	 * @return The step in calvin that create the array set data.
+	 */
+	CreateStep &CreatedStep() { return createdStep; }
+
+	/*! The name of the project that initially created the array set data.
+	 * @return The project name.
+	 */
+	std::wstring &InitialProject() { return initialProject; }
+
+	/*! The date and time of initial creation.
+	 * @return The creation date and time.
+	 */
+	std::wstring &CreationDateTime() { return creationDateTime; }
+
+	/*! The user who created the data object.
+	 * @return The user name.
+	 */
+	std::wstring &CreatedBy() { return createdBy; }
 
 	/*! The arrays attributes. Each array in a set will have its own attributes.
-	 *
 	 * @return The vector of arrays attributes.
 	 */
 	ArrayAttributesVector &PhysicalArraysAttributes() { return physicalArraysAttributes; }
 
 	/*! The user attributes.
-	 *
 	 * @return The vector of user attributes.
 	 */
-	affymetrix_calvin_parameter::ParameterNameValueControlVocabularyVector &UserAttributes() { return userAttributes; }
+	affymetrix_calvin_parameter::ParameterNameValueDefaultRequiredTypeList &UserAttributes() { return userAttributes; }
 
 	/*! Clears the member objects. */
 	void Clear();

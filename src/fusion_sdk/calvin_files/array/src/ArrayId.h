@@ -23,8 +23,14 @@
 
 /*! \file ArrayId.h This file defines the ID for the array file. */
 
+/*! The identifier for the array. */
+#define ARRAY_TYPE_IDENTIFIER "affymetrix-calvin-array"
+
 /*! The identifier for an array file. */
-#define ARRAY_FILE_TYPE_IDENTIFIER "affymetrix-calvin-array"
+#define ARRAY_FILE_TYPE_IDENTIFIER "affymetrix-calvin-arrayfile"
+
+/*! The identifier for an array file. */
+#define ARRAY_SET_FILE_TYPE_IDENTIFIER "affymetrix-calvin-arraysetfile"
 
 #endif // _ArrayId_HEADER_
 
