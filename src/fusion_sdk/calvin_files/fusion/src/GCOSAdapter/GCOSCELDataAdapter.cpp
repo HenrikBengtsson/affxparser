@@ -39,6 +39,7 @@ GCOSCELDataAdapter::GCOSCELDataAdapter()
  */
 GCOSCELDataAdapter::~GCOSCELDataAdapter()
 {
+	gcosCel.Clear();
 }
 
 /*
@@ -153,6 +154,26 @@ void GCOSCELDataAdapter::GetParameters(FusionTagValuePairTypeList& values)
 std::wstring GCOSCELDataAdapter::GetChipType()
 {
 	return StringUtils::ConvertMBSToWCS(gcosCel.GetChipType());
+}
+
+/*
+ * Get the grid coordinates.
+ */
+affymetrix_fusion_io::FGridCoords GCOSCELDataAdapter::GetGridCorners()
+{
+	affymetrix_fusion_io::FGridCoords grid;
+	GridCoordinatesType gct = gcosCel.GetGridCorners();
+
+	grid.upperleft.x = gct.upperleft.x;
+	grid.upperleft.y = gct.upperleft.y;
+	grid.upperright.x = gct.upperright.x;
+	grid.upperright.y = gct.upperright.y;
+	grid.lowerright.x = gct.lowerright.x;
+	grid.lowerright.y = gct.lowerright.y;
+	grid.lowerleft.x = gct.lowerleft.x;
+	grid.lowerleft.y = gct.lowerleft.y;
+
+	return grid;
 }
 
 // Index/position conversions
@@ -300,28 +321,28 @@ void GCOSCELDataAdapter::Clear()
 
 /*
  */
-void GCOSCELDataAdapter::SetAlgorithmName(const wchar_t *str)
-{
-	std::string name = StringUtils::ConvertWCSToMBS(str);
-	gcosCel.SetAlgorithmName(name.c_str());
-}
+//void GCOSCELDataAdapter::SetAlgorithmName(const wchar_t *str)
+//{
+//	std::string name = StringUtils::ConvertWCSToMBS(str);
+//	gcosCel.SetAlgorithmName(name.c_str());
+//}
 
 /*
  */
-void GCOSCELDataAdapter::AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value)
-{
-	std::string tagString = StringUtils::ConvertWCSToMBS(tag);
-	std::string valueString = StringUtils::ConvertWCSToMBS(value);
-	gcosCel.AddAlgorithmParameter(tagString.c_str(), valueString.c_str());
-}
+//void GCOSCELDataAdapter::AddAlgorithmParameter(const wchar_t *tag, const wchar_t *value)
+//{
+//	std::string tagString = StringUtils::ConvertWCSToMBS(tag);
+//	std::string valueString = StringUtils::ConvertWCSToMBS(value);
+//	gcosCel.AddAlgorithmParameter(tagString.c_str(), valueString.c_str());
+//}
 
 /*
  */
-void GCOSCELDataAdapter::SetChipType(const wchar_t *str)
-{
-	std::string type = StringUtils::ConvertWCSToMBS(str);
-	gcosCel.SetChipType(type.c_str());
-}
+//void GCOSCELDataAdapter::SetChipType(const wchar_t *str)
+//{
+//	std::string type = StringUtils::ConvertWCSToMBS(str);
+//	gcosCel.SetChipType(type.c_str());
+//}
 
 /*
  */

@@ -29,6 +29,9 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute name for the probe array type of the physical array. */
 #define ARRAY_TYPE_PARAM_NAME L"affymetrix-array-type"
 
+/*! Defines the number of characters to reserve in the parameter list for the array type name */
+#define ARRAY_TYPE_MAX_LEN 100
+
 /*! Defines the static attribute name for the barcode of the physical array. */
 #define ARRAY_BARCODE_PARAM_NAME L"affymetrix-array-barcode"
 
@@ -56,6 +59,60 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute prefix for algorithm parameter names */
 #define ALGORITHM_PARAM_NAME_PREFIX L"affymetrix-algorithm-param-"
 
+/*! Defines the static attribute prefix (as a wstring) for algorithm parameter names */
+#define ALGORITHM_PARAM_NAME_PREFIX_S std::wstring(ALGORITHM_PARAM_NAME_PREFIX)
+
+	/*! Defines the static attribute name for the DATHeader */
+#define DAT_HEADER_PARAM_NAME L"affymetrix-dat-header"
+
+/*! Defines the static attribute name for the partial DATHeader */
+#define PARTIAL_DAT_HEADER_PARAM_NAME L"affymetrix-partial-dat-header"
+
+/*! Defines the static attribute name for the max pixel intensity */
+#define MAX_PIXEL_INTENSITY_PARAM_NAME L"affymetrix-max-pixel-intensity"
+
+/*! Defines the static attribute name for the min pixel intensity */
+#define MIN_PIXEL_INTENSITY_PARAM_NAME L"affymetrix-min-pixel-intensity"
+
+/*! Defines the static attribute name for the orientation */
+#define ORIENTATION_PARAM_NAME L"affymetrix-image-orientation"
+
+/*! Defines the static attribute name for the file version.  This is not the file format version. */
+#define FILE_VERSION_PARAM_NAME L"affymetrix-file-version"
+
+/*! Defines the static attribute name for the flip-flag which indicates if an image is flipped about the y-axis. */
+#define FLIP_FLAG_PARAM_NAME L"affymetrix-image-flip-flag"
+
+/*! Defines the static attribute name for the array id */
+#define ARRAY_ID_PARAM_NAME L"affymetrix-array-id"
+
+/*! Defines the static attribute name for the pixel size */
+#define PIXEL_SIZE_PARAM_NAME L"affymetrix-pixel-size"
+
+/*! Defines the static attribute name for the scanner type */
+#define SCANNER_TYPE_PARAM_NAME L"affymetrix-scanner-type"
+
+/*! Defines the static attribute name for the scanner id */
+#define SCANNER_ID_PARAM_NAME L"affymetrix-scanner-id"
+
+/*! Defines the static attribute name for the scan date */
+#define SCAN_DATE_PARAM_NAME L"affymetrix-scan-date"
+
+/*! Defines the static attribute name for the number of pixel rows */
+#define ROWS_PARAM_NAME L"affymetrix-pixel-rows"
+
+/*! Defines the static attribute name for the number of pixel cols */
+#define COLS_PARAM_NAME L"affymetrix-pixel-cols"
+
+/*! Defines the static attribute for the algorithm version. */
+#define ALG_VERSION_PARAM_NAME std::wstring(L"affymetrix-algorithm-version")
+
+/*! Defines the static attribute name for the number of cel rows */
+#define CEL_ROWS_PARAM_NAME L"affymetrix-cel-rows"
+
+/*! Defines the static attribute name for the number of cel columns */ 
+#define CEL_COLS_PARAM_NAME L"affymetrix-cel-cols"
+
 /*! CDF Data Type Expression */
 #define AFFY_EXPR_PS "affymetrix-expression-probesets"
 
@@ -72,7 +129,7 @@ namespace affymetrix_calvin_parameter
 #define AFFY_CNTRL_PS "affymetrix-control-probesets"
 
 /*! Defines US English locale. */
-#define US_ENGLISH_LOCALE L"US English"
+#define US_ENGLISH_LOCALE L"en-US"
 }
 
 #endif

@@ -28,10 +28,18 @@ using namespace affymetrix_calvin_io;
 #endif
 
 /*
- * Initialize the class.
+ * Initialize the object to use memory-mapping to access the file.
  */
-DataGroup::DataGroup(const std::string& filename_, const DataGroupHeader& dch, void* handle_)
-: filename(filename_), dataGroupHeader(dch), handle(handle_)
+DataGroup::DataGroup(const std::string& filename_, const DataGroupHeader& dch, void* handle_, bool loadEntireDataSetHint_)
+: filename(filename_), dataGroupHeader(dch), handle(handle_), fileStream(0), useMemoryMapping(true), loadEntireDataSetHint(loadEntireDataSetHint_)
+{
+}
+
+/*
+ * Initialize the object to use std::ifstream to access 
+ */
+DataGroup::DataGroup(const std::string& filename_, const DataGroupHeader& dch, std::ifstream& ifs, bool loadEntireDataSetHint_)
+: filename(filename_), dataGroupHeader(dch), handle(0), fileStream(&ifs), useMemoryMapping(false), loadEntireDataSetHint(loadEntireDataSetHint_)
 {
 }
 
@@ -48,8 +56,10 @@ affymetrix_calvin_io::DataSet* DataGroup::DataSet(u_int32_t dataSetIdx)
 	DataSetHeader* dph = GenericData::FindDataSetHeader(&dataGroupHeader, dataSetIdx);
 	if (dph)
 	{
-		affymetrix_calvin_io::DataSet* dp = new affymetrix_calvin_io::DataSet(filename, *dph, handle);
-		return dp;
+		if (useMemoryMapping)
+			return new affymetrix_calvin_io::DataSet(filename, *dph, handle, loadEntireDataSetHint);
+		else
+			return new affymetrix_calvin_io::DataSet(filename, *dph, *fileStream, loadEntireDataSetHint);
 	}
 	else
 	{
@@ -71,8 +81,10 @@ affymetrix_calvin_io::DataSet* DataGroup::DataSet(const std::wstring& dataSetNam
 	DataSetHeader* dph = GenericData::FindDataSetHeader(&dataGroupHeader, dataSetName);
 	if (dph)
 	{
-		affymetrix_calvin_io::DataSet* dp = new affymetrix_calvin_io::DataSet(filename, *dph, handle);
-		return dp;
+		if (useMemoryMapping)
+			return new affymetrix_calvin_io::DataSet(filename, *dph, handle, loadEntireDataSetHint);
+		else
+			return new affymetrix_calvin_io::DataSet(filename, *dph, *fileStream, loadEntireDataSetHint);
 	}
 	else
 	{

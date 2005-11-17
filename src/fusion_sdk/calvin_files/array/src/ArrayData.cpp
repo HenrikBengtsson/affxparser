@@ -44,5 +44,10 @@ void ArrayData::Clear()
 {
 	physicalArraysAttributes.clear();
 	userAttributes.clear();
-	setIdentifier="";
+	fileId="";
+	dataTypeId="";
+	createdStep=NoStep;
+	initialProject=L"";
+	creationDateTime=L"";
+	createdBy=L"";
 }

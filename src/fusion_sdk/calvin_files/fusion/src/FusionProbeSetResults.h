@@ -415,22 +415,69 @@ public:
 
 ////////////////////////////////////////////////////////////////////
 
+/*! A structure to hold a base call at a given position (index). */
+class FusionBaseCallType
+{
+protected:
+	/*! The position (index) of the call. */
+	int32_t position;
+
+	/*! The call. */
+	int8_t call;
+
+public:
+
+	/*! Constructor. */
+	FusionBaseCallType();
+
+	/*! Constructor with values.
+	 * @param p The position.
+	 * @param c The call.
+	 */
+	FusionBaseCallType(int32_t p, int8_t c);
+
+	/*! Destructor */
+	~FusionBaseCallType();
+
+	/*! Clears the values. */
+	void Clear();
+
+	/*! Gets the position.
+	 * @return The position.
+	 */
+	int32_t GetPosition() const { return position; }
+
+	/*! Gets the call.
+	 * @return The call
+	 */
+	int8_t GetCall() const { return call; }
+
+	/*! Sets the position
+	 * @param p The position.
+	 */
+	void SetPosition(int32_t p) { position = p; }
+
+	/*! Sets the call.
+	 * @param c The call.
+	 */
+	void SetCall(int8_t c) { call = c; }
+};
+
+/*! A vector of calls. */
+typedef std::vector<FusionBaseCallType> FusionBaseCallVector;
+
+////////////////////////////////////////////////////////////////////
+
 /*! A class to hold a force call, its position and reason.
  *
  * A force call is the call the algorithm would have made if the thresholds
  * were not applied.
  */
-class FusionForceCallType
+class FusionForceCallType : public FusionBaseCallType
 {
-private:
-	/*! The position (index) of the call. */
-	int32_t position;
-
-	/*! The force call. */
-	int8_t call;
-
+protected:
 	/*! The reason for the call. */
-	u_int8_t reason;
+	int8_t reason;
 
 public:
 
@@ -450,73 +497,19 @@ public:
 	/*! \brief Clears members. */
 	void Clear();
 
-	/*! \brief Gets the position.
-	 *	\return Position.
-	 */
-	int32_t GetPosition();
-
-	/*! \brief Gets the call. 
-	 *	\return Call.
-	 */
-	int8_t GetCall();
-
 	/*! \brief Gets the reason.
 	 *	\return Reason.
 	 */
-	u_int8_t GetReason();
-
-	/*! \brief Sets the position.
-	 *	\param p Position value to set.
-	 */
-	void SetPosition(int32_t p);
+	u_int8_t GetReason() const { return reason; }
 
 	/*! \brief Sets the call.
-	 *	\param p Reason value to set.
+	 *	\param r Reason value to set.
 	 */
-	void SetCall(int8_t p);
-
-	/*! \brief Sets the call.
-	 *	\param p Reason value to set.
-	 */
-	void SetReason(u_int8_t p);
+	void SetReason(u_int8_t r) { reason = r; }
 };
 
+/*! A vector of force calls. */
 typedef std::vector<FusionForceCallType> FusionForceCallVector;
-
-////////////////////////////////////////////////////////////////////
-
-/*! A structure to hold a base call at a given position (index). */
-class FusionBaseCallType
-{
-private:
-	/*! The position (index) of the call. */
-	int32_t position;
-
-	/*! The call. */
-	int8_t call;
-
-public:
-
-	FusionBaseCallType();
-
-	FusionBaseCallType(int32_t p, int8_t c);
-
-	~FusionBaseCallType();
-
-	void Clear();
-
-	int32_t GetPosition();
-
-	/*! The call. */
-	int8_t GetCall();
-
-	void SetPosition(int32_t p);
-
-	/*! The call. */
-	void SetCall(int8_t p);
-};
-
-typedef std::vector<FusionBaseCallType> FusionBaseCallVector;
 
 ////////////////////////////////////////////////////////////////////
 

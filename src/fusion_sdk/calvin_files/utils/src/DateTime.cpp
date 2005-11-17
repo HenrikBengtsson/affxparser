@@ -20,10 +20,14 @@
 
 #include "DateTime.h"
 #include "InterpretationException.h"
+#include "StringUtils.h"
 #include <time.h>
 
 using namespace affymetrix_calvin_utilities;
 using namespace affymetrix_calvin_exceptions;
+
+#define DATE_PRINTF_FORMAT std::wstring(L"%02d-%02d-%02d")
+#define TIME_PRINTF_FORMAT std::wstring(L"%02d:%02d:%02d")
 
 #ifdef WIN32
 #pragma warning(disable: 4996) // Turn off warnings for depricated VC++ functions.
@@ -68,6 +72,8 @@ std::wstring DateTime::Date() const
  */
 void DateTime::Date(std::wstring value)
 {
+	StringUtils::STLTrimRight(value);
+	StringUtils::STLTrimLeft(value);
 	affydate = value;
 }
 
@@ -85,6 +91,8 @@ std::wstring DateTime::Time() const
  */
 void DateTime::Time(std::wstring value)
 {
+	StringUtils::STLTrimRight(value);
+	StringUtils::STLTrimLeft(value);
 	affytime = value;
 }
 
@@ -127,7 +135,6 @@ bool DateTime::IsUTC()
 	return coordinateduniversaltime;
 }
 
-
 std::wstring DateTime::ToString()
 {
 	if(affydate == L"" || affytime == L"")
@@ -137,11 +144,14 @@ std::wstring DateTime::ToString()
 		this->Time(dt.Time());
 	}
 
-	return this->Date() + DATETIME_SEPERATOR_FORMAT_SPECIFIER + this->Time() + ZULU_FORMAT_SPECIFIER;
+	std::wstring datetime = this->Date() + DATETIME_SEPERATOR_FORMAT_SPECIFIER + this->Time();
+	if (coordinateduniversaltime)
+		datetime += ZULU_FORMAT_SPECIFIER;
+	return datetime;
 }
 
 /*
- * Converts the string into a DateTime.  This method is not bullet-proof.
+ * Converts the string into a DateTime.
  */
 DateTime DateTime::Parse(std::wstring value)
 {
@@ -155,13 +165,7 @@ DateTime DateTime::Parse(std::wstring value)
 
 	std::wstring date = value.substr(0, posT);
 
-	// Check the format
-	int32_t y, m, d;
-	if (swscanf(date.c_str(), L"%d-%d-%d", &y, &m, &d) != 3)
-	{
-		FormatException e;
-		throw e;
-	}
+	CheckDateFormat(date);
 
 	bool utc = false;
 	int32_t posZ = (int32_t) value.find(ZULU_FORMAT_SPECIFIER);
@@ -178,17 +182,77 @@ DateTime DateTime::Parse(std::wstring value)
 
 	std::wstring time = value.substr(posT+1);
 
-	// Check the format
-	int32_t h, M, s;
-	if (swscanf(time.c_str(), L"%d:%d:%d", &h, &M, &s) != 3)
-	{
-		FormatException e;
-		throw e;
-	}
+	// Check the time format
+	CheckTimeFormat(time);
 
 	// Looks good
 	result.Time(time);
 	result.Date(date);
 	result.coordinateduniversaltime = utc;
 	return result;
+}
+
+/*
+ * Get a properly formatted Date string.
+ */
+std::wstring DateTime::FormatDate(u_int32_t year, u_int32_t month, u_int32_t day)
+{
+	wchar_t buf[50];
+	FormatString3(buf, 50, DATE_PRINTF_FORMAT.c_str(), year, month, day);
+	return buf;
+}
+
+/*
+ * Get a properly formatted Time string.
+ */
+std::wstring DateTime::FormatTime(u_int32_t hour, u_int32_t minute, u_int32_t second)
+{
+	wchar_t buf[50];
+	FormatString3(buf, 50, TIME_PRINTF_FORMAT.c_str(), hour, minute, second);
+	return buf;
+}
+
+/*
+ * Get a properly formatted date-time string.
+ */
+std::wstring DateTime::FormatDateTime(u_int32_t year, u_int32_t month, u_int32_t day, u_int32_t hour, u_int32_t minute, u_int32_t second, bool utc)
+{
+	std::wstring datetime = FormatDate(year, month, day) + DATETIME_SEPERATOR_FORMAT_SPECIFIER + FormatTime(hour, minute, second);
+	if (utc)
+		datetime += ZULU_FORMAT_SPECIFIER;
+	return datetime;
+}
+
+/* 
+ * Check the date format and modify it if needed and possible.
+ */
+void DateTime::CheckDateFormat(std::wstring& date)
+{
+	// Check the format
+	int32_t y, m, d;
+	if (swscanf(date.c_str(), L"%d-%d-%d", &y, &m, &d) != 3)
+	{
+		if (swscanf(date.c_str(), L"%d/%d/%d", &y, &m, &d) == 3 && date.length() < 50)
+		{
+			date = FormatDate(y, m, d);
+		}
+		else
+		{
+			FormatException e;
+			throw e;
+		}
+	}
+}
+
+/*
+ * Check the time format.
+ */
+void DateTime::CheckTimeFormat(std::wstring& time)
+{
+	int32_t h, M, s;
+	if (swscanf(time.c_str(), L"%d:%d:%d", &h, &M, &s) != 3)
+	{
+		FormatException e;
+		throw e;
+	}
 }

@@ -21,6 +21,9 @@
 #ifndef _FileHeader_HEADER_
 #define _FileHeader_HEADER_
 
+/*! \file FileHeader.h This file defines a class to act as a data container for the generic file header
+ */
+
 #include <string>
 #include <vector>
 #include "AffymetrixBaseTypes.h"
@@ -38,6 +41,7 @@ namespace affymetrix_calvin_io
 static const u_int8_t MAGIC_NUM = 59;
 static const u_int8_t VERSION = 1;
 
+/*! This class defines a data container for the generic file header */
 class FileHeader
 {
 public:

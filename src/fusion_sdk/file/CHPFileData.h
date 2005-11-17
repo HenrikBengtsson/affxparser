@@ -37,6 +37,7 @@
 #include <list>
 #include <fstream>
 #include "TagValuePair.h"
+#include "affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 

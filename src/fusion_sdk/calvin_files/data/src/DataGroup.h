@@ -46,11 +46,20 @@ class DataGroup
 {
 public:
 	/*! Constructor
-	 *	@param name The name of the generic file to access.
-	 *	@param dch The DataSetHeader of the DataSet to access.
+	 *	@param filename The name of the generic file to access.
+	 *	@param dch The DataGroupHeader of the DataGroup to access.
 	 *	@param handle A handle to the file mapping object
+	 *	@param loadEntireDataSetHint Indicates if DataSets created by DataGroup will attempt to read the entire DataSet data into a memory buffer.
 	 */
-	DataGroup(const std::string& filename, const DataGroupHeader& dch, void* handle);
+	DataGroup(const std::string& filename, const DataGroupHeader& dch, void* handle, bool loadEntireDataSetHint=false);
+
+	/*! Constructor
+	 *	@param filename The name of the generic file to access.
+	 *	@param dch The DataGroupHeader of the DataGroup to access.
+	 *	@param ifs An open ifstream object.
+	 *	@param loadEntireDataSetHint Indicates if DataSets created by DataGroup will attempt to read the entire DataSet data into a memory buffer.
+	 */
+	DataGroup(const std::string& filename, const DataGroupHeader& dch, std::ifstream& ifs, bool loadEntireDataSetHint=false);
 
 	/*! Method to get a reference to the DataGroupHeader
 	 *	@return A reference to the DataGroupHeader.
@@ -84,8 +93,15 @@ protected:
 	std::string filename;
 	/*! DataGroupHeader of the DataGroup from which to get DataSets*/
 	DataGroupHeader dataGroupHeader;
+	/*! A flag the indicates the data access mode.  True = access the data using memory-mapping.  False = access the data using std::ifstream */
+	bool useMemoryMapping;
 	/*! File mapping object handle */
 	void* handle;
+	/*! An open ifstream object */
+	std::ifstream* fileStream;
+	/*! Indicates whether DataSets created by DataGroup should attempt to read all data into a memory buffer. */
+	bool loadEntireDataSetHint;
+
 };
 
 }

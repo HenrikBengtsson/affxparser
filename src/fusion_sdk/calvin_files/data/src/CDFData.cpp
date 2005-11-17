@@ -176,8 +176,8 @@ void CDFData::CreateContentsGroup(const std::wstring& p, int32_t probesetCnt)
 	DataSetHeader dp;
 	dp.SetRowCnt(probesetCnt);
 	dp.SetName(p);
-	dp.AddUnicodeColumnType(MAX_CDF_PROBE_SET_NAME_LENGTH);
-	dp.AddIntColumnType();
+	dp.AddUnicodeColumn(L"", MAX_CDF_PROBE_SET_NAME_LENGTH);
+	dp.AddIntColumn(L"");
 	c.AddDataSetHdr(dp);
 	genericData.Header().AddDataGroupHdr(c);
 }
@@ -219,7 +219,7 @@ void CDFData::PrepareForSequentialAccess()
 
 	// skip-over the first DataGroup
 	DataGroup dg = genericData.DataGroup(genericData.Header().GetFirstDataGroupFilePos());
-	curGroupFilePos = dg.Header().GetNextCubePos();
+	curGroupFilePos = dg.Header().GetNextGroupPos();
 
 	// initialize the curPos
 	curIndex = 0;
@@ -300,7 +300,7 @@ void CDFData::GetProbeSetInformation(int32_t index, CDFProbeSetInformation& info
 
 			// Move to the next data group
 			++curIndex;
-			curGroupFilePos = dg.Header().GetNextCubePos();
+			curGroupFilePos = dg.Header().GetNextGroupPos();
 		}
 		else
 		{
@@ -365,7 +365,7 @@ void CDFData::GetQCProbeSetInformation(int32_t index, CDFQCProbeSetInformation& 
 
 			// Move to the next data group
 			++curIndex;
-			curGroupFilePos = dg.Header().GetNextCubePos();
+			curGroupFilePos = dg.Header().GetNextGroupPos();
 		}
 		else
 		{

@@ -171,7 +171,7 @@ public:
 
 	/*! Gets the information about a probe set.
 	 * @param index The index to the probe set. Must be between 0 and the number of probe sets - 1.
-	 * @param into The probe set information.
+	 * @param info The probe set information.
 	 * @exception CDFAccessNotSupportedByModeException
 	 * @exception DataSetNotOpenException
 	 */
@@ -179,7 +179,7 @@ public:
 
 	/*! Gets the information about a probe set.
 	 * @param probeSetName The name of the probe set.
-	 * @param into The probe set information.
+	 * @param info The probe set information.
 	 * @exception CDFAccessNotSupportedByModeException
 	 * @exception DataSetNotOpenException
 	 * @exception ProbeSetNotFoundException
@@ -188,7 +188,7 @@ public:
 
 	/*! Gets the information about a QC probe set.
 	 * @param index The index of the QC probe set.
-	 * @param into The probe set information.
+	 * @param info The probe set information.
 	 * @exception CDFAccessNotSupportedByModeException
 	 * @exception DataSetNotOpenException
 	 */
@@ -196,7 +196,7 @@ public:
 
 	/*! Gets the information about a QC probe set.
 	 * @param probeSetName The name of the QC probe set.
-	 * @param into The probe set information.
+	 * @param info The probe set information.
 	 * @exception CDFAccessNotSupportedByModeException
 	 * @exception DataSetNotOpenException
 	 * @exception ProbeSetNotFoundException

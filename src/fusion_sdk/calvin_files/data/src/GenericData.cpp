@@ -21,6 +21,7 @@
 #include "GenericData.h"
 #include "DataGroupHeaderReader.h"
 #include "DataSetHeaderReader.h"
+#include "ArrayId.h"
 #include <string>
 #include <iterator>
 #include <algorithm>
@@ -36,6 +37,8 @@ GenericData::GenericData()
 	fileMapHandle = NULL;
 	fileHandle = INVALID_HANDLE_VALUE;
 #endif
+	useMemoryMapping = true;
+	loadEntireDataSetHint = false;
 }
 
 /*
@@ -60,17 +63,33 @@ affymetrix_calvin_utilities::AffymetrixGuidType GenericData::FileIdentifier()
 affymetrix_calvin_utilities::AffymetrixGuidType GenericData::ArrayFileIdentifier()
 {
 	// Find the parent array file generic header
+	affymetrix_calvin_utilities::AffymetrixGuidType arrayFileID;
+	GenDataHdrVectorIt begin;
+	GenDataHdrVectorIt end;
+	GenericDataHeader* hdr = header.GetGenericDataHdr()->FindParent(ARRAY_TYPE_IDENTIFIER);
+	if (hdr)
+	{
+			arrayFileID = hdr->GetFileId();
+	}
+	return arrayFileID;
+}
+
+/*
+ * Returns the parent array identifier.
+ */
+affymetrix_calvin_utilities::AffymetrixGuidType GenericData::ArrayIdentifier()
+{
+	// Find the parent array file generic header
 	affymetrix_calvin_utilities::AffymetrixGuidType arrayID;
 	GenDataHdrVectorIt begin;
 	GenDataHdrVectorIt end;
-	GenericDataHeader* hdr = header.GetGenericDataHdr();
-	hdr->GetParentIterators(begin,end);
-	for (GenDataHdrVectorIt ii=begin; ii != end; ++ii)
+	GenericDataHeader* hdr = header.GetGenericDataHdr()->FindParent(ARRAY_TYPE_IDENTIFIER);
+	if (hdr)
 	{
-		if( ii->GetFileTypeId() == ARRAY_FILE_TYPE_IDENTIFIER)
+		ParameterNameValueType nvt;
+		if (hdr->FindNameValParam(ARRAY_ID_PARAM_NAME, nvt))
 		{
-			arrayID = ii->GetFileId();
-			break;
+			arrayID = nvt.GetValueAscii();
 		}
 	}
 	return arrayID;
@@ -170,27 +189,27 @@ void GenericData::DataSetNames(const std::wstring& dataGroupName, std::vector<st
 	for (DataSetHdrIt ii=begin; ii!=end; ++ii)
 	{
 		names.push_back(ii->GetName());
-	}}
+	}
+}
 
 /*
  * Get the DataSet given a DataGroup and DataSet index
  */
 DataSet* GenericData::DataSet(u_int32_t dataGroupIdx, u_int32_t dataSetIdx)
 {
-	MapFile();
+	if (Open() == false)
+	{
+		affymetrix_calvin_exceptions::FileNotOpenException e;
+		throw e;
+	}
+
 	DataGroupHeader* dch = FindDataGroupHeader(dataGroupIdx);
 	if (dch)
 	{
 		DataSetHeader* dph = FindDataSetHeader(dch, dataSetIdx);
 		if (dph)
 		{
-			void* handle = 0;
-#ifdef WIN32
-			handle = fileMapHandle;
-#endif
-			ReadFullDataSetHeader(dph);
-			affymetrix_calvin_io::DataSet* dp = new affymetrix_calvin_io::DataSet(Header().GetFilename(), *dph, handle);
-			return dp;
+			return CreateDataSet(dph);
 		}
 		else
 		{
@@ -206,24 +225,23 @@ DataSet* GenericData::DataSet(u_int32_t dataGroupIdx, u_int32_t dataSetIdx)
 }
 
 /*
- * Get the DataSet given a DataGroup and DataSet names
+ * Get the DataSet given a DataGroup and DataSet name
  */
 DataSet* GenericData::DataSet(const std::wstring& dataGroupName, const std::wstring& dataSetName)
 {
-	MapFile();
+	if (Open() == false)
+	{
+		affymetrix_calvin_exceptions::FileNotOpenException e;
+		throw e;
+	}
+
 	DataGroupHeader* dch = FindDataGroupHeader(dataGroupName);
 	if (dch)
 	{
 		DataSetHeader* dph = FindDataSetHeader(dch, dataSetName);
 		if (dph)
 		{
-			void* handle = 0;
-#ifdef WIN32
-			handle = fileMapHandle;
-#endif
-			ReadFullDataSetHeader(dph);
-			affymetrix_calvin_io::DataSet* dp = new affymetrix_calvin_io::DataSet(Header().GetFilename(), *dph, handle);
-			return dp;
+			return CreateDataSet(dph);
 		}
 		else
 		{
@@ -235,6 +253,26 @@ DataSet* GenericData::DataSet(const std::wstring& dataGroupName, const std::wstr
 	{
 		affymetrix_calvin_exceptions::DataGroupNotFoundException e;
 		throw e;
+	}
+}
+
+/*
+ * Creates a new DataSet based on the dsh argument
+ */
+DataSet* GenericData::CreateDataSet(DataSetHeader* dsh)
+{
+	void* handle = 0;
+#ifdef WIN32
+	handle = fileMapHandle;
+#endif
+	ReadFullDataSetHeader(dsh);
+	if (useMemoryMapping)
+	{
+		return new affymetrix_calvin_io::DataSet(Header().GetFilename(), *dsh, handle, loadEntireDataSetHint);
+	}
+	else
+	{
+		return new affymetrix_calvin_io::DataSet(Header().GetFilename(), *dsh, fileStream, loadEntireDataSetHint);
 	}
 }
 
@@ -243,28 +281,47 @@ DataSet* GenericData::DataSet(const std::wstring& dataGroupName, const std::wstr
  */
 affymetrix_calvin_io::DataGroup GenericData::DataGroup(u_int32_t dataGroupFilePos)
 {
-	MapFile();
+	if (Open() == false)
+	{
+		affymetrix_calvin_exceptions::FileNotOpenException e;
+		throw e;
+	}
 
-	// Open a file stream
+	// A little indirection
 	std::ifstream fs;
-	OpenFStream(fs);
+	std::ifstream* pfs = &fileStream;	// initialize to use GenericData::fileStream
+
+	if (useMemoryMapping)
+	{
+		// Open a file stream
+		OpenFStream(fs);
+		pfs = &fs;
+	}
 
 	// and position it
-	fs.seekg(dataGroupFilePos, std::ios_base::beg);
+	pfs->seekg(dataGroupFilePos, std::ios_base::beg);
 
 	// Read the DataGroupHeader and all DataSetHeaders
 	DataGroupHeader dch;
 	DataGroupHeaderReader reader;
-	reader.Read(fs, dch);
+	reader.Read(*pfs, dch);
 
-	fs.close();
+	if (useMemoryMapping)
+		fs.close();
 
 	void* handle = 0;
 #ifdef WIN32
 	handle = fileMapHandle;
 #endif
 
-	return affymetrix_calvin_io::DataGroup(Header().GetFilename(), dch, handle);
+	if (useMemoryMapping)
+	{
+		return affymetrix_calvin_io::DataGroup(Header().GetFilename(), dch, handle, loadEntireDataSetHint);
+	}
+	else
+	{
+		return affymetrix_calvin_io::DataGroup(Header().GetFilename(), dch, fileStream, loadEntireDataSetHint);
+	}
 }
 
 
@@ -275,7 +332,8 @@ void GenericData::Clear()
 {
 	// Clear the header
 	header.Clear();
-	UnmapFile();
+	Close();
+	useMemoryMapping = true;
 }
 
 /*
@@ -335,27 +393,33 @@ DataSetHeader* GenericData::FindDataSetHeader(DataGroupHeader* dch, u_int32_t da
 void GenericData::ReadFullDataSetHeader(DataSetHeader* dph)
 {
 	// Check if the DataSet has been read fully.
-	if (IsDPHPartiallyRead(dph))
+	if (IsDSHPartiallyRead(dph))
 	{
 		// Open a file stream
 		std::ifstream fs;
-		OpenFStream(fs);
+		std::ifstream* pfs = &fileStream;	// initialize to use GenericData::ifs
+		if (useMemoryMapping)
+		{
+			OpenFStream(fs);
+			pfs = &fs;
+		}
 
 		// and position it
-		fs.seekg(dph->GetHeaderStartFilePos(), std::ios_base::beg);
+		pfs->seekg(dph->GetHeaderStartFilePos(), std::ios_base::beg);
 
 		// Read the header
 		DataSetHeaderReader reader;
-		reader.Read(fs, *dph);
+		reader.Read(*pfs, *dph);
 
-		fs.close();
+		if (useMemoryMapping)
+			fs.close();
 	}
 }
 
 /*
  * Determine if the DataSetHeader has been partially read.
  */
-bool GenericData::IsDPHPartiallyRead(const DataSetHeader* dph)
+bool GenericData::IsDSHPartiallyRead(const DataSetHeader* dph)
 {
 	if (dph == 0)
 		return false;
@@ -367,19 +431,41 @@ bool GenericData::IsDPHPartiallyRead(const DataSetHeader* dph)
 /*
  * Open the ifstream
  */
-void GenericData::OpenFStream(std::ifstream& fileStream)
+void GenericData::OpenFStream(std::ifstream& ifs)
 {
-	fileStream.open(Header().GetFilename().c_str(), std::ios::in | std::ios::binary);
-	if (!fileStream)
+	ifs.open(Header().GetFilename().c_str(), std::ios::in | std::ios::binary);
+	if (!ifs)
 	{
 		affymetrix_calvin_exceptions::FileNotFoundException e;
 		throw e;
 	}
 }
 
+bool GenericData::Open()
+{
+	if (useMemoryMapping)
+		return MapFile();
+	else
+	{
+		if (fileStream.is_open() == false)
+			OpenFStream(fileStream);
+		return true;
+	}
+}
+
+void GenericData::Close()
+{
+	UnmapFile();
+	if (fileStream.is_open())
+		fileStream.close();
+}
+
+/*
+ * Open a memory map on the file.
+ */
 bool GenericData::MapFile()
 {
-#ifdef WIN32
+#ifdef WIN32	// On Windows the map is open in the GenericData object, otherwise it is opened in the DataSet
 	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
 		// Create the file.
@@ -403,6 +489,9 @@ bool GenericData::MapFile()
 	return true;
 }
 
+/*
+ * Close the memory-mapping on the file
+ */
 void GenericData::UnmapFile()
 {
 #ifdef WIN32

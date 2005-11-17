@@ -92,6 +92,7 @@ void GridControlFileReader::Read(const std::string &fileName, GridControlData& d
 		data.SetB1(iRow, coord);
 	}
 	dataSet->Close();
+	dataSet->Delete();
 
 	// Next the B2 probes.
 	dataSet = gdata.DataSet(GRD_FILE_COORDINATE_GROUP_NAME, GRD_FILE_B2_SET_NAME);
@@ -111,6 +112,7 @@ void GridControlFileReader::Read(const std::string &fileName, GridControlData& d
 		data.SetB2(iRow, coord);
 	}
 	dataSet->Close();
+	dataSet->Delete();
 
 	// Last the NS probes.
 	dataSet = gdata.DataSet(GRD_FILE_COORDINATE_GROUP_NAME, GRD_FILE_NS_SET_NAME);
@@ -130,4 +132,5 @@ void GridControlFileReader::Read(const std::string &fileName, GridControlData& d
 		data.SetNS(iRow, coord);
 	}
 	dataSet->Close();
+	dataSet->Delete();
 }

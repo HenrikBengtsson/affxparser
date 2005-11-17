@@ -34,12 +34,6 @@
 #include "StringUtils.h"
 #include "FusionProbeSetResults.h"
 
-using namespace std;
-using namespace affxchp;
-using namespace affymetrix_calvin_io;
-using namespace affymetrix_calvin_utilities;
-
-
 namespace affymetrix_fusion_io
 {
 
@@ -69,6 +63,10 @@ void ConvertGCOS(TagValuePairTypeList& fromList, FusionTagValuePairTypeList& toL
 class IFusionCHPHeaderAdapter
 {
 public:
+
+	/*! \brief Virtual destructor. */
+	virtual ~IFusionCHPHeaderAdapter() { };
+
 // Accessors for header information.
 	/*! \brief Get numbers columns.
 	 *	\return Number of columns.
@@ -96,20 +94,20 @@ public:
 	/*! \brief Get chip type.
 	 *	\return The chip type.
 	 */
-	virtual wstring GetChipType() const = 0;
+	virtual std::wstring GetChipType() const = 0;
 
 	/*! \brief Get algorithm name.
 	 *	\return Algorithm name.
 	 */
-	virtual wstring GetAlgName() const = 0;
+	virtual std::wstring GetAlgName() const = 0;
 	/*! \brief Get algorithm version.
 	 *	\return Algorithm version number.
 	 */
-	virtual wstring GetAlgVersion() const = 0;
+	virtual std::wstring GetAlgVersion() const = 0;
 	/*! \brief Gets the algorithm parameters.
 	 *	\param values Name/Value type list to be filled.
 	 */
-	virtual void GetAlgorithmParameters(FusionTagValuePairTypeList& values) = 0;
+	virtual void GetAlgorithmParameters(affymetrix_fusion_io::FusionTagValuePairTypeList& values) = 0;
 
 	/*! \brief Gets the algorithm parameter count.
 	 *	\return Number of algorithm parameters.
@@ -119,38 +117,38 @@ public:
 	/*! \brief Gets summary parameters.
 	 *	\param values Name/Value type list to be filled.
 	 */
-	virtual void GetSummaryParameters(FusionTagValuePairTypeList& values) = 0;
+	virtual void GetSummaryParameters(affymetrix_fusion_io::FusionTagValuePairTypeList& values) = 0;
 	/*! \brief Gets the parent CEL file.
 	 *	\return Parent CEL file name.
 	 */
-	virtual wstring GetParentCellFile() const = 0;
+	virtual std::wstring GetParentCellFile() const = 0;
 	/*! \brief Gets the prog ID.
 	 *	\return Prog ID
 	 */
-	virtual wstring GetProgID() const = 0;
+	virtual std::wstring GetProgID() const = 0;
 	/*! \brief Gets a specific algorithm parameter given a name/tag.
 	 *	\return Specific algorithm parameter given a name/tag
 	 */
-	virtual wstring GetAlgorithmParameter(const wchar_t *tag) = 0;
+	virtual std::wstring GetAlgorithmParameter(const wchar_t *tag) = 0;
 	/*! \brief Gets a specific algorithm parameter given a name/tag.
 	 *	\param tag Parameter name.
 	 *	\return Specific algorithm parameter given a name/tag
 	 */
-	virtual wstring GetSummaryParameter(const wchar_t *tag) = 0;
+	virtual std::wstring GetSummaryParameter(const wchar_t *tag) = 0;
 	/*! \brief Gets the background zone information.
 	 *	\param info Background zone information to be filled.
 	 */
-	virtual void GetBackgroundZoneInfo(BackgroundZoneInfo& info) = 0;
+	virtual void GetBackgroundZoneInfo(affxchp::BackgroundZoneInfo& info) = 0;
 	/*! \brief Gets the list of background zone positions and values.
 	 *	\param zones List of background zone positions and values to be filled.
 	 */
-	virtual void GetBackgroundZones(BackgroundZoneTypeList& zones) = 0;
+	virtual void GetBackgroundZones(affxchp::BackgroundZoneTypeList& zones) = 0;
 	/*! \brief Gets the background value for a given center coordinate.
 	 *	\param type Background value for a given center coordinate to be filled.
 	 *	\param x X position of zone.
 	 *	\param y Y position of zone.
 	 */
-	virtual void GetBackgroundZone(BackgroundZoneType& type, int x, int y) = 0;
+	virtual void GetBackgroundZone(affxchp::BackgroundZoneType& type, int x, int y) = 0;
 
 	/*! \brief Gets the magic number.
 	 *	\return Magic number.
@@ -169,6 +167,9 @@ public:
 class IFusionCHPDataAdapter
 {
 public:
+
+	/*! \brief Virtual destructor. */
+	virtual ~IFusionCHPDataAdapter() {};
 
 	/*! \brief Accessors to header.
 	*	\return Header object
@@ -192,20 +193,20 @@ public:
 	 *	\param result Genotyping result.
 	 *	\return True if the genotyping result was found.
 	 */
-	virtual bool GetGenotypingResults(int index, FusionGenotypeProbeSetResults& result) = 0;
+	virtual bool GetGenotypingResults(int index, affymetrix_fusion_io::FusionGenotypeProbeSetResults& result) = 0;
 
 	/*! \brief Returns the universal (tag array) probe set result
 	 *	\param index Index to the result object of interest.
-	 *	\param Universal result.
+	 *	\param results Universal result.
 	 *	\return True if the universal result was found.
 	 */
-	virtual bool GetUniversalResults(int index, FusionUniversalProbeSetResults& results) = 0;
+	virtual bool GetUniversalResults(int index, affymetrix_fusion_io::FusionUniversalProbeSetResults& results) = 0;
 
 	/*! \brief Gets resequencing results.
 	 *	\param results Hold the resequencing results.
 	 *	\return True if resequencing results were retrieved.
 	 */
-	virtual bool GetResequencingResults(FusionResequencingResults& results) = 0;
+	virtual bool GetResequencingResults(affymetrix_fusion_io::FusionResequencingResults& results) = 0;
 
 	/*! \brief Functions to read file. 
 	 *	\return True if the cell file was read.
@@ -218,14 +219,14 @@ public:
 	virtual bool ReadHeader() = 0;
 
 	/*! \brief Sets the file name.
-	 *	\param name Full path to the CHP file
+	 *	\param value Full path to the CHP file
 	 */
-	virtual void SetFileName(const string& value) = 0;
+	virtual void SetFileName(const std::string& value) = 0;
 
 	/*! \brief Gets the file name.
 	 *	\return Full path to the CHP file.
 	 */
-	virtual string GetFileName() const = 0;
+	virtual std::string GetFileName() const = 0;
 
 	/*! \brief Deallocates any memory used by the class object. */
 	virtual void Clear() = 0;

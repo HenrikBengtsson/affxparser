@@ -36,7 +36,7 @@ public:
 
 
 	/*! The probe set names for the control probe sets.
-	* @param index The index as defined by the qc probe set type in the GCOS file sdk.
+	* @param qcType The type of qc probe set.
 	* @return A string value .*/
 	static std::wstring GetStaticCDFQCProbeSetName(affxcdf::GeneChipQCProbeSetType qcType);
 };

@@ -46,10 +46,7 @@ public:
 
 protected:
 	/*! The files version number. */
-	u_int8_t fileVersionNumber;
-
-	/*! An identifier to the type of data stored in the file */
-	affymetrix_calvin_utilities::AffymetrixGuidType dataTypeIdentifier;
+	std::wstring fileVersionNumber;
 
 public:
 	/*! Reads the entire contents of the file.
@@ -59,12 +56,6 @@ public:
  	 * @param headerOnly Flag to indicate that the header line should only be read.
 	 */
 	bool Read(const std::string &fileName, affymetrix_calvin_array::ArrayData &arrayData, bool headerOnly=false);
-
-	/*! The identifier of the type of data stored in the file.
-	 *
-	 * @return The identifier of the type of data.
-	 */
-	const affymetrix_calvin_utilities::AffymetrixGuidType &DataTypeIdentifier() const { return dataTypeIdentifier; }
 
 	/*! Determines if a file is of the specified type.
 	 *

@@ -21,12 +21,11 @@
 #ifndef _AffymetrixCalvinCHPDataAdapter_HEADER_
 #define _AffymetrixCalvinCHPDataAdapter_HEADER_
 
-/*! \file GCOSCHPDataAdapter.h This file defines the GCOS Fusion CHP Data adapter classes. */
+/*! \file CalvinCHPDataAdapter.h This file defines the GCOS Fusion CHP Data adapter classes. */
 
 #include "FusionCHPDataAdapterInterface.h"
 #include "CHPData.h"
 #include <string>
-//#include "ChpFileData.h"	
 #include "CHPFileData.h"	
 #include "CHPFileReader.h"
 #include "ParameterNameValueType.h"
@@ -43,7 +42,7 @@ class CalvinCHPHeaderAdapter : public IFusionCHPHeaderAdapter
 {
 public:
 	/*! \brief Constructor
-	 *	\param Calvin CHP data object.
+	 *	\param chp Calvin CHP data object.
 	 */
 	CalvinCHPHeaderAdapter(CHPData* chp);
 	/*! \brief Destructor */
@@ -76,19 +75,19 @@ public:
 	/*! \brief Get chip type.
 	 *	\return The chip type.
 	 */
-	virtual wstring GetChipType() const;
+	virtual std::wstring GetChipType() const;
 	/*! \brief Get algorithm name.
 	 *	\return Algorithm name.
 	 */
-	virtual wstring GetAlgName() const;
+	virtual std::wstring GetAlgName() const;
 	/*! \brief Get algorithm version.
 	 *	\return Algorithm version number.
 	 */
-	virtual wstring GetAlgVersion() const;
+	virtual std::wstring GetAlgVersion() const;
 	/*! \brief Gets the algorithm parameters.
 	 *	\param values Name/Value type list to be filled.
 	 */
-	virtual void GetAlgorithmParameters(FusionTagValuePairTypeList& values);
+	virtual void GetAlgorithmParameters(affymetrix_fusion_io::FusionTagValuePairTypeList& values);
 	/*! \brief Gets the algorithm parameter count.
 	 *	\return Number of algorithm parameters.
 	 */
@@ -97,43 +96,43 @@ public:
 	/*! \brief Gets summary parameters.
 	 *	\param values Name/Value type list to be filled.
 	 */
-	virtual void GetSummaryParameters(FusionTagValuePairTypeList& values);
+	virtual void GetSummaryParameters(affymetrix_fusion_io::FusionTagValuePairTypeList& values);
 	/*! \brief Gets the parent CEL file.
 	 *	\return Parent CEL file name.
 	 */
-	virtual wstring GetParentCellFile() const;
+	virtual std::wstring GetParentCellFile() const;
 	/*! \brief Gets the prog ID.
 	 *	\return Prog ID
 	 */
-	virtual wstring GetProgID() const;
+	virtual std::wstring GetProgID() const;
 	/*! \brief Gets a specific algorithm parameter given a name/tag.
 	 *	\param tag Parameter name.
 	 *	\return Specific algorithm parameter given a name/tag
 	 */
-	virtual wstring GetAlgorithmParameter(const wchar_t *tag);
+	virtual std::wstring GetAlgorithmParameter(const wchar_t *tag);
 
 	/*! \brief Gets a specific summary parameter given a name/tag.
 	 *	\param tag Parameter name.
 	 *	\return Specific summary parameter given a name/tag.
 	 */
-	virtual wstring GetSummaryParameter(const wchar_t *tag);
+	virtual std::wstring GetSummaryParameter(const wchar_t *tag);
 
 	/*! \brief Gets the background zone information.
 	 *	\param info Background zone information to be filled.
 	 */
-	virtual void GetBackgroundZoneInfo(BackgroundZoneInfo& info);
+	virtual void GetBackgroundZoneInfo(affxchp::BackgroundZoneInfo& info);
 
 	/*! \brief Gets the list of background zone positions and values.
 	 *	\param zones List of background zone positions and values to be filled.
 	 */
-	virtual void GetBackgroundZones(BackgroundZoneTypeList& zones);
+	virtual void GetBackgroundZones(affxchp::BackgroundZoneTypeList& zones);
 
 	/*! \brief Gets the background value for a given center coordinate.
 	 *	\param type Background value for a given center coordinate to be filled.
 	 *	\param x X position of zone.
 	 *	\param y Y position of zone.
 	 */
-	virtual void GetBackgroundZone(BackgroundZoneType& type, int x, int y);
+	virtual void GetBackgroundZone(affxchp::BackgroundZoneType& type, int x, int y);
 
 	/*! \brief Gets the magic number.
 	 *	\return Magic number.
@@ -191,7 +190,7 @@ public:
 
 	/*! \brief Returns the universal (tag array) probe set result
 	 *	\param index Index to the result object of interest.
-	 *	\param Universal result.
+	 *	\param result Universal result.
 	 *	\return True if the universal result was found.
 	 */
 	virtual bool GetUniversalResults(int index, FusionUniversalProbeSetResults& result);
@@ -213,14 +212,14 @@ public:
 	virtual bool ReadHeader();
 
 	/*! \brief Sets the file name.
-	 *	\param name Full path to the CHP file
+	 *	\param value Full path to the CHP file
 	 */
-	virtual void SetFileName(const string& value);
+	virtual void SetFileName(const std::string& value);
 
 	/*! \brief Gets the file name.
 	 *	\return Full path to the CHP file.
 	 */
-	virtual string GetFileName() const;
+	virtual std::string GetFileName() const;
 
 	/*! \brief Deallocates any memory used by the class object. */
 	virtual void Clear();

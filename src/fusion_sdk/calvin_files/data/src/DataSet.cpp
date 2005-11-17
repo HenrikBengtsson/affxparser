@@ -27,6 +27,7 @@
 using namespace affymetrix_calvin_io;
 
 #ifndef WIN32
+#include <unistd.h>
 #include <sys/mman.h>
 
 #ifndef PAGE_SIZE
@@ -44,17 +45,16 @@ using namespace affymetrix_calvin_io;
 #endif
 
 /*
- * Initialize the class.
+ * Initialize the object to use memory-mapping to access the file.
  */
-DataSet::DataSet(const std::string& fileName_, const DataSetHeader& header_, void* handle)
+DataSet::DataSet(const std::string& fileName_, const DataSetHeader& header_, void* handle, bool loadEntireDataSetHint_)
 {
 	fileName = fileName_;
 	header = header_;
 
 	mappedData = 0;
 	data = 0;
-//	fileOpen = false;
-//	fileMapped = false;
+	isOpen = false;
 
 #ifdef WIN32
 	fileMapHandle = handle;
@@ -63,6 +63,33 @@ DataSet::DataSet(const std::string& fileName_, const DataSetHeader& header_, voi
 #endif
 	mapStart = 0;
 	mapLen = 0;
+	fileStream = 0;
+	useMemoryMapping = true;
+	loadEntireDataSetHint = loadEntireDataSetHint_;
+}
+
+/*
+ * Initialize the object to use std::ifstream to access the file.
+ */
+DataSet::DataSet(const std::string& fileName_, const affymetrix_calvin_io::DataSetHeader& header_, std::ifstream& ifs, bool loadEntireDataSetHint_)
+{
+	fileName = fileName_;
+	header = header_;
+
+	mappedData = 0;
+	data = 0;
+	isOpen = false;
+
+#ifdef WIN32
+	fileMapHandle = 0;
+#else
+	fp = 0;
+#endif
+	mapStart = 0;
+	mapLen = 0;
+	fileStream = &ifs;
+	useMemoryMapping = false;
+	loadEntireDataSetHint = loadEntireDataSetHint_;
 }
 
 /*
@@ -71,6 +98,7 @@ DataSet::DataSet(const std::string& fileName_, const DataSetHeader& header_, voi
  */
 DataSet::~DataSet()
 {
+	Close();
 }
 
 /*
@@ -89,11 +117,23 @@ bool DataSet::Open()
 {
 	UpdateColumnByteOffsets();
 
-	// Compute the size of the DataSet data.
-	u_int32_t bytes = header.GetDataSize();	// map the entire data dataGroup for now
+	if (useMemoryMapping)
+		isOpen = OpenMM();
+	else
+	{
+		ReadDataSetUsingStream();
+		isOpen = true;
+	}
+	return isOpen;
+}
 
+/*
+ * Open the file using memory-mapping
+ */
+bool DataSet::OpenMM()
+{
 #ifdef WIN32
-	if (MapDataWin32(header.GetDataStartFilePos(), bytes) == false)
+	if (MapDataWin32(header.GetDataStartFilePos(), header.GetDataSize()) == false)
 		return false;
 #else
 	// Open the file
@@ -103,7 +143,7 @@ bool DataSet::Open()
 		return false;
 	}
 
-	if (MapDataPosix(header.GetDataStartFilePos(), bytes) == false)
+	if (MapDataPosix(header.GetDataStartFilePos(), header.GetDataSize()) == false)
 		return false;
 #endif
 
@@ -111,11 +151,30 @@ bool DataSet::Open()
 }
 
 /*
+ * Reads the DataSet data from the file into a memory buffer.
+ */
+void DataSet::ReadDataSetUsingStream()
+{
+	if(loadEntireDataSetHint == false)
+		return;
+
+	mapLen = header.GetDataSize();
+	mapStart = header.GetDataStartFilePos();
+
+	data = new char[mapLen];
+	fileStream->seekg(mapStart);
+	fileStream->read(data, mapLen);
+}
+
+/*
  * Close the DataSet
  */
 void DataSet::Close()
 {
-	UnmapFile ();
+	if (useMemoryMapping)
+		UnmapFile ();
+	else
+		ClearStreamData();
 }
 
 #ifdef WIN32
@@ -177,7 +236,6 @@ bool DataSet::MapDataWin32(u_int32_t start, u_int32_t bytes)
 	{
 		std::string msg = GetErrorMsg();
 		data = 0;
-		CloseHandle (fileMapHandle);
 		fileMapHandle = NULL;
 		mapStart = 0;
 		return false;
@@ -206,7 +264,6 @@ bool DataSet::MapDataPosix(u_int32_t start, u_int32_t bytes)
 	struct stat st;
 	if (stat(fileName.c_str(), &st) == 0)
 	{
-	  // COMMENTED OUT Based on Luis' advice.	mapLen = bytes;
 		int fileLen = st.st_size;
 		if (fileLen < page_start + mapLen)
 			mapLen = fileLen - page_start;
@@ -261,11 +318,22 @@ void DataSet::UnmapFile()
 }
 
 /*
+ * Delete the buffer
+ */
+void DataSet::ClearStreamData()
+{
+	delete[] data;
+	data = 0;
+	mapStart = 0;
+	mapLen = 0;
+}
+
+/*
  * Check the row, column and expected column type
  */
 void DataSet::CheckRowColumnAndType(int32_t row, int32_t col, DataSetColumnTypes type)
 {
-	if (data == 0)
+	if (isOpen == false)
 	{
 		affymetrix_calvin_exceptions::DataSetNotOpenException e;
 		throw e;
@@ -285,7 +353,7 @@ void DataSet::CheckRowColumnAndType(int32_t row, int32_t col, DataSetColumnTypes
 
 	// Check if the data type is expected
 
-	if (header.GetColumnType(col).GetColumnType() != type)
+	if (header.GetColumnInfo(col).GetColumnType() != type)
 	{
 		affymetrix_calvin_exceptions::UnexpectedColumnTypeException e;
 		throw e;
@@ -293,39 +361,11 @@ void DataSet::CheckRowColumnAndType(int32_t row, int32_t col, DataSetColumnTypes
 }
 
 /*
- * Detemine the address of data given row and col
- */
-//char* DataSet::FilePosition(int32_t row, int32_t col)
-//{
-//	if (data == 0)
-//	{
-//		affymetrix_calvin_exceptions::DataSetNotOpenException e;
-//		throw e;
-//	}
-//
-//	// Byte offset in data set + byte offset of data set in file
-//	u_int32_t startByte = BytesPerRow()*row + columnByteOffsets[col] + header.GetDataStartFilePos();
-//
-//#ifdef WIN32
-//	// Remap the file if necessary
-//	// Byte offset in data set + byte offset of data set in file
-//	u_int32_t endByte = BytesPerRow()*row + columnByteOffsets[col+1] + header.GetDataStartFilePos();	// as long as col is in bounds this is safe.
-//	if (startByte < mapStart || endByte > mapStart+mapLen)
-//	{
-//		MapDataWin32(startByte, header.GetDataSize() - startByte);
-//	}
-//#endif
-//
-//	char*	filePosition = data + (startByte-mapStart);
-//	return filePosition;
-//}
-
-/*
  * Detemine the address of data given row and col.  Ensure all requested data is mapped
  */
 char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 {
-	if (data == 0)
+	if (isOpen == false)
 	{
 		affymetrix_calvin_exceptions::DataSetNotOpenException e;
 		throw e;
@@ -335,21 +375,62 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 	if (rowCount > header.GetRowCnt())
 		rowCount= header.GetRowCnt();
 
+	if (useMemoryMapping == false && loadEntireDataSetHint == false)
+	{
+		return LoadDataAndReturnFilePosition(rowStart, col, rowCount);
+	}
+
 	// Byte offset in data set + byte offset of data set in file
 	u_int32_t startByte = BytesPerRow()*rowStart + columnByteOffsets[col] + header.GetDataStartFilePos();
 
 #ifdef WIN32
-	// Remap the file if necessary
-	// Byte offset in data set + byte offset of data set in file
-	u_int32_t endByte = BytesPerRow()*(rowStart+rowCount-1) + columnByteOffsets[col+1] + header.GetDataStartFilePos();	// as long as col is in bounds this is safe.
-	if (startByte < mapStart || endByte > mapStart+mapLen)
+
+	if (useMemoryMapping)
 	{
-		MapDataWin32(startByte, header.GetDataSize() - startByte);
+		// Byte offset in data set + byte offset of data set in file
+		u_int32_t endByte = BytesPerRow()*(rowStart+rowCount-1) + columnByteOffsets[col+1] + header.GetDataStartFilePos();	// as long as col is in bounds this is safe.
+
+		// Remap the file if necessary
+		if (startByte < mapStart || endByte > mapStart+mapLen)
+		{
+			if (startByte < mapStart)	// moving backwards through the data, attempt to find an optimum startByte.
+			{
+				u_int32_t reverseStartByte = 0;
+				if (endByte > MaxViewSize)
+					reverseStartByte = endByte - MaxViewSize;
+
+				// Don't go above the DataSet data
+				if (reverseStartByte < header.GetDataStartFilePos())
+					reverseStartByte = header.GetDataStartFilePos();
+
+				MapDataWin32(reverseStartByte, header.GetDataSize() - reverseStartByte);
+
+			}
+			else	// forward
+				MapDataWin32(startByte, header.GetDataSize() - startByte);
+		}
 	}
 #endif
 
 	char*	filePosition = data + (startByte-mapStart);
 	return filePosition;
+}
+
+/*
+ *
+ */
+char* DataSet::LoadDataAndReturnFilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
+{
+	// Delete the previous data
+	ClearStreamData();
+
+	int32_t len = BytesPerRow()*rowCount;
+	int32_t startPos = BytesPerRow()*rowStart + columnByteOffsets[col] + header.GetDataStartFilePos();
+
+	data = new char[len];
+	fileStream->seekg(startPos);
+	fileStream->read(data, len);
+	return data;
 }
 
 /*
@@ -364,7 +445,7 @@ void DataSet::UpdateColumnByteOffsets()
 	for (int32_t col = 0; col < cols; ++col)
 	{
 		columnByteOffsets.push_back(accum);
-		accum += header.GetColumnType(col).GetSize();
+		accum += header.GetColumnInfo(col).GetSize();
 	}
 	columnByteOffsets.push_back(accum);
 }
