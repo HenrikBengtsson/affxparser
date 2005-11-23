@@ -39,6 +39,7 @@ read.cel.complete <- function(fname, indices = NULL,
         stop("This function only reads a single cel file.")
     if (!file.exists(fname))
         stop(paste("file:", fname, "does not exist."))
+
     cel.file <- .Call("R_affx_get_cel_file", fname,
                       readHeader = TRUE,
                       readIntensities = read.intensities,
@@ -50,6 +51,7 @@ read.cel.complete <- function(fname, indices = NULL,
                       readMasked = read.masked,
                       indicesToRead = indices,
                       verbose = verbose)
+
     return(cel.file)
 }
 
