@@ -189,7 +189,7 @@ extern "C" {
     int i_readStdvs           = INTEGER(readStdvs)[0];
     int i_readOutliers        = INTEGER(readOutliers)[0];
     int i_readMasked          = INTEGER(readMasked)[0];
-    int i_verboseFlag         = INTEGER(verbose)[0];
+    int i_verboseFlag      = INTEGER(verbose)[0];
     
     /** here we will store the above entries in that order. **/
     SEXP result_list = NEW_LIST(8);

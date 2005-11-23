@@ -20,8 +20,8 @@ read.cdf.env <- function(fname, complementary.logic = TRUE, verbose = 0) {
         stop(paste("file:", fname, "does not exist."))
     pmmm <- .Call("R_affx_get_pmmm_list",
                   as.character(fname),
-                  complementary.logic,
-                  verbose = verbose)
+                  as.integer(complementary.logic),
+                  verbose = as.integer(verbose))
     if (is.null(pmmm) || length(pmmm) == 0)
         stop(paste("Error parsing:", fname))
     pmmm <- lapply(pmmm, function(x) {
