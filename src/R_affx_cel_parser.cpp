@@ -26,46 +26,50 @@
 using namespace std;
 using namespace affymetrix_fusion_io;
 
+
 extern "C" {
   #include <R.h>
   #include <Rdefines.h>  
   #include <wchar.h>
   #include <wctype.h>
  
+  
   /**
    * return a list of the meta data associated with this cell
    * file. This is the information stored in the header. 
    */
-  SEXP R_affx_extract_cel_file_meta(FusionCELData cel) {
+  SEXP R_affx_extract_cel_file_meta(FusionCELData* cc) {
     SEXP names, vals;
+  
+
 
     PROTECT(names = NEW_CHARACTER(12));
     PROTECT(vals  = NEW_LIST(12));
-    
+  
     int i = 0; 
     SEXP tmp;
 
     SET_STRING_ELT(names, i, mkChar("filename"));
-    SET_VECTOR_ELT(vals, i++, mkString(cel.GetFileName().c_str()));
-
+    SET_VECTOR_ELT(vals, i++, mkString(cc->GetFileName().c_str()));
+    
     SET_STRING_ELT(names, i, mkChar("version"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = cel.GetVersion();
+    INTEGER(tmp)[0] = cc->GetVersion();
     SET_VECTOR_ELT(vals, i++, tmp); 
-
+    
     SET_STRING_ELT(names, i, mkChar("cols"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = cel.GetCols();
+    INTEGER(tmp)[0] = cc->GetCols();
     SET_VECTOR_ELT(vals, i++, tmp);
-
+    
     SET_STRING_ELT(names, i, mkChar("rows"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = cel.GetRows();
+    INTEGER(tmp)[0] = cc->GetRows();
     SET_VECTOR_ELT(vals, i++, tmp);
     
     SET_STRING_ELT(names, i, mkChar("total"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = cel.GetNumCells();
+    INTEGER(tmp)[0] = cc->GetNumCells();
     SET_VECTOR_ELT(vals, i++, tmp);
    
 
@@ -73,70 +77,71 @@ extern "C" {
     int str_length; 
     char* cstr; 
     
-    str_length = cel.GetAlg().size();
+    str_length = cc->GetAlg().size();
     cstr = Calloc(str_length, char);
-    wcstombs(cstr, cel.GetAlg().c_str(), str_length);
+    wcstombs(cstr, cc->GetAlg().c_str(), str_length);
     SET_STRING_ELT(names, i, mkChar("algorithm"));
     SET_VECTOR_ELT(vals, i++, mkString(cstr)); 
     Free(cstr);
-
-    str_length = cel.GetParams().size();
+    
+    str_length = cc->GetParams().size();
     cstr = Calloc(str_length, char);
-    wcstombs(cstr, cel.GetParams().c_str(), str_length);
+    wcstombs(cstr, cc->GetParams().c_str(), str_length);
     SET_STRING_ELT(names, i, mkChar("parameters"));
     SET_VECTOR_ELT(vals, i++, mkString(cstr));
     Free(cstr);
-   
-    str_length = cel.GetChipType().size();
+  
+    str_length = cc->GetChipType().size();
     cstr = Calloc(str_length, char);
-    wcstombs(cstr, cel.GetChipType().c_str(), str_length);
+    wcstombs(cstr, cc->GetChipType().c_str(), str_length);
     SET_STRING_ELT(names, i, mkChar("chiptype"));
     SET_VECTOR_ELT(vals, i++, mkString(cstr));
     Free(cstr);
-	
-    str_length = cel.GetHeader().size();
+  
+    str_length = cc->GetHeader().size();
     cstr = Calloc(str_length, char);
-    wcstombs(cstr, cel.GetHeader().c_str(), str_length);
+    wcstombs(cstr, cc->GetHeader().c_str(), str_length);
     SET_STRING_ELT(names, i, mkChar("header"));
     SET_VECTOR_ELT(vals, i++, mkString(cstr));
     Free(cstr);
-
+  
 #else
-
+  
     SET_STRING_ELT(names, i, mkChar("algorithm"));
     SET_VECTOR_ELT(vals, i++, R_NilValue);
-
+    
     SET_STRING_ELT(names, i, mkChar("parameters"));
     SET_VECTOR_ELT(vals, i++, R_NilValue);
-
+    
     SET_STRING_ELT(names, i, mkChar("chiptype"));
     SET_VECTOR_ELT(vals, i++, R_NilValue);
-
+    
     SET_STRING_ELT(names, i, mkChar("header"));
     SET_VECTOR_ELT(vals, i++, R_NilValue);
-
+    
 #endif    
-
+    
     SET_STRING_ELT(names, i, mkChar("cellmargin"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = cel.GetCellMargin();
+    INTEGER(tmp)[0] = cc->GetCellMargin();
     SET_VECTOR_ELT(vals, i++, tmp);
-    
+  
     SET_STRING_ELT(names, i, mkChar("noutliers"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = cel.GetNumOutliers();
+    INTEGER(tmp)[0] = cc->GetNumOutliers();
     SET_VECTOR_ELT(vals, i++, tmp);
-
+    
     SET_STRING_ELT(names, i, mkChar("nmasked"));
     tmp = allocVector(INTSXP, 1);
-    INTEGER(tmp)[0] = cel.GetNumMasked();
+    INTEGER(tmp)[0] = cc->GetNumMasked();
     SET_VECTOR_ELT(vals, i++, tmp);
-
+    
     setAttrib(vals, R_NamesSymbol, names);
     UNPROTECT(2);
     
     return vals;
-  }
+}
+
 
   /** This quickly reads only the cel file header. **/
   SEXP R_affx_get_cel_file_header(SEXP fname) 
@@ -150,7 +155,7 @@ extern "C" {
       return R_NilValue;
     }
     else {
-      return  R_affx_extract_cel_file_meta(cel);
+      return  R_affx_extract_cel_file_meta(&cel);
     }
   }
 
@@ -230,7 +235,7 @@ extern "C" {
    
     /** conditionally allocate space for each vector we want to return. **/
     if (i_readHeader != 0) {
-      header = R_affx_extract_cel_file_meta(cel);
+      header = R_affx_extract_cel_file_meta(&cel);
     }
     if (i_readIntensities != 0) {
       PROTECT(intensities = NEW_NUMERIC(numCells));
