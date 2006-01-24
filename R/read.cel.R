@@ -25,15 +25,16 @@ read.cel.header <- function(fname){
     fname <- file.path(dirname(fname), basename(fname))
     if (!file.exists(fname))
         stop(paste("file:", fname, "does not exist."))
-    return(.Call("R_affx_get_cel_file_header", as.character(fname)))
+    return(.Call("R_affx_get_cel_file_header",
+                 as.character(fname),
+                 PACKAGE="affxparser"))
 }
 
 read.cel.complete <- function(fname, indices = NULL,
                               read.intensities = TRUE,
                               read.stdvs = TRUE, read.pixels = TRUE,
                               read.xy = FALSE, read.outliers = TRUE,
-                              read.masked = TRUE, read.header = TRUE,
-                              verbose = 0){
+                              read.masked = TRUE, verbose = 0){
     ## Need sanity check on indices argument and other.
     fname <- file.path(dirname(fname), basename(fname))
     if(length(fname) != 1)
@@ -41,17 +42,18 @@ read.cel.complete <- function(fname, indices = NULL,
     if (!file.exists(fname))
         stop(paste("file:", fname, "does not exist."))
 
-    cel.file <- .Call("R_affx_get_cel_file", as.character(fname),
-                      readHeader = as.integer(read.header),
-                      readIntensities = as.integer(read.intensities),
-                      readX = as.integer(read.xy),
-                      readY = as.integer(read.xy),
-                      readPixels = as.integer(read.pixels),
-                      readStdvs = as.integer(read.stdvs),
-                      readOutliers = as.integer(read.outliers),
-                      readMasked = as.integer(read.masked),
-                      indicesToRead = as.integer(indices),
-                      verbose = as.integer(verbose))
+    cel.file <- .Call("R_affx_get_cel_file", fname,
+                      readHeader = FALSE,
+                      readIntensities = read.intensities,
+                      readX = read.xy,
+                      readY = read.xy,
+                      readPixels = read.pixels,
+                      readStdvs = read.stdvs,
+                      readOutliers = read.outliers,
+                      readMasked = read.masked,
+                      indicesToRead = indices,
+                      verbose = as.integer(verbose),
+                      PACKAGE="affxparser")
 
     return(cel.file)
 }

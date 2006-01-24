@@ -36,7 +36,7 @@ read.affybatch2(..., filenames = character(0),
   James Bullard, \email{bullard@stat.berkeley.edu} and Kasper Daniel Hansen
   \email{khansen@stat.berkeley.edu}
 } 
-\seealso{\code{\link{read.affybatch}} in \pkg{affy} as well as
+\seealso{\code{\link[affy]{read.affybatch}} in \pkg{affy} as well as
   \code{\link{read.cel.intensities}} and \code{\link{read.cel.complete}}.}
 \examples{
 }
