@@ -1,18 +1,18 @@
-\name{readAffybatch2}
-\alias{readAffybatch2}
-\title{Read CEL files into an Affybatch}
-
+\name{read.affybatch2}
+\alias{read.affybatch2}
+\title{Read CEL files into an Affybatch
+}
 \description{
 Read CEL files into an Affybatch. An implemetation build on the
 \pkg{affxparser} package.
 }
 \usage{
-readAffybatch2(..., filenames = character(0),
-               phenoData = new("phenoData"),
-               description = NULL, notes = "",
-               compress = getOption("BioC")$affy$compress.cel,
-               rm.mask = FALSE, rm.outliers = FALSE,
-               rm.extra = FALSE, verbose = FALSE)
+read.affybatch2(..., filenames = character(0),
+                phenoData = new("phenoData"),
+                description = NULL, notes = "",
+                compress = getOption("BioC")$affy$compress.cel,
+                rm.mask = FALSE, rm.outliers = FALSE,
+                rm.extra = FALSE, verbose = FALSE)
 }
 \arguments{
   \item{\dots}{file names separated by comma.}
@@ -37,7 +37,7 @@ readAffybatch2(..., filenames = character(0),
   \email{khansen@stat.berkeley.edu}
 } 
 \seealso{\code{\link[affy]{read.affybatch}} in \pkg{affy} as well as
-  \code{\link{readCelIntensities}} and \code{\link{readCel}}.}
+  \code{\link{read.cel.intensities}} and \code{\link{read.cel.complete}}.}
 \examples{
 }
 \keyword{file}
