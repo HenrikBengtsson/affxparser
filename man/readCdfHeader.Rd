@@ -1,11 +1,11 @@
-\name{read.cdf.header}
-\alias{read.cdf.header}
+\name{readCdfHeader}
+\alias{readCdfHeader}
 \title{Reads the header associated with an Affymetrix CDF file}
 \description{
 Reads the header of an Affymetrix CDF file using the Fusion SDK. 
 }
 \usage{
-read.cdf.header(fname)
+readCdfHeader(fname)
 }
 \arguments{
   \item{fname}{name of the CDF file.}

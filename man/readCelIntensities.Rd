@@ -1,14 +1,14 @@
-\name{read.cel.intensities}
-\alias{read.cel.intensities}
+\name{readCelIntensities}
+\alias{readCelIntensities}
 \title{
   Reads the intensities contained in several Affymetrix CEL files
 }
 \description{
 Reads the intensities of several Affymetrix CEL files (as opposed to
-\code{read.cel.complete} which only reads a single file).
+\code{readCel} which only reads a single file).
 } 
 \usage{
-read.cel.intensities(fnames, indices = NULL, verbose = 0)
+readCelIntensities(fnames, indices = NULL, verbose = 0)
 }
 \arguments{
 \item{fnames}{the names of the CEL files as a character vector.}
@@ -37,13 +37,13 @@ read.cel.intensities(fnames, indices = NULL, verbose = 0)
   reasons for doing so, it may be re-implemented in C++.
 }
 \seealso{
-  \code{\link{read.cel.complete}} for the a discussion of a more
+  \code{\link{readCel}} for the a discussion of a more
   versatile function, particular with details of the \code{indices}
   argument.
 }
 \examples{
 \dontrun{
-read.cel.intensities(fnames = c("~/testFile1.CEL", "~/testFile2.CEL"))
+readCelIntensities(fnames = c("~/testFile1.CEL", "~/testFile2.CEL"))
 }
 }
 \keyword{file}
