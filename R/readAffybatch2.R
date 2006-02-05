@@ -1,9 +1,9 @@
-read.affybatch2 <- function(..., filenames = character(0),
-                            phenoData = new("phenoData"), 
-                            description = NULL, notes = "",
-                            compress = getOption("BioC")$affy$compress.cel, 
-                            rm.mask = FALSE, rm.outliers = FALSE,
-                            rm.extra = FALSE, verbose = FALSE) 
+readAffybatch2 <- function(..., filenames = character(0),
+                           phenoData = new("phenoData"), 
+                           description = NULL, notes = "",
+                           compress = getOption("BioC")$affy$compress.cel, 
+                           rm.mask = FALSE, rm.outliers = FALSE,
+                           rm.extra = FALSE, verbose = FALSE) 
 {
     require(Biobase) || stop("Package not found: Biobase")
     require(affy) || stop("Package not found: affy")
@@ -40,10 +40,3 @@ read.affybatch2 <- function(..., filenames = character(0),
                annotation = cleancdfname(one.header$chiptype, addcdf = FALSE), 
                description = description, notes = notes))
 }
-
-############################################################################
-# HISTORY:
-# 2006-01-10
-# o Added require(Biobase) after removing 'Depends: Biobase' in DESCRIPTION.
-# o Extracted to its own source file. /HB
-############################################################################  
