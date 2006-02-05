@@ -33,7 +33,7 @@ readCdfHeader(fname)
   files.}
 \examples{
 \dontrun{
-read.cdf.header(fname = "~/test.CDF")
+readCdfHeader(fname = "~/test.CDF")
 }
 }
 \keyword{file}
