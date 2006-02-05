@@ -1,4 +1,4 @@
-##  affxparserInfo.R : A utility for parsing Affymetrix files in R.
+##  readCdf.R : A utility for parsing Affymetrix files in R.
 ##
 ##  Copyright (C) 2004-2005 James Bullard, Kasper Daniel Hansen
 ##
@@ -17,16 +17,21 @@
 ##  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
 ##  02111-1307  USA
 
-affxparserInfo <- function(fusion.license = FALSE,
-                           file.changes = FALSE){
-    writeLines(readLines(system.file("info/README",
-                                     package = "affxparser"),
-                         n = -1))
-    if(file.changes)
-        writeLines(readLines(system.file("info/CHANGES",
-                                         package = "affxparser"),
-                             n = -1))
-    if(fusion.license)
-        browseURL(system.file("info/fusion_sdk_license.html",
-                                     package = "affxparser"))
+readCdfHeader <- function(fname){
+  fname <- file.path(dirname(fname), basename(fname))
+  if (!file.exists(fname))
+    stop(paste("file:", fname, "does not exist."))
+  return(.Call("R_affx_get_cdf_file_header", 
+               as.character(fname), 
+               PACKAGE="affxparser"))
+}
+
+readCdf <- function(fname, verbose = 0){
+  fname <- file.path(dirname(fname), basename(fname))
+  if (!file.exists(fname))
+    stop(paste("file:", fname, "does not exist."))
+  return(.Call("R_affx_get_cdf_file",
+               as.character(fname),
+               as.integer(verbose), 
+               PACKAGE="affxparser"))
 }

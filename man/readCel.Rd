@@ -1,5 +1,5 @@
-\name{read.cel.complete}
-\alias{read.cel.complete}
+\name{readCel}
+\alias{readCel}
 \title{Parsing an Affymetrix CEL file}
 \description{
   Parsing an Affymetrix CEL file using the Fusion SDK. The 
@@ -7,10 +7,10 @@
   information in the CEL file.
 }
 \usage{
-read.cel.complete(fname, indices = NULL, read.intensities = TRUE,
-                  read.stdvs = TRUE, read.pixels = TRUE,
-                  read.xy = FALSE, read.outliers = TRUE,
-                  read.masked = TRUE, verbose = 0)
+readCel(fname, indices = NULL, read.intensities = TRUE,
+        read.stdvs = TRUE, read.pixels = TRUE,
+        read.xy = FALSE, read.outliers = TRUE,
+        read.masked = TRUE, verbose = 0)
 }
 \arguments{
   \item{fname}{the name of the CEL file.}
@@ -109,7 +109,7 @@ read.cel.complete(fname, indices = NULL, read.intensities = TRUE,
   the index approach.  }
 \examples{
 \dontrun{
-read.cel.complete("~/testFile.CEL", read.npixels = FALSE)
+readCel("~/testFile.CEL", read.npixels = FALSE)
 }
 }
 \keyword{file}

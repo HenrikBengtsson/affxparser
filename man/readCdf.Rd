@@ -1,11 +1,11 @@
-\name{read.cdf.complete}
-\alias{read.cdf.complete}
+\name{readCdf}
+\alias{readCdf}
 \title{Parsing a CDF file using Affymetrix Fusion SDK}
 \description{
   This function parses a CDF file using the Affymetrix Fusion SDK.
 }
 \usage{
-read.cdf.complete(fname, verbose = 0)
+readCdf(fname, verbose = 0)
 }
 \arguments{
   \item{fname}{name of the CDF file.}
@@ -40,7 +40,7 @@ read.cdf.complete(fname, verbose = 0)
   header of a CDF file.}
 \examples{
 \dontrun{
-read.cdf.complete("test.CDF")
+readCdf("test.CDF")
 }
 }
 \keyword{file}

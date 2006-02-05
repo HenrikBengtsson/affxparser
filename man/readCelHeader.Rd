@@ -1,11 +1,11 @@
-\name{read.cel.header}
-\alias{read.cel.header}
+\name{readCelHeader}
+\alias{readCelHeader}
 \title{Parsing the header of an Affymetrix CEL file}
 \description{
   Reads in the header of an Affymetrix CEL file using the Fusion SDK.
 }
 \usage{
-read.cel.header(fname)
+readCelHeader(fname)
 }
 \arguments{
   \item{fname}{the name of the CEL file.}
