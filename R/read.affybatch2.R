@@ -1,9 +1,9 @@
-readAffybatch2 <- function(..., filenames = character(0),
-                           phenoData = new("phenoData"), 
-                           description = NULL, notes = "",
-                           compress = getOption("BioC")$affy$compress.cel, 
-                           rm.mask = FALSE, rm.outliers = FALSE,
-                           rm.extra = FALSE, verbose = FALSE) 
+read.affybatch2 <- function(..., filenames = character(0),
+                            phenoData = new("phenoData"), 
+                            description = NULL, notes = "",
+                            compress = getOption("BioC")$affy$compress.cel, 
+                            rm.mask = FALSE, rm.outliers = FALSE,
+                            rm.extra = FALSE, verbose = FALSE) 
 {
     require(Biobase) || stop("Package not found: Biobase")
     require(affy) || stop("Package not found: affy")
@@ -30,8 +30,8 @@ readAffybatch2 <- function(..., filenames = character(0),
             library(help = affy)$info[[2]][[2]][2]
     }
     filenames <- unlist(filenames)
-    one.header <- read.cel.header(filenames[1])
-    return(new("AffyBatch", exprs = read.cel.intensities(fnames =
+    one.header <- readCelHeader(filenames[1])
+    return(new("AffyBatch", exprs = readCelIntensities(fnames =
                             unlist(filenames), indices = NULL,
                             verbose = as.integer(verbose)),
                cdfName = one.header$chiptype,

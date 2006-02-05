@@ -7,23 +7,24 @@
   information in the CEL file.
 }
 \usage{
-readCel(fname, indices = NULL, read.intensities = TRUE,
-        read.stdvs = TRUE, read.pixels = TRUE,
-        read.xy = FALSE, read.outliers = TRUE,
-        read.masked = TRUE, verbose = 0)
+readCel(fname, indices = NULL, readIntensities = TRUE,
+        readHeader = TRUE, readStdvs = FALSE, readPixels = FALSE,
+        readXY = FALSE, readOutliers = TRUE, readMasked = TRUE,
+        verbose = 0)
 }
 \arguments{
   \item{fname}{the name of the CEL file.}
   \item{indices}{a vector of indices indicating which features to
     read. If the argument is \code{NULL} all features will be returned.}
-  \item{read.intensities}{a logical: will the intensities be returned.}
-  \item{read.stdvs}{a logical: will the standard deviations be returned.}
-  \item{read.pixels}{a logical: will the number of pixels be returned.}
-  \item{read.xy}{a logical: will the (x,y) coordinates be returned.}
-  \item{read.outliers}{a logical: will the outliers be return.}
-  \item{read.masked}{a logical: will the masked features be returned.}
+  \item{readIntensities}{a logical: will the intensities be returned.}
+  \item{readHeader}{ alogical: will the header of the file be returned.}
+  \item{readStdvs}{a logical: will the standard deviations be returned.}
+  \item{readPixels}{a logical: will the number of pixels be returned.}
+  \item{readXY}{a logical: will the (x,y) coordinates be returned.}
+  \item{readOutliers}{a logical: will the outliers be return.}
+  \item{readMasked}{a logical: will the masked features be returned.}
   \item{verbose}{how verbose do we want to be. 0 is no verbosity, higher
-    numbers mean more verbose output. At the moment the values 1 and 2
+    numbers mean more verbose output. At the moment the values 0, 1 and 2
     are supported.}
 }
 \details{
@@ -50,37 +51,37 @@ readCel(fname, indices = NULL, read.intensities = TRUE,
   \item{header}{The header of the CEL file. Equivalent to the output
   from \code{read.cel.header}, see the documentation for that function.}
   \item{intensities}{A vector of mode \code{nummeric} containing the
-  intensity associated with each feature, unless \code{read.intensities
+  intensity associated with each feature, unless \code{readIntensities
   = FALSE} in which case it will be \code{NULL}. Restricted to features 
   within the \code{indices} range.}
   \item{stdvs}{A vector of mode \code{nummeric} containing the
   standard deviation associated with each feature, unless
-  \code{read.stdvs = FALSE} in which case it will be
+  \code{readStdvs = FALSE} in which case it will be
   \code{NULL}. Restricted to features within the \code{indices} range.}
   \item{pixels}{A vector of mode \code{integer} containing the
   number of pixels associated with each feature, unless
-  \code{read.pixels = FALSE} in which case it will be
+  \code{readPixels = FALSE} in which case it will be
   \code{NULL}. Restricted to features within the \code{indices} range.}
   \item{x}{A vector of mode \code{integer} containing the x coordinate
-  associated with each feature, unless \code{read.xy = FALSE}
+  associated with each feature, unless \code{readXY = FALSE}
   in which case it will be \code{NULL}. Restricted to features with the
   \code{indices} range.}
   \item{y}{A vector of mode \code{integer} containing the y coordinate
-  associated with each feature, unless \code{read.xy = FALSE}
+  associated with each feature, unless \code{readXY = FALSE}
   in which case it will be \code{NULL}. Restricted to features with the
   \code{indices} range.}
   \item{outliers}{A vector of mode \code{integer} which the indices of
-  the features flagged as outliers, unless \code{read.outliers = NULL}
+  the features flagged as outliers, unless \code{readOutliers = NULL}
   in which case it will be \code{NULL}. Note that there is a difference
   between \code{outliers = NULL} and \code{outliers = integer(0)} - the
-  last case happens when \code{read.outliers = TRUE} but there are no
+  last case happens when \code{readOutliers = TRUE} but there are no
   outliers. In case an \code{indices} argument is given, only indices
   within the \code{indices} argument are returned.}
   \item{masked}{A vector of mode \code{integer} which the indices of
-  the features flagged as masked, unless \code{read.masked = NULL}
+  the features flagged as masked, unless \code{readMasked = NULL}
   in which case it will be \code{NULL}. Note that there is a difference
   between \code{masked = NULL} and \code{masked = integer(0)} - the
-  last case happens when \code{read.masked = TRUE} but there are no
+  last case happens when \code{readMasked = TRUE} but there are no
   masked features. In case an \code{indices} argument is given, only indices
   within the \code{indices} argument are returned.}   
 }
@@ -101,15 +102,15 @@ readCel(fname, indices = NULL, read.intensities = TRUE,
   algorithms are only using the intensities from the CEL file.
 }
 \seealso{ \code{\link{affxparserInfo}} for a package overview and
-  \code{\link{read.cel.header}} for a description of the header
+  \code{\link{readCelHeader}} for a description of the header
   output. Often a user only wants to read the intensities, look at
-  \code{\link{read.cel.intensities}} for a function specialized for that
+  \code{\link{readCelIntensities}} for a function specialized for that
   use. See \code{\link[affy]{xy2indices}} from \pkg{affy} and
   \code{\link[makePlatformDesign]{xy2i}} from \pkg{makePlatformDesign} for a discussion of
   the index approach.  }
 \examples{
 \dontrun{
-readCel("~/testFile.CEL", read.npixels = FALSE)
+read.cel.complete("~/testFile.CEL", readPixels = TRUE)
 }
 }
 \keyword{file}
