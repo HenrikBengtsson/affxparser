@@ -14,7 +14,7 @@ readCdf(fname, verbose = 0)
 }
 \details{
 }
-\notes{
+\note{
   This version of the function does not return information on the QC
   probes. This will be added in a (near) future release. In addition we
   expect the header to be part of the returned object.
@@ -34,7 +34,7 @@ readCdf(fname, verbose = 0)
 }
 \author{James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
   Daniel Hansen, \email{khansen@stat.berkeley.edu}}
-\note{}
+
 \seealso{\code{\link{affxparserInfo}} for general information about the
   package/Fusion SDK and \code{\link{readCdfHeader}} for getting the
   header of a CDF file.}

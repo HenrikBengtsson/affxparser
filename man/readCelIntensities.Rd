@@ -32,7 +32,7 @@ readCelIntensities(fnames, indices = NULL, verbose = 0)
   Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}
 }
 \note{
-  Currently this function builds on \code{read.cel.complete}, and simply
+  Currently this function builds on \code{readCel}, and simply
   calls this function multiple times. If testing yields sufficient
   reasons for doing so, it may be re-implemented in C++.
 }
