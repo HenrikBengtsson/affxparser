@@ -37,7 +37,8 @@ read.affybatch2(..., filenames = character(0),
   \email{khansen@stat.berkeley.edu}
 } 
 \seealso{\code{\link[affy]{read.affybatch}} in \pkg{affy} as well as
-  \code{\link{read.cel.intensities}} and \code{\link{read.cel.complete}}.}
+  \code{\link{readCelIntensities}} and \code{\link{readCel}}.}
 \examples{
 }
 \keyword{file}
+\keyword{IO}
