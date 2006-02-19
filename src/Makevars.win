@@ -88,6 +88,7 @@ SOURCES.fusion = \
 SOURCES.package = \
 	R_affx_cel_parser.cpp\
 	R_affx_cdf_parser.cpp\
+	R_affx_cdf_extras.cpp\
 	R_affx_test_cmd_line.cpp
 
 OBJS=$(SOURCES.fusion:.cpp=.o) $(SOURCES.package:.cpp=.o)
