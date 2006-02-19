@@ -25,7 +25,7 @@
  */ 
 
 /* Define the type for the Windows platform. */
-#ifdef WIN32
+#if defined(WIN32) || defined(__sun__)
 
 #ifndef __MINGW32__
 

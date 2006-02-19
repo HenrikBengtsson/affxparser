@@ -47,3 +47,4 @@ readCelIntensities(fnames = c("~/testFile1.CEL", "~/testFile2.CEL"))
 }
 }
 \keyword{file}
+\keyword{IO}
