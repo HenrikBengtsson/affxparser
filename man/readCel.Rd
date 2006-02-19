@@ -114,3 +114,4 @@ read.cel.complete("~/testFile.CEL", readPixels = TRUE)
 }
 }
 \keyword{file}
+\keyword{IO}

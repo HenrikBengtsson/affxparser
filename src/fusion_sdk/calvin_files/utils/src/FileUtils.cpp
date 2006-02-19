@@ -119,7 +119,9 @@ list<string> FileUtils::ListFiles(const char *pathName, const char *ext)
 		dp = readdir(dirp);
 		if (dp)
 		{
+		  #ifdef _sun__
 			if (dp->d_type != DT_DIR)
+		  #endif
 			{
 				string file = basePath + dp->d_name;
 				if (exten.length() == 0)

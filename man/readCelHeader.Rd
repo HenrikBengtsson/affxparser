@@ -64,3 +64,4 @@ readCelHeader("~/testFile.CEL")
 }
 }
 \keyword{file}
+\keyword{IO}

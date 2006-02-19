@@ -29,7 +29,7 @@ readCdfHeader(fname)
 \note{
 }
 \seealso{\code{\link{affxparserInfo}} for general information about the
-  package and \code{\link{read.cdf.complete}} for information about CDF
+  package and \code{\link{readCdf}} for information about CDF
   files.}
 \examples{
 \dontrun{
@@ -37,3 +37,4 @@ readCdfHeader(fname = "~/test.CDF")
 }
 }
 \keyword{file}
+\keyword{IO}

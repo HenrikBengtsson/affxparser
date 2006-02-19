@@ -36,7 +36,7 @@ readCdf(fname, verbose = 0)
   Daniel Hansen, \email{khansen@stat.berkeley.edu}}
 \note{}
 \seealso{\code{\link{affxparserInfo}} for general information about the
-  package/Fusion SDK and \code{\link{read.cdf.header}} for getting the
+  package/Fusion SDK and \code{\link{readCdfHeader}} for getting the
   header of a CDF file.}
 \examples{
 \dontrun{
@@ -44,3 +44,4 @@ readCdf("test.CDF")
 }
 }
 \keyword{file}
+\keyword{IO}
