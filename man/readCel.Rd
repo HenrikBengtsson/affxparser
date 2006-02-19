@@ -49,7 +49,7 @@ readCel(fname, indices = NULL, readIntensities = TRUE,
   \code{pixels} corresponds to the ordering of the \code{indices}
   argument.
   \item{header}{The header of the CEL file. Equivalent to the output
-  from \code{read.cel.header}, see the documentation for that function.}
+  from \code{readCelHeader}, see the documentation for that function.}
   \item{intensities}{A vector of mode \code{nummeric} containing the
   intensity associated with each feature, unless \code{readIntensities
   = FALSE} in which case it will be \code{NULL}. Restricted to features 
@@ -110,7 +110,7 @@ readCel(fname, indices = NULL, readIntensities = TRUE,
   the index approach.  }
 \examples{
 \dontrun{
-read.cel.complete("~/testFile.CEL", readPixels = TRUE)
+readCel("~/testFile.CEL", readPixels = TRUE)
 }
 }
 \keyword{file}
