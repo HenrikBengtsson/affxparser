@@ -17,7 +17,7 @@ readCel(fname, indices = NULL, readIntensities = TRUE,
   \item{indices}{a vector of indices indicating which features to
     read. If the argument is \code{NULL} all features will be returned.}
   \item{readIntensities}{a logical: will the intensities be returned.}
-  \item{readHeader}{ alogical: will the header of the file be returned.}
+  \item{readHeader}{a logical: will the header of the file be returned.}
   \item{readStdvs}{a logical: will the standard deviations be returned.}
   \item{readPixels}{a logical: will the number of pixels be returned.}
   \item{readXY}{a logical: will the (x,y) coordinates be returned.}

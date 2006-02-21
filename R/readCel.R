@@ -50,7 +50,7 @@ readCel <- function(fname, indices = NULL,
                       readStdvs = readStdvs,
                       readOutliers = readOutliers,
                       readMasked = readMasked,
-                      indicesToRead = indices,
+                      indicesToRead = as.integer(indices),
                       verbose = as.integer(verbose),
                       PACKAGE="affxparser")
     return(cel.file)
