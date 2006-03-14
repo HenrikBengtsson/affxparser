@@ -1,4 +1,3 @@
-
 readCdfUnitNames <- function(filename, units=NULL, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments

@@ -385,7 +385,7 @@ extern "C" {
   }
 
 
-  SEXP R_affx_get_cdf_units(SEXP fname, SEXP units, SEXP readXY, SEXP readBases, SEXP readExpos, SEXP readType, SEXP readDirection, SEXP verbose) 
+  SEXP R_affx_get_cdf_units(SEXP fname, SEXP units, SEXP readXY, SEXP readCells, SEXP readBases, SEXP readExpos, SEXP readType, SEXP readDirection, SEXP verbose) 
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
@@ -400,13 +400,14 @@ extern "C" {
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     char* cdfFileName   = CHAR(STRING_ELT(fname, 0));
     int i_readXY        = INTEGER(readXY)[0];
+    int i_readCells     = INTEGER(readCells)[0];
     int i_readBases     = INTEGER(readBases)[0];
     int i_readExpos     = INTEGER(readExpos)[0];
     int i_readType      = INTEGER(readType)[0];
     int i_readDirection = INTEGER(readDirection)[0];
     int i_verboseFlag   = INTEGER(verbose)[0];
 
-    int i_readGroups    = (i_readXY || i_readBases || i_readExpos);
+    int i_readGroups    = (i_readXY || i_readCells || i_readBases || i_readExpos);
 
     /*
      * What about returning the header as well?
@@ -417,6 +418,7 @@ extern "C" {
       cell_list_names = R_NilValue,
       xvals = R_NilValue,
       yvals = R_NilValue,
+      cells = R_NilValue,
       pbase = R_NilValue,
       tbase = R_NilValue,
       expos = R_NilValue,
@@ -430,6 +432,7 @@ extern "C" {
     bool readAll = true; 
     int nsets = 0, nunits = 0;
     int iset = 0;
+    int x = 0, y = 0, ncol = 0;
     
     /** 
      XXX: I am not sure this is the most elegant way to handle these in R. 
@@ -475,6 +478,10 @@ extern "C" {
       }
     }
 
+    if (i_readCells) {
+      ncol = header.GetCols();
+    }
+
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Allocate named list of units to be returned
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -482,7 +489,7 @@ extern "C" {
     PROTECT(probe_sets = NEW_LIST(nunits)); 
 
     int nbrOfUnitElements = i_readGroups + i_readType + i_readDirection;
-    int nbrOfGroupElements = 2*i_readXY + 2*i_readBases + i_readExpos;
+    int nbrOfGroupElements = 2*i_readXY + i_readCells + 2*i_readBases + i_readExpos;
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * For each unit
@@ -554,6 +561,10 @@ extern "C" {
             PROTECT(yvals = NEW_INTEGER(ncells));
           }
 
+          if (i_readCells) {
+            PROTECT(cells = NEW_INTEGER(ncells));
+          }
+
           if (i_readBases) {
             PROTECT(pbase = NEW_STRING(ncells));
             PROTECT(tbase = NEW_STRING(ncells));
@@ -575,12 +586,21 @@ extern "C" {
                            icell, probe.GetX(), probe.GetY(), probe.GetPBase(), 
                                            probe.GetTBase(), probe.GetExpos());
             }
-            
-            if (i_readXY) {
-              INTEGER(xvals)[icell] = probe.GetX();
-              INTEGER(yvals)[icell] = probe.GetY();
+             
+            if (i_readXY || i_readCells) {
+              x = probe.GetX();
+              y = probe.GetY();
+
+              if (i_readXY) {
+                INTEGER(xvals)[icell] = x;
+                INTEGER(yvals)[icell] = y;
+              }
+              
+              if (i_readCells) {
+                INTEGER(cells)[icell] = y*ncol + x;
+              }
             }
-            
+
             if (i_readBases) {
               p_base[0] = probe.GetPBase();
               t_base[0] = probe.GetTBase();
@@ -603,6 +623,11 @@ extern "C" {
             SET_STRING_ELT(cell_list_names, unp++, mkChar("x"));
             SET_VECTOR_ELT(cell_list, unp, yvals);
             SET_STRING_ELT(cell_list_names, unp++, mkChar("y"));
+          }
+
+          if (i_readCells) {
+            SET_VECTOR_ELT(cell_list, unp, cells);
+            SET_STRING_ELT(cell_list_names, unp++, mkChar("cells"));
           }
            
           if (i_readBases) {
@@ -631,6 +656,9 @@ extern "C" {
           }
           if (i_readBases) {
             UNPROTECT(2);
+          }
+          if (i_readCells) {
+            UNPROTECT(1);
           }
           if (i_readXY) {
             UNPROTECT(2);
@@ -737,6 +765,8 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2006-02-21
+ * o Added argument 'readCells' to R_affx_get_cdf_units(). /HB
  * 2006-01-15
  * o It is now possible to specify what readCdfUnits() should return. /HB
  * 2006-01-12

@@ -31,8 +31,10 @@
 \section{To get started}{
   To get started, see:
   \enumerate{
-    \item \code{\link{readCdf}}() - reads an Affymetrix CDF file.
-    \item \code{\link{readCel}}() - reads an Affymetrix CEL file.
+    \item \code{\link{readCdfUnits}}() - reads an Affymetrix CDF file.
+    \item \code{\link{findCdf}}() - Locates an Affymetrix CDF file by chip type.
+    \item \code{\link{applyCdfGroups}}() - Re-arranges a CDF list structure.
+    \item \code{\link{readCel}}() and \code{\link{readCelUnits}}() - reads an Affymetrix CEL file.
   }
 }
 

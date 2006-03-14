@@ -7,7 +7,7 @@ Maintainer: James Bullard <bullard@berkeley.edu>
 Description: Package for parsing Affymetrix files (CDF, CEL, CHP, BPMAP, BAR)
 License: LGPL-2
 Depends: R (>= 2.0)
-Suggests: affy
+Suggests: affy, R.utils
 SaveImage: yes
 LazyLoad: yes
 biocViews: DataImport

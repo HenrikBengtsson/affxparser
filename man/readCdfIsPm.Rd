@@ -1,12 +1,12 @@
 \name{readCdfIsPm}
 \alias{readCdfIsPm}
 
- \title{Checks if cells each group of each unit are mis-match probes}
+ \title{Checks if cells in a CDF file are perfect-match probes or not}
 
  \usage{readCdfIsPm(filename, units=NULL, verbose=0)}
 
  \description{
-  Checks if cells each group of each unit are mis-match probes.
+  Checks if cells in a CDF file are perfect-match probes or not.
  }
 
  \arguments{
@@ -22,7 +22,7 @@
    are unit names and the names of the logical vector are group names.
  }
 
- \author{Henrik Bengtsson, \email{hb@maths.lth.se}.}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 
 
