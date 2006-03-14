@@ -27,7 +27,7 @@
    names for the corrsponding unit.
  }
 
- \author{Henrik Bengtsson, \email{hb@maths.lth.se}.}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
  \seealso{
    \code{\link{readCdfUnits}}().

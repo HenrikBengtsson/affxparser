@@ -1,20 +1,26 @@
 \name{readCelHeader}
 \alias{readCelHeader}
+
 \title{Parsing the header of an Affymetrix CEL file}
+
 \description{
   Reads in the header of an Affymetrix CEL file using the Fusion SDK.
 }
+
 \usage{
 readCelHeader(fname)
 }
+
 \arguments{
   \item{fname}{the name of the CEL file.}
 }
+
 \details{
   This function returns the header of a CEL file. Affymetrix operates
   with different versions of this file format. Depending on what version
   is being read, different information is accessible.
 }
+
 \value{
   A named list with components described below. The entries are
   obtained from the Fusion SDK interface functions. We try to obtain all
@@ -39,12 +45,13 @@ readCelHeader(fname)
   \item{noutliers}{the number of features reported as outliers.}
   \item{nmasked}{the number of features reported as masked.}
 }
+
 \author{
   James Bullard, \email{bullard@stat.berkeley.edu} and
   Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}
 }
-\note{
 
+\note{
   Memory usage:the Fusion SDK allocates memory for the entire CEL file,
   when the file is accessed. The memory footprint of this function will
   therefore seem to be (rather) large.
@@ -53,15 +60,25 @@ readCelHeader(fname)
   completely read in order to report the number of outliers and masked
   features.
 }
+
 \seealso{
   \code{\link{readCel}} for reading in the entire CEL
   file. That function also returns the header. See \code{affxparserInfo}
   for general comments on the package and the Fusion SDK.
 }
+
 \examples{
-\dontrun{
-readCelHeader("~/testFile.CEL")
+  # Scan current directory for CEL files
+  files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
+  if (length(files) > 0) {
+    header <- readCelHeader(files[1])
+    print(header)
+    rm(header)
+  }
+
+  # Clean up
+  rm(files)
 }
-}
+
 \keyword{file}
 \keyword{IO}

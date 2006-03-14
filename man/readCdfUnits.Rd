@@ -4,7 +4,7 @@
 
 \title{Reads units (probesets) from an Affymetrix CDF file}
 
- \usage{readCdfUnits(filename, units=NULL, readXY=TRUE, readBases=TRUE, readExpos=TRUE, readType=TRUE, readDirection=TRUE, splitPmMm=FALSE, verbose=0)}
+ \usage{readCdfUnits(filename, units=NULL, readXY=TRUE, readCells=FALSE, readBases=TRUE, readExpos=TRUE, readType=TRUE, readDirection=TRUE, stratifyBy=c("nothing", "pmmm", "pm", "mm"), verbose=0)}
 
 \description{
   Gets the all or a subset of units (probesets) in an Affymetrix CDF file.
@@ -16,16 +16,24 @@
     specifying which units to be read.  If \code{\link[base]{NULL}}, all units are read.}
   \item{readXY}{If \code{\link[base:logical]{TRUE}}, cell row and column (X,Y) coordinates are
      retrieved, otherwise not.}
+  \item{readCells}{If \code{\link[base:logical]{TRUE}}, cell indices calculated from the row and column (X,Y) coordinates are retrieved, otherwise not.}
   \item{readBases}{If \code{\link[base:logical]{TRUE}}, cell P and T bases are retrieved, otherwise not.}
   \item{readExpos}{If \code{\link[base:logical]{TRUE}}, cell "expos" values are retrieved, otherwise not.}
   \item{readType}{If \code{\link[base:logical]{TRUE}}, unit types are retrieved, otherwise not.}
   \item{readDirection}{If \code{\link[base:logical]{TRUE}}, unit directions are retrieved, otherwise not.}
-  \item{splitPmMm}{If \code{\link[base:logical]{TRUE}}, each of the cell data elements are
-     returned as a two-row matrix where the first row corresponds to
-     perfect-match (PM) features and the second to mismatch (MM) features.
-     Note that this assumes that there are equal number of PMs and MMs.
-     Note also that it is assumed that the PMs and MMs are ordered in the
-     CDF file such that first MM corresponds to the first PM and so on.}
+  \item{stratifyBy}{A \code{\link[base]{character}} string specifying which and how
+    elements in group fields are returned.
+    If \code{"nothing"}, elements are returned as is, i.e. as \code{\link[base]{vector}}s.
+    If \code{"pm"}/\code{"mm"}, only elements corresponding to 
+    perfect-match (PM) / mismatch (MM) probes are returned (as \code{\link[base]{vector}}s).
+    If \code{"pmmm"}, elements are returned as a matrix where the
+    first row holds elements corresponding to PM probes and the second
+    corresponding to MM probes.  Note that in this case, it is assumed 
+    that there are equal number of PMs and MMs; if not, an error is
+    generated.  
+    Moreover, the PMs and MMs may not even be paired, i.e. there is no 
+    guarantee that the two elements in a column corresponds to a 
+    PM-MM pair.}
   \item{verbose}{An \code{\link[base]{integer}} specifying the verbose level. If 0, the
     file is parsed quietly.  The higher numbers, the more details.}
 }
@@ -44,29 +52,40 @@
 
   \author{James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
     Daniel Hansen, \email{khansen@stat.berkeley.edu}.
-   Modified by Henrik Bengtsson, \email{hb@maths.lth.se}, to read
-   any subset of units and/or subset of parameters, and to split by
-   PM and MM.}
- 
- \examples{\dontrun{
-filename <- "Mapping50K_Xba240.CDF"
+   Modified by Henrik Bengtsson (\url{http://www.braju.com/R/}) to read
+   any subset of units and/or subset of parameters, and to stratify by PM/MM.}
+
+\examples{
+for (zzz in 0) {
+
+# Find any CDF file
+cdfFile <- findCdf()
+if (is.null(cdfFile))
+  break
 
 # Read all units in a CDF file [~20s => 0.34ms/unit]
-cdf0 <- readCdfUnits(filename)
+cdf0 <- readCdfUnits(cdfFile)
 
 # Read a subset of units in a CDF file [~6ms => 0.06ms/unit]
-units1 <- c(5, 100:109, 34, 50400:50487)
-cdf1 <- readCdfUnits(filename, units=units1)
+units1 <- c(5, 100:109, 34)
+cdf1 <- readCdfUnits(cdfFile, units=units1)
 stopifnot(identical(cdf1, cdf0[units1+1]))
+rm(cdf0)
 
 # Create a unit name to index map
-names <- readCdfUnitNames(filename)
+names <- readCdfUnitNames(cdfFile)
 units2 <- match(names(cdf1), names) - 1
 stopifnot(identical(units1, units2))
-cdf2 <- readCdfUnits(filename, units=units2)
+cdf2 <- readCdfUnits(cdfFile, units=units2)
 
 stopifnot(identical(cdf1, cdf2))
-}}
+
+
+# Clean up
+rm(cdfFile, units1, cdf1, names, units2, cdf2)
+} # for (zzz in 0)
+}
+
 
  \seealso{
    To read unit names only, see \code{\link{readCdfUnitNames}}().

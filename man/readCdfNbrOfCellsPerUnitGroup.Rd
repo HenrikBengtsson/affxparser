@@ -23,9 +23,14 @@
    are unit names and the names of the integer vector are group names.
  }
 
- \examples{\dontrun{filename <- "Mapping50K_Hind240.cdf"
-filename <- "Mapping50K_Xba240.CDF"
-groups <- readCdfNbrOfCellsPerUnitGroup(filename)
+\examples{
+for (zzz in 0) {
+
+cdfFile <- findCdf("Mapping50K_Xba240")
+if (is.null(cdfFile))
+  break
+
+groups <- readCdfNbrOfCellsPerUnitGroup(cdfFile)
 
 # Number of units read
 print(length(groups))
@@ -77,7 +82,7 @@ for (size in unique(nbrOfGroupsPerUnit)) {
   t <- matrix(unlist(subset), nrow=size)
   colnames(t) <- names(subset)
   x[[as.character(size)]] <- t
-  rm(t)
+  rm(subset, t)
 }
 
 # Check if there are any quartet units where the number
@@ -91,10 +96,12 @@ print(sum(x[["4"]][1,]-x[["4"]][2,] != 0))
 print(sum(x[["4"]][3,]-x[["4"]][4,] != 0))
 # 0
 
-}}
+# Clean up
+rm(cdfFile, groups, nbrOfCellsPerUnit, nbrOfGroupsPerUnit, x)
+} # for (zzz in 0)
+}
 
- \author{Henrik Bengtsson, \email{hb@maths.lth.se}.}
-
+\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 \keyword{file}
 \keyword{IO}
