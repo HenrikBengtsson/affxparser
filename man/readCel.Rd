@@ -1,17 +1,21 @@
 \name{readCel}
 \alias{readCel}
+
 \title{Parsing an Affymetrix CEL file}
+
 \description{
   Parsing an Affymetrix CEL file using the Fusion SDK. The 
   intention is to let users obtain all (but possibly a subset of)
   information in the CEL file.
 }
+
 \usage{
 readCel(fname, indices = NULL, readIntensities = TRUE,
         readHeader = TRUE, readStdvs = FALSE, readPixels = FALSE,
         readXY = FALSE, readOutliers = TRUE, readMasked = TRUE,
         verbose = 0)
 }
+
 \arguments{
   \item{fname}{the name of the CEL file.}
   \item{indices}{a vector of indices indicating which features to
@@ -27,6 +31,7 @@ readCel(fname, indices = NULL, readIntensities = TRUE,
     numbers mean more verbose output. At the moment the values 0, 1 and 2
     are supported.}
 }
+
 \details{
   This function reads everything from a CEL file. It is considered a bug
   if the file contains information not accessible by this function,
@@ -43,6 +48,7 @@ readCel(fname, indices = NULL, readIntensities = TRUE,
   are vectors of indices of features flagged as respectively
   outlier/masked by the Affymetrix image software.
 }
+
 \value{
   A named list with components described
   below. The order of the \code{intensities}, \code{stdvs} and
@@ -85,8 +91,7 @@ readCel(fname, indices = NULL, readIntensities = TRUE,
   masked features. In case an \code{indices} argument is given, only indices
   within the \code{indices} argument are returned.}   
 }
-\author{James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
-  Daniel Hansen, \email{khansen@stat.berkeley.edu}} 
+
 \note{
   Memory usage: the Fusion SDK allocates memory for the entire
   CEL file, when the file is accessed (but does not actually read the
@@ -101,6 +106,23 @@ readCel(fname, indices = NULL, readIntensities = TRUE,
   and should be based on the choice of preprocessing algorithm. Mopst
   algorithms are only using the intensities from the CEL file.
 }
+
+\examples{
+  # Scan current directory for CEL files
+  files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
+  if (length(files) > 0) {
+    cel <- readCel(files[1], readPixels=TRUE)
+    str(cel)
+    rm(cel)
+  }
+
+  # Clean up
+  rm(files)
+}
+
+\author{James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
+  Daniel Hansen, \email{khansen@stat.berkeley.edu}} 
+
 \seealso{ \code{\link{affxparserInfo}} for a package overview and
   \code{\link{readCelHeader}} for a description of the header
   output. Often a user only wants to read the intensities, look at
@@ -108,10 +130,6 @@ readCel(fname, indices = NULL, readIntensities = TRUE,
   use. See \code{\link[affy]{xy2indices}} from \pkg{affy} and
   \code{\link[makePlatformDesign]{xy2i}} from \pkg{makePlatformDesign} for a discussion of
   the index approach.  }
-\examples{
-\dontrun{
-readCel("~/testFile.CEL", readPixels = TRUE)
-}
-}
+
 \keyword{file}
 \keyword{IO}

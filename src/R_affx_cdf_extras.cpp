@@ -384,8 +384,8 @@ extern "C" {
 
         /* For each cell, record if it is an mis-match probe or not */
         for (int icell = 0; icell < ncells; icell++) {
-                FusionCDFProbeInformation probe;
-                group.GetCell(icell, probe);
+          FusionCDFProbeInformation probe;
+          group.GetCell(icell, probe);
           char p_base = probe.GetPBase();
           char t_base = probe.GetTBase();
           if (p_base == t_base) {
