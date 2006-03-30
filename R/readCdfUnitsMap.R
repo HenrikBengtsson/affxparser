@@ -20,10 +20,10 @@
 # }
 # 
 # \arguments{
-#   \item{pathname}{The pathname of the CDF file.}
-#   \item{units}{An @integer @vector of (zero-based) unit indices 
-#     specifying which units to listed first.  All other units are added
-#     in order at the end.  If @NULL, units are in order.}
+#   \item{filename}{The pathname of the CDF file.}
+#   \item{units}{An @integer @vector of unit indices specifying which units
+#     to listed first.  All other units are added in order at the end.  
+#     If @NULL, units are in order.}
 #   \item{...}{Additional arguments passed to @see "readCdfUnits".}
 #   \item{writeMap}{If @TRUE, the write map, that is, the map for writing
 #     cell elements is returned, otherwise the read map is returned.}
@@ -64,13 +64,13 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-readCdfUnitsMap <- function(pathname, units=NULL, ..., writeMap=FALSE, verbose=FALSE) {
+readCdfUnitsMap <- function(filename, units=NULL, ..., writeMap=FALSE, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  # Argument 'pathname':
+  # Argument 'filename':
   # Replace '~':s
-  pathname <- file.path(dirname(pathname), basename(pathname));
+  filename <- file.path(dirname(filename), basename(filename));
 
   # Argument 'units':
   if (!is.null(units)) {
@@ -78,10 +78,10 @@ readCdfUnitsMap <- function(pathname, units=NULL, ..., writeMap=FALSE, verbose=F
     if (any(is.na(units))) {
       stop("Argument 'units' contains NAs");
     }
-    nok <- (units < 0);
+    nok <- (units < 1);
     if (any(nok)) {
       nok <- paste(units[nok], collapse=", ");
-      stop("Argument 'units' contains negative indices: ", nok);
+      stop("Argument 'units' contains non-positive indices: ", nok);
     }
     nok <- duplicated(units);
     if (any(nok)) {
@@ -103,15 +103,15 @@ readCdfUnitsMap <- function(pathname, units=NULL, ..., writeMap=FALSE, verbose=F
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Read CDF header and process 'units' further
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  header <- readCdfHeader(pathname);
+  header <- readCdfHeader(filename);
   nbrOfCells <- header$cols * header$rows;
   nbrOfUnits <- header$probesets;
 
-  nok <- (units >= nbrOfUnits);
+  nok <- (units > nbrOfUnits);
   if (any(nok)) {
     nok <- paste(units[nok], collapse=", ");
-    stop("Argument 'units' contains indices out of range [0,", 
-                                                 nbrOfUnits-1, "]: ", nok);
+    stop("Argument 'units' contains indices out of range [1,", nbrOfUnits,
+                                                               "]: ", nok);
   }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -119,9 +119,9 @@ readCdfUnitsMap <- function(pathname, units=NULL, ..., writeMap=FALSE, verbose=F
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Read cell indices unit by unit
   verbose && enter(verbose, "Reading cell indices unit by unit from CDF file");
-  cells <- readCdfUnits(pathname, readCells=TRUE, readXY=FALSE, 
-                      readBases=FALSE, readExpos=FALSE, readType=FALSE, 
-                                  readDirection=FALSE, ..., verbose=FALSE);
+  indices <- readCdfUnits(filename, readXY=FALSE, readBases=FALSE, 
+                      readExpos=FALSE, readType=FALSE, readDirection=FALSE, 
+                                     readIndices=TRUE, ..., verbose=FALSE);
   verbose && exit(verbose);
   
 
@@ -133,53 +133,50 @@ readCdfUnitsMap <- function(pathname, units=NULL, ..., writeMap=FALSE, verbose=F
     # Was only a subset of units specified?
     if (length(units) != nbrOfUnits) {
       verbose && enter(verbose, "Adding missing unit indices");
-      allUnits <- seq(from=0, to=nbrOfUnits-1);
+      allUnits <- 1:nbrOfUnits;
       missing <- setdiff(allUnits, units);
       units <- c(units, missing);
       rm(missing, allUnits);
       verbose && exit(verbose);
     }
 
-    # Now, reorder the 'cells' accordingly.
-    cells <- cells[units];
+    # Now, reorder the units (here 'indices') accordingly.
+    indices <- indices[units];
 
     rm(units);
     verbose && exit(verbose);
   }
 
-  cells <- unlist(cells, use.names=FALSE); 
+  indices <- unlist(indices, use.names=FALSE); 
+
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Create index map
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  # Note: Although the cell indices are zero-based, the remapping function
-  # is not, i.e. 'cells' is in [0,n-1] and 'map' is in [1,n].
-
   verbose && enter(verbose, "Adding missing cell indices");
   # Add non-probeset cells to the end.  
   # (Note that readCdfUnits() do not read these guys.)
-  allCells <- 0:(nbrOfCells-1);  # Note, zero-based
-  missing <- setdiff(allCells, cells);
-  cells <- c(cells, missing);
+  allIndices <- 1:nbrOfCells;
+  missing <- setdiff(allIndices, indices);
+  indices <- c(indices, missing);
   rm(missing);
   verbose && exit(verbose);
 
-  if (writeMap) {
-    # 'cells' in [0,n-1], but 'map' is in [1,n]!
-    cells <- cells + as.integer(1);
-  } else {
+  if (!writeMap) {
     verbose && enter(verbose, "Generating index map");
     # Note, order() can be used, but match() is 7-8 times faster!
-    cells <- match(allCells, cells);  # This is the slow part.
+    indices <- match(allIndices, indices);  # This is the slow part.
     verbose && exit(verbose);
   }
 
-  cells;    
+  indices;
 }
 
 
 ############################################################################
 # HISTORY:
+# 2006-03-28
+# o Unit and cell indices are now one-based. /HB
 # 2006-03-14
 # o Updated code to make use of package R.utils only if it is available.
 # o Added argument 'writeMap'.

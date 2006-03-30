@@ -3,7 +3,7 @@
 % 
 %  
 % 
-% on Tue Mar 14 18:46:08 2006.
+% on Wed Mar 29 20:22:49 2006.
 % 
 % Generator was the Rdoc class, which is part of the R.oo package written
 % by Henrik Bengtsson, 2001-2006.
@@ -49,7 +49,7 @@ if (is.null(cdfFile))
 
 # Identify the unit index from the unit name
 probeset <- "SNP_A-1658298"
-unit <- which(readCdfUnitNames(cdfFile) == probeset) - 1
+unit <- which(readCdfUnitNames(cdfFile) == probeset)
 rm(probeset)
 
 # Read the CDF file
@@ -101,8 +101,14 @@ cat("Probe quartets:\n")
 print(cdf)
 
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Get the x and y cell locations
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+x <- unlist(applyCdfGroups(cdf, cdfGetFields, "x"), use.names=FALSE)
+y <- unlist(applyCdfGroups(cdf, cdfGetFields, "y"), use.names=FALSE)
+
 # Clean up
-rm(chipType, cdfFile, unit, cdf0, cdf)
+rm(chipType, cdfFile, unit, cdf0, cdf, x, y)
 } # for (zzz in 0)
 
 
@@ -119,7 +125,7 @@ rm(chipType, cdfFile, unit, cdf0, cdf)
   \code{\link{cdfAddBaseMmCounts}}().
 }
 
-\author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 
 \keyword{programming}

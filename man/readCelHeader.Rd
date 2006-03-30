@@ -8,11 +8,11 @@
 }
 
 \usage{
-readCelHeader(fname)
+readCelHeader(filename)
 }
 
 \arguments{
-  \item{fname}{the name of the CEL file.}
+  \item{filename}{the name of the CEL file.}
 }
 
 \details{
@@ -62,9 +62,10 @@ readCelHeader(fname)
 }
 
 \seealso{
-  \code{\link{readCel}} for reading in the entire CEL
-  file. That function also returns the header. See \code{affxparserInfo}
-  for general comments on the package and the Fusion SDK.
+  \code{\link{readCel}()} for reading in the entire CEL
+  file. That function also returns the header. 
+  See \code{affxparserInfo} for general comments on the package and
+  the Fusion SDK.
 }
 
 \examples{

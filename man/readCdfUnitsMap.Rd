@@ -3,7 +3,7 @@
 % 
 %  
 % 
-% on Tue Mar 14 18:46:10 2006.
+% on Wed Mar 29 20:22:52 2006.
 % 
 % Generator was the Rdoc class, which is part of the R.oo package written
 % by Henrik Bengtsson, 2001-2006.
@@ -15,7 +15,7 @@
 
  \title{Generates an Affymetrix cell-index map from a CDF file}
 
- \usage{readCdfUnitsMap(pathname, units=NULL, ..., writeMap=FALSE, verbose=FALSE)}
+ \usage{readCdfUnitsMap(filename, units=NULL, ..., writeMap=FALSE, verbose=FALSE)}
 
  \description{
    Generates an Affymetrix cell-index map from a CDF file.
@@ -32,10 +32,10 @@
  }
 
  \arguments{
-   \item{pathname}{The pathname of the CDF file.}
-   \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of (zero-based) unit indices
-     specifying which units to listed first.  All other units are added
-     in order at the end.  If \code{\link[base]{NULL}}, units are in order.}
+   \item{filename}{The pathname of the CDF file.}
+   \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which units
+     to listed first.  All other units are added in order at the end.
+     If \code{\link[base]{NULL}}, units are in order.}
    \item{...}{Additional arguments passed to \code{\link{readCdfUnits}}().}
    \item{writeMap}{If \code{\link[base:logical]{TRUE}}, the write map, that is, the map for writing
      cell elements is returned, otherwise the read map is returned.}
@@ -61,7 +61,7 @@
    Yes, \code{map <- order(order(map))}.
  }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
  \examples{
   
@@ -73,18 +73,18 @@ if (is.null(cdfFile))
   break;
 
 # Create a cell-index map (for reading)
-map <- readCdfUnitsMap(cdfFile)
+readMap <- readCdfUnitsMap(cdfFile)
 
 # Inverse map to be used to write cell elements such that, if they
 # later are read unit by unit, they are read in contiguous blocks.
-writeMap <- match(1:length(map), map)  # faster than order()
+writeMap <- match(1:length(readMap), readMap)  # faster than order()
 
 # Validate the two maps
-stopifnot(identical(map[writeMap], 1:length(map)))
+stopifnot(identical(readMap[writeMap], 1:length(readMap)))
 
 
 cat("Summary of the \"randomness\" of the cell indices:\n")
-moves <- diff(map) - 1
+moves <- diff(readMap) - 1
 cat(sprintf("Number of unnecessary file re-positioning: \%d (\%.1f\%\%)\n",
                    sum(moves != 0), 100*sum(moves != 0)/length(moves)))
 cat(sprintf("Extra positioning in Gb: \%.1f\n", sum(abs(moves))/1024^3))
@@ -97,7 +97,8 @@ hist(smallMoves, nclass=51, main=main, xlab="moves <=25 bytes")
 hist(largeMoves, nclass=101, main="", xlab="moves >25 bytes")
 
 # Clean up
-rm(cdfFile, map, writeMap, moves, smallMoves, largeMoves, main)
+rm(cdfFile, readMap, writeMap, moves, smallMoves, largeMoves, main)
+
 } # for (zzz in 0)
 
 
@@ -167,18 +168,18 @@ rm(o)
 unitNames <- readCdfUnitNames(cdfFile)
 
 # The CDF unit indices sorted by chromsomal position
-units <- match(rownames(snpInfo), unitNames) - 1
+units <- match(rownames(snpInfo), unitNames)
 
 # ...and cell indices in the same order
-map <- readCdfUnitsMap(cdfFile, units=units)
+readMap <- readCdfUnitsMap(cdfFile, units=units)
 
 # Inverse map to be used to write cell elements such that, if they
 # later are read unit by unit, they are read in contiguous blocks.
-writeMap <- match(1:length(map), map)  # faster than order()
-
+writeMap <- match(1:length(readMap), readMap)  # faster than order()
 
 # Clean up
-rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, map, writeMap)
+rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, readMap, writeMap)
+
 } # for (zzz in 0)
 
  }

@@ -1,9 +1,9 @@
-readCdf <- function(fname, verbose = 0){
-  fname <- file.path(dirname(fname), basename(fname))
-  if (!file.exists(fname))
-    stop(paste("file:", fname, "does not exist."))
+readCdf <- function(filename, verbose = 0){
+  filename <- file.path(dirname(filename), basename(filename))
+  if (!file.exists(filename))
+    stop(paste("file:", filename, "does not exist."))
   return(.Call("R_affx_get_cdf_file",
-               as.character(fname),
+               as.character(filename),
                as.integer(verbose), 
                PACKAGE="affxparser"))
 }

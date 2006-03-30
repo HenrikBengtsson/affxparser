@@ -3,7 +3,7 @@
 % 
 %  
 % 
-% on Tue Mar 14 18:46:11 2006.
+% on Wed Mar 29 20:22:52 2006.
 % 
 % Generator was the Rdoc class, which is part of the R.oo package written
 % by Henrik Bengtsson, 2001-2006.
@@ -15,7 +15,7 @@
 
  \title{Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files}
 
- \usage{readCelUnits(filenames, units=NULL, readOutliers=FALSE, readMasked=FALSE, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, map=NULL, drop=TRUE, verbose=FALSE)}
+ \usage{readCelUnits(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, readMap=NULL, dropArrayDim=TRUE, verbose=FALSE)}
 
  \description{
    Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files by using the unit and group definitions in the
@@ -24,11 +24,10 @@
 
  \arguments{
    \item{filenames}{The filenames of the CEL files.}
-   \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of (zero-based) unit indices
-     specifying which units to be read.  If \code{\link[base]{NULL}}, all units are read.}
-   \item{readOutliers, readMasked, ...}{Arguments passed to
-     low-level method \code{\link[affxparser]{readCel}}, e.g. \code{readXY}
-     and \code{readStdvs}.}
+   \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which
+     units to be read.  If \code{\link[base]{NULL}}, all units are read.}
+   \item{...}{Arguments passed to low-level method
+     \code{\link[affxparser]{readCel}}, e.g. \code{readXY} and \code{readStdvs}.}
    \item{transforms}{A \code{\link[base]{list}} of exactly \code{length(filenames)}
      \code{\link[base]{function}}s.  If \code{\link[base]{NULL}}, no transformation is performed.
      Intensities read are passed through the corresponding transform
@@ -42,9 +41,9 @@
    \item{addDimnames}{If \code{\link[base:logical]{TRUE}}, dimension names are added to arrays,
      otherwise not.  The size of the returned CEL structure in bytes
      increases by 30-40\% with dimension names.}
-   \item{map}{A \code{\link[base]{vector}} remapping cell indices to file indices.
+   \item{readMap}{A \code{\link[base]{vector}} remapping cell indices to file indices.
      If \code{\link[base]{NULL}}, no mapping is used.}
-   \item{drop}{If \code{\link[base:logical]{TRUE}} and only one array is read, the elements of
+   \item{dropArrayDim}{If \code{\link[base:logical]{TRUE}} and only one array is read, the elements of
      the group field do \emph{not} have an array dimension.}
    \item{verbose}{Either a \code{\link[base]{logical}}, a \code{\link[base]{numeric}}, or a \code{\link[R.utils]{Verbose}}
      object specifying how much verbose/debug information is written to
@@ -57,30 +56,50 @@
  }
 
  \value{
-   A named \code{\link[base]{list}} where the names corresponds to the names of the units
-   read.  Each element of the \code{\link[base]{list}} is in turn a \code{\link[base]{list}} structure
-   with groups (aka blocks).
+   A named \code{\link[base]{list}} with one element for each unit read.  The names
+   corresponds to the names of the units read.
+   Each unit element is in
+   turn a \code{\link[base]{list}} structure with groups (aka blocks).
+   Each group contains requested fields, e.g. \code{intensities},
+   \code{stdvs}, and \code{pixels}.
+   If more than one CEL file is read, an extra dimension is added
+   to each of the fields corresponding, which can be used to subset
+   by CEL file.
+
+   Note that neither CEL headers nor information about outliers and
+   masked cells are returned.  To access these, use \code{\link{readCelHeader}}()
+   and \code{\link{readCel}}().
  }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
  \examples{
 
-# Scan current directory for CEL files
-files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
+for (zzz in 0) {
 
-if (length(files) > 0) {
-  cel <- readCelUnits(files[1], units=100:105)
-  print(cel)
-  rm(cel)
-}
+# Scan current directory for CEL files
+celFiles <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
+if (length(celFiles) == 0)
+  break
+
+units <- 100:261
+t <- system.time({
+cel <- readCelUnits(celFiles, units=units, readPixels=TRUE, readStdvs=TRUE)
+})
+print(cel[1:2])
+
+cat(sprintf("Time per unit and array: \%.4fms\n",
+                                   1000*t[3]/length(cel)/length(celFiles)))
 
 # Clean up
-rm(files)
+rm(celFiles, cel, t)
+
+} # for (zzz in 0)
 }
 
  \seealso{
-   The \code{\link{readCel}}() method is used internally.
+   Internally, \code{\link{readCelHeader}}(), \code{\link{readCdfUnits}}() and
+   \code{\link{readCel}}() are used.
  }
 
  \references{

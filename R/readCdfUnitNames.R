@@ -11,18 +11,19 @@ readCdfUnitNames <- function(filename, units=NULL, verbose=0) {
   if (is.null(units)) {
   } else if (is.numeric(units)) {
     units <- as.integer(units);
-    if (any(units < 0))
-      stop("Argument 'units' contains negative indices.");
+    if (any(units < 1))
+      stop("Argument 'units' contains non-positive indices.");
   } else {
     stop("Argument 'units' must be numeric or NULL: ", class(units)[1]);
   }
 
-  # Argument 'units':
+  # Argument 'verbose':
   if (length(verbose) != 1)
     stop("Argument 'units' must be a single integer.");
   verbose <- as.integer(verbose);
   if (!is.finite(verbose))
     stop("Argument 'units' must be an integer: ", verbose);
+
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Read the CDF file
@@ -31,4 +32,9 @@ readCdfUnitNames <- function(filename, units=NULL, verbose=0) {
         PACKAGE="affxparser");
 }
 
+############################################################################
+# HISTORY:
+# 2006-03-28
+# o Unit indices are now one-based. /HB
+############################################################################
 
