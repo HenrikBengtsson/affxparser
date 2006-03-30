@@ -8,11 +8,11 @@
 }
 
 \usage{
- readCdfHeader(fname)
+ readCdfHeader(filename)
 }
 
 \arguments{
-  \item{fname}{name of the CDF file.}
+  \item{filename}{name of the CDF file.}
 }
 
 \value{
@@ -50,7 +50,7 @@ print(header)
 
 \seealso{
   \code{\link{affxparserInfo}} for general information about the
-  package and \code{\link{readCdf}} for information about CDF files.
+  package and \code{\link{readCdfUnits}()} for information about CDF files.
 }
 
 \references{}

@@ -1,135 +1,155 @@
 \name{readCel}
 \alias{readCel}
 
-\title{Parsing an Affymetrix CEL file}
+\title{Reads an Affymetrix CEL file}
 
 \description{
-  Parsing an Affymetrix CEL file using the Fusion SDK. The 
-  intention is to let users obtain all (but possibly a subset of)
-  information in the CEL file.
+  This function reads all or a subset of the data in an Affymetrix 
+  CEL file.
 }
 
 \usage{
-readCel(fname, indices = NULL, readIntensities = TRUE,
-        readHeader = TRUE, readStdvs = FALSE, readPixels = FALSE,
-        readXY = FALSE, readOutliers = TRUE, readMasked = TRUE,
-        verbose = 0)
+readCel(filename, 
+        indices = NULL, 
+        readHeader = TRUE, 
+        readXY = FALSE, readIntensities = TRUE,
+        readStdvs = FALSE, readPixels = FALSE,
+        readOutliers = TRUE, readMasked = TRUE, 
+        readMap = NULL,
+        verbose = 0,
+        .checkArgs = TRUE)
 }
 
 \arguments{
-  \item{fname}{the name of the CEL file.}
+  \item{filename}{the name of the CEL file.}
   \item{indices}{a vector of indices indicating which features to
     read. If the argument is \code{NULL} all features will be returned.}
+  \item{readXY}{a logical: will the (x,y) coordinates be returned.}
   \item{readIntensities}{a logical: will the intensities be returned.}
-  \item{readHeader}{a logical: will the header of the file be returned.}
   \item{readStdvs}{a logical: will the standard deviations be returned.}
   \item{readPixels}{a logical: will the number of pixels be returned.}
-  \item{readXY}{a logical: will the (x,y) coordinates be returned.}
   \item{readOutliers}{a logical: will the outliers be return.}
   \item{readMasked}{a logical: will the masked features be returned.}
+  \item{readHeader}{a logical: will the header of the file be returned.}
+  \item{readMap}{A \code{\link[base]{vector}} remapping cell indices to 
+     file indices.  If \code{\link[base]{NULL}}, no mapping is used.}
   \item{verbose}{how verbose do we want to be. 0 is no verbosity, higher
     numbers mean more verbose output. At the moment the values 0, 1 and 2
     are supported.}
-}
-
-\details{
-  This function reads everything from a CEL file. It is considered a bug
-  if the file contains information not accessible by this function,
-  please report it.
-
-  The (input and output) interface makes heavily use of the concept of
-  indices. An (x,y) coordinate is converted to an integer by the formula
-  (y + 1) times numberOfColsInCelFile + (x + 1), assuming that the (x,y)
-  coordinates start at (0,0).
-  
-  The file returns a list with components (possible empty
-  depending on the input flags) corresponding to the various flags. The
-  \code{outliers} and \code{masked} components are special in that they
-  are vectors of indices of features flagged as respectively
-  outlier/masked by the Affymetrix image software.
+  \item{.checkArgs}{If \code{TRUE}, the arguments will be validated,
+    otherwise not.  \emph{Warning: This should only be used if the
+    arguments have been validated elsewhere!}}
 }
 
 \value{
-  A named list with components described
-  below. The order of the \code{intensities}, \code{stdvs} and
-  \code{pixels} corresponds to the ordering of the \code{indices}
-  argument.
-  \item{header}{The header of the CEL file. Equivalent to the output
-  from \code{readCelHeader}, see the documentation for that function.}
-  \item{intensities}{A vector of mode \code{nummeric} containing the
-  intensity associated with each feature, unless \code{readIntensities
-  = FALSE} in which case it will be \code{NULL}. Restricted to features 
-  within the \code{indices} range.}
-  \item{stdvs}{A vector of mode \code{nummeric} containing the
-  standard deviation associated with each feature, unless
-  \code{readStdvs = FALSE} in which case it will be
-  \code{NULL}. Restricted to features within the \code{indices} range.}
-  \item{pixels}{A vector of mode \code{integer} containing the
-  number of pixels associated with each feature, unless
-  \code{readPixels = FALSE} in which case it will be
-  \code{NULL}. Restricted to features within the \code{indices} range.}
-  \item{x}{A vector of mode \code{integer} containing the x coordinate
-  associated with each feature, unless \code{readXY = FALSE}
-  in which case it will be \code{NULL}. Restricted to features with the
-  \code{indices} range.}
-  \item{y}{A vector of mode \code{integer} containing the y coordinate
-  associated with each feature, unless \code{readXY = FALSE}
-  in which case it will be \code{NULL}. Restricted to features with the
-  \code{indices} range.}
-  \item{outliers}{A vector of mode \code{integer} which the indices of
-  the features flagged as outliers, unless \code{readOutliers = NULL}
-  in which case it will be \code{NULL}. Note that there is a difference
-  between \code{outliers = NULL} and \code{outliers = integer(0)} - the
-  last case happens when \code{readOutliers = TRUE} but there are no
-  outliers. In case an \code{indices} argument is given, only indices
-  within the \code{indices} argument are returned.}
-  \item{masked}{A vector of mode \code{integer} which the indices of
-  the features flagged as masked, unless \code{readMasked = NULL}
-  in which case it will be \code{NULL}. Note that there is a difference
-  between \code{masked = NULL} and \code{masked = integer(0)} - the
-  last case happens when \code{readMasked = TRUE} but there are no
-  masked features. In case an \code{indices} argument is given, only indices
-  within the \code{indices} argument are returned.}   
+  A CEL files consists of a \emph{header}, a set of \emph{cell values},
+  and information about \emph{outliers} and \code{masked} cells.
+
+  The cell values, which are values extract for each cell (aka feature
+  or probe), are the (x,y) coordinate, intensity and standard deviation
+  estimates, and the number of pixels in the cell.  
+  If \code{readIndices=NULL}, cell values for all cells are returned,
+  Only cell values specified by argument \code{readIndices} are returned.
+
+  This value returns a names list with compontents described below:
+  \itemize{
+   \item{\code{header}}{The header of the CEL file. Equivalent to the 
+      output from \code{readCelHeader}, see the documentation for that
+      function.}
+
+   \item{x,y}{(cell values) Two \code{integer} vectors containing
+      the x and y coordinates associated with each feature.}
+
+   \item{\code{intensities}}{(cell value) A  \code{numeric} vector
+      containing the intensity associated with each feature.}
+
+   \item{stdvs}{(cell value) A \code{numeric} vector containing 
+      the standard deviation associated with each feature.}
+
+   \item{pixels}{(cell value) An \code{integer} vector containing 
+      the number of pixels associated with each feature.}
+
+   \item{outliers}{An \code{integer} vector of indices specifying which
+      of the queried cells that are flagged as outliers.
+      Note that there is a difference between \code{outliers=NULL} and
+      \code{outliers=integer(0)}; the last case happens when 
+      \code{readOutliers=TRUE} but there are no outliers.}
+ 
+   \item{outliers}{An \code{integer} vector of indices specifying which
+      of the queried cells that are flagged as masked.
+      Note that there is a difference between \code{masked=NULL} and
+      \code{masked=integer(0)}; the last case happens when 
+      \code{readMasked=TRUE} but there are no masked features.}
+  }
+
+  The elements of the cell values are ordered according to argument 
+  \code{indices}.  The lengths of the cell-value elements equals the
+  number of cells read.
+  
+  Which of the above elements that are returned are controlled by the 
+  \code{readNnn} arguments.  If \code{FALSE}, the corresponding element 
+  above is \code{NULL}, e.g. if \code{readStdvs=FALSE} then 
+  \code{stdvs} is \code{NULL}.
 }
 
-\note{
-  Memory usage: the Fusion SDK allocates memory for the entire
+  
+\section{Outliers and masked cells}{
+  The Affymetrix image analysis software flags cells as outliers and masked.
+  This method does not return these flags, but instead vectors of cell 
+  indices listing which cells \emph{of the queried cells} are outliers and
+  masked, respectively.
+  The current community view seems to be that this should be done based on
+  statistical modelling of the actual probe intensities and should be based
+  on the choice of preprocessing algorithm.  Most algorithms are only using
+  the intensities from the CEL file.
+}
+
+\section{Memory usage}{
+  The Fusion SDK allocates memory for the entire
   CEL file, when the file is accessed (but does not actually read the
   file into memory). Using the \code{indices} argument will therefore
   only affect the memory use of the final object (as well as speed), not
   the memory allocated in the C function used to parse the file. This
   should be a minor problem however.
-  
-  The outlier/masked flag are computed by the Affymetrix image analysis
-  software. The current community view seems to be that this should be
-  done based on statistical modelling of the actual probe intensities
-  and should be based on the choice of preprocessing algorithm. Mopst
-  algorithms are only using the intensities from the CEL file.
 }
 
+\section{Troubleshooting}{
+  It is considered a bug if the file contains information not accessible 
+  by this function, please report it.
+}
+
+
 \examples{
+  for (zzz in 0) {  # Only so that 'break' can be used
+
   # Scan current directory for CEL files
-  files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-  if (length(files) > 0) {
-    cel <- readCel(files[1], readPixels=TRUE)
-    str(cel)
-    rm(cel)
-  }
+  celFiles <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
+  if (length(celFiles) == 0)
+    break;
+
+  celFile <- celFiles[1]
+
+  # Read a subset of cells
+  idxs <- c(1:5, 1250:1500, 450:440)
+  cel <- readCel(celFile, indices=idxs, readOutliers=TRUE)
+  str(cel)
 
   # Clean up
-  rm(files)
+  rm(celFiles, celFile, cel)
+
+  } # for (zzz in 0)
 }
 
 \author{James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
   Daniel Hansen, \email{khansen@stat.berkeley.edu}} 
 
-\seealso{ \code{\link{affxparserInfo}} for a package overview and
-  \code{\link{readCelHeader}} for a description of the header
-  output. Often a user only wants to read the intensities, look at
-  \code{\link{readCelIntensities}} for a function specialized for that
-  use. See \code{\link[affy]{xy2indices}} from \pkg{affy} and
-  \code{\link[makePlatformDesign]{xy2i}} from \pkg{makePlatformDesign} for a discussion of
-  the index approach.  }
+\seealso{
+  \code{\link{affxparserInfo}} for a package overview and
+  \code{\link{readCelHeader}()} for a description of the header output.
+  Often a user only wants to read the intensities, look at
+  \code{\link{readCelIntensities}()} for a function specialized for 
+  that use. 
+}
 
 \keyword{file}
 \keyword{IO}

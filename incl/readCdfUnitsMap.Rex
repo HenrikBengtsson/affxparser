@@ -7,18 +7,18 @@ if (is.null(cdfFile))
   break;
 
 # Create a cell-index map (for reading)
-map <- readCdfUnitsMap(cdfFile)
+readMap <- readCdfUnitsMap(cdfFile)
 
 # Inverse map to be used to write cell elements such that, if they 
 # later are read unit by unit, they are read in contiguous blocks.
-writeMap <- match(1:length(map), map)  # faster than order()
+writeMap <- match(1:length(readMap), readMap)  # faster than order()
 
 # Validate the two maps
-stopifnot(identical(map[writeMap], 1:length(map)))
+stopifnot(identical(readMap[writeMap], 1:length(readMap)))
 
 
 cat("Summary of the \"randomness\" of the cell indices:\n")
-moves <- diff(map) - 1
+moves <- diff(readMap) - 1
 cat(sprintf("Number of unnecessary file re-positioning: %d (%.1f%%)\n", 
                    sum(moves != 0), 100*sum(moves != 0)/length(moves)))
 cat(sprintf("Extra positioning in Gb: %.1f\n", sum(abs(moves))/1024^3))
@@ -31,5 +31,6 @@ hist(smallMoves, nclass=51, main=main, xlab="moves <=25 bytes")
 hist(largeMoves, nclass=101, main="", xlab="moves >25 bytes")
 
 # Clean up
-rm(cdfFile, map, writeMap, moves, smallMoves, largeMoves, main)
+rm(cdfFile, readMap, writeMap, moves, smallMoves, largeMoves, main)
+
 } # for (zzz in 0)

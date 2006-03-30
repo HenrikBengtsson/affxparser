@@ -14,8 +14,7 @@
 \arguments{
   \item{filename}{The filename of the CDF file.}
   \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}}
-    of (zero-based) unit indices
-    specifying which units to be read.
+    of unit indices specifying which units to be read.
     If \code{\link[base]{NULL}}, all units are read.}
   \item{verbose}{An \code{\link[base]{integer}} specifying the verbose
     level. If 0, the

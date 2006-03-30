@@ -7,17 +7,18 @@
 
 \description{
 Reads the intensities of several Affymetrix CEL files (as opposed to
-\code{readCel} which only reads a single file).
+\code{readCel}() which only reads a single file).
 } 
 
 \usage{
- readCelIntensities(fnames, indices = NULL, verbose = 0)
+ readCelIntensities(filenames, indices = NULL, ..., verbose = 0)
 }
 
 \arguments{
-\item{fnames}{the names of the CEL files as a character vector.}
+\item{filenames}{the names of the CEL files as a character vector.}
 \item{indices}{a vector of which indices should be read. If the argument
   is \code{NULL} all features will be returned.}
+\item{...}{Additional arguments passed to \code{readCel}().}
 \item{verbose}{an integer: how verbose do we want to be, higher means
   more verbose.}
 }
@@ -31,7 +32,7 @@ Reads the intensities of several Affymetrix CEL files (as opposed to
   A matrix with a number of rows equal to the length of the
   \code{indices} argument (or the number of features on the entire
   chip), and a number of columns equal to the number of files. The
-  columns are ordered according to the \code{fnames} argument.
+  columns are ordered according to the \code{filenames} argument.
 }
 
 \author{
@@ -40,15 +41,14 @@ Reads the intensities of several Affymetrix CEL files (as opposed to
 }
 
 \note{
-  Currently this function builds on \code{readCel}, and simply
+  Currently this function builds on \code{readCel}(), and simply
   calls this function multiple times. If testing yields sufficient
   reasons for doing so, it may be re-implemented in C++.
 }
 
 \seealso{
-  \code{\link{readCel}} for the a discussion of a more
-  versatile function, particular with details of the \code{indices}
-  argument.
+  \code{\link{readCel}}() for a discussion of a more versatile function,
+  particular with details of the \code{indices} argument.
 }
 
 \examples{

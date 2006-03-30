@@ -10,11 +10,11 @@
 }
 
 \usage{
-  readCdf(fname, verbose = 0)
+  readCdf(filename, verbose = 0)
 }
 
 \arguments{
-  \item{fname}{name of the CDF file.}
+  \item{filename}{name of the CDF file.}
   \item{verbose}{how verbose should the output be. 0 means no output,
     with higher numbers being more verbose.}
 }
@@ -46,7 +46,7 @@
 
 \seealso{
   \code{\link{affxparserInfo}} for general information about the
-  package/Fusion SDK and \code{\link{readCdfHeader}} for getting the
+  package/Fusion SDK and \code{\link{readCdfHeader}()} for getting the
   header of a CDF file.
 }
 

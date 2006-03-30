@@ -15,7 +15,7 @@ if (is.null(cdfFile))
 
 # Identify the unit index from the unit name
 probeset <- "SNP_A-1658298"
-unit <- which(readCdfUnitNames(cdfFile) == probeset) - 1
+unit <- which(readCdfUnitNames(cdfFile) == probeset)
 rm(probeset)
 
 # Read the CDF file
@@ -67,8 +67,14 @@ cat("Probe quartets:\n")
 print(cdf)
 
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Get the x and y cell locations
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+x <- unlist(applyCdfGroups(cdf, cdfGetFields, "x"), use.names=FALSE)
+y <- unlist(applyCdfGroups(cdf, cdfGetFields, "y"), use.names=FALSE)
+
 # Clean up
-rm(chipType, cdfFile, unit, cdf0, cdf)
+rm(chipType, cdfFile, unit, cdf0, cdf, x, y)
 } # for (zzz in 0)
 
 

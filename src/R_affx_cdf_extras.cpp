@@ -33,6 +33,11 @@ extern "C" {
   #include <wchar.h>
   #include <wctype.h>
 
+  /************************************************************************
+   *
+   * R_affx_cdf_nbrOfCellsPerUnitGroup()
+   *
+   ************************************************************************/
   SEXP R_affx_cdf_nbrOfCellsPerUnitGroup(SEXP fname, SEXP units, SEXP verbose) 
   {
     FusionCDFData cdf;
@@ -82,7 +87,7 @@ extern "C" {
       /* Validate argument 'units': */
       for (int ii = 0; ii < nunits; ii++) {
         iset = INTEGER(units)[ii];
-        if (iset < 0 || iset >= nsets) {
+        if (iset < 1 || iset > nsets) {
           error("Argument 'units' contains an element out of range.");
         }
       }
@@ -99,7 +104,8 @@ extern "C" {
       if (readAll) {
         iset = ii;
       } else {
-        iset = INTEGER(units)[ii];
+        /* Unit indices are zero-based in Fusion SDK. */
+        iset = INTEGER(units)[ii] - 1;
       }
 
       /* Retrieve the current unit */
@@ -141,20 +147,25 @@ extern "C" {
       SET_VECTOR_ELT(probe_sets, ii, r_groups);
 
       /** pop the group list and group names of the stack. **/
-      UNPROTECT(2);
+      UNPROTECT(2); /* 'r_group_names' and then 'r_groups' */
     }
     
     /** set the names down here at the end. **/
     setAttrib(probe_sets, R_NamesSymbol, names);
 
     /** unprotect the names and the main probe set list.**/
-    UNPROTECT(2);
+    UNPROTECT(2);  /* 'names' and then 'probe_sets' */
    
     return probe_sets;
   }
 
 
 
+  /************************************************************************
+   *
+   * R_affx_cdf_groupNames()
+   *
+   ************************************************************************/
   SEXP R_affx_cdf_groupNames(SEXP fname, SEXP units, SEXP verbose) 
   {
     FusionCDFData cdf;
@@ -204,15 +215,15 @@ extern "C" {
       /* Validate argument 'units': */
       for (int ii = 0; ii < nunits; ii++) {
         iset = INTEGER(units)[ii];
-        if (iset < 0 || iset >= nsets) {
+        if (iset < 1 || iset > nsets) {
           error("Argument 'units' contains an element out of range.");
         }
       }
     }
 
     /* Allocate R character vector and R list for the names and units */
-    PROTECT(names = NEW_CHARACTER(nunits));
     PROTECT(probe_sets = NEW_LIST(nunits)); 
+    PROTECT(names = NEW_CHARACTER(nunits));
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Access information for the requested units one by one
@@ -221,7 +232,8 @@ extern "C" {
       if (readAll) {
         iset = ii;
       } else {
-        iset = INTEGER(units)[ii];
+        /* Unit indices are zero-based in Fusion SDK. */
+        iset = INTEGER(units)[ii] - 1;
       }
 
       /* Retrieve the current unit */
@@ -267,20 +279,25 @@ extern "C" {
       SET_VECTOR_ELT(probe_sets, ii, r_group_names);
 
       /** pop the group list and group names of the stack. **/
-      UNPROTECT(1);
+      UNPROTECT(1);  /* 'r_group_names' */
     }
     
     /** set the names down here at the end. **/
     setAttrib(probe_sets, R_NamesSymbol, names);
 
     /** unprotect the names and the main probe set list.**/
-    UNPROTECT(2);
+    UNPROTECT(2);  /* 'names' and then 'probe_sets' */
    
     return probe_sets;
   } /* R_affx_cdf_groupNames() */
 
 
 
+  /************************************************************************
+   *
+   * R_affx_cdf_isPm()
+   *
+   ************************************************************************/
   SEXP R_affx_cdf_isPm(SEXP fname, SEXP units, SEXP verbose) 
   {
     FusionCDFData cdf;
@@ -289,8 +306,8 @@ extern "C" {
     SEXP names = R_NilValue, 
          probe_sets = R_NilValue,
          r_groups = R_NilValue, 
-                     r_group_names = R_NilValue,
-                     isPm = R_NilValue;
+         r_group_names = R_NilValue,
+         isPm = R_NilValue;
     
     bool readAll = true; 
     int nsets = 0, nunits = 0;
@@ -329,15 +346,15 @@ extern "C" {
       /* Validate argument 'units': */
       for (int ii = 0; ii < nunits; ii++) {
         iset = INTEGER(units)[ii];
-        if (iset < 0 || iset >= nsets) {
+        if (iset < 1 || iset > nsets) {
           error("Argument 'units' contains an element out of range.");
         }
       }
     }
 
     /* Allocate R character vector and R list for the names and units */
-    PROTECT(names = NEW_CHARACTER(nunits));
     PROTECT(probe_sets = NEW_LIST(nunits)); 
+    PROTECT(names = NEW_CHARACTER(nunits));
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Access information for the requested units one by one
@@ -348,7 +365,8 @@ extern "C" {
       if (readAll) {
         iset = ii;
       } else {
-        iset = INTEGER(units)[ii];
+        /* Unit indices are zero-based in Fusion SDK. */
+        iset = INTEGER(units)[ii] - 1;
       }
 
       /* Retrieve the current unit */
@@ -407,11 +425,11 @@ extern "C" {
               LOGICAL(isPm)[icell] = false;
             }
           }
-        }
+        } /* for (int icell ...) */
 
         SET_VECTOR_ELT(r_groups, igroup, isPm);
 
-        UNPROTECT(1);
+        UNPROTECT(1);  /* 'isPm' */
       }
       
       /** set the group names. **/
@@ -421,14 +439,14 @@ extern "C" {
       SET_VECTOR_ELT(probe_sets, ii, r_groups);
 
       /** pop the group list and group names of the stack. **/
-      UNPROTECT(2);
+      UNPROTECT(2); /* 'r_group_names' and then 'r_groups' */
     }
     
     /** set the names down here at the end. **/
     setAttrib(probe_sets, R_NamesSymbol, names);
 
     /** unprotect the names and the main probe set list.**/
-    UNPROTECT(2);
+    UNPROTECT(2);  /* 'names' and then 'probe_sets' */
    
     return probe_sets;
   } /* R_affx_cdf_isPm() */
@@ -436,6 +454,11 @@ extern "C" {
 
 
 
+  /************************************************************************
+   *
+   * R_affx_cdf_isMm()
+   *
+   ************************************************************************/
   SEXP R_affx_cdf_isMm(SEXP fname, SEXP units, SEXP verbose) 
   {
     FusionCDFData cdf;
@@ -484,15 +507,15 @@ extern "C" {
       /* Validate argument 'units': */
       for (int ii = 0; ii < nunits; ii++) {
         iset = INTEGER(units)[ii];
-        if (iset < 0 || iset >= nsets) {
+        if (iset < 1 || iset > nsets) {
           error("Argument 'units' contains an element out of range.");
         }
       }
     }
 
     /* Allocate R character vector and R list for the names and units */
-    PROTECT(names = NEW_CHARACTER(nunits));
     PROTECT(probe_sets = NEW_LIST(nunits)); 
+    PROTECT(names = NEW_CHARACTER(nunits));
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Access information for the requested units one by one
@@ -503,7 +526,8 @@ extern "C" {
       if (readAll) {
         iset = ii;
       } else {
-        iset = INTEGER(units)[ii];
+        /* Unit indices are zero-based in Fusion SDK. */
+        iset = INTEGER(units)[ii] - 1;
       }
 
       /* Retrieve the current unit */
@@ -570,6 +594,11 @@ extern "C" {
 
 
 
+  /************************************************************************
+   *
+   * R_affx_cdf_isPmOrMm()
+   *
+   ************************************************************************/
   SEXP R_affx_cdf_isPmOrMm(SEXP fname, SEXP units, SEXP verbose) 
   {
     FusionCDFData cdf;
@@ -618,15 +647,15 @@ extern "C" {
       /* Validate argument 'units': */
       for (int ii = 0; ii < nunits; ii++) {
         iset = INTEGER(units)[ii];
-        if (iset < 0 || iset >= nsets) {
+        if (iset < 1 || iset > nsets) {
           error("Argument 'units' contains an element out of range.");
         }
       }
     }
 
     /* Allocate R character vector and R list for the names and units */
-    PROTECT(names = NEW_CHARACTER(nunits));
     PROTECT(probe_sets = NEW_LIST(nunits)); 
+    PROTECT(names = NEW_CHARACTER(nunits));
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Access information for the requested units one by one
@@ -637,7 +666,8 @@ extern "C" {
       if (readAll) {
         iset = ii;
       } else {
-        iset = INTEGER(units)[ii];
+        /* Unit indices are zero-based in Fusion SDK. */
+        iset = INTEGER(units)[ii] - 1;
       }
 
       /* Retrieve the current unit */
@@ -728,6 +758,9 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2006-03-28
+ * o Unit indices are now one-based. /HB
+ * 2006-01-15
  * 2006-01-15
  * o It is now possible to specify what readCdfUnits() should return. /HB
  * 2006-01-12

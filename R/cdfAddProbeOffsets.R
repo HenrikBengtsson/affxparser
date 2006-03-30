@@ -23,9 +23,6 @@
 #  been joined).
 # }
 #
-# \details{
-# }
-#
 # \seealso{
 #  @see "applyCdfGroups".
 # }
