@@ -1,0 +1,23 @@
+Package: affxparser
+===================
+
+Version: 1.3.2 [2006-03-28]
+o All cell and unit indices are now starting from one and not
+  from zero.  This change requires that all code that have
+  been using a previous version of this package have to be
+  updated!
+o Further optimization in speed and memory for most methods.
+o New methods readCelRectangle() to read probe signals from a
+  specify area of the chip.
+o Added extensive help on cell coordinates and cell indices 
+  as well read and write maps.
+o KNOWN BUGS: At least on WinXP, heavy use of readCelUnits() 
+  will sooner or later core dump R; it seems to be a memory 
+  related from that occur when reading the CDF and extracting
+  the name of the unit.  However, when "torturing" readCdfUnits() 
+  the crash won't happen so it might be that readCel() does 
+  something.  Have not tried on other platforms.
+
+Version: 1.3.1
+o
+
