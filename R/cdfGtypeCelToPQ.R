@@ -25,7 +25,6 @@
 # }
 #
 # \seealso{
-#  @see "gtypeCelToPQ".
 #  @see "applyCdfGroups".
 # }
 #

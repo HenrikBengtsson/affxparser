@@ -64,16 +64,16 @@ rm(o)
 unitNames <- readCdfUnitNames(cdfFile)
 
 # The CDF unit indices sorted by chromsomal position
-units <- match(rownames(snpInfo), unitNames) - 1
+units <- match(rownames(snpInfo), unitNames)
 
 # ...and cell indices in the same order
-map <- readCdfUnitsMap(cdfFile, units=units)
+readMap <- readCdfUnitsMap(cdfFile, units=units)
 
 # Inverse map to be used to write cell elements such that, if they 
 # later are read unit by unit, they are read in contiguous blocks.
-writeMap <- match(1:length(map), map)  # faster than order()
-
+writeMap <- match(1:length(readMap), readMap)  # faster than order()
 
 # Clean up
-rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, map, writeMap)
+rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, readMap, writeMap)
+
 } # for (zzz in 0)

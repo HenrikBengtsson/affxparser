@@ -12,11 +12,10 @@
 # 
 # \arguments{
 #   \item{filenames}{The filenames of the CEL files.}
-#   \item{units}{An @integer @vector of (zero-based) unit indices 
-#     specifying which units to be read.  If @NULL, all units are read.}
-#   \item{readOutliers, readMasked, ...}{Arguments passed to 
-#     low-level method @see "affxparser::readCel", e.g. \code{readXY}
-#     and \code{readStdvs}.}
+#   \item{units}{An @integer @vector of unit indices specifying which
+#     units to be read.  If @NULL, all units are read.}
+#   \item{...}{Arguments passed to low-level method 
+#     @see "affxparser::readCel", e.g. \code{readXY} and \code{readStdvs}.}
 #   \item{transforms}{A @list of exactly \code{length(filenames)}
 #     @functions.  If @NULL, no transformation is performed.
 #     Intensities read are passed through the corresponding transform
@@ -30,9 +29,9 @@
 #   \item{addDimnames}{If @TRUE, dimension names are added to arrays,
 #     otherwise not.  The size of the returned CEL structure in bytes 
 #     increases by 30-40\% with dimension names.}
-#   \item{map}{A @vector remapping cell indices to file indices.  
+#   \item{readMap}{A @vector remapping cell indices to file indices.  
 #     If @NULL, no mapping is used.}
-#   \item{drop}{If @TRUE and only one array is read, the elements of
+#   \item{dropArrayDim}{If @TRUE and only one array is read, the elements of
 #     the group field do \emph{not} have an array dimension.}
 #   \item{verbose}{Either a @logical, a @numeric, or a @see "R.utils::Verbose"
 #     object specifying how much verbose/debug information is written to
@@ -45,9 +44,19 @@
 # }
 # 
 # \value{
-#   A named @list where the names corresponds to the names of the units
-#   read.  Each element of the @list is in turn a @list structure 
-#   with groups (aka blocks).
+#   A named @list with one element for each unit read.  The names
+#   corresponds to the names of the units read.  
+#   Each unit element is in
+#   turn a @list structure with groups (aka blocks).  
+#   Each group contains requested fields, e.g. \code{intensities}, 
+#   \code{stdvs}, and \code{pixels}.
+#   If more than one CEL file is read, an extra dimension is added
+#   to each of the fields corresponding, which can be used to subset
+#   by CEL file.
+#
+#   Note that neither CEL headers nor information about outliers and
+#   masked cells are returned.  To access these, use @see "readCelHeader"
+#   and @see "readCel".
 # }
 #
 # @author
@@ -55,7 +64,8 @@
 # @examples "../incl/readCelUnits.Rex"
 # 
 # \seealso{
-#   The @see "readCel" method is used internally.
+#   Internally, @see "readCelHeader", @see "readCdfUnits" and 
+#   @see "readCel" are used.
 # }
 # 
 # \references{
@@ -66,8 +76,8 @@
 #
 # @keyword "file"
 # @keyword "IO"
-#*/#########################################################################
-readCelUnits <- function(filenames, units=NULL, readOutliers=FALSE, readMasked=FALSE, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, map=NULL, drop=TRUE, verbose=FALSE) {
+#*/######################################################################### 
+readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, readMap=NULL, dropArrayDim=TRUE, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -87,8 +97,9 @@ readCelUnits <- function(filenames, units=NULL, readOutliers=FALSE, readMasked=F
   if (is.null(units)) {
   } else if (is.numeric(units)) {
     units <- as.integer(units);
-    if (any(units < 0))
-      stop("Argument 'units' contains negative indices.");
+    # Unit indices are one-based in R
+    if (any(units < 1))
+      stop("Argument 'units' contains non-positive indices.");
   } else {
     stop("Argument 'units' must be numeric or NULL: ", class(units)[1]);
   }
@@ -111,31 +122,31 @@ readCelUnits <- function(filenames, units=NULL, readOutliers=FALSE, readMasked=F
     if (!is.list(groups))
       stop("Argument 'cdf' is of unknown format: Units Does not contain the list 'groups'.");
 
-    # Check for group fields 'cells' or 'x' & 'y' in one of the groups.
+    # Check for group fields 'indices' or 'x' & 'y' in one of the groups.
     aGroup <- groups[[1]];
 
     fields <- names(aGroup);
-    if ("cells" %in% fields) {
-      cdfType <- "cells";
+    if ("indices" %in% fields) {
+      cdfType <- "indices";
     } else if (all(c("x", "y") %in% fields)) {
       cdfType <- "x";
       searchForCdf <- TRUE;
     } else {
-      stop("Argument 'cdf' is of unknown format: The groups contains neither the fields 'cells' nor ('x' and 'y').");
+      stop("Argument 'cdf' is of unknown format: The groups contains neither the fields 'indices' nor ('x' and 'y').");
     }
     rm(aUnit, groups, aGroup);
   } else {
     stop("Argument 'cdf' must be a filename, a CDF list structure or NULL: ", mode(cdf));
   }
 
-  # Argument 'map':
-  if (!is.null(map)) {
+  # Argument 'readMap':
+  if (!is.null(readMap)) {
     # Cannot check map indices without knowing the array.  Is it worth 
     # reading such details already here?
   }
 
-  # Argument 'drop':
-  drop <- as.logical(drop);
+  # Argument 'dropArrayDim':
+  dropArrayDim <- as.logical(dropArrayDim);
 
   # Argument 'addDimnames':
   addDimnames <- as.logical(addDimnames);
@@ -168,6 +179,7 @@ readCelUnits <- function(filenames, units=NULL, readOutliers=FALSE, readMasked=F
     require(R.utils) || stop("Package not available: R.utils");
     verbose <- Arguments$getVerbose(verbose);
   }
+  cVerbose <- -(as.numeric(verbose) + 2);
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,102 +216,109 @@ readCelUnits <- function(filenames, units=NULL, readOutliers=FALSE, readMasked=F
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(cdf)) {
     verbose && enter(verbose, "Reading cell indices from CDF file");
-    cdf <- readCdfUnits(cdfFile, units=units, readXY=FALSE, readCells=TRUE, 
-                       readBases=FALSE, readDirection=FALSE, readExpos=FALSE,
-                                      readType=FALSE, stratifyBy=stratifyBy);
+    cdf <- readCdfUnits(cdfFile, units=units, readXY=FALSE, readBases=FALSE, 
+                        readExpos=FALSE, readDirection=FALSE, readType=FALSE, 
+                                    stratifyBy=stratifyBy, readIndices=TRUE);
     verbose && exit(verbose);
 
-    # Assume 'cdf' contains only "cells" fields.
-    cells <- unlist(cdf, use.names=FALSE);
+    # Assume 'cdf' contains only "indices" fields.
+    indices <- unlist(cdf, use.names=FALSE);
   } else {
-    if (cdfType == "cells") {
-      # Clean up CDF list structure from other fields than "cells".
-      cdf <- lapply(cdf, FUN=function(unit) {
-        lapply(unit, FUN=function(group) {
-          list(cells=group$cells);
-        })
-      })
-      cells <- unlist(cdf, use.names=FALSE);
+    if (cdfType == "indices") {
+      # Clean up CDF list structure from other fields than "indices".
+      cdf <- applyCdfGroups(cdf, cdfGetFields, fields="indices");
+      indices <- unlist(cdf, use.names=FALSE);
     } else {
       verbose && enter(verbose, "Calculating cell indices from (x,y) positions");
       verbose && enter(verbose, "Reading chip layout from CDF file");
       cdfHeader <- readCdfHeader(cdfFile);
       ncol <- cdfHeader$cols;
       verbose && exit(verbose);
-      x <- unlist(lapply(cdf, FUN=function(u) {
-        unlist(lapply(u$groups, FUN=function(group) {
-          group$x;
-        }), use.names=FALSE)
-      }), use.names=FALSE)
-      y <- unlist(lapply(cdf, FUN=function(u) {
-        unlist(lapply(u$groups, FUN=function(group) {
-          group$y;
-        }), use.names=FALSE)
-      }), use.names=FALSE)
-      cells <- as.integer(y * ncol + x);
+      x <- unlist(applyCdfGroups(cdf, cdfGetFields, "x"), use.names=FALSE);
+      y <- unlist(applyCdfGroups(cdf, cdfGetFields, "y"), use.names=FALSE);
+      # Cell indices are one-based in R
+      indices <- as.integer(y * ncol + x + 1);
       rm(x,y);
       verbose && exit(verbose);
     }
   }
 
-
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # 2. Remapping cell indices?
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  if (!is.null(map)) {
+  if (!is.null(readMap)) {
     verbose && enter(verbose, "Remapping cell indices");
-    cells <- map[cells+1]-1;
+    indices <- readMap[indices];
     verbose && exit(verbose);
   }
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # 2b. Order cell indices for optimal speed when reading, i.e. minimal
+  #     jumping around in the file.
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#  if (reorder) {
+#    o <- .Internal(order(FALSE, FALSE, indices));
+#    indices <- indices[o];
+#    o <- .Internal(order(FALSE, FALSE, o));
+#  }
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # 3. Read signals of the cells of interest from the CEL file(s)
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  nbrOfCells <- length(cells);
+
+  # Comment: We assign elements of CEL list structure to local environment, 
+  # because calling cel[[field]][idxs,] multiple (=nbrOfUnits) times is very
+  # slow whereas get(field) is much faster (about 4-6 times actually!)
+  # /HB 2006-03-24
+
+  nbrOfCells <- length(indices);
   nbrOfUnits <- length(cdf);
 
   verbose && enter(verbose, "Reading ", nbrOfUnits, "*", nbrOfCells/nbrOfUnits, "=", nbrOfCells, " cells from ", nbrOfArrays, " CEL files");
 
-  matrixFields <- c("intensities", "stdvs", "pixels");
+  # Cell-value elements
+  cellValueFields <- c("x", "y", "intensities", "stdvs", "pixels");
   integerFields <- "pixels";
-  doubleFields <- setdiff(matrixFields, integerFields);
+  doubleFields <- setdiff(cellValueFields, integerFields);
 
   for (kk in seq(length=nbrOfArrays)) {
     filename <- filenames[kk];
 
     verbose && enter(verbose, "Reading CEL data for array #", kk);
-    celTmp <- readCel(filename, indices=cells, readOutliers=readOutliers, readMasked=readMasked, ...);
+    celTmp <- readCel(filename, indices=indices, readHeader=FALSE, readOutliers=FALSE, readMasked=FALSE, ..., readMap=NULL, verbose=cVerbose, .checkArgs=FALSE);
     verbose && exit(verbose);
 
     if (kk == 1) {
       verbose && enter(verbose, "Allocating return structure");
       # Allocate the return list structure
-      celTmp$header <- NULL;
-      cel <- vector("list", length(celTmp));
-      names(cel) <- names(celTmp);
+#      celTmp$header <- NULL;
+      celFields <- names(celTmp);
 
       # Update list of special fields
-      matrixFields <- intersect(names(cel), matrixFields);
-      doubleFields <- intersect(matrixFields, doubleFields);
-      integerFields <- intersect(matrixFields, integerFields);
-      listFields <- setdiff(names(cel), matrixFields); 
+      cellValueFields <- intersect(celFields, cellValueFields);
+      doubleFields <- intersect(cellValueFields, doubleFields);
+      integerFields <- intersect(cellValueFields, integerFields);
 
-      if (nbrOfArrays >= 2 && !drop) {
-        for (name in listFields)
-          cel[[name]] <- vector("list", nbrOfArrays);
-      }
-
+      # Allocate all field variables
       for (name in doubleFields)
-        cel[[name]] <- matrix(as.double(0), nrow=nbrOfCells, ncol=nbrOfArrays);
+        assign(name, matrix(as.double(0), nrow=nbrOfCells, ncol=nbrOfArrays));
 
       for (name in integerFields)
-        cel[[name]] <- matrix(as.integer(0), nrow=nbrOfCells, ncol=nbrOfArrays);
-      verbose && exit(verbose);
-    } 
+        assign(name, matrix(as.integer(0), nrow=nbrOfCells, ncol=nbrOfArrays));
 
-    for (name in matrixFields) {
+      verbose && exit(verbose);
+    }
+
+    for (name in cellValueFields) {
+      # Extract field values and re-order them again
       value <- celTmp[[name]];
+      if (is.null(value))
+        next;
+
+#      if (reorder)
+#        value <- value[o];
+
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       # Transform signals?
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -308,23 +327,15 @@ readCelUnits <- function(filenames, units=NULL, readOutliers=FALSE, readMasked=F
         value <- transforms[[kk]](value);
         verbose && exit(verbose);
       }
-      cel[[name]][,kk] <- value;
-    }
 
-    for (name in setdiff(matrixFields, "intensities")) {
-      cel[[name]][,kk] <- celTmp[[name]];
-    }
-
-    for (name in listFields) {
-      if (!is.null(celTmp[[name]]))
-        cel[[name]][[kk]] <- celTmp[[name]];
+      eval(substitute(name[,kk] <- value, list=list(name=as.name(name))));
     }
 
     rm(celTmp);
   }
   verbose && exit(verbose);
 
-  rm(cells);
+  rm(indices);
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -332,18 +343,19 @@ readCelUnits <- function(filenames, units=NULL, readOutliers=FALSE, readMasked=F
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   verbose && enter(verbose, "Structuring data by units and groups");
 
-  fields <- vector("list", length(cel));
-  names(fields) <- names(cel);
+  fields <- vector("list", length(cellValueFields));
+  names(fields) <- cellValueFields;
 
-  addDim <- (nbrOfArrays >= 2 || !drop);
+  # Add a dimension for the arrays, unless only one array is read
+  # and the array dimension is not wanted.
+  addArrayDim <- (nbrOfArrays >= 2 || !dropArrayDim);
 
   seqOfArrays <- list(1:nbrOfArrays);
-
   offset <- 0;
-  cel <- lapply(cdf, FUN=function(u) {
+  res <- lapply(cdf, FUN=function(u) {
     lapply(u$groups, FUN=function(g) {
       # Same dimensions of all fields
-      field <- g[[1]];
+      field <- .subset2(g, 1);  # Faster than g[[1]]
       ncells <- length(field);
       idxs <- offset + 1:ncells;
       offset <<- offset + ncells;
@@ -352,44 +364,74 @@ readCelUnits <- function(filenames, units=NULL, readOutliers=FALSE, readMasked=F
       dim <- dim(field);
       if (is.null(dim))
         dim <- ncells;
-      if (addDimnames)
+
+      if (addDimnames) {
         dimnames <- dimnames(field);
+        if (is.null(dimnames))
+          dimnames <- list(seq(length=dim));
 
-      # Add an extra dimension for arrays?
-      if (addDim) {
-        if (addDimnames)
+        # Add an extra dimension for arrays?
+        if (addArrayDim) {
+          dim <- c(dim, nbrOfArrays);
           dimnames <- c(dimnames, seqOfArrays);
-        dim <- c(dim, nbrOfArrays);
-      }
+        }
 
-      # Update all fields with dimensions
-      for (name in matrixFields) {
-        values <- cel[[name]][idxs,];                 # cel[[...]] is slow!
-        dim(values) <- dim;
-        if (addDimnames)
-          dimnames(values) <- dimnames;
-        fields[[name]] <- values;
-      }
-
-      # Update all dimension-less fields
-      for (name in listFields) {
-        values <- cel[[name]];                        # cel[[...]] is slow!
-        if (!is.null(values))
+        # Update all fields with dimensions
+        setDim <- (length(dim) > 1);
+        for (name in cellValueFields) {
+          # Faster to drop dimensions.
+          values <- get(name)[idxs,,drop=TRUE];
+          if (setDim) {
+            dim(values) <- dim;
+            dimnames(values) <- dimnames;
+          } else {
+            names(values) <- dimnames;
+          }
           fields[[name]] <- values;
-      }
+        }
+      } else {
+       # Add an extra dimension for arrays?
+        if (addArrayDim)
+          dim <- c(dim, nbrOfArrays);
+
+        # Update all fields with dimensions
+        setDim <- (length(dim) > 1);
+        for (name in cellValueFields) {
+          # Faster to drop dimensions.
+          values <- get(name)[idxs,,drop=TRUE];
+          if (setDim)
+            dim(values) <- dim;
+          fields[[name]] <- values;
+        }
+      } # if (addDimnames)
 
       fields;
     });
-  });
+  })
 
   verbose && exit(verbose);
 
-  cel;
+  res;
 }
 
 
 ############################################################################
 # HISTORY:
+# 2006-03-29 [HB]
+# o Renamed argument 'map' to 'readMap'.
+# 2006-03-28 [HB]
+# o Unit and cell indices are now one-based.
+# o Renamed argument 'readCells' to 'readIndices' and same with the name of
+#   the returned group field.
+# 2006-03-26 [HB]
+# o Now only "x", "y", "intensities", "pixels", and "stdvs" values are
+#   returned.
+# 2006-03-24 [HB]
+# o Made the creation of the final CEL structure according to the CDF much
+#   faster.  Now it is about 4-6 times faster utilizing get(field) instead
+#   of cel[[field]].
+# o Tried to reorder cell indices in order to minimize jumping around in the
+#   file, but there seems to be no speed up at all doing this. Strange!
 # 2006-03-14
 # o Updated code to make use of package R.utils only if it is available.
 # 2006-03-08
