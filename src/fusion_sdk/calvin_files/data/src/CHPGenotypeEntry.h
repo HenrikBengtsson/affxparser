@@ -31,13 +31,13 @@
 namespace affymetrix_calvin_io
 {
 
-/*! This class stores a zone's background value */
+/*! This class stores a genotype result */
 class CHPGenotypeEntry
 {
 
 private:
 
-	std::wstring probeSetName;
+	std::string probeSetName;
 	u_int8_t call;
 	float confidence;
 	float RAS1;
@@ -50,7 +50,7 @@ private:
 public:
 
 	CHPGenotypeEntry();
-	CHPGenotypeEntry(const std::wstring& probeSetname,
+	CHPGenotypeEntry(const std::string& probeSetname,
 									u_int8_t call,
 									float confidence,
 									float RAS1,
@@ -69,7 +69,7 @@ public:
 	 */
 	CHPGenotypeEntry operator=(CHPGenotypeEntry zn);
 
-	std::wstring GetProbeSetName() const;
+	std::string GetProbeSetName() const;
 
 	u_int8_t GetCall() const;
 
@@ -87,7 +87,7 @@ public:
 
 	float GetNoCall() const;
 
-	void SetProbeSetName(const std::wstring& p);
+	void SetProbeSetName(const std::string& p);
 
 	void SetCall(u_int8_t p);
 

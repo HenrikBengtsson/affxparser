@@ -28,6 +28,7 @@
 #include <list>
 #include <fstream>
 #include "AffymetrixGuid.h"
+#include "GenericData.h"
 
 namespace affymetrix_fusion_io
 {
@@ -72,6 +73,17 @@ protected:
 public:
 	/*! Destructor */
 	virtual ~FusionCHPData() {}
+
+	/*! Get the id of the file (only valid for Command Console "calvin" files)
+	 * @return The unique file id.
+	 */
+	virtual affymetrix_calvin_utilities::AffymetrixGuidType FileId() = 0;
+
+	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
+	virtual affymetrix_calvin_io::GenericData *GetGenericData() = 0;
+
+	/*! Gets the class name. */
+	virtual affymetrix_calvin_utilities::AffymetrixGuidType GetObjectName() = 0;
 
 	/*! Gets the file type identifiers associated with the CHP files the reader can parse.
 	 * @return The ids

@@ -80,7 +80,7 @@ u_int16_t FusionExpressionProbeSetResults::GetNumPairs() const
 
 u_int16_t FusionExpressionProbeSetResults::GetNumUsedPairs() const
 {
-	return numPairs;
+	return numPairsUsed;
 }
 
 u_int8_t FusionExpressionProbeSetResults::GetDetection() const

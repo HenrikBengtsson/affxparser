@@ -28,7 +28,9 @@
 #include <assert.h>
 
 using namespace affymetrix_fusion_io;
+using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;
+using namespace affymetrix_calvin_utilities;
 
 /*
  * Default constructor
@@ -62,6 +64,24 @@ void FusionCELData::SetFileName(const char *str)
 std::string FusionCELData::GetFileName() const
 {
 	return filename;
+}
+
+/*
+ * Get the file id.
+ */
+AffymetrixGuidType FusionCELData::GetFileId() const
+{
+	CheckAdapter();
+	return adapter->GetFileId();
+}
+
+/*
+ * Get the generic data object.
+ */
+GenericData *FusionCELData::GetGenericData()
+{
+	CheckAdapter();
+	return adapter->GetGenericData();
 }
 
 /*

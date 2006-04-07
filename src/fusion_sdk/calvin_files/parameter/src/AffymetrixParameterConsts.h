@@ -83,6 +83,9 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute name for the flip-flag which indicates if an image is flipped about the y-axis. */
 #define FLIP_FLAG_PARAM_NAME L"affymetrix-image-flip-flag"
 
+/*! Defines the static attribute name for the filter wavelength. */
+#define FILTER_PARAM_NAME L"affymetrix-filter-wavelength"
+
 /*! Defines the static attribute name for the array id */
 #define ARRAY_ID_PARAM_NAME L"affymetrix-array-id"
 
@@ -110,8 +113,17 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute name for the number of cel rows */
 #define CEL_ROWS_PARAM_NAME L"affymetrix-cel-rows"
 
-/*! Defines the static attribute name for the number of cel columns */ 
+/*! Defines the static attribute name for the number of cel columns */
 #define CEL_COLS_PARAM_NAME L"affymetrix-cel-cols"
+
+/*! Defines the static attribute name for the program company.  This is the company that created the program. */
+#define PROGRAM_COMPANY L"program-company"
+
+/*! Defines the static attribute name for the program name.  This is the program that created the file. */
+#define PROGRAM_NAME L"program-name"
+
+/*! Defines the static attribute name for the program id.  This is a version string or other identifier of the particular program. */
+#define PROGRAM_ID L"program-id"
 
 /*! CDF Data Type Expression */
 #define AFFY_EXPR_PS "affymetrix-expression-probesets"

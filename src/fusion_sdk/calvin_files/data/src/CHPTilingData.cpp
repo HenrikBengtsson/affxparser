@@ -28,7 +28,7 @@ using namespace affymetrix_calvin_utilities;
 
 // Constant column names.
 static const std::wstring GenomicPositionColName = L"Genomic Position";
-static const std::wstring PValueColName = L"p-value";
+static const std::wstring ValueColName = L"Result";
 
 
 CHPTilingData::CHPTilingData()
@@ -154,7 +154,7 @@ TilingSequenceData CHPTilingData::GetTilingSequenceData()
 void CHPTilingData::AddColumns(DataSetHeader& hdr)
 {
 	hdr.AddUIntColumn(GenomicPositionColName);  //genomic position - unsigned int 32
-	hdr.AddFloatColumn(PValueColName); //value - float
+	hdr.AddFloatColumn(ValueColName); //value - float
 }
 
 void CHPTilingData::OpenTilingSequenceDataSet(int index)

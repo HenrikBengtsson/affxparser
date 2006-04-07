@@ -1,22 +1,23 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
+// This program is free software; you can redistribute it and/or modify 
+// it under the terms of the GNU General Public License (version 2) as 
+// published by the Free Software Foundation.
+// 
+// This program is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+// General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License 
+// along with this program;if not, write to the 
+// 
+// Free Software Foundation, Inc., 
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
-// This library is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
-// for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
-//
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////
 //
@@ -95,7 +96,17 @@ typedef unsigned long long int uint64_t;
 
 #endif /* __int8_t_defined */
 
+#else
+
+/*! A 16 bit unsigned integer. */
+typedef	unsigned short int     uint16_t;
+
+/*! A 32 bit unsigned integer. */
+typedef	unsigned int           uint32_t;
+
 #endif /* __MINGW32__ */
+
+
 
 #endif /* WIN32 */
 #endif /* affy-base-types.h */

@@ -37,6 +37,9 @@ using namespace affymetrix_calvin_utilities;
 /*! Used to register the CHP reader. */
 FusionCHPLegacyData::Reg FusionCHPLegacyData::reg;
 
+/*! The class name. */
+static AffymetrixGuidType ObjectName = "FusionCHPLegacyData";
+
 /*
  */
 FusionCHPHeader::FusionCHPHeader()
@@ -56,23 +59,14 @@ FusionCHPHeader::~FusionCHPHeader()
  */
 FusionCHPLegacyData * FusionCHPLegacyData::FromBase(FusionCHPData *chip)
 {
-	if (chip)
-	{
-		const AffymetrixGuidTypeList &ids = chip->FileTypeIdentifiers();
-		AffymetrixGuidTypeList::const_iterator it;
-		for (it=ids.begin(); it!=ids.end(); ++it)
-		{
-			if (*it == "" ||
-				*it == CHP_EXPRESSION_ASSAY_TYPE ||
-				*it == CHP_RESEQUENCING_ASSAY_TYPE ||
-				*it == CHP_GENOTYPING_ASSAY_TYPE ||
-				*it == CHP_UNIVERSAL_ASSAY_TYPE)
-			{
-				return (FusionCHPLegacyData *)chip;
-			}
-		}
-	}
+	if (chip != NULL && chip->GetObjectName() == ObjectName)
+		return (FusionCHPLegacyData *)chip;
 	return NULL;
+}
+
+AffymetrixGuidType FusionCHPLegacyData::GetObjectName()
+{
+	return ObjectName;
 }
 
 // Accessors for header information.
@@ -137,11 +131,17 @@ void FusionCHPHeader::AlgorithmParameters(FusionTagValuePairTypeList& valuesFusi
 	CheckAdapter();
 	adapter->GetHeader().GetAlgorithmParameters(valuesFusion);
 }
-	
+
 u_int32_t FusionCHPHeader::AlgorithmParameterCount()
 {
 	CheckAdapter();
 	return adapter->GetHeader().GetAlgorithmParameterCount();
+}
+
+u_int32_t FusionCHPHeader::SummaryParameterCount()
+{
+	CheckAdapter();
+	return adapter->GetHeader().GetSummaryParameterCount();
 }
 
 void FusionCHPHeader::SummaryParameters(FusionTagValuePairTypeList& p)
@@ -240,6 +240,18 @@ FusionCHPLegacyData::FusionCHPLegacyData()
 FusionCHPLegacyData::~FusionCHPLegacyData()
 {
     DeleteAdapter();
+}
+
+AffymetrixGuidType FusionCHPLegacyData::FileId()
+{
+	CheckAdapter();
+	return adapter->FileId();
+}
+
+GenericData *FusionCHPLegacyData::GetGenericData()
+{
+	CheckAdapter();
+	return adapter->GetGenericData();
 }
 
 bool FusionCHPLegacyData::GetExpressionResults(int index, FusionExpressionProbeSetResults& result)
