@@ -359,7 +359,7 @@ void SAXArrayHandlers::StoreUserAttribute(map<wstring, wstring> &attributes)
 			param.SetDefaultValueText(defvalue);
 	}
 	value = attributes[USER_ATTRIBUTES_ATTRIBUTE_ELEMENT_REQUIRED_ATTRIBUTE];
-	if (value == L"Yes")
+	if (value == L"true")
 		param.RequiredFlag() = true;
 	else
 		param.RequiredFlag() = false;
@@ -409,6 +409,24 @@ void SAXArrayHandlers::StorePhysicalArrayElementAttributes(map<wstring, wstring>
 	if (str.length() > 0)
 	{
 		arrayData->PhysicalArraysAttributes()[n].MediaCol() = WideToInt(str);
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_MEDIA_FILE_NAME_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].MediaFileName() = StringUtils::ConvertWCSToMBS(str);
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_MEDIA_FILE_GUID_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].MediaFileGUID() = StringUtils::ConvertWCSToMBS(str);
+	}
+
+	str = attributes[PHYSICAL_ARRAY_ELEMENT_LIB_PACKAGE_NAME_ATTRIBUTE];
+	if (str.length() > 0)
+	{
+		arrayData->PhysicalArraysAttributes()[n].LibraryPackageName() = StringUtils::ConvertWCSToMBS(str);
 	}
 
 	str = attributes[PHYSICAL_ARRAY_ELEMENT_NAME_ATTRIBUTE];

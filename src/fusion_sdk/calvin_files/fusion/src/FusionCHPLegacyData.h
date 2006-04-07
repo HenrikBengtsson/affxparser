@@ -102,6 +102,11 @@ public:
 	 */
 	void SummaryParameters(FusionTagValuePairTypeList& p);
 
+	/*! Gets the summary parameters count
+    * @return The number of summary parameters.
+	 */
+	u_int32_t SummaryParameterCount();
+
 	/*! Gets the parent CEL file
 	 * @return The parent CEL file
 	 */
@@ -178,6 +183,17 @@ public:
 
 	/*! Destructor */
 	~FusionCHPLegacyData();
+
+	/*! Get the id of the file (only valid for Command Console "calvin" files)
+	 * @return The unique file id.
+	 */
+	affymetrix_calvin_utilities::AffymetrixGuidType FileId();
+
+	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
+	affymetrix_calvin_io::GenericData *GetGenericData();
+
+	/*! Gets the class name. */
+	affymetrix_calvin_utilities::AffymetrixGuidType GetObjectName();
 
 	/*! Returns the expression probe set result
 	 * @param index The index to the result object of interest.

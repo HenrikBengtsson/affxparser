@@ -84,6 +84,8 @@ void DATFileReader::ReadGlobalGrid(DATData& data, DataGroupReader& dcReader)
 		}
 
 		data.SetGlobalGrid(gridStatus, rgn);
+
+		ReadGridAlignmentAlgorithmParameters(data, dpReader.GetDataSetHeader());
 	}
 	catch(DataSetNotFoundException& e)
 	{	// ignore
@@ -124,5 +126,21 @@ void DATFileReader::ReadSubgrids(DATData& data, DataGroupReader& dcReader)
 	}
 	catch(DataSetNotFoundException& e)
 	{	// ignore
+	}
+}
+
+/*
+ * Read the grid alignment algorithm parameters.
+ */
+void DATFileReader::ReadGridAlignmentAlgorithmParameters(DATData& data, const DataSetHeader& dsh)
+{
+	data.ClearGridAlignmentAlgorithmParameters();
+
+	ParameterNameValueTypeConstIt begin, end;
+	dsh.GetNameValIterators(begin, end);
+
+	for (ParameterNameValueTypeConstIt ii = begin; ii != end; ++ii)
+	{
+		data.AddGridAlignmentAlgorithmParameter(*ii);
 	}
 }

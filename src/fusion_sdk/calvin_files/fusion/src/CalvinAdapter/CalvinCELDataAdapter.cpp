@@ -28,6 +28,7 @@
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;
+using namespace affymetrix_calvin_utilities;
 
 /*
  * Constructor
@@ -63,6 +64,14 @@ bool CalvinCELDataAdapter::CanReadFile()
 }
 
 /*
+ * Return the generic data object.
+ */
+GenericData *CalvinCELDataAdapter::GetGenericData()
+{
+	return &calvinCel.GetGenericData();
+}
+
+/*
  */
 void CalvinCELDataAdapter::SetFileName(const std::string& value)
 {
@@ -74,6 +83,13 @@ void CalvinCELDataAdapter::SetFileName(const std::string& value)
 std::string CalvinCELDataAdapter::GetFileName() const
 {
 	return calvinCel.GetFilename();
+}
+
+/*
+ */
+AffymetrixGuidType CalvinCELDataAdapter::GetFileId()
+{
+	return calvinCel.GetFileHeader()->GetGenericDataHdr()->GetFileId();
 }
 
 /*

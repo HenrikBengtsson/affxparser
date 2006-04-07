@@ -92,10 +92,16 @@ public:
 	 *  @return Converted wide character character string.
 	 */
 	static std::wstring ConvertMBSToWCS(const std::string& source);
+
+	/*! Convert an integer to a string.
+	 * @param value The integer
+	 * @param digits The number of digits for the resulting string
+	 * @param fill The value to fill in empty spaces.
+	 */
+	static std::wstring ToString(int value, int digits, wchar_t fill=L'0');
 };
 
 }
-
 
 	/*! Formats the data into a string.
 	 * @param buffer The buffer to fill.

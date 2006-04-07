@@ -43,6 +43,14 @@ bool FileUtils::Exists(const char *fileName)
 }
 
 /*
+ * Delete the input file.
+ */
+bool FileUtils::RemoveFile(const char *fileName)
+{
+	return (remove(fileName) == 0);
+}
+
+/*
  * Check if either the file or the lock file exists.
  * Return false the file does not exist of if the lock file does exist.
  * Otherwise create the lock file and return the status of the creation.
@@ -79,9 +87,12 @@ list<string> FileUtils::ListFiles(const char *pathName, const char *ext)
 {
 	list<string> files;
 	string basePath = pathName;
-	if (basePath[basePath.length()-1] != '\\' && basePath[basePath.length()-1] != '/')
+	if (basePath.length() > 0)
 	{
-		basePath += "/";
+		if (basePath[basePath.length()-1] != '\\' && basePath[basePath.length()-1] != '/')
+		{
+			basePath += "/";
+		}
 	}
 	string exten = ext;
 
@@ -119,11 +130,10 @@ list<string> FileUtils::ListFiles(const char *pathName, const char *ext)
 		dp = readdir(dirp);
 		if (dp)
 		{
-		  #ifdef _sun__
-			if (dp->d_type != DT_DIR)
-		  #endif
+			string file = basePath + dp->d_name;
+			stat(file.c_str(), &st);
+			if ((st.st_mode & S_IFDIR) != S_IFDIR)
 			{
-				string file = basePath + dp->d_name;
 				if (exten.length() == 0)
 				{
 					files.push_back(file);

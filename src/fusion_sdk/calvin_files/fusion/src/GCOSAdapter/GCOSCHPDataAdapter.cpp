@@ -95,6 +95,15 @@ u_int32_t GCOSCHPHeaderAdapter::GetAlgorithmParameterCount()
 	return (u_int32_t)values.size();
 }
 
+/*! Gets the summary parameter count
+* @return The number of summary parameters
+*/
+u_int32_t GCOSCHPHeaderAdapter::GetSummaryParameterCount()
+{
+	TagValuePairTypeList &values = gcosChp->GetHeader().SummaryParameters();
+	return (u_int32_t)values.size();
+}
+
 /*! Gets the summary parameters
 	* @return The summary parameters
 	*/

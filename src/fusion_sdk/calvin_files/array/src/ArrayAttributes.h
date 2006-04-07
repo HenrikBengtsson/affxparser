@@ -68,6 +68,15 @@ protected:
 	/*! The column number of the plate or strip. */
 	int mediaCol;
 
+	/*! The name of the media file. */
+	std::string mediaFileName;
+
+	/*! The master file guid. */
+	affymetrix_calvin_utilities::AffymetrixGuidType mediaFileGUID;
+
+	/*! The name of the library file package. */
+	std::string libraryPackageName;
+
 	/*! A customer barcode. */
 	std::string customerBarcode;
 
@@ -122,6 +131,21 @@ public:
 	 * @return The column.
 	 */
 	int &MediaCol() { return mediaCol; }
+
+	/*! The name of the media file.
+	 * @return The media file name.
+	 */
+	std::string &MediaFileName() { return mediaFileName; }
+
+	/*! The master file guid.
+	 * @return The master file guid.
+	 */
+	affymetrix_calvin_utilities::AffymetrixGuidType &MediaFileGUID() { return mediaFileGUID; }
+
+	/*! The name of the library file package.
+	 * @return The package name
+	 */
+	std::string &LibraryPackageName() { return libraryPackageName; }
 
 	/*! A customer barcode.
 	 * @return The barcode.

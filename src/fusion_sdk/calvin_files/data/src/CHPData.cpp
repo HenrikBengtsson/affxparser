@@ -20,6 +20,7 @@
 
 #include "CHPData.h"
 #include "DataSetHeader.h"
+#include "StringUtils.h"
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;
@@ -66,6 +67,7 @@ CHPData::CHPData()
 	bgZones = 0;
 	forceSet = 0;
 	origSet = 0;
+	wideProbeSetNames = false;
 	Clear();
 }
 
@@ -78,6 +80,7 @@ CHPData::CHPData(const std::string& filename, const std::string &assayType)
 	bgZones = 0;
 	forceSet = 0;
 	origSet = 0;
+	wideProbeSetNames = false;
 	Clear();
 	SetFilename(filename);
 
@@ -119,8 +122,15 @@ void CHPData::GetEntry(int32_t row, CHPGenotypeEntry& e)
 	PrepareGenoEntryDataSet();
 	if (entriesGeno && entriesGeno->IsOpen())
 	{
-		std::wstring probeSetName;
-		entriesGeno->GetData(row, 0, probeSetName);
+		std::string probeSetName;
+		if (wideProbeSetNames == false)
+			entriesGeno->GetData(row, 0, probeSetName);
+		else
+		{
+			std::wstring wprobeSetName;
+			entriesGeno->GetData(row, 0, wprobeSetName);
+			probeSetName = StringUtils::ConvertWCSToMBS(wprobeSetName);
+		}
 		e.SetProbeSetName(probeSetName);
 
 		u_int8_t call = 0;
@@ -163,8 +173,15 @@ void CHPData::GetEntry(int32_t row, CHPExpressionEntry& e)
 	if (entriesExp && entriesExp->IsOpen())
 	{
 		int colIndex = 0;
-		std::wstring probeSetName;
-		entriesExp->GetData(row, colIndex++, probeSetName);
+		std::string probeSetName;
+		if (wideProbeSetNames == false)
+			entriesExp->GetData(row, colIndex++, probeSetName);
+		else
+		{
+			std::wstring wprobeSetName;
+			entriesExp->GetData(row, colIndex++, wprobeSetName);
+			probeSetName = StringUtils::ConvertWCSToMBS(wprobeSetName);
+		}
 		e.SetProbeSetName(probeSetName);
 
 		u_int8_t detection = 0;
@@ -250,7 +267,8 @@ void CHPData::PrepareGenoEntryDataSet()
 		entriesGeno = genericData.DataSet(CHP_GENO_GROUP, CHP_GENO_GROUP);
 		if (entriesGeno)
 		{
-		entriesGeno->Open();
+			entriesGeno->Open();
+			wideProbeSetNames = (entriesGeno->Header().GetColumnInfo(0).GetColumnType() == UnicodeCharColType);
 		}
 	}
 }
@@ -263,6 +281,7 @@ void CHPData::PrepareExprEntryDataSet()
 		if (entriesExp)
 		{
 			entriesExp->Open();
+			wideProbeSetNames = (entriesExp->Header().GetColumnInfo(0).GetColumnType() == UnicodeCharColType);
 		}
 	}
 }
@@ -326,7 +345,7 @@ void CHPData::AddGenoColumns(DataSetHeader& hdr)
 {
 	hdr.SetName(CHP_GENO_GROUP);
 	//Probeset name - string
-	hdr.AddUnicodeColumn(ProbeSetNameColName, 32);
+	hdr.AddAsciiColumn(ProbeSetNameColName, maxProbeSetName);
 	//Call - unsigned char
 	hdr.AddUByteColumn(CallColName);
 	//Confidence - float
@@ -349,7 +368,7 @@ void CHPData::AddExprColumns(DataSetHeader& hdr, bool hasCompData)
 {
 	hdr.SetName(CHP_EXPR_GROUP);
 	//Probeset name - string
-	hdr.AddUnicodeColumn(ProbeSetNameColName, 32);
+	hdr.AddAsciiColumn(ProbeSetNameColName, maxProbeSetName);
 	//Detection - unsigned char
 	hdr.AddUByteColumn(DetectionColName);
 	//Detection p-value - float
@@ -490,8 +509,9 @@ int32_t CHPData::GetEntryCount()
 	return dpHdr.GetRowCnt();
 }
 
-void CHPData::SetEntryCount(int32_t ln, bool hasCompData)
+void CHPData::SetEntryCount(int32_t ln, int32_t maxln, bool hasCompData)
 {
+	maxProbeSetName = maxln;
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	AddColumns(dpHdr, hasCompData);
@@ -631,9 +651,12 @@ ParameterNameValueType CHPData::GetAlgParam(const std::wstring& tag)
 
 ParameterNameValueType CHPData::GetChipSum(const std::wstring& tag)
 {
-	ParameterNameValueType type;
+	std::wstring name = CHP_CHIP_SUM + tag;
+	ParameterNameValueType paramType;
+	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
+	hdr->FindNameValParam(name, paramType);
+	ParameterNameValueType type = paramType;
 	type.SetName(tag);
-	type.SetValueText(GetWStringFromGenericHdr(CHP_CHIP_SUM + tag));
 	return type;
 }
 
@@ -691,6 +714,18 @@ void CHPData::AddChipSum(const std::wstring& name, const std::wstring& param)
 {
 	std::wstring paramName = CHP_CHIP_SUM + name;
 	SetWStringToGenericHdr(paramName, param);
+}
+
+void CHPData::AddChipSum(const std::wstring& name, float param)
+{
+	std::wstring paramName = CHP_CHIP_SUM + name;
+	SetFloatToGenericHdr(paramName, param);
+}
+
+void CHPData::AddChipSum(const std::wstring& name, int32_t param)
+{
+	std::wstring paramName = CHP_CHIP_SUM + name;
+	SetInt32ToGenericHdr(paramName, param);
 }
 
 int32_t CHPData::GetRows()
@@ -757,6 +792,15 @@ void CHPData::SetInt32ToGenericHdr(const std::wstring& name, int32_t value)
 	ParameterNameValueType paramType;
 	paramType.SetName(name);
 	paramType.SetValueInt32(value);
+	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
+	hdr->AddNameValParam(paramType);
+}
+
+void CHPData::SetFloatToGenericHdr(const std::wstring& name, float value)
+{
+	ParameterNameValueType paramType;
+	paramType.SetName(name);
+	paramType.SetValueFloat(value);
 	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
 	hdr->AddNameValParam(paramType);
 }

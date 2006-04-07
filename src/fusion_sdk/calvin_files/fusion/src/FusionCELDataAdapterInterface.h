@@ -24,6 +24,8 @@
 #include "FusionTagValuePairType.h"
 #include "ParameterNameValueType.h"
 #include "FusionCoords.h"
+#include "AffymetrixGuid.h"
+#include "GenericData.h"
 #include <string>
 #include <list>
 
@@ -65,6 +67,10 @@ public:
 	 *	\return The currently set cell file name.
 	 */
 	virtual std::string GetFileName() const = 0;
+	/*! \brief Get the id of the file (only valid for Command Console "calvin" files)
+	 * \return The unique file id.
+	 */
+	virtual affymetrix_calvin_utilities::AffymetrixGuidType GetFileId() = 0;
 	/*! \brief Set the error message.
 	 *	\param value The error message to be set.
 	 */
@@ -272,6 +278,9 @@ public:
 	virtual int GetReadState() = 0;
 	/*! \brief clears the members. */
 	virtual void Clear() = 0;
+
+	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
+	virtual affymetrix_calvin_io::GenericData *GetGenericData() = 0;
 };
 
 }

@@ -27,7 +27,7 @@ CHPGenotypeEntry::CHPGenotypeEntry()
 	Clear();
 }
 
-CHPGenotypeEntry::CHPGenotypeEntry(const std::wstring& psName,
+CHPGenotypeEntry::CHPGenotypeEntry(const std::string& psName,
 																	u_int8_t c,
 																	float conf,
 																	float ras1,
@@ -77,7 +77,7 @@ CHPGenotypeEntry CHPGenotypeEntry::operator=(CHPGenotypeEntry zn)
 		return *this; 
 	}
 
-	std::wstring CHPGenotypeEntry::GetProbeSetName() const
+	std::string CHPGenotypeEntry::GetProbeSetName() const
 	{
 		return probeSetName;
 	}
@@ -122,7 +122,7 @@ CHPGenotypeEntry CHPGenotypeEntry::operator=(CHPGenotypeEntry zn)
 		return noCall;
 	}
 
-	void CHPGenotypeEntry::SetProbeSetName(const std::wstring& p)
+	void CHPGenotypeEntry::SetProbeSetName(const std::string& p)
 	{
 		probeSetName = p;
 	}

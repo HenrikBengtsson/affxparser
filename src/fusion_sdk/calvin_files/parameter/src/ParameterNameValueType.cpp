@@ -355,7 +355,7 @@ void ParameterNameValueType::IntToValue(u_int32_t value, const wchar_t* type)
 	Value.SetValue(buf, NUMBER_BUFFER_LEN);
 }
 
-std::wstring ParameterNameValueType::ToString()
+std::wstring ParameterNameValueType::ToString() const
 {
 	const int32_t bufSize = 100;
 	wchar_t buf[bufSize]; // a googol, room for to count more things than there are in the universe.

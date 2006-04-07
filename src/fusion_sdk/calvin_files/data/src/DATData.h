@@ -88,7 +88,8 @@ private:
 	FRegionVector subgrids;
 	/*! Subgrids status flag - indicates the state of each subgrid */
 	Uint32Vector subgridsStatus;
-
+	/*! Grid Alignment Algorithm Parameters */
+	ParameterNameValueTypeVector gridAlignParams;
 
 public:
 
@@ -261,6 +262,27 @@ public:
 	 */
 	void ClearSubgrids(){ subgrids.clear(); subgridsStatus.clear(); }
 
+	/*! Add a grid alignment algorithm parameter.
+	 *	If the parameter already exists, it will be overwritten.
+	 *	@param nvt Algorithm parameter to add to the list.
+	 */
+	void AddGridAlignmentAlgorithmParameter(const ParameterNameValueType& nvt);
+
+	/*! Remove all grid alignment algorithm parameters.
+	 */
+	void ClearGridAlignmentAlgorithmParameters();
+
+	/*! Return a grid alignment algorithm parameter given a name.
+	 *	@param name Name of the grid alignment algorithm parameter to find.
+	 *	@param param The found parameter.
+	 *	@return True if the parameter was found.
+	 */
+	bool FindGridAlignmentAlgorithmParameter(const std::wstring& name, ParameterNameValueType& param);
+
+	/*! Return the grid alignment algorithm parameters.
+	 *	@param algParams Vector with grid alignment algorithm parameters.
+	 */
+	void GetGridAlignmentAlgorithmParameters(ParameterNameValueTypeVector& algParams);
 
 	/*! Get a pointer to the parent array GenericDataHeader object.
 	 *	@return A pointer to the parent array GenericDataHeader.  Never null.

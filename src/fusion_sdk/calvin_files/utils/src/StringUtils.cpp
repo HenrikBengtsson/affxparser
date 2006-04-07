@@ -19,6 +19,8 @@
 /////////////////////////////////////////////////////////////////
 
 #include "StringUtils.h"
+#include <sstream>
+#include <iomanip>
 
 using namespace affymetrix_calvin_utilities;
 
@@ -126,3 +128,12 @@ std::wstring StringUtils::ConvertMBSToWCS(const std::string& source)
 	return result;
 }
 
+/*
+ * Convert an integer to a string.
+ */
+std::wstring StringUtils::ToString(int value, int digits, wchar_t fill)
+{
+	std::wostringstream str;
+	str << std::setw(digits) << std::setfill(fill) << value;
+	return str.str();
+}
