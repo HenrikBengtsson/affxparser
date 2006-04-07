@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.3.3 [2006-04-07]
+o Updated the Fusion SDK to version 1.0.5 (an unofficial release).
+  It now works on Solaris.
+
 Version: 1.3.2 [2006-03-28]
 o All cell and unit indices are now starting from one and not
   from zero.  This change requires that all code that have
