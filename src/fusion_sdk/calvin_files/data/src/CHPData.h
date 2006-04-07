@@ -95,6 +95,10 @@ public:
 	virtual ~CHPData();
 
 protected:
+	/*! Flag indicating if the probe set names were stored in wide character format. */
+	bool wideProbeSetNames;
+	/*! The maximum length of a probe set name. */
+	int maxProbeSetName;
 	/*! The generic file data object. */
 	GenericData genericData;
 	/*! keep rows from being read from the header all the time */
@@ -190,6 +194,12 @@ public:
 	/*! Adds a parameter to the chip summary section */
 	void AddChipSum(const std::wstring& name, const std::wstring& param);
 
+	/*! Adds a parameter to the chip summary section */
+	void AddChipSum(const std::wstring& name, float param);
+
+	/*! Adds a parameter to the chip summary section */
+	void AddChipSum(const std::wstring& name, int param);
+
 	/*! Gets all the chip summary parameters */
 	ParameterNameValueTypeVector GetChipSums();
 
@@ -204,9 +214,10 @@ public:
 
 	/*! Sets the number of entries (probe sets)
 	 * @param ln The number of probe sets.
+	 * @param maxln The maximum length of a probe set name.
 	 * @param hasCompData A flag for expression results, true if comparison data exists.
 	 */
-	void SetEntryCount(int32_t ln, bool hasCompData = false);
+	void SetEntryCount(int32_t ln, int32_t maxln, bool hasCompData = false);
 
 	/*! Gets the number of entries (probe sets) */
 	int32_t GetEntryCount();
@@ -262,6 +273,9 @@ public:
 	 */
 	void GetOrigCall(int32_t row, CHPReseqOrigCall &orig);
 
+	/*! The maximum length of a probe set name. */
+	int GetMaxProbeSetName() const { return maxProbeSetName; }
+
 protected:
 
 	/*! Prepares the data set. */
@@ -299,6 +313,9 @@ protected:
 
 	/*! Adds an integer parameter to the header. */
 	void SetInt32ToGenericHdr(const std::wstring& name, int32_t value);
+
+	/*! Adds an float parameter to the header. */
+	void SetFloatToGenericHdr(const std::wstring& name, float value);
 
 	/*! Prepares the data set for the bg set. */
 	void PrepareBackgroundZoneDataSet();

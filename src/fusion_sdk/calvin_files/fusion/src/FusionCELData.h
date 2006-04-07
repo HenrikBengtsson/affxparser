@@ -61,6 +61,11 @@ public:
 	 */
 	std::string GetFileName() const;
 
+	/*! Get the id of the file (only valid for Command Console "calvin" files)
+	 * @return The unique file id.
+	 */
+	affymetrix_calvin_utilities::AffymetrixGuidType GetFileId() const;
+
 	/*! Set the error string.
 	 * @param value The error.
 	 */
@@ -323,6 +328,8 @@ public:
 	/*! Clears the members. */
 	void Clear();
 
+	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
+	affymetrix_calvin_io::GenericData *GetGenericData();
 
 protected:
 	/*! Factory method to create the appropriate adapter class.

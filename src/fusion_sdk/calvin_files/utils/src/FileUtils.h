@@ -67,6 +67,12 @@ public:
 	 * @return The list of files (full path) found in the directory.
 	 */
 	static std::list<std::string> ListFiles(const char *pathName, const char *ext);
+
+	/*! Deletes a file.
+	 * @param fileName The name of the file to delete.
+	 * @return True if the file was deleted.
+	 */
+	static bool RemoveFile(const char *fileName);
 };
 
 };

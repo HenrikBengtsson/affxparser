@@ -27,7 +27,7 @@ CHPExpressionEntry::CHPExpressionEntry()
 	Clear();
 }
 
-CHPExpressionEntry::CHPExpressionEntry(const std::wstring& psName,
+CHPExpressionEntry::CHPExpressionEntry(const std::string& psName,
 									u_int8_t detect,
 									float detectPValue,
 									float sig,
@@ -56,7 +56,7 @@ CHPExpressionEntry::CHPExpressionEntry(const std::wstring& psName,
 	commonPairs = commonPrs;
 }
 
-CHPExpressionEntry::CHPExpressionEntry(const std::wstring& psName,
+CHPExpressionEntry::CHPExpressionEntry(const std::string& psName,
 									u_int8_t detect,
 									float detectPValue,
 									float sig,

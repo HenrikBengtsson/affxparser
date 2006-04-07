@@ -90,6 +90,15 @@ namespace affymetrix_calvin_io
 /*! The attribute name of the col field for a physical array. */
 #define PHYSICAL_ARRAY_ELEMENT_COL_ATTRIBUTE std::wstring(L"MediaCol")
 
+/*! The attribute name of the media file name. */
+#define PHYSICAL_ARRAY_ELEMENT_MEDIA_FILE_NAME_ATTRIBUTE std::wstring(L"MediaFileName")
+
+/*! The attribute name of the media file guid. */
+#define PHYSICAL_ARRAY_ELEMENT_MEDIA_FILE_GUID_ATTRIBUTE std::wstring(L"MediaFileGUID")
+
+/*! The attribute name of the library file package name. */
+#define PHYSICAL_ARRAY_ELEMENT_LIB_PACKAGE_NAME_ATTRIBUTE std::wstring(L"LibraryPackageName")
+
 /*! The attribute name of the customer barcode field for a physical array. */
 #define PHYSICAL_ARRAY_ELEMENT_CUSTOMER_BARCODE_ATTRIBUTE std::wstring(L"CustomerBarcode")
 

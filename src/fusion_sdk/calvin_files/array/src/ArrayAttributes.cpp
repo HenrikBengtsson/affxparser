@@ -51,6 +51,9 @@ void ArrayAttributes::Clear()
 	mediaRow=0;
 	mediaCol=0;
 	customerBarcode.clear();
+	mediaFileName.clear();
+	mediaFileGUID.clear();
+	libraryPackageName.clear();
 	masterFile.clear();
 	masterFileId.clear();
 	patAssignment = NoAssignment;

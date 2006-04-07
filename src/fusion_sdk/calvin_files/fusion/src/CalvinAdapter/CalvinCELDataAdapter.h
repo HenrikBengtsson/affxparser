@@ -55,7 +55,10 @@ public:
 	 *	\return The currently set cell file name.
 	 */
 	virtual std::string GetFileName() const;
-
+	/*! \brief Get the id of the file (only valid for Command Console "calvin" files)
+	 * \return The unique file id.
+	 */
+	virtual affymetrix_calvin_utilities::AffymetrixGuidType GetFileId();
 	/*! \brief Set the error message.
 	 *	\param value The error message to be set.
 	 */
@@ -262,6 +265,9 @@ public:
 	virtual int GetReadState() { return 1; /* CEL_ALL, always*/}
 	/*! \brief clears the members. */
 	virtual void Clear() { calvinCel.Clear(); }
+
+	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
+	virtual affymetrix_calvin_io::GenericData *GetGenericData();
 
 	// Sets the data values
 	/*! \brief Sets the name of the algorithm used to create the CEL file. 

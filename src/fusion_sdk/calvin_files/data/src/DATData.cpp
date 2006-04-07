@@ -452,3 +452,43 @@ GenericDataHeader* DATData::GetParentArrayGenericDataHeader()
 
 	return parentGDH;
 }
+
+/*
+ * Add a grid alignment algorithm parameter.
+ */
+void DATData::AddGridAlignmentAlgorithmParameter(const ParameterNameValueType& nvt)
+{
+	gridAlignParams.push_back(nvt);
+}
+
+/*
+ * Remove all grid alignment algorithm parameters.
+ */
+void DATData::ClearGridAlignmentAlgorithmParameters()
+{
+	gridAlignParams.clear();
+}
+
+/*
+ * Return a grid alignment algorithm parameter given a name.
+ */
+bool DATData::FindGridAlignmentAlgorithmParameter(const std::wstring& name, ParameterNameValueType& param)
+{
+	for (ParameterNameValueTypeIt ii = gridAlignParams.begin(); ii != gridAlignParams.end(); ++ii)
+	{
+		if (name == ii->GetName())
+		{
+			param = *ii;
+			return true;
+		}
+	}
+	return false;
+}
+
+/*
+ * Return the grid alignment algorithm parameters.
+ */
+void DATData::GetGridAlignmentAlgorithmParameters(ParameterNameValueTypeVector& algParams)
+{
+	algParams = gridAlignParams;
+}

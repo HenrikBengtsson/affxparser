@@ -73,6 +73,11 @@ protected:
 	void ReadGlobalGrid(DATData& data, DataGroupReader& dcReader);
 	/*! UNTESTED - Read the subgrids */
 	void ReadSubgrids(DATData& data, DataGroupReader& dcReader);
+	/*! Read the grid alignment algorithm parameters.
+	 *	@param data DATData object to which to add the grid alignment algorithm parameters.
+	 *	@param dsh DataSetHeader from which to read the grid alignment algorithm parameters.
+	 */
+	void ReadGridAlignmentAlgorithmParameters(DATData& data, const DataSetHeader& dsh);
 
 protected:
 	/*! Name of the file to read */

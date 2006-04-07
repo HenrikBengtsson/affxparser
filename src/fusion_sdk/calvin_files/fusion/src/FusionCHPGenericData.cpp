@@ -30,17 +30,22 @@ using namespace affymetrix_calvin_utilities;
 /*! Used to register the CHP reader. */
 FusionCHPGenericData::Reg FusionCHPGenericData::reg;
 
+/*! The class name. */
+static AffymetrixGuidType ObjectName = "FusionCHPGenericData";
 
 /*
  * Convert to the CHP pointer.
  */
 FusionCHPGenericData * FusionCHPGenericData::FromBase(FusionCHPData *chip)
 {
-	if (chip == NULL)
-		return NULL;
-	if (chip->FileTypeIdentifier() == "")
-		return NULL;
-	return (FusionCHPGenericData *)chip;
+	if (chip != NULL && chip->GetObjectName() == ObjectName)
+		return (FusionCHPGenericData *)chip;
+	return NULL;
+}
+
+AffymetrixGuidType FusionCHPGenericData::GetObjectName()
+{
+	return ObjectName;
 }
 
 FusionCHPGenericData::FusionCHPGenericData()
@@ -50,6 +55,22 @@ FusionCHPGenericData::FusionCHPGenericData()
 FusionCHPGenericData::~FusionCHPGenericData()
 {
 	Clear();
+}
+
+/*
+ * Get the id of the file (only valid for Command Console "calvin" files)
+ */
+AffymetrixGuidType FusionCHPGenericData::FileId()
+{
+	return genericData.FileIdentifier();
+}
+
+/*
+ * Returns the GenericData object associated with a Calvin file, NULL for GCOS files.
+ */
+GenericData *FusionCHPGenericData::GetGenericData()
+{
+	return &genericData;
 }
 
 bool FusionCHPGenericData::Read()

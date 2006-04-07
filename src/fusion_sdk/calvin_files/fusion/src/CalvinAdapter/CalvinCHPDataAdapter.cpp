@@ -24,7 +24,7 @@
 using namespace affxchp;
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_utilities;
-
+using namespace affymetrix_calvin_io;
 
 /*! Constructor */
 CalvinCHPHeaderAdapter::CalvinCHPHeaderAdapter(CHPData* chp) : calvinChp(chp)
@@ -125,6 +125,11 @@ u_int32_t CalvinCHPHeaderAdapter::GetAlgorithmParameterCount()
 	return (u_int32_t)calvinChp->GetAlgParams().size();
 }
 
+u_int32_t CalvinCHPHeaderAdapter::GetSummaryParameterCount()
+{
+	return (u_int32_t)calvinChp->GetChipSums().size();
+}
+
 FusionTagValuePairTypeList CalvinCHPHeaderAdapter::Convert(ParameterNameValueTypeVector& nvt)
 {
 	FusionTagValuePairTypeList list;
@@ -132,7 +137,7 @@ FusionTagValuePairTypeList CalvinCHPHeaderAdapter::Convert(ParameterNameValueTyp
 	for(ParameterNameValueTypeVector::size_type i = 0; i < nvt.size(); ++i)
 	{
 		type.Tag = nvt[i].GetName();
-		type.Value = nvt[i].GetValueText();
+		type.Value = nvt[i].ToString();
 		type.DetailedType() = nvt[i];
 		list.push_back(type);
 	}
@@ -177,7 +182,7 @@ std::wstring CalvinCHPHeaderAdapter::GetAlgorithmParameter(const wchar_t *tag)
 std::wstring CalvinCHPHeaderAdapter::GetSummaryParameter(const wchar_t *tag)
 {
 	std::wstring p = tag;
-	return calvinChp->GetChipSum(p).GetValueText(); 
+	return calvinChp->GetChipSum(p).ToString(); 
 }
 
 /*! Gets the magic number
@@ -490,5 +495,22 @@ bool CalvinCHPDataAdapter::CanReadFile()
 	}
 
 	return true;
+}
+
+/*
+ * Get the id of the file
+ */
+AffymetrixGuidType CalvinCHPDataAdapter::FileId()
+{
+	return calvinChp.GetFileHeader()->GetGenericDataHdr()->GetFileId();
+}
+
+
+/*
+ * Returns the GenericData object associated with a Calvin file, NULL for GCOS files.
+ */
+GenericData *CalvinCHPDataAdapter::GetGenericData()
+{
+	return &calvinChp.GetGenericData();
 }
 

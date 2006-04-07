@@ -272,7 +272,12 @@ public:
 	 *	@param coords Cell coordinates.
 	 */
 	void GetMaskedCoords(XYCoordVector& coords);
-    
+
+	/*! Return a reference to the generic layer object
+	 *	@return Generic layer object
+	 */
+	GenericData& GetGenericData() { return genericData; }
+
 private:
 	/*!  */
 	void SetFileCreationTime(const std::wstring &f);
@@ -283,10 +288,6 @@ private:
 
 	void UpdateDataSetRowCount(const DataSetHeader &hdr);
 
-	/*! Return a reference to the generic layer object
-	 *	@return Generic layer object
-	 */
-	GenericData& GetGenericData() { return genericData; }	// should be a friend method only
 	/*! Set the version of the CEL file. Used by the reader.
 	 *	@param value CEL file version
 	 */

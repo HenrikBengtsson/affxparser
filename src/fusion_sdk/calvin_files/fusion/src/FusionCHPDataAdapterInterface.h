@@ -33,6 +33,8 @@
 #include "FusionTagValuePairType.h"
 #include "StringUtils.h"
 #include "FusionProbeSetResults.h"
+#include "GenericData.h"
+#include "AffymetrixGuid.h"
 
 namespace affymetrix_fusion_io
 {
@@ -95,7 +97,6 @@ public:
 	 *	\return The chip type.
 	 */
 	virtual std::wstring GetChipType() const = 0;
-
 	/*! \brief Get algorithm name.
 	 *	\return Algorithm name.
 	 */
@@ -114,10 +115,16 @@ public:
 	 */
 	virtual u_int32_t GetAlgorithmParameterCount() = 0;
 
+	/*! \brief Gets the summary parameter count.
+	 *	\return Number of summary parameters.
+	 */
+	virtual u_int32_t GetSummaryParameterCount() = 0;
+
 	/*! \brief Gets summary parameters.
 	 *	\param values Name/Value type list to be filled.
 	 */
 	virtual void GetSummaryParameters(affymetrix_fusion_io::FusionTagValuePairTypeList& values) = 0;
+
 	/*! \brief Gets the parent CEL file.
 	 *	\return Parent CEL file name.
 	 */
@@ -230,6 +237,14 @@ public:
 
 	/*! \brief Deallocates any memory used by the class object. */
 	virtual void Clear() = 0;
+
+	/*! Get the id of the file (only valid for Command Console "calvin" files)
+	 * @return The unique file id.
+	 */
+	virtual affymetrix_calvin_utilities::AffymetrixGuidType FileId() = 0;
+
+	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
+	virtual affymetrix_calvin_io::GenericData *GetGenericData() = 0;
 };
 
 }

@@ -25,7 +25,7 @@
  */ 
 
 /* Define the type for the Windows platform. */
-#if defined(WIN32) || defined(__sun__)
+#ifdef WIN32
 
 #ifndef __MINGW32__
 
@@ -73,6 +73,24 @@ typedef unsigned long long int u_int64_t;
 
 /* Use the sys/types.h for non Windows platforms */
 #include <sys/types.h>
+
+#ifdef sun
+
+#include <stdint.h>
+
+/*! An 8 bit unsigned number */
+typedef unsigned char u_int8_t;
+
+/*! A 16 bit unsigned number */
+typedef unsigned short int u_int16_t;
+
+/*! A 32 bit unsigned number */
+typedef unsigned int u_int32_t;
+
+/*! A 64 bit unsigned number */
+typedef unsigned long long int u_int64_t;
+
+#endif // sun
 
 #endif
 

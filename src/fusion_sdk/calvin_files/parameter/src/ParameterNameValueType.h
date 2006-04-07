@@ -319,7 +319,7 @@ public:
 	/*! Converts the value of known types to a string
 	 *	@return A string representation of the value
 	 */
-	std::wstring ToString();
+	std::wstring ToString() const;
 
 protected:
 	/*! Converts a value to an integer.

@@ -35,7 +35,7 @@ class CHPExpressionEntry
 private:
 
 	/*! The probe set name. */
-	std::wstring probeSetName;
+	std::string probeSetName;
 
 	/*! The detection call. */
 	u_int8_t detection;
@@ -93,7 +93,7 @@ public:
 	 * @param sigLogRatioHi The signal log ratio high
 	 * @param commonPairs The number of probe pairs in common between control and experiment
 	 */
-	CHPExpressionEntry(const std::wstring& probeSetname,
+	CHPExpressionEntry(const std::string& probeSetname,
 										u_int8_t detection,
 										float detectionPValue,
 										float signal,
@@ -115,7 +115,7 @@ public:
 	 * @param numPairs The number of probe pairs in the set.
 	 * @param numPairsUsed The number of probe pairs used in the analysis
 	 */
-	CHPExpressionEntry(const std::wstring& probeSetname,
+	CHPExpressionEntry(const std::string& probeSetname,
 										u_int8_t detection,
 										float detectionPValue,
 										float signal,
@@ -135,7 +135,7 @@ public:
 	CHPExpressionEntry operator=(CHPExpressionEntry e);
 
 	/*! Gets the probe set name. */
-	std::wstring GetProbeSetName() const { return probeSetName; }
+	std::string GetProbeSetName() const { return probeSetName; }
 
 	/*! Get the detection call. */
 	u_int8_t GetDetection() const { return detection; }
@@ -174,7 +174,7 @@ public:
 	u_int16_t GetCommonPairs() const { return commonPairs; }
 
 	/*! Sets the probe set name. */
-	void SetProbeSetName(const std::wstring& p) { probeSetName = p; }
+	void SetProbeSetName(const std::string& p) { probeSetName = p; }
 
 	/*! Sets the detection value. */
 	void SetDetection(u_int8_t p) { detection = p; }
