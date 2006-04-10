@@ -31,6 +31,9 @@
 #     increases by 30-40\% with dimension names.}
 #   \item{readMap}{A @vector remapping cell indices to file indices.  
 #     If @NULL, no mapping is used.}
+#   \item{reorder}{If @TRUE, cell indices are read in order to speed up the
+#     reading.  If @FALSE, cells are read in the order as given.  For
+#     more details, see help on the same argument in @see "readCel".}
 #   \item{dropArrayDim}{If @TRUE and only one array is read, the elements of
 #     the group field do \emph{not} have an array dimension.}
 #   \item{verbose}{Either a @logical, a @numeric, or a @see "R.utils::Verbose"
@@ -77,7 +80,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/######################################################################### 
-readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, readMap=NULL, dropArrayDim=TRUE, verbose=FALSE) {
+readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, readMap=NULL, dropArrayDim=TRUE, reorder=TRUE, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -216,9 +219,8 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(cdf)) {
     verbose && enter(verbose, "Reading cell indices from CDF file");
-    cdf <- readCdfUnits(cdfFile, units=units, readXY=FALSE, readBases=FALSE, 
-                        readExpos=FALSE, readDirection=FALSE, readType=FALSE, 
-                                    stratifyBy=stratifyBy, readIndices=TRUE);
+    cdf <- readCdfCellIndices(cdfFile, units=units, ..., 
+                                       stratifyBy=stratifyBy, verbose=FALSE);
     verbose && exit(verbose);
 
     # Assume 'cdf' contains only "indices" fields.
@@ -257,11 +259,15 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
   # 2b. Order cell indices for optimal speed when reading, i.e. minimal
   #     jumping around in the file.
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#  if (reorder) {
-#    o <- .Internal(order(FALSE, FALSE, indices));
-#    indices <- indices[o];
-#    o <- .Internal(order(FALSE, FALSE, o));
-#  }
+  if (reorder) {
+    verbose && enter(verbose, "Reordering cell indices to optimize speed");
+    # About 10-15 times faster than using order()!
+    o <- .Internal(qsort(indices, TRUE));
+    indices <- o$x;
+    o <- .Internal(qsort(o$ix, TRUE))$ix;
+    verbose && exit(verbose);
+  }
+
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # 3. Read signals of the cells of interest from the CEL file(s)
@@ -286,7 +292,7 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
     filename <- filenames[kk];
 
     verbose && enter(verbose, "Reading CEL data for array #", kk);
-    celTmp <- readCel(filename, indices=indices, readHeader=FALSE, readOutliers=FALSE, readMasked=FALSE, ..., readMap=NULL, verbose=cVerbose, .checkArgs=FALSE);
+    celTmp <- readCel(filename, indices=indices, readHeader=FALSE, readOutliers=FALSE, readMasked=FALSE, ..., readMap=NULL, reorder=FALSE, verbose=cVerbose, .checkArgs=FALSE);
     verbose && exit(verbose);
 
     if (kk == 1) {
@@ -301,11 +307,16 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
       integerFields <- intersect(cellValueFields, integerFields);
 
       # Allocate all field variables
+      dim <- c(nbrOfCells, nbrOfArrays);
+      value <- vector("double", nbrOfCells*nbrOfArrays);
+      dim(value) <- dim;
       for (name in doubleFields)
-        assign(name, matrix(as.double(0), nrow=nbrOfCells, ncol=nbrOfArrays));
+        assign(name, value);
 
+      value <- vector("integer", nbrOfCells*nbrOfArrays);
+      dim(value) <- dim;
       for (name in integerFields)
-        assign(name, matrix(as.integer(0), nrow=nbrOfCells, ncol=nbrOfArrays));
+        assign(name, value);
 
       verbose && exit(verbose);
     }
@@ -316,8 +327,9 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
       if (is.null(value))
         next;
 
-#      if (reorder)
-#        value <- value[o];
+      # "Re-reorder" cells read
+      if (reorder)
+        value <- value[o];
 
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       # Transform signals?
@@ -417,6 +429,11 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
 
 ############################################################################
 # HISTORY:
+# 2006-04-01 [HB]
+# o Using readCdfCellIndices() instead of readCdfUnits().  Faster!
+# o Added argument 'reorder'.  If TRUE, all cells are read in order to 
+#   minimize the jumping around in the file.  This speeds things up a lot!
+#   I tried this last week, but for some reason I did not see a difference.
 # 2006-03-29 [HB]
 # o Renamed argument 'map' to 'readMap'.
 # 2006-03-28 [HB]
