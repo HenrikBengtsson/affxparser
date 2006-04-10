@@ -3,7 +3,7 @@
 % 
 %  
 % 
-% on Wed Mar 29 20:22:49 2006.
+% on Sun Apr 02 10:21:30 2006.
 % 
 % Generator was the Rdoc class, which is part of the R.oo package written
 % by Henrik Bengtsson, 2001-2006.
@@ -112,27 +112,30 @@
    \preformatted{
      readMap <- order(writeMap)
    }
+   Note, the \code{\link{invertMap}}() method is much faster than \code{order()}.
 
    Since most algorithms for Affymetrix data are based on probeset (unit)
    models, it is natural to read data unit by unit.  Thus, to optimize the
    speed, cells should be stored in contiguous blocks of units.
-   The methods \code{\link{readCdfUnitsMap}}() can be used to generate a read map
-   from a CDF file such that if the units are read in order,
-   \code{\link{readCelUnits}}() will read the cells data in order.
+   The methods \code{\link{readCdfUnitsWriteMap}}() can be used to generate a
+   \emph{write map} from a CDF file such that if the units are read in
+   order, \code{\link{readCelUnits}}() will read the cells data in order.
    Example:
    \preformatted{
      Find any CDF file
      cdfFile <- findCdf()
 
      # Get the order of cell indices
-     indices <- readCdfUnits(cdfFile, readXY=FALSE, readBases=FALSE,
-                   readExpos=FALSE, readType=FALSE, readDirection=FALSE,
-                                                       readIndices=TRUE)
+     indices <- readCdfCellIndices(cdfFile)
      indices <- unlist(indices, use.names=FALSE)
 
-     # Get an optimal read map for the CDF file
-     readMap <- readCdfUnitsMap(cdfFile)
+     # Get an optimal write map for the CDF file
+     writeMap <- readCdfUnitsWriteMap(cdfFile)
 
+     # Get the read map
+     readMap <- invertMap(writeMap)
+
+     # Validate correctness
      indices2 <- readMap[indices]    # == 1, 2, 3, ..., N*K
    }
 
