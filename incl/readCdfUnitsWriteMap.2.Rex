@@ -67,11 +67,11 @@ unitNames <- readCdfUnitNames(cdfFile)
 units <- match(rownames(snpInfo), unitNames)
 
 # ...and cell indices in the same order
-readMap <- readCdfUnitsMap(cdfFile, units=units)
+writeMap <- readCdfUnitsWriteMap(cdfFile, units=units)
 
 # Inverse map to be used to write cell elements such that, if they 
 # later are read unit by unit, they are read in contiguous blocks.
-writeMap <- match(1:length(readMap), readMap)  # faster than order()
+readMap <- invertMap(writeMap)
 
 # Clean up
 rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, readMap, writeMap)
