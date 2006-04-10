@@ -76,5 +76,5 @@ y <- unlist(applyCdfGroups(cdf, cdfGetFields, "y"), use.names=FALSE)
 # Clean up
 rm(chipType, cdfFile, unit, cdf0, cdf, x, y)
 } # for (zzz in 0)
-
+rm(zzz)
 
