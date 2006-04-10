@@ -427,6 +427,213 @@ extern "C" {
 
   /************************************************************************
    *
+   * R_affx_get_cdf_cell_indices()
+   *
+   * Description:
+   * This function returns a names R list structure where each element
+   * corresponds to one unit.  The CDF header is not returned, because 
+   * then it would be hard to differentiate that element from a unit; the
+   * number of list elements should equal the number of units read.
+   *
+   ************************************************************************/
+  SEXP R_affx_get_cdf_cell_indices(SEXP fname, SEXP units, SEXP verbose) 
+  {
+    FusionCDFData cdf;
+
+    SEXP
+      /* Returned list of units */
+      resUnits = R_NilValue,
+      unitNames = R_NilValue,
+      /* */
+      /** one might already want to standardize on this naming scheme... **/
+      r_probe_set = R_NilValue, 
+      r_probe_set_names = R_NilValue,
+      /* */
+      r_group_list = R_NilValue, 
+      r_group_names = R_NilValue, 
+      /* Group fields */
+      indices = R_NilValue,
+      cell_list = R_NilValue,
+      cell_list_names = R_NilValue;
+
+    bool readAll = true; 
+    int maxNbrOfUnits = 0, nbrOfUnits = 0, unitIdx = 0;
+    int ncol = 0;
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     * Process arguments
+     * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    char* cdfFileName   = CHAR(STRING_ELT(fname, 0));
+    int i_verboseFlag   = INTEGER(verbose)[0];
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     * Opens file
+     * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    cdf.SetFileName(cdfFileName);
+    if (i_verboseFlag >= R_AFFX_VERBOSE) {
+      Rprintf("Attempting to read CDF File: %s\n", cdf.GetFileName().c_str());
+    }
+
+    if (cdf.Read() == false) {
+      Rprintf("Failed to read the CDF file.");
+      return R_NilValue;
+    }
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     * Get unit indices to be read
+     * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    FusionCDFFileHeader header = cdf.GetHeader();
+    maxNbrOfUnits = header.GetNumProbeSets();
+    nbrOfUnits = length(units);
+    if (nbrOfUnits == 0) {
+      nbrOfUnits  = maxNbrOfUnits;
+    } else {
+      readAll = false;
+      /* Validate argument 'units': */
+       for (int uu = 0; uu < nbrOfUnits; uu++) {
+        unitIdx = INTEGER(units)[uu];
+        /* Unit indices are zero-based in Fusion SDK. */
+        if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
+          error("Argument 'units' contains an element out of range.");
+        }
+      }
+    }
+
+    ncol = header.GetCols();
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     * Allocate 'resUnits' list
+     * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    PROTECT(resUnits = NEW_LIST(nbrOfUnits)); 
+    PROTECT(unitNames = NEW_CHARACTER(nbrOfUnits));
+
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     * Create field names for all groups in all units
+     *
+     * Since all groups in all units have fields with identical names,
+     * we can allocated the field names ones and let all groups share
+     * the same name vector.  This will save memory (appox 232 bytes
+     * per group or 13-14Mb for a 100K SNP chip) and speed up things
+     * about 10-20%.
+		 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    PROTECT(cell_list_names = NEW_STRING(1));
+    SET_STRING_ELT(cell_list_names, 0, mkChar("indices"));
+
+    /* Same for all unit elements */
+    PROTECT(r_probe_set_names = NEW_LIST(1));
+    SET_VECTOR_ELT(r_probe_set_names, 0, mkChar("groups"));
+
+
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     * For each unit
+     * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    FusionCDFProbeSetInformation probeset;
+
+    for (int uu = 0; uu < nbrOfUnits; uu++) {
+      /* Make it possible to interrupt */
+      if(uu % 1000 == 999) R_CheckUserInterrupt();
+
+      if (readAll) {
+        unitIdx = uu;
+      } else {
+        /* Unit indices are zero-based in Fusion SDK. */
+        unitIdx = INTEGER(units)[uu] - 1;
+      }
+
+      cdf.GetProbeSetInformation(unitIdx, probeset);
+
+      /* get the name */
+      /* 'name' is a pointer to a const char: */
+      const char* name = cdf.GetProbeSetName(unitIdx).c_str();
+
+      /** ...and add to list of unit names. **/
+			SET_STRING_ELT(unitNames, uu, mkChar(name));
+
+      PROTECT(r_probe_set = NEW_LIST(1));
+
+      int ngroups = probeset.GetNumGroups();
+   
+      PROTECT(r_group_list = NEW_LIST(ngroups));
+      PROTECT(r_group_names = NEW_CHARACTER(ngroups));
+        
+
+      /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+       * For each group in the current unit
+       * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+      for (int igroup = 0; igroup < ngroups; igroup++) {
+        FusionCDFProbeGroupInformation group;
+        probeset.GetGroupInformation(igroup, group);
+      
+        int ncells = group.GetNumCells();
+      
+        PROTECT(cell_list = NEW_LIST(1));
+        PROTECT(indices = NEW_INTEGER(ncells));
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+         * For each cell in the current group...
+         * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        for (int icell = 0; icell < ncells; icell++) {
+          FusionCDFProbeInformation probe;
+          group.GetCell(icell, probe);
+        
+          int x = probe.GetX();
+          int y = probe.GetY();
+
+          /* Cell indices are one-based in R. */
+          INTEGER(indices)[icell] = y*ncol + x + 1;
+        } /* for (int icell ...) */
+
+
+        /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+         * Assign field values
+				 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+        /** do I have to make the attribute vector everytime? **/
+        SET_VECTOR_ELT(cell_list, 0, indices);
+
+        /** set the names of the new list, dont really know if I need 
+            to do this each and every time. **/
+        setAttrib(cell_list, R_NamesSymbol, cell_list_names);
+
+        /** set these cells in the group list. **/
+        SET_VECTOR_ELT(r_group_list, igroup, cell_list);
+        SET_STRING_ELT(r_group_names, igroup, mkChar(group.GetName().c_str()));
+
+        /* Unprotect in reverse order */
+ 		    UNPROTECT(2);  /* 'indices' and then 'cell_list' */
+      } /* for (int igroup ...) */
+
+      /** set the group names. **/
+      setAttrib(r_group_list, R_NamesSymbol, r_group_names);
+
+      /** add groups to current unit. **/
+      SET_VECTOR_ELT(r_probe_set, 0, r_group_list);
+
+      /** add current unit to list of all units. **/
+      setAttrib(r_probe_set, R_NamesSymbol, r_probe_set_names);
+      SET_VECTOR_ELT(resUnits, uu, r_probe_set);
+
+      /* 'r_group_names' and then 'r_group_list' and 'r_probe_set' */
+      UNPROTECT(3); 
+    } /* for (int uu...) */
+
+    UNPROTECT(2);  /* 'r_probe_set_names' and then  'cell_list_names' */
+    
+    /** set all unit names. **/
+    setAttrib(resUnits, R_NamesSymbol, unitNames);
+
+    /** unprotect return list. **/
+    UNPROTECT(2); /* 'unitNames' and then 'resUnits' */
+
+    return resUnits;
+  } /* R_affx_get_cdf_cell_indices() */
+
+
+
+
+  /************************************************************************
+   *
    * R_affx_get_cdf_units()
    *
    * Description:
@@ -493,6 +700,15 @@ extern "C" {
 
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     * A special case?
+     * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    if (i_readIndices && !i_readXY && !i_readBases && !i_readExpos && 
+                                   				!i_readType && !i_readDirection) {
+      return R_affx_get_cdf_cell_indices(fname, units, verbose);
+    }
+
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Opens file
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     cdf.SetFileName(cdfFileName);
@@ -538,12 +754,68 @@ extern "C" {
     int nbrOfUnitElements = i_readGroups + i_readType + i_readDirection;
     int nbrOfGroupElements = 2*i_readXY + 2*i_readBases + i_readExpos + i_readIndices;
 
+
+    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+     * Create field names for all groups in all units
+     *
+     * Since all groups in all units have fields with identical names,
+     * we can allocated the field names ones and let all groups share
+     * the same name vector.  This will save memory (appox 232 bytes
+     * per group or 13-14Mb for a 100K SNP chip) and speed up things
+     * about 10-20%.
+		 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+    int fieldIdx = 0;
+    if (i_readGroups) {
+      PROTECT(cell_list_names = NEW_STRING(nbrOfGroupElements));
+      if (i_readXY) {
+        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("x"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("y"));
+      }
+  
+      if (i_readIndices) {
+        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("indices"));
+      }
+       
+      if (i_readBases) {
+        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("pbase"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("tbase"));
+      }
+      
+      if (i_readExpos) {
+        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("expos"));
+      }
+    }
+
+
+    /* Same for all unit elements */
+    PROTECT(r_probe_set_names = NEW_LIST(nbrOfUnitElements));
+    int rpsi = 0;
+    if (i_readType) {
+      /* get the type */
+      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("type"));
+    }
+
+    if (i_readDirection) {
+      /* get the direction */
+      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("direction"));
+    }
+
+    if (i_readGroups) {
+      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("groups"));
+    }
+
+
+
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * For each unit
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     FusionCDFProbeSetInformation probeset;
 
+
     for (int uu = 0; uu < nbrOfUnits; uu++) {
+      /* Make it possible to interrupt */
+      if(uu % 1000 == 999) R_CheckUserInterrupt();
+
       if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
         Rprintf("Unit %d/%d...", uu+1, nbrOfUnits);
       } else if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -605,15 +877,13 @@ extern "C" {
 
       
       PROTECT(r_probe_set = NEW_LIST(nbrOfUnitElements));
-      PROTECT(r_probe_set_names = NEW_LIST(nbrOfUnitElements));
-      int rpsi = 0;
+      rpsi = 0;
 
       if (i_readType) {
         /* get the type */
         PROTECT(tmp = allocVector(INTSXP, 1));
         INTEGER(tmp)[0] = probeset.GetProbeSetType();
-        SET_VECTOR_ELT(r_probe_set, rpsi, tmp);
-        SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("type"));
+        SET_VECTOR_ELT(r_probe_set, rpsi++, tmp);
         UNPROTECT(1);
       }
 
@@ -621,8 +891,7 @@ extern "C" {
         /* get the direction */
         PROTECT(tmp = allocVector(INTSXP, 1));
         INTEGER(tmp)[0] = probeset.GetDirection();
-        SET_VECTOR_ELT(r_probe_set, rpsi, tmp);
-        SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("direction"));
+        SET_VECTOR_ELT(r_probe_set, rpsi++, tmp);
         UNPROTECT(1);
       }
 
@@ -632,6 +901,7 @@ extern "C" {
      
         PROTECT(r_group_list = NEW_LIST(ngroups));
         PROTECT(r_group_names = NEW_CHARACTER(ngroups));
+          
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          * For each group in the current unit
@@ -646,11 +916,9 @@ extern "C" {
           probeset.GetGroupInformation(igroup, group);
         
           int ncells = group.GetNumCells();
-          int fieldIdx = 0;
         
           PROTECT(cell_list = NEW_LIST(nbrOfGroupElements));
-          PROTECT(cell_list_names = NEW_STRING(nbrOfGroupElements));
-  
+
           int protectCount = 0;
 
           if (i_readXY) {
@@ -678,7 +946,7 @@ extern "C" {
           }
 
           /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-           * For each cell in the current group
+           * For each cell in the current group...
            * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
           for (int icell = 0; icell < ncells; icell++) {
             FusionCDFProbeInformation probe;
@@ -715,32 +983,28 @@ extern "C" {
             }
           } /* for (int icell ...) */
 
-          
+
+          /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+           * Assign field values
+					 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+          fieldIdx = 0;
           /** do I have to make the attribute vector everytime? **/
           if (i_readXY) {
-            SET_VECTOR_ELT(cell_list, fieldIdx, xvals);
-            SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("x"));
-
-            SET_VECTOR_ELT(cell_list, fieldIdx, yvals);
-            SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("y"));
+            SET_VECTOR_ELT(cell_list, fieldIdx++, xvals);
+            SET_VECTOR_ELT(cell_list, fieldIdx++, yvals);
           }
 
           if (i_readIndices) {
-            SET_VECTOR_ELT(cell_list, fieldIdx, indices);
-            SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("indices"));
+            SET_VECTOR_ELT(cell_list, fieldIdx++, indices);
           }
            
           if (i_readBases) {
-            SET_VECTOR_ELT(cell_list, fieldIdx, pbase);
-            SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("pbase"));
-
-            SET_VECTOR_ELT(cell_list, fieldIdx, tbase);
-            SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("tbase"));
+            SET_VECTOR_ELT(cell_list, fieldIdx++, pbase);
+            SET_VECTOR_ELT(cell_list, fieldIdx++, tbase);
           }
           
           if (i_readExpos) {
-            SET_VECTOR_ELT(cell_list, fieldIdx, expos);
-            SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("expos"));
+            SET_VECTOR_ELT(cell_list, fieldIdx++, expos);
           }
 
           /* Unprotect in reverse order, e.g. 'expos', ..., 'xvals' */
@@ -753,7 +1017,7 @@ extern "C" {
           /** set these cells in the group list. **/
           SET_VECTOR_ELT(r_group_list, igroup, cell_list);
           SET_STRING_ELT(r_group_names, igroup, mkChar(group.GetName().c_str()));
-          UNPROTECT(2); /* 'cell_list_names' and then 'cell_list' */
+          UNPROTECT(1); /* 'cell_list' */
 
 					/*
           if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
@@ -762,13 +1026,11 @@ extern "C" {
           */
         } /* for (int igroup ...) */
 
-
         /** set the group names. **/
         setAttrib(r_group_list, R_NamesSymbol, r_group_names);
 
         /** add groups to current unit. **/
         SET_VECTOR_ELT(r_probe_set, rpsi, r_group_list);
-        SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("groups"));
 
         UNPROTECT(2); /* 'r_group_names' and then 'r_group_list' */
       } /* if (i_readGroups) */
@@ -778,17 +1040,21 @@ extern "C" {
       setAttrib(r_probe_set, R_NamesSymbol, r_probe_set_names);
       SET_VECTOR_ELT(resUnits, uu, r_probe_set);
 
-      UNPROTECT(2);  /* 'r_probe_set_names' and then 'r_probe_set' */
+      UNPROTECT(1);  /* 'r_probe_set' */
 
       if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
         Rprintf("Unit %d/%d...done\n", uu+1, nbrOfUnits);
       }
     } /* for (int uu...) */
 
+    UNPROTECT(1);  /* 'r_probe_set_names' */
+
+    if (i_readGroups) {
+      UNPROTECT(1); /* 'cell_list_names' */
+    }
     
     /** set all unit names. **/
     setAttrib(resUnits, R_NamesSymbol, unitNames);
-    /** unprotect the names and the main probe set list.**/
 
     if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
       Rprintf("R_affx_get_cdf_units()...done\n");
@@ -880,6 +1146,12 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2006-04-02
+ * o Added R_affx_get_cdf_cell_indices() for faster reading of cell indices.
+ * 2006-04-01
+ * o For R_affx_get_cdf_units() the field names in all groups and units are
+ *   pointing to the same vector of names in memory.  This save about 
+ *   13-15Mb and speeds up the reading.  I think/hope this is valid to do!
  * 2006-03-28
  * o Unit indices and cell indices are now one-based. /HB
  * o Renamed argument 'readCells' to 'readIndices' and returned field
