@@ -3,7 +3,7 @@
 % 
 %  
 % 
-% on Wed Mar 29 20:22:52 2006.
+% on Sun Apr 02 10:21:39 2006.
 % 
 % Generator was the Rdoc class, which is part of the R.oo package written
 % by Henrik Bengtsson, 2001-2006.
@@ -15,7 +15,7 @@
 
  \title{Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files}
 
- \usage{readCelUnits(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, readMap=NULL, dropArrayDim=TRUE, verbose=FALSE)}
+ \usage{readCelUnits(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, readMap=NULL, dropArrayDim=TRUE, reorder=TRUE, verbose=FALSE)}
 
  \description{
    Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files by using the unit and group definitions in the
@@ -43,6 +43,9 @@
      increases by 30-40\% with dimension names.}
    \item{readMap}{A \code{\link[base]{vector}} remapping cell indices to file indices.
      If \code{\link[base]{NULL}}, no mapping is used.}
+   \item{reorder}{If \code{\link[base:logical]{TRUE}}, cell indices are read in order to speed up the
+     reading.  If \code{\link[base:logical]{FALSE}}, cells are read in the order as given.  For
+     more details, see help on the same argument in \code{\link{readCel}}().}
    \item{dropArrayDim}{If \code{\link[base:logical]{TRUE}} and only one array is read, the elements of
      the group field do \emph{not} have an array dimension.}
    \item{verbose}{Either a \code{\link[base]{logical}}, a \code{\link[base]{numeric}}, or a \code{\link[R.utils]{Verbose}}
@@ -78,21 +81,40 @@
 for (zzz in 0) {
 
 # Scan current directory for CEL files
-celFiles <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-if (length(celFiles) == 0)
+files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
+files <- files[!file.info(files)$isdir]
+if (length(files) == 0)
   break
 
-units <- 100:261
-t <- system.time({
-cel <- readCelUnits(celFiles, units=units, readPixels=TRUE, readStdvs=TRUE)
-})
-print(cel[1:2])
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Benchmarking reading cells in order or not.
+#
+# The difference will be large the more files that are read.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+units <- 56:256
+nunits <- length(units);
 
-cat(sprintf("Time per unit and array: \%.4fms\n",
-                                   1000*t[3]/length(cel)/length(celFiles)))
+# Make sure enough files are read to measure the speed up
+files <- rep(files, length.out=5)
+nfiles <- length(files);
+
+t1 <- system.time({
+  cel <- readCelUnits(files, units=units, reorder=TRUE)
+})[3]
+cat(sprintf("Time   [ordered]: \%6.2fs = \%.2fms/(unit & array) [1.00x]\n",
+                                          t1, 1000*t1/nunits/nfiles))
+rm(cel); gc()
+
+t2 <- system.time({
+  cel <- readCelUnits(files, units=units, reorder=FALSE)
+})[3]
+cat(sprintf("Time [unordered]: \%6.2fs = \%.2fms/(unit & array) [\%.2fx]\n",
+                                   t2, 1000*t2/nunits/nfiles, t2/t1))
+rm(cel); gc()
+
 
 # Clean up
-rm(celFiles, cel, t)
+rm(files, t1, t2)
 
 } # for (zzz in 0)
 }

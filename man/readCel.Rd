@@ -16,6 +16,7 @@ readCel(filename,
         readStdvs = FALSE, readPixels = FALSE,
         readOutliers = TRUE, readMasked = TRUE, 
         readMap = NULL,
+        reorder = TRUE,
         verbose = 0,
         .checkArgs = TRUE)
 }
@@ -33,6 +34,8 @@ readCel(filename,
   \item{readHeader}{a logical: will the header of the file be returned.}
   \item{readMap}{A \code{\link[base]{vector}} remapping cell indices to 
      file indices.  If \code{\link[base]{NULL}}, no mapping is used.}
+  \item{reorder}{If \code{TRUE}, cell indices are read in order to speed up
+    the reading.  If \code{FALSE}, cells are read in the order as given.}
   \item{verbose}{how verbose do we want to be. 0 is no verbosity, higher
     numbers mean more verbose output. At the moment the values 0, 1 and 2
     are supported.}
@@ -111,6 +114,16 @@ readCel(filename,
   only affect the memory use of the final object (as well as speed), not
   the memory allocated in the C function used to parse the file. This
   should be a minor problem however.
+}
+
+\section{Speed}{
+  This method is optimized both for speed and memory. 
+  By settings \code{reorder=TRUE}, the cell data is read in order, instead
+  of the order the specified cell indices.  By reading the cells in order,
+  the amount of "jumping" around in the file is minimized.  This will
+  improve reading speed substantially.  We have measured 5-10 speed up
+  when reading many files, which we believe is due to the fact that the
+  systems file cache is smaller than the total amount of data read.
 }
 
 \section{Troubleshooting}{

@@ -3,7 +3,7 @@
 % 
 %  
 % 
-% on Wed Mar 29 20:22:52 2006.
+% on Sun Apr 02 10:21:38 2006.
 % 
 % Generator was the Rdoc class, which is part of the R.oo package written
 % by Henrik Bengtsson, 2001-2006.
@@ -53,11 +53,12 @@ rotate270 <- function(x, ...) {
 }
 
 # Scan current directory for CEL files
-celFiles <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-if (length(celFiles) == 0)
+files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
+files <- files[!file.info(files)$isdir]
+if (length(files) == 0)
   break
 
-celFile <- celFiles[1];
+celFile <- files[1];
 
 # Read CEL intensities in the upper left corner
 cel <- readCelRectangle(celFile, xrange=c(0,250), yrange=c(0,250))
@@ -68,7 +69,7 @@ text(x=0, y=1, labels="(0,0)", adj=c(0,-0.7), cex=0.8, xpd=TRUE)
 text(x=1, y=0, labels="(250,250)", adj=c(1,1.2), cex=0.8, xpd=TRUE)
 
 # Clean up
-rm(rotate270, celFiles, celFile, cel, z, sub)
+rm(rotate270, files, celFile, cel, z, sub)
 
 } # for (zzz in 0)
 }
