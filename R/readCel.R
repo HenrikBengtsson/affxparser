@@ -8,11 +8,14 @@ readCel <- function(filename,
                     readOutliers = TRUE,
                     readMasked = TRUE, 
                     readMap = NULL, 
+                    reorder = TRUE,
                     verbose = 0,
                     .checkArgs = TRUE) {
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Validate arguments
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    readAll <- is.null(indices);
+
     if (.checkArgs) {
       # Argument 'filename':
       if(length(filename) != 1) {
@@ -28,7 +31,7 @@ readCel <- function(filename,
       # Argument 'indices':
       header <- readCelHeader(filename);
       nbrOfCells <- header$total;
-      if (length(indices) == 0) {
+      if (readAll) {
         # Read all cells
         indices <- 1:nbrOfCells;
       } else {
@@ -65,23 +68,53 @@ readCel <- function(filename,
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Remapping cell indices?
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (!is.null(readMap)) {
+    if (is.null(readMap)) {
+      # If not read map and no indices very given, then all cells are read
+      # and already in order an no need to sort them.
+      # *all cells are read
+      reorder <- FALSE;
+    } else {
       indices <- readMap[indices];
+    }
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Order cell indices for optimal speed when reading, i.e. minimizing
+    # jumping around in the file.
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    if (reorder) {
+      # About 10-15 times faster than using order()!
+      o <- .Internal(qsort(indices, TRUE));
+      indices <- o$x;
+      o <- .Internal(qsort(o$ix, TRUE))$ix;
     }
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Reading CEL file
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    .Call("R_affx_get_cel_file", filename,
-          readHeader,
-          readIntensities, readXY, readXY, readPixels, readStdvs,
-          readOutliers, readMasked,
-          indices,
-          as.integer(verbose), PACKAGE="affxparser");
+    cel <- .Call("R_affx_get_cel_file", filename,
+                  readHeader,
+                  readIntensities, readXY, readXY, readPixels, readStdvs,
+                  readOutliers, readMasked,
+                  indices,
+                  as.integer(verbose), PACKAGE="affxparser");
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Re-reordering the cell values
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    if (reorder) {
+      fields <- setdiff(names(cel), c("header", "outliers", "masked"));
+      for (name in fields) {
+        cel[[name]] <- cel[[name]][o];
+      }
+    }
+    
+    cel;
 } # readCel()
 
 ############################################################################
 # HISTORY:
+# 2006-04-01
+# o Added argument 'reorder'.
 # 2006-03-29
 # o Added argument '.checkArgs' so that when arguments have already been
 #   checked, for instance by readCelUnits(), we pay less overhead when
