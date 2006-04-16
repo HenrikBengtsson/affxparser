@@ -40,7 +40,7 @@
 #  Moreover, all these PM probes mismatch the allele B target sequence 
 #  at exactly one position.  Second, all MM probes mismatches the
 #  allele A sequence at exactly one position.  This is also true for
-#  the allele B sequence, \emph{except} for a MM probe with zero offset,
+#  the allele B sequence, \emph{except} for an MM probe with zero offset,
 #  which only mismatch at one (the middle) position.
 #  For a probe group interrogating allele B, the same rules applies with
 #  labels A and B swapped.

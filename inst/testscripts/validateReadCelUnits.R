@@ -1,3 +1,14 @@
+#############################################################################
+# This script will test:
+#  findCdf()
+#  readCelHeader()
+#  readCdfUnitNames()
+#  readCelUnits()
+#
+# and make sure the return the correct values.  A hard-coded data set 
+# obtained from Affymetrix gtype_cel_to_pq to two CEPH CEL files is used
+# as a reference.
+#############################################################################
 library(affxparser);
 library(R.utils);
 
@@ -17,6 +28,7 @@ raw <- lapply(raw, FUN=function(array) {
   lapply(array, FUN=matrix, nrow=2);
 })
 
+arrays <- names(raw);
 cel <- lapply(arrays, FUN=function(array) {
   filename <- paste(array, "CEL", sep=".");
   filename <- Arguments$getReadablePathname(filename, path="cel/Xba/", mustExist=TRUE);
@@ -24,7 +36,7 @@ cel <- lapply(arrays, FUN=function(array) {
   # Find units to be read
   cdfFile <- findCdf(readCelHeader(filename)$chiptype);
   unitNames <- readCdfUnitNames(cdfFile);
-  units <- which(names(raw[[1]]) == unitNames);
+  units <- match(names(raw[[1]]), unitNames);
 
   # Read CEL data
   cel <- readCelUnits(filename, units=units, stratifyBy="pmmm");
@@ -42,4 +54,3 @@ cel <- lapply(arrays, FUN=function(array) {
 names(cel) <- arrays;
 
 stopifnot(all.equal(cel, raw))
-

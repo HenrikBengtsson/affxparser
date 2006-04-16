@@ -1,12 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Do not modify this file since it was automatically generated from:
 % 
-%  
+%  cdfAddBaseMmCounts.R
 % 
-% on Wed Mar 29 20:22:50 2006.
-% 
-% Generator was the Rdoc class, which is part of the R.oo package written
-% by Henrik Bengtsson, 2001-2006.
+% by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \name{cdfAddBaseMmCounts}
@@ -52,7 +49,7 @@
  Moreover, all these PM probes mismatch the allele B target sequence
  at exactly one position.  Second, all MM probes mismatches the
  allele A sequence at exactly one position.  This is also true for
- the allele B sequence, \emph{except} for a MM probe with zero offset,
+ the allele B sequence, \emph{except} for an MM probe with zero offset,
  which only mismatch at one (the middle) position.
  For a probe group interrogating allele B, the same rules applies with
  labels A and B swapped.

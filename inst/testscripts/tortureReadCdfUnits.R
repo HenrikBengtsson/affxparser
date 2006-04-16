@@ -1,13 +1,27 @@
+#############################################################################
+# This script will test:
+#  readCdfHeader()
+#  readCdfUnits()
+#############################################################################
 library(affxparser);
 
 logMemory <- exists("memory.size", mode="function");
 memSizeRange <- NA;
 
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Search for a CDF file
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 cdfFile <- findCdf();
 if (is.null(cdfFile))
   stop("No CDF file found");
 
 cat("Found CDF file: ", cdfFile, "\n", sep="")
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Start torturing
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 maxNbrOfUnits <- readCdfHeader(cdfFile)$probesets;
 for (kk in 1:10000) {
   cat(sprintf("Round %d:\n", kk));
