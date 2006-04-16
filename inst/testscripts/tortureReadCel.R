@@ -1,15 +1,35 @@
+#############################################################################
+# This script will test:
+#  readCelHeader()
+#  readCel()
+#############################################################################
 library(affxparser);
+library(R.utils);  # filePath()
 
 logMemory <- exists("memory.size", mode="function");
 memSizeRange <- NA;
 
-celFiles <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-nbrOfFiles <- length(celFiles);
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Search for CEL files
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+for (path in c(".", "cel", "cel/Xba/", "cel/Hind")) {
+  path <- filePath(path, expandLinks="any");
+  celFiles <- list.files(path=path, pattern="[.](c|C)(e|E)(l|L)$", 
+                                                           full.names=TRUE);
+  nbrOfFiles <- length(celFiles);
+  if (nbrOfFiles > 0)
+    break;
+}
 if (nbrOfFiles == 0)
   stop("No CEL files found");
 
 cat(sprintf("Found %d CEL file(s)\n", nbrOfFiles));
 
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Start torturing
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 for (kk in 1:10000) {
   cat(sprintf("Round %d:\n", kk));
 

@@ -219,8 +219,7 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(cdf)) {
     verbose && enter(verbose, "Reading cell indices from CDF file");
-    cdf <- readCdfCellIndices(cdfFile, units=units, ..., 
-                                       stratifyBy=stratifyBy, verbose=FALSE);
+    cdf <- readCdfCellIndices(cdfFile, units=units, stratifyBy=stratifyBy, verbose=FALSE);
     verbose && exit(verbose);
 
     # Assume 'cdf' contains only "indices" fields.
@@ -429,6 +428,9 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
 
 ############################################################################
 # HISTORY:
+# 2006-04-15 [HB]
+# o BUG FIX: Passed '...' to both readCdfCellIndices() and readCel(), but
+#   should only be passed to the latter.
 # 2006-04-01 [HB]
 # o Using readCdfCellIndices() instead of readCdfUnits().  Faster!
 # o Added argument 'reorder'.  If TRUE, all cells are read in order to 

@@ -1,9 +1,21 @@
 Package: affxparser
 ===================
 
-Version: 1.3.3 [2006-04-07]
+Version: 1.3.3 [2006-04-15]
 o Updated the Fusion SDK to version 1.0.5 (an unofficial release).
   It now works on Solaris.
+o New method readCdfCellIndices(), which is a 5-10 times faster
+  special-case implementation of readCdfUnits() to read cell 
+  indices only.
+o Now readCelUnits() sorts the cell indices before reading the
+  data from each file.  This minimizes the amount of jumping around
+  in the CEL files resulting in a speed-up of about 5-10 times.
+o Renamed readCdfUnitsMap() to readCdfUnitsWriteMap().
+o New method invertMap() for fast inversion of maps.
+o KNOWN BUGS: The weird bug as in v1.3.2 remains with the new
+  Fusion SDK, R v2.3.0 beta (2006-04-10 r37715) on WinXP.
+  Internally readCdfCellIndices() replaces readCdfUnits(),
+  but the error is still the same.
 
 Version: 1.3.2 [2006-03-28]
 o All cell and unit indices are now starting from one and not
