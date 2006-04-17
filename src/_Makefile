@@ -13,7 +13,7 @@ CPPFLAGS=-Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/fusion/src/GCOSAdapter\
  -Ifusion_sdk/calvin_files/fusion/src/CalvinAdapter\
  -I/usr/lib/R/include\
- -DIS_BIG_ENDIAN -D_USE_MEM_MAPPING_\
+ -D_USE_MEM_MAPPING_
 
 CC=g++
 
