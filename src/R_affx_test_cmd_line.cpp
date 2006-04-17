@@ -1,9 +1,7 @@
 /********************************************
-This code is from somewhere in the fusion package
 
-XXX: Kasper where is this from, it certainly does not have to
-be included in any distribution
-
+A command line parsing of cel/cdf files.
+Used for testing.
 
 *********************************************/
 #include "FusionCELData.h"
@@ -27,19 +25,15 @@ int main(int argc, char **argv)
 	  cout << "Failed to read the file." << endl;
 	  return 0;
 	}
-      int n = (int) cel.GetNumCells() / 10;
-      float sum = 0;
-      for (int i = 1; i < n; i++)
+      int n = (int) cel.GetNumCells();
+      cout << "Only printing first 10 lines in CDF file." << endl;
+      for (int i = 0; i < 10; i++)
 	{
-	  sum += cel.GetIntensity(i);
-
-
 	    cout <<  
-	    "intensity: " << cel.GetIntensity(i) <<
-	    " x: " << cel.IndexToX(i) << " y: " << cel.IndexToY(i) <<
-	    " pixels: " << cel.GetPixels(i) << " stdv: " << cel.GetStdv(i) << endl;
-
-
+                "intensity: " << cel.GetIntensity(i) <<
+                " x: " << cel.IndexToX(i) << " y: " << cel.IndexToY(i) <<
+                " pixels: " << cel.GetPixels(i) << " stdv: " << 
+                cel.GetStdv(i) << endl;
 
 	  if (cel.IsOutlier(i) == true) {
 	    cout << "Outlier at index: " << i << endl;
@@ -49,10 +43,7 @@ int main(int argc, char **argv)
 	    cout << "Masked at index: " << i << endl;
 	  }
 	  
-	  // printf("%f %f %d\n", cel.GetIntensity(i), cel.GetStdv(i), cel.GetPixels(i));
 	}
-      float avg = sum / n;
-      cout << "The average intensity is: " << avg << endl;
 
       cdf.SetFileName(cdfFileName);
       if (cdf.Read() == false)
