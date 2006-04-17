@@ -6,10 +6,9 @@
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \name{1. Cell coordinates and cell indices}
-\alias{1. Cell coordinates and cell indices}
-\title{1. Cell coordinates and cell indices}
-
+ \name{cellxy}
+\alias{cellxy}
+\title{Cell coordinates and cell indices}
 
  \description{
    This part describes how Affymetrix \emph{cells}, also known as
