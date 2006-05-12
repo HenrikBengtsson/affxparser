@@ -1,5 +1,5 @@
 #########################################################################/**
-# @RdocDocumentation "2. Cell-index maps for reading and writing"
+# @RdocDocumentation "9. Advanced - Cell-index maps for reading and writing"
 #
 # \description{
 #   This part defines read and write maps that can be used to remap 
@@ -16,7 +16,7 @@
 #   @see "readCelUnits".
 #
 #   For more details how cell indices are defined, see 
-#   @see "1. Cell coordinates and cell indices".
+#   @see "2. Cell coordinates and cell indices".
 # }
 #
 # \section{Motivation}{

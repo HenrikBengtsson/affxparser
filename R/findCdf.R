@@ -35,8 +35,13 @@
 #   }
 #
 #   One of the easiest ways to set system variables for \R is to
-#   set them in an \code{.Renviron} file, see @see "base::Startup" 
-#   for more details.
+#   set them in an \code{.Renviron} file, e.g.
+#   \preformatted{
+#     # affxparser: Set default CDF path
+#     AFFX_CDF_PATH=${AFFX_CDF_PATH};M:/Affymetrix_2004-100k_trios/cdf
+#     AFFX_CDF_PATH=${AFFX_CDF_PATH};M:/Affymetrix_2005-500k_data/cdf
+#   }
+#   See @see "base::Startup" for more details.
 # }
 #
 # @examples "../incl/findCdf.Rex"

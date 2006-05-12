@@ -10,12 +10,12 @@
 \alias{readCdfGroupNames}
 
 
- \title{Reads group names of a set units (probesets) in an Affymetrix CDF file}
+ \title{Reads group names for a set of units (probesets) in an Affymetrix CDF file}
 
  \usage{readCdfGroupNames(filename, units=NULL, verbose=0)}
 
  \description{
-   Reads group names of a set units (probesets) in an Affymetrix CDF file.
+   Reads group names for a set of units (probesets) in an Affymetrix CDF file.
 
    This is for instance useful for SNP arrays where the nucleotides used
    for the A and B alleles are the same as the group names.

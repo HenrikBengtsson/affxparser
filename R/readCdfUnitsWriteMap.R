@@ -53,6 +53,7 @@
 # 
 # @keyword "file"
 # @keyword "IO"
+# @keyword "internal"
 #*/#########################################################################
 readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

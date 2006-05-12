@@ -1,5 +1,5 @@
 #########################################################################/**
-# @RdocDocumentation "1. Cell coordinates and cell indices"
+# @RdocDocumentation "2. Cell coordinates and cell indices"
 #
 # \description{
 #   This part describes how Affymetrix \emph{cells}, also known as

@@ -1,7 +1,7 @@
 #########################################################################/**
 # @RdocFunction readCdfGroupNames
 #
-# @title "Reads group names of a set units (probesets) in an Affymetrix CDF file"
+# @title "Reads group names for a set of units (probesets) in an Affymetrix CDF file"
 #
 # @synopsis 
 # 

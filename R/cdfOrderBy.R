@@ -1,7 +1,7 @@
 ########################################################################/**
-# @RdocFunction cdfGetFields
+# @RdocFunction cdfOrderBy
 #
-# @title "Gets a subset of groups fields in a CDF structure"
+# @title "Orders the fields according to the value of another field in the same CDF group"
 #
 # \description{
 #  @get "title".
@@ -14,21 +14,16 @@
 #
 # \arguments{
 #  \item{groups}{A @list of groups.}
-#  \item{fields}{A @character @vector of names of fields to be returned.}
-#  \item{...}{Not used.}
+#  \item{field}{The field whose values are used to order the other fields.}
+#  \item{...}{Optional arguments passed @see "base::order".}
 # }
 #
 # \value{
 #  Returns a @list structure of groups.
 # }
 #
-# \details{
-#   Note that an error is \emph{not} generated for missing fields.  
-#   Instead the field is returned with value @NA.  The reason for this
-#   is that it is much faster.
-# }
-#
 # \seealso{
+#  @see "cdfOrderColumnsBy".
 #  @see "applyCdfGroups".
 # }
 #
@@ -37,12 +32,15 @@
 # @keyword programming
 # @keyword internal
 #**/#######################################################################
-cdfGetFields <- function(groups, fields, ...) {
-  lapply(groups, function(group) .subset(group, fields))
+cdfOrderBy <- function(groups, field, ...) {
+  lapply(groups, function(group) {
+    o <- order(.subset2(group, field), ...);
+    lapply(group, FUN=.subset, o);
+  })
 }
 
 ############################################################################
 # HISTORY:
-# 2006-03-21 (Stockholm, Sveavägen)
+# 2006-04-20
 # o Created.
 ############################################################################  

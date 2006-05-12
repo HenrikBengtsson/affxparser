@@ -1,14 +1,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Do not modify this file since it was automatically generated from:
 % 
-%  901.CellCoordinatesAndIndices.R
+%  902.CellCoordinatesAndIndices.R
 % 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \name{cellxy}
-\alias{cellxy}
-\title{Cell coordinates and cell indices}
+ \name{2. Cell coordinates and cell indices}
+\alias{2. Cell coordinates and cell indices}
+\title{2. Cell coordinates and cell indices}
+
 
  \description{
    This part describes how Affymetrix \emph{cells}, also known as

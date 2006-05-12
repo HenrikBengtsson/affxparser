@@ -1,7 +1,7 @@
 ########################################################################/**
-# @RdocFunction cdfGetFields
+# @RdocFunction cdfGetGroups
 #
-# @title "Gets a subset of groups fields in a CDF structure"
+# @title "Gets a subset of groups in a CDF structure"
 #
 # \description{
 #  @get "title".
@@ -14,18 +14,12 @@
 #
 # \arguments{
 #  \item{groups}{A @list of groups.}
-#  \item{fields}{A @character @vector of names of fields to be returned.}
+#  \item{which}{An @integer or @character @vector of groups be returned.}
 #  \item{...}{Not used.}
 # }
 #
 # \value{
 #  Returns a @list structure of groups.
-# }
-#
-# \details{
-#   Note that an error is \emph{not} generated for missing fields.  
-#   Instead the field is returned with value @NA.  The reason for this
-#   is that it is much faster.
 # }
 #
 # \seealso{
@@ -37,12 +31,13 @@
 # @keyword programming
 # @keyword internal
 #**/#######################################################################
-cdfGetFields <- function(groups, fields, ...) {
-  lapply(groups, function(group) .subset(group, fields))
+cdfGetGroups <- function(groups, which, ...) {
+  .subset(groups, which);
 }
+
 
 ############################################################################
 # HISTORY:
-# 2006-03-21 (Stockholm, Sveavägen)
+# 2006-04-24
 # o Created.
 ############################################################################  

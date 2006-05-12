@@ -1,3 +1,83 @@
+#########################################################################/**
+# @RdocFunction readCdfUnits
+#
+# @title "Reads units (probesets) from an Affymetrix CDF file"
+#
+# @synopsis 
+# 
+# \description{
+#  @get "title". Gets all or a subset of units (probesets).
+# }
+# 
+# \arguments{
+#  \item{filename}{The filename of the CDF file.}
+#  \item{units}{An @integer @vector of unit indices
+#    specifying which units to be read.  If @NULL, all units are read.}
+#  \item{readXY}{If @TRUE, cell row and column (x,y) coordinates are
+#     retrieved, otherwise not.}
+#  \item{readBases}{If @TRUE, cell P and T bases are retrieved, otherwise not.}
+#  \item{readExpos}{If @TRUE, cell "expos" values are retrieved, otherwise not.}
+#  \item{readType}{If @TRUE, unit types are retrieved, otherwise not.}
+#  \item{readDirection}{If @TRUE, unit directions are retrieved, otherwise not.}
+#  \item{stratifyBy}{A @character string specifying which and how
+#    elements in group fields are returned.
+#    If \code{"nothing"}, elements are returned as is, i.e. as @vectors.
+#    If \code{"pm"}/\code{"mm"}, only elements corresponding to 
+#    perfect-match (PM) / mismatch (MM) probes are returned (as @vectors).
+#    If \code{"pmmm"}, elements are returned as a matrix where the
+#    first row holds elements corresponding to PM probes and the second
+#    corresponding to MM probes.  Note that in this case, it is assumed 
+#    that there are equal number of PMs and MMs; if not, an error is
+#    generated.  
+#    Moreover, the PMs and MMs may not even be paired, i.e. there is no 
+#    guarantee that the two elements in a column corresponds to a 
+#    PM-MM pair.}
+#  \item{readIndices}{If @TRUE, cell indices calculated from the row and 
+#    column (X,Y) coordinates are retrieved, otherwise not.}
+#  \item{verbose}{An @integer specifying the verbose level. If 0, the
+#    file is parsed quietly.  The higher numbers, the more details.}
+# }
+# 
+# \value{
+#  A named @list where the names corresponds to the names
+#  of the units read.  Each element of the list is in turn a
+#  @list structure with three components:
+#  \item{groups}{A @list with one component for each group 
+#   (also called block). The information on each group is a 
+#   @list with five components: \code{x}, \code{y}, 
+#   \code{pbase}, \code{tbase}, \code{expos}, and \code{indices}.}
+#  \item{type}{An @integer specifying the type of the
+#    unit, where 1 is "expression", 2 is "genotyping", 3 is "CustomSeq", 
+#    and 4 "tag".}
+#  \item{direction}{An @integer specifying the direction
+#    of the unit, which defines if the probes are interrogating the sense
+#    or the anti-sense target, where 0 is "no direction", 1 is "sense", and
+#    2 is "anti-sense".}
+# }
+#
+# \author{
+#  James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
+#  Daniel Hansen, \email{khansen@stat.berkeley.edu}.
+#  Modified by Henrik Bengtsson (\url{http://www.braju.com/R/}) to read
+#  any subset of units and/or subset of parameters, to stratify by PM/MM,
+#  and to return cell indices.d
+# }
+# 
+# @examples "../incl/readCdfUnits.Rex"
+# 
+# \seealso{
+#   @see "readCdfCellIndices".
+# }
+# 
+# \references{
+#   [1] Affymetrix Inc, Affymetrix GCOS 1.x compatible file formats,
+#       June 14, 2005.
+#       \url{http://www.affymetrix.com/support/developer/}
+# }
+#
+# @keyword "file"
+# @keyword "IO"
+#*/######################################################################### 
 readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, readExpos=TRUE, readType=TRUE, readDirection=TRUE, stratifyBy=c("nothing", "pmmm", "pm", "mm"), readIndices=FALSE, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
