@@ -62,7 +62,7 @@ print(cdf)
 # Rearrange values of group fields into quartets.  This
 # requires that the values are already arranged as PMs and MMs.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-cdf <- applyCdfGroups(cdf0, cdfMergeToQuartets)
+cdf <- applyCdfGroups(cdf0, cdfMergeAlleles)
 cat("Probe quartets:\n")
 print(cdf)
 
