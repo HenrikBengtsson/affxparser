@@ -1,43 +1,38 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Do not modify this file since it was automatically generated from:
 % 
-%  cdfGetFields.R
+%  cdfOrderBy.R
 % 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\name{cdfGetFields}
-\alias{cdfGetFields}
+\name{cdfOrderBy}
+\alias{cdfOrderBy}
 
 
-\title{Gets a subset of groups fields in a CDF structure}
+\title{Orders the fields according to the value of another field in the same CDF group}
 
 \description{
- Gets a subset of groups fields in a CDF structure.
+ Orders the fields according to the value of another field in the same CDF group.
 
  This \code{\link[base]{function}} is design to be used with \code{\link{applyCdfGroups}}()
  on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
 }
 
-\usage{cdfGetFields(groups, fields, ...)}
+\usage{cdfOrderBy(groups, field, ...)}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} of groups.}
- \item{fields}{A \code{\link[base]{character}} \code{\link[base]{vector}} of names of fields to be returned.}
- \item{...}{Not used.}
+ \item{field}{The field whose values are used to order the other fields.}
+ \item{...}{Optional arguments passed \code{\link[base]{order}}().}
 }
 
 \value{
  Returns a \code{\link[base]{list}} structure of groups.
 }
 
-\details{
-  Note that an error is \emph{not} generated for missing fields.
-  Instead the field is returned with value \code{\link[base]{NA}}.  The reason for this
-  is that it is much faster.
-}
-
 \seealso{
+ \code{\link{cdfOrderColumnsBy}}().
  \code{\link{applyCdfGroups}}().
 }
 

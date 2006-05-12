@@ -12,7 +12,7 @@
 
  \title{Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files}
 
- \usage{readCelUnits(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, readMap=NULL, dropArrayDim=TRUE, reorder=TRUE, verbose=FALSE)}
+ \usage{readCelUnits(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, reorder=TRUE, readMap=NULL, verbose=FALSE)}
 
  \description{
    Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files by using the unit and group definitions in the
@@ -23,28 +23,28 @@
    \item{filenames}{The filenames of the CEL files.}
    \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which
      units to be read.  If \code{\link[base]{NULL}}, all units are read.}
-   \item{...}{Arguments passed to low-level method
-     \code{\link[affxparser]{readCel}}, e.g. \code{readXY} and \code{readStdvs}.}
-   \item{transforms}{A \code{\link[base]{list}} of exactly \code{length(filenames)}
-     \code{\link[base]{function}}s.  If \code{\link[base]{NULL}}, no transformation is performed.
-     Intensities read are passed through the corresponding transform
-     function before being returned.}
+   \item{stratifyBy}{Argument passed to low-level method
+     \code{\link[affxparser]{readCdfUnits}}.}
    \item{cdf}{A \code{\link[base]{character}} filename of a CDF file, or a CDF \code{\link[base]{list}}
      structure.  If \code{\link[base]{NULL}}, the CDF file is searched for by
      \code{\link{findCdf}}() first starting from the current directory and
      then from the directory where the first CEL file is.}
-   \item{stratifyBy}{Argument passed to low-level method
-     \code{\link[affxparser]{readCdfUnits}}.}
+   \item{...}{Arguments passed to low-level method
+     \code{\link[affxparser]{readCel}}, e.g. \code{readXY} and \code{readStdvs}.}
    \item{addDimnames}{If \code{\link[base:logical]{TRUE}}, dimension names are added to arrays,
      otherwise not.  The size of the returned CEL structure in bytes
      increases by 30-40\% with dimension names.}
-   \item{readMap}{A \code{\link[base]{vector}} remapping cell indices to file indices.
-     If \code{\link[base]{NULL}}, no mapping is used.}
+   \item{dropArrayDim}{If \code{\link[base:logical]{TRUE}} and only one array is read, the elements of
+     the group field do \emph{not} have an array dimension.}
+   \item{transforms}{A \code{\link[base]{list}} of exactly \code{length(filenames)}
+     \code{\link[base]{function}}s.  If \code{\link[base]{NULL}}, no transformation is performed.
+     Intensities read are passed through the corresponding transform
+     function before being returned.}
    \item{reorder}{If \code{\link[base:logical]{TRUE}}, cell indices are read in order to speed up the
      reading.  If \code{\link[base:logical]{FALSE}}, cells are read in the order as given.  For
      more details, see help on the same argument in \code{\link{readCel}}().}
-   \item{dropArrayDim}{If \code{\link[base:logical]{TRUE}} and only one array is read, the elements of
-     the group field do \emph{not} have an array dimension.}
+   \item{readMap}{A \code{\link[base]{vector}} remapping cell indices to file indices.
+     If \code{\link[base]{NULL}}, no mapping is used.}
    \item{verbose}{Either a \code{\link[base]{logical}}, a \code{\link[base]{numeric}}, or a \code{\link[R.utils]{Verbose}}
      object specifying how much verbose/debug information is written to
      standard output. If a Verbose object, how detailed the information is

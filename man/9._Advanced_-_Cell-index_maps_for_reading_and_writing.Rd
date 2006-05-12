@@ -1,14 +1,15 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Do not modify this file since it was automatically generated from:
 % 
-%  902.CellIndexMaps.R
+%  909.CellIndexMaps.R
 % 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \name{cellindexmaps}
-\alias{cellindexmaps}
-\title{Cell index maps for reading and writing}
+ \name{9. Advanced - Cell-index maps for reading and writing}
+\alias{9. Advanced - Cell-index maps for reading and writing}
+\title{9. Advanced - Cell-index maps for reading and writing}
+
 
  \description{
    This part defines read and write maps that can be used to remap
@@ -25,7 +26,7 @@
    \code{\link{readCelUnits}}().
 
    For more details how cell indices are defined, see
-   \code{\link{cellxy}}.
+   \code{\link{2. Cell coordinates and cell indices}}.
  }
 
  \section{Motivation}{

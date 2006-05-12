@@ -1,36 +1,39 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Do not modify this file since it was automatically generated from:
 % 
-%  cdfMergeStrands.R
+%  cdfMergeAlleles.R
 % 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\name{cdfMergeStrands}
-\alias{cdfMergeStrands}
+\name{cdfMergeAlleles}
+\alias{cdfMergeAlleles}
 
 
-\title{Function to join CDF groups with the same names}
+\title{Function to join CDF allele A and allele B groups strand by strand}
 
 \description{
- Function to join CDF groups with the same names.
+ Function to join CDF allele A and allele B groups strand by strand.
 
  This \code{\link[base]{function}} is design to be used with \code{\link{applyCdfGroups}}()
  on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
-
- This can be used to join the sense and anti-sense groups of the same
- allele in SNP arrays.
 }
 
-\usage{cdfMergeStrands(groups, ...)}
+\usage{cdfMergeAlleles(groups, compReverseBases=FALSE, collapse="", ...)}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} structure with groups.}
+ \item{compReverseBases}{If \code{\link[base:logical]{TRUE}}, the group names, which typically are
+   names for bases, are turned into their complementary bases for the
+   reverse strand.}
+ \item{collapse}{The \code{\link[base]{character}} string used to collapse the allele A
+   and the allele B group names.}
  \item{...}{Not used.}
 }
 
 \value{
- Returns a \code{\link[base]{list}} structure with only two groups.
+ Returns a \code{\link[base]{list}} structure with the two groups \code{forward}
+ and \code{reverse}, if the latter exists.
 }
 
 \seealso{

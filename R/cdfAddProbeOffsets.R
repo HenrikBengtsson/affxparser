@@ -35,6 +35,7 @@
 # }
 #
 # @keyword programming
+# @keyword internal
 #**/#######################################################################
 cdfAddProbeOffsets <- function(groups, ...) {
   nbrOfGroups <- length(groups);

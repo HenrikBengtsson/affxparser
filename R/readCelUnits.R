@@ -14,28 +14,28 @@
 #   \item{filenames}{The filenames of the CEL files.}
 #   \item{units}{An @integer @vector of unit indices specifying which
 #     units to be read.  If @NULL, all units are read.}
-#   \item{...}{Arguments passed to low-level method 
-#     @see "affxparser::readCel", e.g. \code{readXY} and \code{readStdvs}.}
-#   \item{transforms}{A @list of exactly \code{length(filenames)}
-#     @functions.  If @NULL, no transformation is performed.
-#     Intensities read are passed through the corresponding transform
-#     function before being returned.}
+#   \item{stratifyBy}{Argument passed to low-level method 
+#     @see "affxparser::readCdfUnits".}
 #   \item{cdf}{A @character filename of a CDF file, or a CDF @list
 #     structure.  If @NULL, the CDF file is searched for by
 #     @see "findCdf" first starting from the current directory and
 #     then from the directory where the first CEL file is.}
-#   \item{stratifyBy}{Argument passed to low-level method 
-#     @see "affxparser::readCdfUnits".}
+#   \item{...}{Arguments passed to low-level method 
+#     @see "affxparser::readCel", e.g. \code{readXY} and \code{readStdvs}.}
 #   \item{addDimnames}{If @TRUE, dimension names are added to arrays,
 #     otherwise not.  The size of the returned CEL structure in bytes 
 #     increases by 30-40\% with dimension names.}
-#   \item{readMap}{A @vector remapping cell indices to file indices.  
-#     If @NULL, no mapping is used.}
+#   \item{dropArrayDim}{If @TRUE and only one array is read, the elements of
+#     the group field do \emph{not} have an array dimension.}
+#   \item{transforms}{A @list of exactly \code{length(filenames)}
+#     @functions.  If @NULL, no transformation is performed.
+#     Intensities read are passed through the corresponding transform
+#     function before being returned.}
 #   \item{reorder}{If @TRUE, cell indices are read in order to speed up the
 #     reading.  If @FALSE, cells are read in the order as given.  For
 #     more details, see help on the same argument in @see "readCel".}
-#   \item{dropArrayDim}{If @TRUE and only one array is read, the elements of
-#     the group field do \emph{not} have an array dimension.}
+#   \item{readMap}{A @vector remapping cell indices to file indices.  
+#     If @NULL, no mapping is used.}
 #   \item{verbose}{Either a @logical, a @numeric, or a @see "R.utils::Verbose"
 #     object specifying how much verbose/debug information is written to
 #     standard output. If a Verbose object, how detailed the information is
@@ -80,7 +80,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/######################################################################### 
-readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), addDimnames=FALSE, readMap=NULL, dropArrayDim=TRUE, reorder=TRUE, verbose=FALSE) {
+readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, reorder=TRUE, readMap=NULL, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -226,7 +226,9 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
     indices <- unlist(cdf, use.names=FALSE);
   } else {
     if (cdfType == "indices") {
-      # Clean up CDF list structure from other fields than "indices".
+      # Clean up CDF list structure from other elements than groups
+      cdf <- lapply(cdf, FUN=function(unit) list(groups=unit$groups));
+      # Clean up CDF list structure from other group fields than "indices".
       cdf <- applyCdfGroups(cdf, cdfGetFields, fields="indices");
       indices <- unlist(cdf, use.names=FALSE);
     } else {
@@ -235,6 +237,8 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
       cdfHeader <- readCdfHeader(cdfFile);
       ncol <- cdfHeader$cols;
       verbose && exit(verbose);
+      # Clean up CDF list structure from other elements than groups
+      cdf <- lapply(cdf, FUN=function(unit) list(groups=unit$groups));
       x <- unlist(applyCdfGroups(cdf, cdfGetFields, "x"), use.names=FALSE);
       y <- unlist(applyCdfGroups(cdf, cdfGetFields, "y"), use.names=FALSE);
       # Cell indices are one-based in R
@@ -428,6 +432,15 @@ readCelUnits <- function(filenames, units=NULL, ..., transforms=NULL, cdf=NULL, 
 
 ############################################################################
 # HISTORY:
+# 2006-05-12 [HB]
+# o Rearranged order of arguments such that the most often used/most user-
+#   friendly arguments come first.  This was done as a first step after
+#   our developers meeting yesterday.
+# 2006-04-18 [HB]
+# o BUG FIX: When argument 'cdf' was a CDF list structure with elements
+#   'type' or 'direction', readCelUnits() would not read the correct cells
+#   because the values of 'type' and 'direction' would be included in the
+#   extracted list of cell indices.
 # 2006-04-15 [HB]
 # o BUG FIX: Passed '...' to both readCdfCellIndices() and readCel(), but
 #   should only be passed to the latter.

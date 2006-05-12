@@ -37,6 +37,7 @@
 #
 # @keyword file
 # @keyword IO
+# @keyword internal
 #**/#######################################################################
 findFiles <- function(pattern=NULL, paths=NULL, firstOnly=TRUE, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -36,6 +36,7 @@
 # }
 #
 # @keyword programming
+# @keyword internal
 #**/#######################################################################
 cdfGtypeCelToPQ <- function(groups, ...) {
   nbrOfGroups <- length(groups);

@@ -1,22 +1,24 @@
 ########################################################################/**
-# @RdocFunction cdfMergeToQuartets
+# @RdocFunction cdfMergeAlleles
 #
-# @title "Function to re-arrange CDF groups values in quartets"
+# @title "Function to join CDF allele A and allele B groups strand by strand"
 #
 # \description{
 #  @get "title".
 #
 #  This @function is design to be used with @see "applyCdfGroups"
 #  on an Affymetrix Mapping (SNP) CDF @list structure.
-#
-#  Note, this requires that the group values have already been 
-#  arranged in PMs and MMs.
 # }
 #
 # @synopsis
 #
 # \arguments{
 #  \item{groups}{A @list structure with groups.}
+#  \item{compReverseBases}{If @TRUE, the group names, which typically are
+#    names for bases, are turned into their complementary bases for the
+#    reverse strand.}
+#  \item{collapse}{The @character string used to collapse the allele A
+#    and the allele B group names.}
 #  \item{...}{Not used.}
 # }
 #
@@ -39,16 +41,18 @@
 # @keyword programming
 # @keyword internal
 #**/#######################################################################
-cdfMergeToQuartets <- function(groups, ...) {
+cdfMergeAlleles <- function(groups, compReverseBases=FALSE, collapse="", ...) {
   nbrOfGroups <- length(groups);
 
   # Allocate the new groups
   nbrOfStrands <- nbrOfGroups %/% 2;
   newGroups <- vector("list", nbrOfStrands);
+  groupNames <- names(groups);
 
   for (kk in 1:nbrOfStrands) {
-    groupA <- groups[[2*kk-1]];
-    groupB <- groups[[2*kk]];
+    kk2 <- 2*kk;
+    groupA <- .subset2(groups, kk2-1);
+    groupB <- .subset2(groups, kk2);
 
     # Allocate the fields
     nbrOfFields <- length(groupA);
@@ -56,8 +60,8 @@ cdfMergeToQuartets <- function(groups, ...) {
 
     # Join the fields of allele A and allele B.
     for (ff in seq(length=nbrOfFields)) {
-      fieldA <- groupA[[ff]];
-      fieldB <- groupB[[ff]];
+      fieldA <- .subset2(groupA, ff);
+      fieldB <- .subset2(groupB, ff);
 
       ndim <- length(dim(fieldA));
       if (ndim <= 1) {
@@ -76,17 +80,33 @@ cdfMergeToQuartets <- function(groups, ...) {
         fieldA <- append(fieldA, fieldB);
       }
       newGroup[[ff]] <- fieldA;
-    }
+    } # for (ff ...);
+    # Set the name of the fields
     names(newGroup) <- names(groupA);
+
     newGroups[[kk]] <- newGroup;
   }
-  names(newGroups) <- rep(c("forward", "reverse"), length.out=nbrOfStrands);
+
+  if (compReverseBases) {
+str(groupNames);
+    groupNames[c(3,4)] <- c(A="T", C="G", G="C", T="A")[groupNames[c(3,4)]];
+str(groupNames);
+  }
+
+  nameFwd <- paste(groupNames[c(1,2)], collapse=collapse);
+  nameRev <- paste(groupNames[c(3,4)], collapse=collapse);
+  names(newGroups) <- c(nameFwd, nameRev);
+
   newGroups;
 }
 
 
 ############################################################################
 # HISTORY:
+# 2006-05-04
+# o Now the names of the generated groups are constructed from the allele
+#   A and B group names.  Before they were only "forward" and "reverse".
+# o Renamed from cdfMergeToQuartets().
 # 2006-03-07
 # o Renamed from cdfStandJoiner() to cdfMergeStrands().
 # 2006-02-23

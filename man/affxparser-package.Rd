@@ -1,4 +1,4 @@
- \name{affxparser-package}
+\name{affxparser-package}
 \alias{affxparser-package}
 \alias{affxparser}
 \docType{package}
@@ -25,6 +25,26 @@
   it works independently of other CRAN and Bioconductor packages.
 }
 
+\section{To get started}{
+  To get started, see:
+  \enumerate{
+    \item \code{\link{readCelUnits}}() - reads one or several Affymetrix
+  CEL file probeset by probeset. 
+    \item \code{\link{readCel}}() - reads an Affymetrix CEL file.
+    by probe.
+    \item \code{\link{readCdf}}() - reads an Affymetrix CDF file.
+    by probe.
+    \item \code{\link{readCdfUnits}}() - reads an Affymetrix CDF file unit by unit. 
+    \item \code{\link{readCdfCellIndices}}() - Like \code{readCdfUnits()}, but returns cell indices only, which is often enough to read CEL files unit by unit.
+    \item \code{\link{applyCdfGroups}}() - Re-arranges a CDF structure.
+    \item \code{\link{findCdf}}() - Locates an Affymetrix CDF file by chip type.  This page also describes how to setup default search path for CDF files.
+  }
+}
+
+\section{Setting up the CDF search path}{
+Some of the functions in this package search for CDF files automatically by scanning certain directories.  To add directories to the default search path, see instructions in \code{\link{findCdf}}().
+}
+
 \section{Future Work}{
   Other Affymetrix files can be parsed using the Fusion SDK. Given
   sufficient interest we will implement this. Most notably are BPMAP
@@ -34,7 +54,18 @@
   file, see a lot of the already included functions.
 }
 
-\section{Details}{
+\section{Running examples}{
+  In order to run the examples, data files must exists in the current
+  directory.  Otherwise, the example scripts will do nothing.  Most of
+  the examples requires a CDF file or a CEL file, or both.  Make sure
+  the CDF file is of the same chip type as the CEL file. 
+
+  Affymetrix provides data sets of different types at
+  \url{http://www.affymetrix.com/support/datasets.affx} that can be
+  used.  There are both small are very large data sets available. 
+}
+
+\section{Tecnical details}{
   This package implements an interface to the Fusion SDK from
   Affymetrix.com. This SDK (software development kit) is an open source
   library used for parsing the various files formats used by the
@@ -93,34 +124,6 @@
   information regarding changes to the Fusion SDK is stored.
 }  
   
-
-\section{To get started}{
-  To get started, see:
-  \enumerate{
-    \item \code{\link{readCel}}() - reads an Affymetrix CEL file.
-    by probe.
-    \item \code{\link{readCdf}}() - reads an Affymetrix CDF file.
-    by probe.
-    \item \code{\link{readCelUnits}}() - reads one or several Affymetrix
-  CEL file probeset by probeset. 
-    \item \code{\link{findCdf}}() - Locates an Affymetrix CDF file by chip type.
-    \item \code{\link{readCdfUnits}}() - reads an Affymetrix CDF file
-  unit by unit. 
-    \item \code{\link{applyCdfGroups}}() - Re-arranges a CDF structure.
-  }
-}
-
-\section{Running examples}{
-  In order to run the examples, data files must exists in the current
-  directory.  Otherwise, the example scripts will do nothing.  Most of
-  the examples requires a CDF file or a CEL file, or both.  Make sure
-  the CDF file is of the same chip type as the CEL file. 
-
-  Affymetrix provides data sets of different types at
-  \url{http://www.affymetrix.com/support/datasets.affx} that can be
-  used.  There are both small are very large data sets available. 
-}
-
 \author{
  James Bullard, \email{bullard@stat.berkeley.edu} and 
  Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}.

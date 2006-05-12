@@ -64,6 +64,7 @@
 # }
 #
 # @keyword programming
+# @keyword internal
 #**/#######################################################################
 cdfAddBaseMmCounts <- function(groups, ...) {
   for (gg in seq(along=groups)) {

@@ -42,3 +42,4 @@ read.affybatch2(..., filenames = character(0),
 }
 \keyword{file}
 \keyword{IO}
+\keyword{internal}

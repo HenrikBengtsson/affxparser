@@ -1,6 +1,25 @@
 Package: affxparser
 ===================
 
+Version: 1.5.0 [2006-05-12]
+o Cleaned up and restructured the help pages; several Rd pages are
+  now made "internal" so they do not show up on the help index page.
+  Instead they are accessable from within other help pages (if you
+  browsing via HTML that is).  Added a help page on common terms.
+o Added cdfOrderBy() and cdfOrderColumnsBy() for restructuring group
+  fields in a CDF list structure.  Added cdfGetGroups() too.
+o Added a bit more documentation on how to set the default CDF path.
+o BUG FIX: On Linux 64-bit read CEL intensities would all be zero.
+  This was due to compiler settings in the Fusion SDK package, which
+  is circumvented by gcc compile it with a lower optimization level.
+o BUG FIX: When argument 'cdf' was a CDF list structure with elements
+  'type' or 'direction', readCelUnits() would not read the correct cells
+  because the values of 'type' and 'direction' would be included in the
+  extracted list of cell indices.
+
+Version: 1.4.0 [2006-04-27]
+o The stable version for Bioconductor 1.8.
+
 Version: 1.3.3 [2006-04-15]
 o Updated the Fusion SDK to version 1.0.5 (an unofficial release).
   It now works on Solaris.
@@ -36,4 +55,3 @@ o KNOWN BUGS: At least on WinXP, heavy use of readCelUnits()
 
 Version: 1.3.1
 o
-
