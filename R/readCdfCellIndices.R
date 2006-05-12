@@ -56,7 +56,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), flat=FALSE, verbose=0) {
+readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -194,6 +194,8 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
 
 ############################################################################
 # HISTORY:
+# 2006-05-12
+# o Removed argument 'flat'.  Will not be used for a while.
 # 2006-04-01
 # o Created, because it is very commonly used and is about 5 times faster
 #   than using readCdfUnits(..., readIndices=TRUE).  /HB

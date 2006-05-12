@@ -1,40 +1,34 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Do not modify this file since it was automatically generated from:
 % 
-%  cdfGetFields.R
+%  cdfGetGroups.R
 % 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\name{cdfGetFields}
-\alias{cdfGetFields}
+\name{cdfGetGroups}
+\alias{cdfGetGroups}
 
 
-\title{Gets a subset of groups fields in a CDF structure}
+\title{Gets a subset of groups in a CDF structure}
 
 \description{
- Gets a subset of groups fields in a CDF structure.
+ Gets a subset of groups in a CDF structure.
 
  This \code{\link[base]{function}} is design to be used with \code{\link{applyCdfGroups}}()
  on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
 }
 
-\usage{cdfGetFields(groups, fields, ...)}
+\usage{cdfGetGroups(groups, which, ...)}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} of groups.}
- \item{fields}{A \code{\link[base]{character}} \code{\link[base]{vector}} of names of fields to be returned.}
+ \item{which}{An \code{\link[base]{integer}} or \code{\link[base]{character}} \code{\link[base]{vector}} of groups be returned.}
  \item{...}{Not used.}
 }
 
 \value{
  Returns a \code{\link[base]{list}} structure of groups.
-}
-
-\details{
-  Note that an error is \emph{not} generated for missing fields.
-  Instead the field is returned with value \code{\link[base]{NA}}.  The reason for this
-  is that it is much faster.
 }
 
 \seealso{

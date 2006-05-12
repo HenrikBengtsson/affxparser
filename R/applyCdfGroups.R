@@ -11,7 +11,8 @@
 #
 # \arguments{
 #  \item{cdf}{A CDF @list structure.}
-#  \item{fcn}{A @function taking a @list structure of group elements.}
+#  \item{fcn}{A @function that takes a @list structure of group elements
+#   and returns an updated @list of groups.}
 #  \item{...}{Arguments passed to the \code{fcn} function.}
 # }
 #
@@ -19,18 +20,37 @@
 #  Returns an updated CDF @list structure.
 # }
 #
-# @examples "../incl/applyCdfGroups.Rex"
+# \section{Pre-defined restructuring functions}{
+#  \itemize{
+#   \item{Generic:}{
+#   \itemize{
+#    \item @see "cdfGetFields" - Gets a subset of groups fields in a CDF
+#      structure.
+#    \item @see "cdfGetGroups" - Gets a subset of groups in a CDF structure.
+#    \item @see "cdfOrderBy" - Orders the fields according to the value of 
+#      another field in the same CDF group.
+#    \item @see "cdfOrderColumnsBy" - Orders the columns of fields according
+#      to the values in a certain row of another field in the same CDF group. 
+#   }}
+#   \item{Designed for SNP arrays:}{
+#   \itemize{
+#    \item @see "cdfAddBaseMmCounts" - Adds the number of allele A and 
+#      allele B mismatching nucleotides of the probes in a CDF structure.
+#    \item @see "cdfAddProbeOffsets" - Adds probe offsets to the groups in 
+#      a CDF structure.
+#    \item @see "cdfGtypeCelToPQ" - Function to immitate Affymetrix' 
+#      \code{gtype_cel_to_pq} software.
+#    \item @see "cdfMergeAlleles" - Function to join CDF allele A and 
+#      allele B groups strand by strand.
+#    \item @see "cdfMergeStrands" - Function to join CDF groups with the
+#      same names.
+#   }}
+#  }
 #
-# \seealso{
-#   To merge groups with the same name, for instance the forward and
-#   reverse strands of SNP arrays, see @see "cdfMergeStrands".
-#   To merge fields for allele A and allele B, see
-#   @see "cdfMergeToQuartets".
-#   To add sequence shifts of the probes, see @see "cdfAddProbeOffsets".
-#   To add counts of the number of nucleotides that mismatch the target
-#   sequences for allele A and allele B, respectively, see
-#   @see "cdfAddBaseMmCounts".
+#  We appreciate contributions.
 # }
+#
+# @examples "../incl/applyCdfGroups.Rex"
 #
 # @author
 #

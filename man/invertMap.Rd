@@ -78,5 +78,7 @@ rm(nbrOfCells, idx, readMap, writeMap, writeMap2)
 
 
 
+
 \keyword{file}
 \keyword{IO}
+\keyword{internal}

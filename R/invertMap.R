@@ -38,6 +38,7 @@
 # 
 # @keyword "file"
 # @keyword "IO"
+# @keyword "internal"
 #*/#########################################################################
 invertMap <- function(map, ...) {
   n <- length(map);

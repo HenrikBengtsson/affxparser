@@ -12,7 +12,7 @@
 
  \title{Reads cell indices of units (probesets) in an Affymetrix CDF file}
 
- \usage{readCdfCellIndices(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), flat=FALSE, verbose=0)}
+ \usage{readCdfCellIndices(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), verbose=0)}
 
  \description{
    Reads cell indices of units (probesets) in an Affymetrix CDF file.
@@ -35,7 +35,6 @@
      Moreover, the PMs and MMs may not even be paired, i.e. there is no
      guarantee that the two elements in a column corresponds to a
      PM-MM pair.}
-   \item{flat}{Do we want a flat return.}
    \item{verbose}{An \code{\link[base]{integer}} specifying the verbose level. If 0, the
      file is parsed quietly.  The higher numbers, the more details.}
  }

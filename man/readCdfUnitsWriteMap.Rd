@@ -178,5 +178,7 @@ rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, readMap, writeMap)
 
 
 
+
 \keyword{file}
 \keyword{IO}
+\keyword{internal}

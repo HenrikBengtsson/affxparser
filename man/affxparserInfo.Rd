@@ -83,3 +83,4 @@
   affxparserInfo()
 }
 \keyword{file}
+\keyword{internal}

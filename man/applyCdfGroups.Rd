@@ -20,12 +20,43 @@
 
 \arguments{
  \item{cdf}{A CDF \code{\link[base]{list}} structure.}
- \item{fcn}{A \code{\link[base]{function}} taking a \code{\link[base]{list}} structure of group elements.}
+ \item{fcn}{A \code{\link[base]{function}} that takes a \code{\link[base]{list}} structure of group elements
+  and returns an updated \code{\link[base]{list}} of groups.}
  \item{...}{Arguments passed to the \code{fcn} function.}
 }
 
 \value{
  Returns an updated CDF \code{\link[base]{list}} structure.
+}
+
+\section{Pre-defined restructuring functions}{
+ \itemize{
+  \item{Generic:}{
+  \itemize{
+   \item \code{\link{cdfGetFields}}() - Gets a subset of groups fields in a CDF
+     structure.
+   \item \code{\link{cdfGetGroups}}() - Gets a subset of groups in a CDF structure.
+   \item \code{\link{cdfOrderBy}}() - Orders the fields according to the value of
+     another field in the same CDF group.
+   \item \code{\link{cdfOrderColumnsBy}}() - Orders the columns of fields according
+     to the values in a certain row of another field in the same CDF group.
+  }}
+  \item{Designed for SNP arrays:}{
+  \itemize{
+   \item \code{\link{cdfAddBaseMmCounts}}() - Adds the number of allele A and
+     allele B mismatching nucleotides of the probes in a CDF structure.
+   \item \code{\link{cdfAddProbeOffsets}}() - Adds probe offsets to the groups in
+     a CDF structure.
+   \item \code{\link{cdfGtypeCelToPQ}}() - Function to immitate Affymetrix'
+     \code{gtype_cel_to_pq} software.
+   \item \code{\link{cdfMergeAlleles}}() - Function to join CDF allele A and
+     allele B groups strand by strand.
+   \item \code{\link{cdfMergeStrands}}() - Function to join CDF groups with the
+     same names.
+  }}
+ }
+
+ We appreciate contributions.
 }
 
 \examples{
@@ -93,7 +124,7 @@ print(cdf)
 # Rearrange values of group fields into quartets.  This
 # requires that the values are already arranged as PMs and MMs.
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-cdf <- applyCdfGroups(cdf0, cdfMergeToQuartets)
+cdf <- applyCdfGroups(cdf0, cdfMergeAlleles)
 cat("Probe quartets:\n")
 print(cdf)
 
@@ -109,17 +140,6 @@ rm(chipType, cdfFile, unit, cdf0, cdf, x, y)
 } # for (zzz in 0)
 rm(zzz)
 
-}
-
-\seealso{
-  To merge groups with the same name, for instance the forward and
-  reverse strands of SNP arrays, see \code{\link{cdfMergeStrands}}().
-  To merge fields for allele A and allele B, see
-  \code{\link{cdfMergeToQuartets}}().
-  To add sequence shifts of the probes, see \code{\link{cdfAddProbeOffsets}}().
-  To add counts of the number of nucleotides that mismatch the target
-  sequences for allele A and allele B, respectively, see
-  \code{\link{cdfAddBaseMmCounts}}().
 }
 
 \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
