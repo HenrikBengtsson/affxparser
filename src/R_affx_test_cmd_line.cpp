@@ -57,7 +57,7 @@ int main(int argc, char **argv)
       for (int iset=0; iset<nsets; iset++)
 	{
 	  name = cdf.GetProbeSetName(iset);
-	  sum = 0;
+	  double sum = 0;
 	  FusionCDFProbeSetInformation set;
 	  cdf.GetProbeSetInformation(iset, set);
 	  int ngroups = set.GetNumGroups();
@@ -73,6 +73,7 @@ int main(int argc, char **argv)
 		  sum += cel.GetIntensity(probe.GetX(), probe.GetY());
 		}
 	    }
+          double avg;
 	  avg = sum / set.GetNumCells();
 	  cout << "The average probe set intensity (" << name << ") is " << avg << endl;
 	}
