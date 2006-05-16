@@ -98,10 +98,3 @@ SOURCES.package = \
 
 OBJS=$(SOURCES.fusion:.cpp=.o) $(SOURCES.package:.cpp=.o)
  
-## The files below are the ones left out of the 
-##   makefile.mac from the fusion zip archive
-##	fusion_sdk/file/DttArrayFileReader.cpp\
-##	fusion_sdk/file/SAXDttArrayHandlers.cpp\
-##	fusion_sdk/calvin_files/fusion/src/FusionArrayFileReader.cpp\
-##	fusion_sdk/calvin_files/parsers/src/ArrayFileReader.cpp\
-##	fusion_sdk/calvin_files/parsers/src/SAXArrayHandlers.cpp\
