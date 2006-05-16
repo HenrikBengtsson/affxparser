@@ -15,7 +15,11 @@ CPPFLAGS=-Ifusion_sdk/calvin_files/data/src\
  -I/usr/lib/R/include\
  -D_USE_MEM_MAPPING_
 
+CXXFLAGS=-O1 -g
+
 CC=g++
+
+CCONMAC=/usr/local/gcc4.0/bin/g++-4.0
 
 SOURCES.fusion = \
 	fusion_sdk/file/BARFileData.cpp\
@@ -83,31 +87,31 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/utils/src/DateTime.cpp\
 	fusion_sdk/calvin_files/utils/src/FileUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/StringUtils.cpp\
-	fusion_sdk/calvin_files/utils/src/checksum.cpp\
-	R_affx_test_cmd_line.cpp
+	fusion_sdk/calvin_files/utils/src/checksum.cpp
 
 SOURCES.affxparser = \
-	R_affx_parser.cpp	
+	R_affx_cel_parser.cpp\
+	R_affx_cdf_parser.cpp\
+	R_affx_cdf_extras.cpp
+
+SOURCES.cmdline = \
+	R_affx_test_cmd_line.cpp
 
 OBJECTS.affxparser=$(SOURCES.affxparser:.cpp=.o)
+
 OBJECTS.fusion=$(SOURCES.fusion:.cpp=.o)
+
+OBJECTS.cmdline=$(SOURCES.cmdline:.cpp=.o)
+
 
 LIB.fusion=./affx_fusion.lib
 
 $(LIB.fusion): $(OBJECTS.fusion) $(OBJECTS.affxparser)
 	ar -r $(LIB.fusion) $(OBJECTS.fusion)
 
-test_cmd: $(OBJECTS.fusion)
-	${CC} ${CPPFLAGS} ${SOURCES.fusion} -o test_prog
+cmd_line: $(OBJECTS.fusion) $(OBJECTS.cmdline)
+	${CC} ${CPPFLAGS} ${CXXFLAGS} ${OBJECTS.fusion} $(OBJECTS.cmdline) -o cmd_line
 
 clean:
 	-rm -rf $(OBJECTS.fusion) $(LIB.fusion) *.o *.so
 
-
-## The files below are the ones left out of the 
-##   makefile.mac from the fusion zip archive
-##	fusion_sdk/file/DttArrayFileReader.cpp\
-##	fusion_sdk/file/SAXDttArrayHandlers.cpp\
-##	fusion_sdk/calvin_files/fusion/src/FusionArrayFileReader.cpp\
-##	fusion_sdk/calvin_files/parsers/src/ArrayFileReader.cpp\
-##	fusion_sdk/calvin_files/parsers/src/SAXArrayHandlers.cpp\
