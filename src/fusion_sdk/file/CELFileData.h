@@ -53,7 +53,7 @@
 #include <sys/user.h>
 ///  Structure alignment requirement for g++
 ///  @remark Structure alignment for Mac OS X is included in #pragma
-#define STRUCT_ALIGNMENT
+#define STRUCT_ALIGNMENT __attribute__ ((packed))
 
 #else // UNIX 
 #include <stdio.h>
@@ -74,9 +74,9 @@ namespace affxcel
 #ifdef WIN32 
 #pragma pack(push, 1)
 #endif
-#ifdef __APPLE__
-#pragma options align=packed
-#endif
+    // #ifdef __APPLE__
+    // #pragma options align=packed
+    // #endif
 ///////////////////////////////////////////////////////////////////////////////
 ///  typedef as CELFileEntryType
 ///  \brief Structure of CEL file entries for text and xda format
@@ -108,9 +108,9 @@ typedef struct _CELFileTranscriptomeEntryType
 #ifdef WIN32
 #pragma pack(pop)
 #endif
-#ifdef __APPLE__
-#pragma options align=reset
-#endif
+// #ifdef __APPLE__
+// #pragma options align=reset
+// #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  affxcel::CCELFileHeaderData
