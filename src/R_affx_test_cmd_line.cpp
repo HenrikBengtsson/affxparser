@@ -45,45 +45,47 @@ int main(int argc, char **argv)
 	  
 	}
 
-      cdf.SetFileName(cdfFileName);
-      if (cdf.Read() == false)
-	{
-	  cout << "Failed to read the CDF file." << endl;
-	  return 0;
-	}
-        
-      int nsets = cdf.GetHeader().GetNumProbeSets();
-      std::string name;
-      for (int iset=0; iset<nsets; iset++)
-	{
-	  name = cdf.GetProbeSetName(iset);
-	  double sum = 0;
-	  FusionCDFProbeSetInformation set;
-	  cdf.GetProbeSetInformation(iset, set);
-	  int ngroups = set.GetNumGroups();
-	  for (int igroup=0; igroup<ngroups; igroup++)
-	    {
-	      FusionCDFProbeGroupInformation group;
-	      set.GetGroupInformation(igroup, group);
-	      int ncells = group.GetNumCells();
-	      for (int icell=0; icell<ncells; icell++)
-		{
-		  FusionCDFProbeInformation probe;
-		  group.GetCell(icell, probe);
-		  sum += cel.GetIntensity(probe.GetX(), probe.GetY());
-		}
-	    }
-          double avg;
-	  avg = sum / set.GetNumCells();
-	  cout << "The average probe set intensity (" << name << ") is " << avg << endl;
-	}
+      if(argc > 2){
+          cdf.SetFileName(cdfFileName);
+          if (cdf.Read() == false)
+              {
+                  cout << "Failed to read the CDF file." << endl;
+                  return 0;
+              }
+          
+          int nsets = cdf.GetHeader().GetNumProbeSets();
+          std::string name;
+          for (int iset=0; iset<nsets; iset++)
+              {
+                  name = cdf.GetProbeSetName(iset);
+                  double sum = 0;
+                  FusionCDFProbeSetInformation set;
+                  cdf.GetProbeSetInformation(iset, set);
+                  int ngroups = set.GetNumGroups();
+                  for (int igroup=0; igroup<ngroups; igroup++)
+                      {
+                          FusionCDFProbeGroupInformation group;
+                          set.GetGroupInformation(igroup, group);
+                          int ncells = group.GetNumCells();
+                          for (int icell=0; icell<ncells; icell++)
+                              {
+                                  FusionCDFProbeInformation probe;
+                                  group.GetCell(icell, probe);
+                                  sum += cel.GetIntensity(probe.GetX(), probe.GetY());
+                              }
+                      }
+                  double avg;
+                  avg = sum / set.GetNumCells();
+                  cout << "The average probe set intensity (" << name << ") is " << avg << endl;
+              }
+      }      
     }
   catch (std::exception& e)
-    {
-      cout << e.what() << endl;
-      cout << "Error in reading the file.";
-    }
-
+      {
+          cout << e.what() << endl;
+          cout << "Error in reading the file.";
+      }
+  
   return 0;
 }
 
