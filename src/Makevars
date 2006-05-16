@@ -1,5 +1,9 @@
+all: $(SHLIB)
+
+MYCXXFLAGS=-O1
+
 %.o: %.cpp
-	$(CXX) $(ALL_CPPFLAGS) -fpic -g -O1 -c $< -o $@
+	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
 
 PKG_CPPFLAGS=\
  -imacros R_affx_constants.h\
