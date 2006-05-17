@@ -2,4 +2,6 @@ Using Fusion SDK release 1.0.5 from April 2006.
 
 The fusion2affxparser.sh script was used to trim the SDK.
 
-We have made changes to file/CELFileData.h
+We have made changes to 
+  file/CELFileData.h
+  calvin_files/utils/src/AffymetrixGuid.cpp
