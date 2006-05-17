@@ -1,33 +1,33 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 //
 #include <fstream>
 #include <istream>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <assert.h>
 //
 #include "affy-base-types.h"
 #include "CDFFileData.h"
 #include "FileIO.h"
-
+#include <stdio.h>
 #ifndef WIN32
 #include <sys/mman.h>
 #endif
@@ -821,7 +821,6 @@ bool CCDFFileData::ReadXDAFormat(bool bReadHeaderOnly)
 	std::ifstream instr;
 	instr.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
 
-
 	// Check if open
 	if (!instr)
 	{
@@ -951,7 +950,6 @@ bool CCDFFileData::ReadXDAFormat(bool bReadHeaderOnly)
 			//ReadFixedString(instr, name, MAX_PROBE_SET_NAME_LENGTH);
 			//pBlk->m_Name = name;
 			ReadFixedString(instr, pBlk->m_Name, MAX_PROBE_SET_NAME_LENGTH);
-
 			// Read the cells
 			CCDFProbeInformation *pCell;
 			pBlk->m_Cells.resize(pBlk->m_NumCells);
@@ -968,11 +966,11 @@ bool CCDFFileData::ReadXDAFormat(bool bReadHeaderOnly)
 				pCell->m_Y = usval;
 				ReadInt32_I(instr, ival);
 				pCell->m_Expos = ival;
-        uint8_t tmp;
+                                uint8_t tmp;
 				ReadUInt8(instr,tmp);
-        pCell->m_PBase=tmp;
+                                pCell->m_PBase=tmp;
 				ReadUInt8(instr,tmp);
-        pCell->m_TBase=tmp;
+                                pCell->m_TBase=tmp;
 
 				if (k==0)
 					pBlk->m_Start = pCell->m_ListIndex;
@@ -1122,7 +1120,7 @@ NextProbeSet:
 		if (instr.eof())
 			return true;
 	}
-
+        bool expectMisMatch = false;
 	// ProbeSet info.
 	pProbeSet = &m_ProbeSets[iProbeSet];
 	pProbeSet->m_Index = iProbeSet;
@@ -1191,14 +1189,40 @@ NextProbeSet:
 	// Determine the number of cells per List if not specified
 	// in the CDF file.
 	if (pProbeSet->m_NumCellsPerList == 0)
-	{
-		if (pProbeSet->m_ProbeSetType == GenotypingProbeSetType || pProbeSet->m_ProbeSetType == ResequencingProbeSetType || pProbeSet->m_ProbeSetType == TagProbeSetType || pProbeSet->m_ProbeSetType == UnknownProbeSetType)
-			pProbeSet->m_NumCellsPerList = 4;
-		else if (pProbeSet->m_ProbeSetType == ExpressionProbeSetType)
-			pProbeSet->m_NumCellsPerList = 2;
-		else
-			pProbeSet->m_NumCellsPerList = 0;
-	}
+          {
+            if (pProbeSet->m_ProbeSetType == GenotypingProbeSetType || 
+                pProbeSet->m_ProbeSetType == ResequencingProbeSetType || 
+                pProbeSet->m_ProbeSetType == TagProbeSetType || 
+                pProbeSet->m_ProbeSetType == UnknownProbeSetType &&
+                (pProbeSet->m_NumLists != 0 && pProbeSet->m_NumCells / pProbeSet->m_NumLists == 4)) 
+              {
+                pProbeSet->m_NumCellsPerList = 4;
+              }
+            else if (pProbeSet->m_ProbeSetType == ExpressionProbeSetType) 
+              {
+                if(pProbeSet->m_NumLists != 0 && 
+                   pProbeSet->m_NumCells / pProbeSet->m_NumLists < 255) 
+                  pProbeSet->m_NumCellsPerList = pProbeSet->m_NumCells / pProbeSet->m_NumLists;
+                else
+                  pProbeSet->m_NumCellsPerList = 1;
+              }
+            else 
+              {
+                pProbeSet->m_NumCellsPerList = 1;
+              }
+          }
+        // Sanity check for relationship of m_NumCellsPerList, m_NumCells and m_NumLists
+        if(pProbeSet->m_NumLists != 0 && 
+           pProbeSet->m_NumCells / pProbeSet->m_NumLists < 255 &&
+           pProbeSet->m_NumCellsPerList != pProbeSet->m_NumCells / pProbeSet->m_NumLists) {
+          assert(0 && 
+                 "CCDFFileData::ReadTextFormat(): m_NumCellsPerList != pProbeSet->m_NumCells / pProbeSet->m_NumLists");
+        }
+
+        // If this is an expression probe set and we have 2 cells per list set expectMisMatch flag.
+        if(pProbeSet->m_ProbeSetType == ExpressionProbeSetType &&
+           pProbeSet->m_NumCellsPerList == 2) 
+          expectMisMatch = true;
 
 	// Get the mutation type if block tile. ignore.
 	if (pProbeSet->m_ProbeSetType == GenotypingProbeSetType && m_Header.m_Version > 1)
@@ -1245,37 +1269,43 @@ NextProbeSet:
 		else
 			pBlk->m_Direction = pProbeSet->m_Direction;
 
-
 		// Read the cells.
 		ReadNextLine(instr, str, MAXLINELENGTH); // header
 		CCDFProbeInformation cell;
 		pBlk->m_Cells.resize(pBlk->m_NumCells);
 		char unusedstr[64];
 		int unusedint;
-		int cellIndex;
+		unsigned int cellIndex;
 		int x,y;
 		for (int iCell=0; iCell<pBlk->m_NumCells; iCell++)
 		{
 			ReadNextLine(instr, str, MAXLINELENGTH);
 			subStr = strchr(str, '=')+1;
-			sscanf(subStr, "%d %d %s %s %s %d %d %*c %c %c %d",
-					&x,
-					&y,
-					unusedstr,
-					unusedstr,
-					unusedstr,
-					&cell.m_Expos,
-					&unusedint,
-					&cell.m_PBase,
-					&cell.m_TBase,
-					&cell.m_ListIndex);
+                        int scanCount = 0;
+			scanCount = sscanf(subStr, "%d %d %s %s %s %d %d %*c %c %c %d",
+                                           &x,
+                                           &y,
+                                           unusedstr,
+                                           unusedstr,
+                                           unusedstr,
+                                           &cell.m_Expos,
+                                           &unusedint,
+                                           &cell.m_PBase,
+                                           &cell.m_TBase,
+                                           &cell.m_ListIndex);
+                        if(scanCount != 10) {
+                          m_strError = "Didn't get 10 entries in scan.";
+                          return false;
+                        }
 			cell.m_X = x;
 			cell.m_Y = y;
 
 			if (pProbeSet->m_ProbeSetType == ExpressionProbeSetType)
 			{
 				cellIndex = (iCell / pProbeSet->m_NumCellsPerList) * pProbeSet->m_NumCellsPerList;
-				if (cell.m_PBase == cell.m_TBase)
+                                // If we are expecting pairs of PM/MM then we want the order
+                                // in m_Cells to be PM first and MM second.
+				if (expectMisMatch && cell.m_PBase == cell.m_TBase)
 					++cellIndex;
 			}
 			else
@@ -1284,6 +1314,10 @@ NextProbeSet:
 				cellIndex += (pProbeSet->m_NumCellsPerList - (iCell % pProbeSet->m_NumCellsPerList) - 1);
 			}
 
+                        if(cellIndex >= pBlk->m_Cells.size()) {
+                          assert(0 && 
+                                 "CCDFFileData::ReadTextFormat(): cellIndex cannot be larger that pBlk->m_Cells.size()" );
+                        }
 			pBlk->m_Cells[cellIndex] = cell;
 
 			if (iCell==0)

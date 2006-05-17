@@ -99,9 +99,6 @@ namespace affymetrix_calvin_io
 /*! The attribute name of the library file package name. */
 #define PHYSICAL_ARRAY_ELEMENT_LIB_PACKAGE_NAME_ATTRIBUTE std::wstring(L"LibraryPackageName")
 
-/*! The attribute name of the customer barcode field for a physical array. */
-#define PHYSICAL_ARRAY_ELEMENT_CUSTOMER_BARCODE_ATTRIBUTE std::wstring(L"CustomerBarcode")
-
 	/*! The attribute name of the master file field for a physical array. */
 #define PHYSICAL_ARRAY_ELEMENT_MASTERFILE_ATTRIBUTE std::wstring(L"MasterFileName")
 

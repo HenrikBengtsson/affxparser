@@ -1,22 +1,21 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 #ifndef AFFX_FILEWRITER_H
 #define AFFX_FILEWRITER_H
@@ -125,6 +124,7 @@ void WriteFixedCString(OFSTREAM& outstr,const char* str,size_t len);
  * @param str The string value to write
  */
 void WriteCString(OFSTREAM& outstr,const char* str);
+void WriteCString(OFSTREAM& outstr,std::string str);
 
 /*! Writes a fixed number of bytes of a string to the output file
  * Pads with nulls if the string is shorter than bytes to write
@@ -132,20 +132,20 @@ void WriteCString(OFSTREAM& outstr,const char* str);
  * @param str The string value to write
  * @param len The length of the string
  */
-void WriteFixedString(OFSTREAM& outstr,const std::string& str,size_t len);
+void WriteFixedString(OFSTREAM& outstr,const std::string str,size_t len);
 
 /*! Writes a string to a little endian binary file
  * Pads with nulls if the string is shorter than bytes to write
  * @param outstr The output file stream.
  * @param str The string value to write
  */
-void WriteString_I(OFSTREAM& outstr,const std::string& str);
+void WriteString_I(OFSTREAM& outstr,const std::string str);
 
 /*! Writes a string to a big endian binary file
  * @param outstr The output file stream.
  * @param str The string value to write
  */
-void WriteString_N(OFSTREAM& outstr,const std::string& str);
+void WriteString_N(OFSTREAM& outstr,const std::string str);
 
 
 /*! Writes packed character array to the output file
@@ -155,6 +155,7 @@ void WriteString_N(OFSTREAM& outstr,const std::string& str);
  */
 void WriteCharacterArray(OFSTREAM& outstr,char* str,size_t len);
 
+#ifdef FILEWRITER_USE_OLD_AND_BAD_FUNCTIONS
 
 /*! Writes a long to a big endian file - for backwards compability only. Use the newer functions instead */
 #define WriteLong(s,v)    WriteInt32_N(s,v)
@@ -212,5 +213,7 @@ void WriteCharacterArray(OFSTREAM& outstr,char* str,size_t len);
 
 /*! Writes a string to a little endian file - for backwards compability only. Use the newer functions instead */
 #define WRITE_STRING(s,v)              WriteCString(s,v.c_str())
+
+#endif // old and bad
 
 #endif // AFFY_FILEWRITER_H

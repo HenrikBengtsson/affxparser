@@ -77,9 +77,6 @@ protected:
 	/*! The name of the library file package. */
 	std::string libraryPackageName;
 
-	/*! A customer barcode. */
-	std::string customerBarcode;
-
 	/*! The associated master file. */
 	std::string masterFile;
 
@@ -146,11 +143,6 @@ public:
 	 * @return The package name
 	 */
 	std::string &LibraryPackageName() { return libraryPackageName; }
-
-	/*! A customer barcode.
-	 * @return The barcode.
-	 */
-	std::string &CustomerBarcode() { return customerBarcode; }
 
 	/*! The associated master file.
 	 * @return The master file name.

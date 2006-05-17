@@ -3,7 +3,7 @@ cd cvs_head/affy/sdk
 rm -R TestDataFiles file_formats interface_docs java \
  libraries_and_tools parser_examples sample_data *.html *.gif \
  portability/CPPTest file/CPPTest calvin_files/makefile.g5 \
- calvin_files/template\
+ calvin_files/template/test\
  calvin_files/array/test\
  calvin_files/data/test calvin_files/data/data\
  calvin_files/exception/test\

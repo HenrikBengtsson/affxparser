@@ -44,14 +44,14 @@ using namespace affymetrix_calvin_utilities;
 void InitializeRandomNumberGenerator()
 {
 	// Get the current time as a starting point for a seed.
-	u_int64_t seed = (u_int64_t) time(NULL);
+	unsigned int seed = (unsigned int) time(NULL);
 
 	// Multiply the time by its address and the process id.
-	seed *= (u_int64_t)(&seed);
-	seed *= (u_int64_t)getpid();
+	seed *= (unsigned int)(&seed);
+	seed *= getpid();
 
 	// Initialize the random number generator.
-	srand((unsigned int)seed);
+	srand(seed);
 }
 
 /*
