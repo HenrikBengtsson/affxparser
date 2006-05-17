@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version: 1.5.1 [2006-05-15]
+o Updated Fusion SDK to version 1.0.5.
+o BUG FIX; Made small changes to the SDK to allow it to compile 
+  under Mac OS X with GCC-4.0.3 shipping with R-2.3.0
+o Made changes to the Makevars, _Makefile and cmd_line scripts.
+
 Version: 1.5.0 [2006-05-12]
 o Cleaned up and restructured the help pages; several Rd pages are
   now made "internal" so they do not show up on the help index page.

@@ -133,11 +133,7 @@ std::wstring StringUtils::ConvertMBSToWCS(const std::string& source)
  */
 std::wstring StringUtils::ToString(int value, int digits, wchar_t fill)
 {
-#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_MSC_VER)
 	std::wostringstream str;
 	str << std::setw(digits) << std::setfill(fill) << value;
 	return str.str();
-#else
-    throw "No implementation";
-#endif
 }

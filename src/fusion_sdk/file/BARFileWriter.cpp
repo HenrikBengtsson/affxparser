@@ -1,22 +1,21 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 #include "BARFileWriter.h"
 #include "FileWriter.h"
@@ -86,19 +85,20 @@ bool CBARFileWriter::Save()
 	WriteFixedString(m_NewBarFile, std::string(magic), 8);
 
 	// Version
-	WriteFloat(m_NewBarFile, BAR_VERSION);
+	// WriteFloat_I(m_NewBarFile, BAR_VERSION);
+  WriteFloat_N(m_NewBarFile, BAR_VERSION);
 
 	// Number of sequendes
-	WriteInt(m_NewBarFile, m_NumberSequences);
+	WriteInt32_N(m_NewBarFile, m_NumberSequences);
 
 	// Columns
 	int i = 0;
-	WriteInt(m_NewBarFile, m_NumberColumns);
+	WriteInt32_N(m_NewBarFile, m_NumberColumns);
 	for (i=0; i<m_NumberColumns; i++)
-		WriteInt(m_NewBarFile, (int)m_ColumnTypes[i]);
+		WriteInt32_N(m_NewBarFile, (int)m_ColumnTypes[i]);
 
 	// Parameters
-	WriteInt(m_NewBarFile, m_NumberParameters);
+	WriteInt32_N(m_NewBarFile, m_NumberParameters);
 	for (i=0; i<m_NumberParameters; i++)
 	{
 		WriteString_N(m_NewBarFile, m_Parameters[i].Tag);
@@ -111,13 +111,13 @@ bool CBARFileWriter::Save()
 		WriteString_N(m_NewBarFile, m_Results[i].GetName());
 		WriteString_N(m_NewBarFile, m_Results[i].GetGroupName());
 		WriteString_N(m_NewBarFile, m_Results[i].GetVersion());
-		WriteInt(m_NewBarFile, m_Results[i].GetNumberParameters());
+		WriteInt32_N(m_NewBarFile, m_Results[i].GetNumberParameters());
 		for (int iParam=0; iParam<m_Results[i].GetNumberParameters(); iParam++)
 		{
 			WriteString_N(m_NewBarFile, m_Results[i].GetParameter(iParam).Tag);
 			WriteString_N(m_NewBarFile, m_Results[i].GetParameter(iParam).Value);
 		}
-		WriteInt(m_NewBarFile, m_Results[i].GetNumberDataPoints());
+		WriteInt32_N(m_NewBarFile, m_Results[i].GetNumberDataPoints());
 		BarSequenceResultData data;
 		for (int j=0; j<m_Results[i].GetNumberDataPoints(); j++)
 		{
@@ -125,9 +125,9 @@ bool CBARFileWriter::Save()
 			{
 				m_Results[i].GetData(j,k,data);
 				if (m_ColumnTypes[k] == BAR_DATA_INTEGER)
-					WriteInt(m_NewBarFile, data.iValue);
+					WriteInt32_N(m_NewBarFile, data.iValue);
 				else
-					WriteFloat(m_NewBarFile, data.fValue);
+					WriteFloat_N(m_NewBarFile, data.fValue);
 			}
 		}
 	}
@@ -142,4 +142,3 @@ bool CBARFileWriter::Save()
 }
 
 //////////////////////////////////////////////////////////////////////
-

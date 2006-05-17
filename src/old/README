@@ -1,9 +1,0 @@
-
-These are the source files from Affymetrix, they are almost completely 
-unmodified, save for the CDFFileData.cpp, CDFFileData.h. This modification
-is noted in the file and was due to our desire to add support for a different
-notion of PM/MM. 
-
-The interesting file is probably R_affx_parser.cpp - which contains the C-R
-bridge for all the file types. The _Makefile is there for debugging and might
-be better off being removed. 

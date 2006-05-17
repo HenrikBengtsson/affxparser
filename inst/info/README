@@ -1,5 +1,5 @@
-Using Fusion SDK release 1.0.41 February 2006 as well as an unofficial 
-update to version 1.0.5, obtained from Affymetrix.
+Using Fusion SDK release 1.0.5 from April 2006.
 
-See "CHANGES" for any changes to the SDK obtainable from Affymetrix.com
+The fusion2affxparser.sh script was used to trim the SDK.
 
+We have made changes to file/CELFileData.h

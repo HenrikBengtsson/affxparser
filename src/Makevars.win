@@ -1,37 +1,26 @@
 PKG_LIBS=-lws2_32
+
 PKG_CPPFLAGS+=\
  -imacros R_affx_constants.h\
- -Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/array/src\
- -Ifusion_sdk/calvin_files/portability/src\
- -Ifusion_sdk/calvin_files/utils/src\
+ -Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/exception/src\
- -Ifusion_sdk/calvin_files/parameter/src\
- -Ifusion_sdk/calvin_files/parsers/src\
- -Ifusion_sdk/calvin_files/template/src\
- -Ifusion_sdk/file\
- -Ifusion_sdk/portability\
- -Ifusion_sdk/gcast/src\
  -Ifusion_sdk/calvin_files/fusion/src\
  -Ifusion_sdk/calvin_files/fusion/src/GCOSAdapter\
  -Ifusion_sdk/calvin_files/fusion/src/CalvinAdapter\
+ -Ifusion_sdk/calvin_files/parameter/src\
+ -Ifusion_sdk/calvin_files/parsers/src\
+ -Ifusion_sdk/calvin_files/portability/src\
+ -Ifusion_sdk/calvin_files/template/src\
+ -Ifusion_sdk/calvin_files/utils/src\
+ -Ifusion_sdk/calvin_files/writers/src\
+ -Ifusion_sdk/file\
+ -Ifusion_sdk/portability\
+ -Ifusion_sdk/gcast/src\
  -D_USE_MEM_MAPPING_
 
 SOURCES.fusion = \
-	fusion_sdk/file/BARFileData.cpp\
-	fusion_sdk/file/BPMAPFileData.cpp\
-	fusion_sdk/file/CDFFileData.cpp\
-	fusion_sdk/file/CELFileData.cpp\
-	fusion_sdk/file/CHPFileData.cpp\
-	fusion_sdk/file/EXPFileData.cpp\
-	fusion_sdk/file/FileIO.cpp\
-	fusion_sdk/file/GRCFileData.cpp\
-	fusion_sdk/file/MSKFileData.cpp\
-	fusion_sdk/file/PSIFileData.cpp\
-	fusion_sdk/gcast/src/GridControlData.cpp\
-	fusion_sdk/calvin_files/array/src/ArrayAttributes.cpp\
-	fusion_sdk/calvin_files/array/src/ArrayAudit.cpp\
-	fusion_sdk/calvin_files/array/src/ArrayData.cpp\
+	fusion_sdk/calvin_files/data/src/BitFlag.cpp\
 	fusion_sdk/calvin_files/data/src/CDFData.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeGroupInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeInformation.cpp\
@@ -39,12 +28,6 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/data/src/CDFQCProbeInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CDFQCProbeSetInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CELData.cpp\
-	fusion_sdk/calvin_files/data/src/CHPBackgroundZone.cpp\
-	fusion_sdk/calvin_files/data/src/CHPData.cpp\
-	fusion_sdk/calvin_files/data/src/CHPExpressionEntry.cpp\
-	fusion_sdk/calvin_files/data/src/CHPGenotypeEntry.cpp\
-	fusion_sdk/calvin_files/data/src/CHPUniversalEntry.cpp\
-	fusion_sdk/calvin_files/data/src/DATData.cpp\
 	fusion_sdk/calvin_files/data/src/DataGroup.cpp\
 	fusion_sdk/calvin_files/data/src/DataGroupHeader.cpp\
 	fusion_sdk/calvin_files/data/src/DataSet.cpp\
@@ -53,22 +36,15 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/data/src/GenericData.cpp\
 	fusion_sdk/calvin_files/data/src/GenericDataHeader.cpp\
 	fusion_sdk/calvin_files/exception/src/ExceptionBase.cpp\
+	fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionBPMAPData.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCDFData.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCDFQCProbeSetNames.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCELData.cpp\
-	fusion_sdk/calvin_files/fusion/src/FusionCHPData.cpp\
-	fusion_sdk/calvin_files/fusion/src/FusionGrcFileReader.cpp\
-	fusion_sdk/calvin_files/fusion/src/FusionProbeSetResults.cpp\
 	fusion_sdk/calvin_files/fusion/src/GCOSAdapter/GCOSCELDataAdapter.cpp\
-	fusion_sdk/calvin_files/fusion/src/GCOSAdapter/GCOSCHPDataAdapter.cpp\
-	fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.cpp\
-	fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCHPDataAdapter.cpp\
 	fusion_sdk/calvin_files/parameter/src/ParameterNameValueType.cpp\
-	fusion_sdk/calvin_files/parsers/src/AuditFileReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/CDFFileReader.cpp\
-	fusion_sdk/calvin_files/parsers/src/CHPFileReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/CelFileReader.cpp\
-	fusion_sdk/calvin_files/parsers/src/DATFileReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataGroupHeaderReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataGroupReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataSetHeaderReader.cpp\
@@ -77,13 +53,14 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/parsers/src/FileInput.cpp\
 	fusion_sdk/calvin_files/parsers/src/GenericDataHeaderReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/GenericFileReader.cpp\
-	fusion_sdk/calvin_files/parsers/src/GridControlFileReader.cpp\
-	fusion_sdk/calvin_files/parsers/src/TextFileReader.cpp\
 	fusion_sdk/calvin_files/utils/src/AffymetrixGuid.cpp\
 	fusion_sdk/calvin_files/utils/src/DateTime.cpp\
 	fusion_sdk/calvin_files/utils/src/FileUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/StringUtils.cpp\
-	fusion_sdk/calvin_files/utils/src/checksum.cpp
+	fusion_sdk/calvin_files/utils/src/checksum.cpp\
+	fusion_sdk/file/CDFFileData.cpp\
+	fusion_sdk/file/CELFileData.cpp\
+	fusion_sdk/file/FileIO.cpp
 
 SOURCES.package = \
 	R_affx_cel_parser.cpp\
@@ -91,11 +68,3 @@ SOURCES.package = \
 	R_affx_cdf_extras.cpp
 
 OBJS=$(SOURCES.fusion:.cpp=.o) $(SOURCES.package:.cpp=.o)
- 
-## The files below are the ones left out of the 
-##   makefile.mac from the fusion zip archive
-##	fusion_sdk/file/DttArrayFileReader.cpp\
-##	fusion_sdk/file/SAXDttArrayHandlers.cpp\
-##	fusion_sdk/calvin_files/fusion/src/FusionArrayFileReader.cpp\
-##	fusion_sdk/calvin_files/parsers/src/ArrayFileReader.cpp\
-##	fusion_sdk/calvin_files/parsers/src/SAXArrayHandlers.cpp\

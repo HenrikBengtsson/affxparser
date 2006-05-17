@@ -179,7 +179,6 @@ void AddPhysicalArrays(ArrayData &arrayData, DOMDocument* doc, DOMElement* array
 			physicalArrayElement->setAttribute(ToXMLCh(PHYSICAL_ARRAY_ELEMENT_CREATED_BY_ATTRIBUTE), ToXMLCh(att.CreatedBy()));
 			physicalArrayElement->setAttribute(ToXMLCh(PHYSICAL_ARRAY_ELEMENT_CREATION_DATE_ATTRIBUTE), ToXMLCh(att.CreationDateTime()));
 			physicalArrayElement->setAttribute(ToXMLCh(ARRAY_FILE_ELEMENT_CREATED_STEP_ATTRIBUTE), ToXMLCh(CreateStepToString(att.CreatedStep())));
-			physicalArrayElement->setAttribute(ToXMLCh(PHYSICAL_ARRAY_ELEMENT_CUSTOMER_BARCODE_ATTRIBUTE), ToXMLCh(att.CustomerBarcode()));
 			physicalArrayElement->setAttribute(ToXMLCh(PHYSICAL_ARRAY_ELEMENT_MASTERFILE_ATTRIBUTE), ToXMLCh(att.MasterFile()));
 			physicalArrayElement->setAttribute(ToXMLCh(PHYSICAL_ARRAY_ELEMENT_PAT_ASSIGNMENT_ATTRIBUTE), ToXMLCh(PATAssignmentMethodToString(att.PatAssignment())));
 			physicalArrayElement->setAttribute(ToXMLCh(PHYSICAL_ARRAY_ELEMENT_COMMENT_ATTRIBUTE), ToXMLCh(att.Comment()));

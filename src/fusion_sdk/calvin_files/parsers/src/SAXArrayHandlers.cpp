@@ -443,12 +443,6 @@ void SAXArrayHandlers::StorePhysicalArrayElementAttributes(map<wstring, wstring>
 
 	str = attributes[PHYSICAL_ARRAY_ELEMENT_TYPE_ATTRIBUTE];
 	arrayData->PhysicalArraysAttributes()[n].Media() = MediaFromString(str);
-	
-	str = attributes[PHYSICAL_ARRAY_ELEMENT_CUSTOMER_BARCODE_ATTRIBUTE];
-	if (str.length() > 0)
-	{
-		arrayData->PhysicalArraysAttributes()[n].CustomerBarcode() = StringUtils::ConvertWCSToMBS(str);;
-	}
 
 	str = attributes[PHYSICAL_ARRAY_ELEMENT_MASTERFILE_ATTRIBUTE];
 	if (str.length() > 0)

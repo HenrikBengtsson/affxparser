@@ -1,22 +1,21 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 #include "CELFileData.h"
 #include "FileIO.h"
@@ -28,6 +27,7 @@
 #include <assert.h>
 #include <algorithm>
 #include <iostream>
+#include <stdio.h>
 
 #ifdef WIN32
 #pragma warning(disable: 4996) // don't show deprecated warnings.
@@ -820,8 +820,14 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 	if (bReadHeaderOnly)
 		return true;
 
-	// Memory map file
+  // This is a double negative as I know that _DONT_USE_MEM_MAPPING_ isnt used
+  // and I dont want to break the build. People who dont
+  // want MEMMAPPING (Chuck) can define this
+  // FIXME: USE_MEM_MAPPING should be set in all the makefiles?
+#ifndef _DONT_USE_MEM_MAPPING_
+
 #ifdef WIN32
+	// Memory map file on windows...
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -847,6 +853,7 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 		}
 	}
 #else
+	// Memory map file on posix...
 	int32_t lFileSize = GetFileSize();
 	char* szBuffer = new char[iHeaderBytes + 1];
 	m_File = fopen(m_FileName.c_str(), "r");
@@ -856,6 +863,7 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 		return false;
 	}
 	fread(szBuffer, iHeaderBytes, 1, m_File);
+  // printf("fpos=%u",ftell(m_File)); // debug
 	delete [] szBuffer;
   
     size_t cellf_page_start = PAGE_TRUNC(ftell(m_File));
@@ -878,7 +886,33 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 		fclose(m_File);
 		m_File = NULL;
 	}
-#endif
+#endif // WIN32
+
+#else
+  // No memory mapping ...
+  //printf("OPEN: non memory mapped.\n"); //
+  m_lpFileMap=NULL;
+  m_File=fopen(m_FileName.c_str(),"r");
+  if (m_File==NULL) {
+    SetError("Failed to open file for non-memap open.");
+    return false;
+  }
+  // skip the header
+  fseek(m_File,iHeaderBytes,SEEK_SET);
+  // printf("fpos=%u",ftell(m_File)); // debug
+  // read the entire file into memory...
+  int32_t datasize = GetFileSize()-iHeaderBytes;
+  m_lpData = new char[datasize];
+  size_t read=fread(m_lpData,1,datasize,m_File);
+  //printf("read=%u  iHeaderBytes=%u\n",read,iHeaderBytes);
+  if (read!=datasize) {
+    SetError("Unable to read the entire file.");
+    return false;
+  }
+  //
+  fclose(m_File);
+
+#endif // _USE_MEM_MAPPING_
 
 	int16_t x=0;
 	int16_t y=0;
@@ -1776,7 +1810,7 @@ void CCELFileData::Clear()
 	m_Outliers.clear();
 
   delete [] m_pEntries; 
-	m_pEntries = NULL;
+  m_pEntries=NULL;
   delete [] m_pTransciptomeEntries; 
 	m_pTransciptomeEntries = NULL;
   delete [] m_pMeanIntensities; 
@@ -1791,13 +1825,16 @@ void CCELFileData::Clear()
 ///////////////////////////////////////////////////////////////////////////////
 void CCELFileData::Munmap() 
 {
-	// This is a nop on non-mmapped files.
-	if (m_lpFileMap == NULL)
-	{
+	// If there isnt a mapping we dont have to munmap...
+	if (m_lpFileMap == NULL) {
+    // ...but we should get rid of memory which might have been alloced.
+    delete [] m_pEntries;
+    m_pEntries=NULL;
 		return;
 	}
 
-	// zero out the pointers which will become invalid
+	// zero out the pointers which are now invalid... 
+  m_lpData = NULL;
 	m_pTransciptomeEntries = NULL;
 	m_pEntries = NULL;
 	m_pMeanIntensities = NULL;
@@ -2649,8 +2686,15 @@ void CCELFileData::SetDimensions(int rows, int cols)
 	grid.lowerright.x = cols;
 	grid.lowerright.y = rows;
 	m_HeaderData.SetGridCorners(grid);
+
+  // FIXME: UnMap
+  // delete [] m_lpData;
+  // m_lpData=NULL;
 	delete [] m_pEntries;
+  m_pEntries=NULL;
 	delete [] m_pTransciptomeEntries;
+  m_pTransciptomeEntries=NULL;
+  
 	if (m_FileFormat == TRANSCRIPTOME_BCEL)
 		m_pTransciptomeEntries = new CELFileTranscriptomeEntryType[rows*cols];
 	else if ((m_FileFormat == XDA_BCEL) || (m_FileFormat == TEXT_CEL))

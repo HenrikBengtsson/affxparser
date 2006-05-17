@@ -1,22 +1,21 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 #include "CHPFileWriter.h"
 #include "FileWriter.h"
@@ -46,6 +45,7 @@ using namespace affxchpwriter;
 
 CCHPFileWriter::CCHPFileWriter() : CCHPFileData()
 {
+	m_ProbeSetIndex = 0;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -72,20 +72,23 @@ bool CCHPFileWriter::CreateNewFile()
 
 //////////////////////////////////////////////////////////////////////
 
-void CCHPFileWriter::InitializeForWriting(affxcdf::CCDFFileData &cdf)
+void CCHPFileWriter::InitializeForWriting(affxcdf::CCDFFileData &cdf, bool allocateMemory)
 {
 	InitializeForWriting(
 		cdf.GetHeader().GetRows(),
 		cdf.GetHeader().GetCols(),
 		cdf.GetHeader().GetNumProbeSets(),
 		cdf.GetChipType().c_str(),
-		cdf.GetProbeSetType(0));
+		cdf.GetProbeSetType(0),
+		allocateMemory);
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void CCHPFileWriter::InitializeForWriting(int numRows, int numCols, int numProbeSets, const char *chipType, affxcdf::GeneChipProbeSetType probeSetType)
+void CCHPFileWriter::InitializeForWriting(int numRows, int numCols, int numProbeSets, const char *chipType, affxcdf::GeneChipProbeSetType probeSetType, bool allocateMemory)
 {
+	m_ProbeSetIndex = 0;
+
 	// Set the header values.
 	m_Header.SetCols(numCols);
 	m_Header.SetRows(numRows);
@@ -124,29 +127,33 @@ void CCHPFileWriter::InitializeForWriting(int numRows, int numCols, int numProbe
 		return;
 
 	// Allocate memory for probe set results
-	m_ProbeSetResults.resize(numProbeSets);
-	CProbeSetResults *pResults;
-	for (int iset=0; iset<numProbeSets; iset++)
+	m_ProbeSetResults.clear();
+	if (allocateMemory == true)
 	{
-		switch (probeSetType)
+		m_ProbeSetResults.resize(numProbeSets);
+		CProbeSetResults *pResults;
+		for (int iset=0; iset<numProbeSets; iset++)
 		{
-			case affxcdf::ExpressionProbeSetType:
-				pResults = new CExpressionProbeSetResults;
-				break;
+			switch (probeSetType)
+			{
+				case affxcdf::ExpressionProbeSetType:
+					pResults = new CExpressionProbeSetResults;
+					break;
 
-			case affxcdf::GenotypingProbeSetType:
-				pResults = new CGenotypeProbeSetResults;
-				break;
+				case affxcdf::GenotypingProbeSetType:
+					pResults = new CGenotypeProbeSetResults;
+					break;
 
-			case affxcdf::TagProbeSetType:
-				pResults = new CUniversalProbeSetResults;
-				break;
+				case affxcdf::TagProbeSetType:
+					pResults = new CUniversalProbeSetResults;
+					break;
 
-			default:
-				pResults = NULL;
-				break;
+				default:
+					pResults = NULL;
+					break;
+			}
+			m_ProbeSetResults[iset] = pResults;
 		}
-		m_ProbeSetResults[iset] = pResults;
 	}
 }
 
@@ -262,8 +269,8 @@ void CCHPFileWriter::SetResequencingResults(CResequencingResults *pResults)
 
 //////////////////////////////////////////////////////////////////////
 
-bool CCHPFileWriter::Save()
-{
+bool CCHPFileWriter::SaveHeader()
+	{
 	// Only continue if genotyping or expression
 	if (m_Header.GetAssayType() != CCHPFileHeader::Expression && 
 		m_Header.GetAssayType() != CCHPFileHeader::Genotyping && 
@@ -274,131 +281,179 @@ bool CCHPFileWriter::Save()
 		return false;
 	}
 
-
 	// Write the header
 	int magic = CHP_FILE_MAGIC_NUMBER;
-	WRITE_INT(m_NewChpFile, magic);
+	WriteInt32_I(m_NewChpFile, magic);
 
 	// All but resequencing is version 1
 	int version = NON_RESEQ_CHP_FILE_VERSION_NUMBER;
 	if (m_Header.GetAssayType() == CCHPFileHeader::Resequencing)
 		version = RESEQ_CHP_FILE_VERSION_NUMBER;
-	WRITE_INT(m_NewChpFile, version);
-	WRITE_USHORT(m_NewChpFile, m_Header.GetCols());
-	WRITE_USHORT(m_NewChpFile, m_Header.GetRows());
-	WRITE_INT(m_NewChpFile, m_Header.GetNumProbeSets());
-	WRITE_INT(m_NewChpFile, 0); // no qc data extracted.
-	WRITE_INT(m_NewChpFile, m_Header.GetAssayType());
-	WRITE_STRING(m_NewChpFile, m_Header.GetProgID());
-	WRITE_STRING(m_NewChpFile, m_Header.GetParentCellFile());
-	WRITE_STRING(m_NewChpFile, m_Header.GetChipType());
-	WRITE_STRING(m_NewChpFile, m_Header.GetAlgName());
-	WRITE_STRING(m_NewChpFile, m_Header.GetAlgVersion());
-	WRITE_INT(m_NewChpFile, (int) m_Header.AlgorithmParameters().size());
+	WriteInt32_I(m_NewChpFile, version);
+	WriteUInt16_I(m_NewChpFile, m_Header.GetCols());
+	WriteUInt16_I(m_NewChpFile, m_Header.GetRows());
+	WriteInt32_I(m_NewChpFile, m_Header.GetNumProbeSets());
+	WriteInt32_I(m_NewChpFile, 0); // no qc data extracted.
+	WriteInt32_I(m_NewChpFile, m_Header.GetAssayType());
+	WriteCString(m_NewChpFile, m_Header.GetProgID());
+	WriteCString(m_NewChpFile, m_Header.GetParentCellFile());
+	WriteCString(m_NewChpFile, m_Header.GetChipType());
+	WriteCString(m_NewChpFile, m_Header.GetAlgName());
+	WriteCString(m_NewChpFile, m_Header.GetAlgVersion());
+	WriteInt32_I(m_NewChpFile, (int) m_Header.AlgorithmParameters().size());
 	TagValuePairTypeList::iterator iter;
 	for (iter=m_Header.AlgorithmParameters().begin(); iter!=m_Header.AlgorithmParameters().end(); ++iter)
 	{
-		WRITE_STRING(m_NewChpFile, iter->Tag);
-		WRITE_STRING(m_NewChpFile, iter->Value);
+		WriteCString(m_NewChpFile, iter->Tag);
+		WriteCString(m_NewChpFile, iter->Value);
 	}
-	WRITE_INT(m_NewChpFile, (int) m_Header.SummaryParameters().size());
+	WriteInt32_I(m_NewChpFile, (int) m_Header.SummaryParameters().size());
 	for (iter=m_Header.SummaryParameters().begin(); iter!=m_Header.SummaryParameters().end(); ++iter)
 	{
-		WRITE_STRING(m_NewChpFile, iter->Tag);
-		WRITE_STRING(m_NewChpFile, iter->Value);
+		WriteCString(m_NewChpFile, iter->Tag);
+		WriteCString(m_NewChpFile, iter->Value);
 	}
 
 	// Write the zone info.
-	WRITE_INT(m_NewChpFile, m_Header.GetBackgroundZoneInfo().number_zones);
-	WRITE_FLOAT(m_NewChpFile, m_Header.GetBackgroundZoneInfo().smooth_factor);
+	WriteInt32_I(m_NewChpFile, m_Header.GetBackgroundZoneInfo().number_zones);
+	WriteFloat_I(m_NewChpFile, m_Header.GetBackgroundZoneInfo().smooth_factor);
 	BackgroundZoneTypeList::iterator start(m_Header.GetBackgroundZoneInfo().zones.begin());
 	BackgroundZoneTypeList::iterator end(m_Header.GetBackgroundZoneInfo().zones.end());
 	BackgroundZoneType zone;
 	for (; start != end; ++start)
 	{
 		zone = (*start);
-		WRITE_FLOAT(m_NewChpFile, start->centerx);
-		WRITE_FLOAT(m_NewChpFile, start->centery);
-		WRITE_FLOAT(m_NewChpFile, start->background);
+		WriteFloat_I(m_NewChpFile, start->centerx);
+		WriteFloat_I(m_NewChpFile, start->centery);
+		WriteFloat_I(m_NewChpFile, start->background);
 	}
+
+	return !m_NewChpFile.fail();
+}
+
+//////////////////////////////////////////////////////////////////////
+
+bool CCHPFileWriter::SaveExpressionEntry(CExpressionProbeSetResults *pEntry)
+{
+	// Save the data size for the first probe set.
+	if (m_ProbeSetIndex == 0)
+	{
+		int resultsSize = UCHAR_SIZE + FLOAT_SIZE + FLOAT_SIZE + USHORT_SIZE + USHORT_SIZE; 
+		unsigned char analysisType = EXPRESSION_ABSOLUTE_STAT_ANALYSIS;
+		if (pEntry->m_HasCompResults)
+		{
+			analysisType = EXPRESSION_COMPARISON_STAT_ANALYSIS;
+			resultsSize += UCHAR_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE + USHORT_SIZE;
+		}
+		WriteUInt8(m_NewChpFile, analysisType);
+		WriteInt32_I(m_NewChpFile, resultsSize);
+	}
+
+	// Write the absolute data.
+	WriteUInt8(m_NewChpFile, pEntry->Detection);
+	WriteFloat_I(m_NewChpFile, pEntry->DetectionPValue);
+	WriteFloat_I(m_NewChpFile, pEntry->Signal);
+	WriteUInt16_I(m_NewChpFile, pEntry->NumPairs);
+	WriteUInt16_I(m_NewChpFile, pEntry->NumUsedPairs);
+
+	// Write the comparison data
+	if (pEntry->m_HasCompResults == true)
+	{
+		WriteUInt8(m_NewChpFile, pEntry->Change);
+		WriteFloat_I(m_NewChpFile, pEntry->ChangePValue);
+		WriteFloat_I(m_NewChpFile, pEntry->SignalLogRatio);
+		WriteFloat_I(m_NewChpFile, pEntry->SignalLogRatioLow);
+		WriteFloat_I(m_NewChpFile, pEntry->SignalLogRatioHigh);
+		WriteUInt16_I(m_NewChpFile, pEntry->NumCommonPairs);
+	}
+
+	++m_ProbeSetIndex;
+
+	return !m_NewChpFile.fail();
+}
+
+//////////////////////////////////////////////////////////////////////
+
+bool CCHPFileWriter::SaveMappingEntry(affxchp::CGenotypeProbeSetResults *pEntry)
+{
+	// Save the data size for the first probe set.
+	float fval;
+	if (m_ProbeSetIndex == 0)
+	{
+		int resultsSize = UCHAR_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE;
+		WriteInt32_I(m_NewChpFile, resultsSize);
+	}
+
+	// Write probe set result.
+	WriteUInt8(m_NewChpFile, pEntry->AlleleCall);
+	WriteFloat_I(m_NewChpFile, pEntry->Confidence);
+
+	fval = pEntry->pvalue_AA;
+	if (fval == 0)
+		fval = pEntry->RAS1;
+	WriteFloat_I(m_NewChpFile, fval);
+
+	fval = pEntry->pvalue_AB;
+	if (fval == 0)
+		fval = pEntry->RAS2;
+	WriteFloat_I(m_NewChpFile, fval);
+
+	WriteFloat_I(m_NewChpFile, pEntry->pvalue_BB);
+	WriteFloat_I(m_NewChpFile, pEntry->pvalue_NoCall);
+
+	++m_ProbeSetIndex;
+
+	return !m_NewChpFile.fail();
+}
+
+//////////////////////////////////////////////////////////////////////
+
+bool CCHPFileWriter::SaveUniversalEntry(affxchp::CUniversalProbeSetResults *pEntry)
+{
+	// Save the data size for the first probe set.
+	if (m_ProbeSetIndex == 0)
+	{
+		int resultsSize = FLOAT_SIZE;
+		WriteInt32_I(m_NewChpFile, resultsSize);
+	}
+	WriteFloat_I(m_NewChpFile, pEntry->GetBackground());
+
+	++m_ProbeSetIndex;
+
+	return !m_NewChpFile.fail();
+}
+
+//////////////////////////////////////////////////////////////////////
+
+bool CCHPFileWriter::Save()
+{
+	if (SaveHeader() == false)
+		return false;
 
 	// Write the probe set data
 	if (m_Header.GetAssayType() == CCHPFileHeader::Expression)
 	{
 		// Set the type of analysis
-		CExpressionProbeSetResults * pResults = GetExpressionResults(0);
-		int resultsSize = UCHAR_SIZE + FLOAT_SIZE + FLOAT_SIZE + USHORT_SIZE + USHORT_SIZE; 
-		unsigned char analysisType = EXPRESSION_ABSOLUTE_STAT_ANALYSIS;
-		if (pResults->m_HasCompResults)
-		{
-			analysisType = EXPRESSION_COMPARISON_STAT_ANALYSIS;
-			resultsSize += UCHAR_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE + USHORT_SIZE;
-		}
-		WRITE_UCHAR(m_NewChpFile, analysisType);
-		WRITE_INT(m_NewChpFile, resultsSize);
-
-		// Write each probe set result.
 		for (int iset=0; iset<m_Header.GetNumProbeSets(); iset++)
 		{
-			pResults = GetExpressionResults(iset);
-
-			// Write the absolute data.
-			WRITE_UCHAR(m_NewChpFile, pResults->Detection);
-			WRITE_FLOAT(m_NewChpFile, pResults->DetectionPValue);
-			WRITE_FLOAT(m_NewChpFile, pResults->Signal);
-			WRITE_USHORT(m_NewChpFile, pResults->NumPairs);
-			WRITE_USHORT(m_NewChpFile, pResults->NumUsedPairs);
-
-			// Write the comparison data
-			if (pResults->m_HasCompResults == true)
-			{
-				WRITE_UCHAR(m_NewChpFile, pResults->Change);
-				WRITE_FLOAT(m_NewChpFile, pResults->ChangePValue);
-				WRITE_FLOAT(m_NewChpFile, pResults->SignalLogRatio);
-				WRITE_FLOAT(m_NewChpFile, pResults->SignalLogRatioLow);
-				WRITE_FLOAT(m_NewChpFile, pResults->SignalLogRatioHigh);
-				WRITE_USHORT(m_NewChpFile, pResults->NumCommonPairs);
-			}
+			CExpressionProbeSetResults * pResults = GetExpressionResults(iset);
+			SaveExpressionEntry(pResults);
 		}
 	}
 	else if (m_Header.GetAssayType() == CCHPFileHeader::Genotyping)
 	{
-		float fval;
-		CGenotypeProbeSetResults * pResults;
-		int resultsSize = UCHAR_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE + FLOAT_SIZE;
-		WRITE_INT(m_NewChpFile, resultsSize);
 		for (int iset=0; iset<m_Header.GetNumProbeSets(); iset++)
 		{
-			pResults = GetGenotypingResults(iset);
-
-			// Write probe set result.
-			WRITE_UCHAR(m_NewChpFile, pResults->AlleleCall);
-			WRITE_FLOAT(m_NewChpFile, pResults->Confidence);
-
-			fval = pResults->pvalue_AA;
-			if (fval == 0)
-				fval = pResults->RAS1;
-			WRITE_FLOAT(m_NewChpFile, fval);
-
-			fval = pResults->pvalue_AB;
-			if (fval == 0)
-				fval = pResults->RAS2;
-			WRITE_FLOAT(m_NewChpFile, fval);
-
-			WRITE_FLOAT(m_NewChpFile, pResults->pvalue_BB);
-			WRITE_FLOAT(m_NewChpFile, pResults->pvalue_NoCall);
+			CGenotypeProbeSetResults * pResults = GetGenotypingResults(iset);
+			SaveMappingEntry(pResults);
 		}
 	}
 	else if (m_Header.GetAssayType() == CCHPFileHeader::Universal)
 	{
-		CUniversalProbeSetResults * pResults;
-		int resultsSize = FLOAT_SIZE;
-		WRITE_INT(m_NewChpFile, resultsSize);
-		
 		for (int iset=0; iset<m_Header.GetNumProbeSets(); iset++)
 		{
-			pResults = GetUniversalResults(iset);
-			WRITE_FLOAT(m_NewChpFile, pResults->GetBackground());
+			CUniversalProbeSetResults * pResults = GetUniversalResults(iset);
+			SaveUniversalEntry(pResults);
 		}
 	}
 	else if (m_Header.GetAssayType() == CCHPFileHeader::Resequencing)
@@ -413,48 +468,58 @@ bool CCHPFileWriter::Save()
 			(m_ReseqResults.GetForceCallsSize() * (sizeof(int) + sizeof(char) + sizeof(unsigned char))) +
 			(m_ReseqResults.GetOrigCallsSize() * (sizeof(int) + sizeof(char)))
 			);
-		WRITE_INT(m_NewChpFile, dataSize);
+		WriteInt32_I(m_NewChpFile, dataSize);
 
 		// Write the base calls and scores.
 		dataSize = m_ReseqResults.GetCalledBasesSize();
-		WRITE_INT(m_NewChpFile, dataSize);
+		WriteInt32_I(m_NewChpFile, dataSize);
 		for (index=0; index<dataSize; index++)
 		{
-			WRITE_CHAR(m_NewChpFile, m_ReseqResults.GetCalledBase(index));
+			WriteInt8(m_NewChpFile, m_ReseqResults.GetCalledBase(index));
 		}
 		for (index=0; index<dataSize; index++)
 		{
-			WRITE_FLOAT(m_NewChpFile, m_ReseqResults.GetScore(index));
+			WriteFloat_I(m_NewChpFile, m_ReseqResults.GetScore(index));
 		}
 
 		// Write the force calls
 		dataSize = m_ReseqResults.GetForceCallsSize();
-		WRITE_INT(m_NewChpFile, dataSize);
+		WriteInt32_I(m_NewChpFile, dataSize);
 		ForceCallType forceCall;
 		for (index=0; index<dataSize; index++)
 		{
 			forceCall = m_ReseqResults.GetForceCall(index);
-			WRITE_INT(m_NewChpFile, forceCall.position);
-			WRITE_CHAR(m_NewChpFile, forceCall.call);
-			WRITE_UCHAR(m_NewChpFile, forceCall.reason);
+			WriteInt32_I(m_NewChpFile, forceCall.position);
+			WriteInt8(m_NewChpFile, forceCall.call);
+			WriteUInt8(m_NewChpFile, forceCall.reason);
 		}
 
 		// Read the orig calls
 		dataSize = m_ReseqResults.GetOrigCallsSize();
-		WRITE_INT(m_NewChpFile, dataSize);
+		WriteInt32_I(m_NewChpFile, dataSize);
 		BaseCallType baseCall;
 		for (index=0; index<dataSize; index++)
 		{
 			baseCall = m_ReseqResults.GetOrigCall(index);
-			WRITE_INT(m_NewChpFile, baseCall.position);
-			WRITE_CHAR(m_NewChpFile, baseCall.call);
+			WriteInt32_I(m_NewChpFile, baseCall.position);
+			WriteInt8(m_NewChpFile, baseCall.call);
 		}
 	}
 
 	// Close the file and check the status.
-	m_NewChpFile.close();
+	return Close();
+}
 
-	return !m_NewChpFile.fail();
+//////////////////////////////////////////////////////////////////////
+
+bool CCHPFileWriter::Close()
+{
+	if (m_NewChpFile.is_open() == true)
+	{
+		m_NewChpFile.close();
+		return !m_NewChpFile.fail();
+	}
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////
