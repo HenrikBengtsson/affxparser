@@ -50,7 +50,6 @@ void ArrayAttributes::Clear()
 	media=CartridgeMedia;
 	mediaRow=0;
 	mediaCol=0;
-	customerBarcode.clear();
 	mediaFileName.clear();
 	mediaFileGUID.clear();
 	libraryPackageName.clear();

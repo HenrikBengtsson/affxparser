@@ -1,22 +1,21 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 
 #include <string.h>
@@ -39,7 +38,7 @@
 
 // Some machines (sparc) dont support unaligned memory access
 // The mmaped files are chock full of unaligned accesses.
-// When AFFY_NOUNALIGNED_MEM is defined we will do the 
+// When AFFY_UNALIGNED_IN_SW is defined we will do the 
 // alignment in software.
 // This feature can be enabled on intel for testing.
 
@@ -136,7 +135,7 @@ ReadInt16_N(IFSTREAM& instr, int16_t& val)
 void
 ReadFloatFromOldBPMAP_N(IFSTREAM &instr, float &fval)
 {
-#ifndef IS_BIG_ENDIAN
+#ifndef _BIG_ENDIAN
 	instr.read((char *)&fval, FLOAT_SIZE);
 	fval = (float) ntohl((uint32_t)fval);
 #else
@@ -260,7 +259,7 @@ ReadNextLine(IFSTREAM& instr,char* line,int len)
 
 // There are two issues here: alignment and byte order.  
 // Byte order can be handled with the "htoi" functions.
-// Alignment has to be handled with functins.
+// Alignment has to be handled with functions.
 
 // The "Get*" functions are for reading data from a mem-mapped file.
 // OLD: Callers of these really should use "itoh*" directly.

@@ -1,22 +1,21 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -142,23 +141,28 @@ WriteCString(OFSTREAM& outstr,const char* str)
  	WriteUInt32_I(outstr,slen);
   WriteFixedCString(outstr,str,slen);
 }
+void 
+WriteCString(OFSTREAM& outstr,std::string str)
+{
+  WriteCString(outstr,str.c_str());
+}
 
 // C++ strings
 
 void 
-WriteFixedString(OFSTREAM& outstr,const string& str,size_t outlen)
+WriteFixedString(OFSTREAM& outstr,const std::string str,size_t outlen)
 {
   WriteFixedCString(outstr,str.c_str(),outlen);
 }
 
 void
-WriteString_I(OFSTREAM& outstr,const string& str)
+WriteString_I(OFSTREAM& outstr,const std::string str)
 {
 	WriteCString(outstr,str.c_str());
 }
 
 void
-WriteString_N(OFSTREAM& outstr,const string& str)
+WriteString_N(OFSTREAM& outstr,const std::string str)
 {
 	int len = (int) str.length();
 	WriteInt32_N(outstr, len);

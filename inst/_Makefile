@@ -115,3 +115,25 @@ cmd_line: $(OBJECTS.fusion) $(OBJECTS.cmdline)
 clean:
 	-rm -rf $(OBJECTS.fusion) $(LIB.fusion) *.o *.so
 
+SHELL=/bin/bash
+
+dependency:
+	${CC} -MM -MF depend.cel ${CPPFLAGS} fusion_sdk/calvin_files/fusion/src/FusionCELData.cpp
+	${CC} -MM -MF depend.cdf  ${CPPFLAGS} fusion_sdk/calvin_files/fusion/src/FusionCDFData.cpp
+	${CC} -MM -MF depend.bpmap  ${CPPFLAGS} fusion_sdk/calvin_files/fusion/src/FusionBPMAPData.cpp
+	grep -v FusionCELData.cpp depend.cel > depend.tmp
+	grep -v FusionCDFData.cpp depend.cdf >> depend.tmp
+	grep -v FusionBPMAPData.cpp depend.bpmap | grep -v FusionBPMAPData.o >> depend.tmp
+	sed 's/\.h/\.cpp/g' depend.tmp | sed 's/^  //' | sed 's/ \\//' > depend.tmp2
+	while read filename; do if [ -a "$$filename" ]; then echo -e "\t$$filename\\"; fi; done < depend.tmp2 > depend.tmp
+	echo -e "\tfusion_sdk/calvin_files/parsers/src/FileInput.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/calvin_files/parsers/src/DataSetHeaderReader.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/calvin_files/parsers/src/DataGroupHeaderReader.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/calvin_files/parsers/src/CelFileReader.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/file/CELFileData.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/calvin_files/parsers/src/FileHeaderReader.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/calvin_files/parsers/src/GenericDataHeaderReader.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/calvin_files/utils/src/checksum.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/file/FileIO.cpp\\" >> depend.tmp
+	sort depend.tmp | uniq > dependencies
+	rm depend.tmp depend.tmp2 depend.cel depend.cdf depend.bpmap
