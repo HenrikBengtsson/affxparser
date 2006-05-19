@@ -13,6 +13,7 @@ CPPFLAGS=-Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/fusion/src/GCOSAdapter\
  -Ifusion_sdk/calvin_files/fusion/src/CalvinAdapter\
  -I/usr/lib/R/include\
+ -DIS_BIG_ENDIAN\
  -D_USE_MEM_MAPPING_
 
 CXXFLAGS=-O1 -g
@@ -22,20 +23,7 @@ CC=g++
 CCONMAC=/usr/local/gcc4.0/bin/g++-4.0
 
 SOURCES.fusion = \
-	fusion_sdk/file/BARFileData.cpp\
-	fusion_sdk/file/BPMAPFileData.cpp\
-	fusion_sdk/file/CDFFileData.cpp\
-	fusion_sdk/file/CELFileData.cpp\
-	fusion_sdk/file/CHPFileData.cpp\
-	fusion_sdk/file/EXPFileData.cpp\
-	fusion_sdk/file/FileIO.cpp\
-	fusion_sdk/file/GRCFileData.cpp\
-	fusion_sdk/file/MSKFileData.cpp\
-	fusion_sdk/file/PSIFileData.cpp\
-	fusion_sdk/gcast/src/GridControlData.cpp\
-	fusion_sdk/calvin_files/array/src/ArrayAttributes.cpp\
-	fusion_sdk/calvin_files/array/src/ArrayAudit.cpp\
-	fusion_sdk/calvin_files/array/src/ArrayData.cpp\
+	fusion_sdk/calvin_files/data/src/BitFlag.cpp\
 	fusion_sdk/calvin_files/data/src/CDFData.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeGroupInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeInformation.cpp\
@@ -43,12 +31,6 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/data/src/CDFQCProbeInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CDFQCProbeSetInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CELData.cpp\
-	fusion_sdk/calvin_files/data/src/CHPBackgroundZone.cpp\
-	fusion_sdk/calvin_files/data/src/CHPData.cpp\
-	fusion_sdk/calvin_files/data/src/CHPExpressionEntry.cpp\
-	fusion_sdk/calvin_files/data/src/CHPGenotypeEntry.cpp\
-	fusion_sdk/calvin_files/data/src/CHPUniversalEntry.cpp\
-	fusion_sdk/calvin_files/data/src/DATData.cpp\
 	fusion_sdk/calvin_files/data/src/DataGroup.cpp\
 	fusion_sdk/calvin_files/data/src/DataGroupHeader.cpp\
 	fusion_sdk/calvin_files/data/src/DataSet.cpp\
@@ -57,22 +39,15 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/data/src/GenericData.cpp\
 	fusion_sdk/calvin_files/data/src/GenericDataHeader.cpp\
 	fusion_sdk/calvin_files/exception/src/ExceptionBase.cpp\
+	fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionBPMAPData.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCDFData.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCDFQCProbeSetNames.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCELData.cpp\
-	fusion_sdk/calvin_files/fusion/src/FusionCHPData.cpp\
-	fusion_sdk/calvin_files/fusion/src/FusionGrcFileReader.cpp\
-	fusion_sdk/calvin_files/fusion/src/FusionProbeSetResults.cpp\
 	fusion_sdk/calvin_files/fusion/src/GCOSAdapter/GCOSCELDataAdapter.cpp\
-	fusion_sdk/calvin_files/fusion/src/GCOSAdapter/GCOSCHPDataAdapter.cpp\
-	fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.cpp\
-	fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCHPDataAdapter.cpp\
 	fusion_sdk/calvin_files/parameter/src/ParameterNameValueType.cpp\
-	fusion_sdk/calvin_files/parsers/src/AuditFileReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/CDFFileReader.cpp\
-	fusion_sdk/calvin_files/parsers/src/CHPFileReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/CelFileReader.cpp\
-	fusion_sdk/calvin_files/parsers/src/DATFileReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataGroupHeaderReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataGroupReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataSetHeaderReader.cpp\
@@ -81,13 +56,15 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/parsers/src/FileInput.cpp\
 	fusion_sdk/calvin_files/parsers/src/GenericDataHeaderReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/GenericFileReader.cpp\
-	fusion_sdk/calvin_files/parsers/src/GridControlFileReader.cpp\
-	fusion_sdk/calvin_files/parsers/src/TextFileReader.cpp\
 	fusion_sdk/calvin_files/utils/src/AffymetrixGuid.cpp\
 	fusion_sdk/calvin_files/utils/src/DateTime.cpp\
 	fusion_sdk/calvin_files/utils/src/FileUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/StringUtils.cpp\
-	fusion_sdk/calvin_files/utils/src/checksum.cpp
+	fusion_sdk/calvin_files/utils/src/checksum.cpp\
+	fusion_sdk/file/CDFFileData.cpp\
+	fusion_sdk/file/CELFileData.cpp\
+	fusion_sdk/file/BPMAPFileData.cpp\
+	fusion_sdk/file/FileIO.cpp\
 
 SOURCES.affxparser = \
 	R_affx_cel_parser.cpp\
@@ -97,12 +74,16 @@ SOURCES.affxparser = \
 SOURCES.cmdline = \
 	R_affx_test_cmd_line.cpp
 
+SOURCES.bpmap = \
+	R_affx_test_bpmap_cmdline.cpp
+
 OBJECTS.affxparser=$(SOURCES.affxparser:.cpp=.o)
 
 OBJECTS.fusion=$(SOURCES.fusion:.cpp=.o)
 
 OBJECTS.cmdline=$(SOURCES.cmdline:.cpp=.o)
 
+OBJECTS.bpmap=$(SOURCES.bpmap:.cpp=.o)
 
 LIB.fusion=./affx_fusion.lib
 
@@ -111,6 +92,9 @@ $(LIB.fusion): $(OBJECTS.fusion) $(OBJECTS.affxparser)
 
 cmd_line: $(OBJECTS.fusion) $(OBJECTS.cmdline)
 	${CC} ${CPPFLAGS} ${CXXFLAGS} ${OBJECTS.fusion} $(OBJECTS.cmdline) -o cmd_line
+
+bpmap: $(OBJECTS.fusion) $(OBJECTS.bpmap)
+	${CC} ${CPPFLAGS} ${CXXFLAGS} ${OBJECTS.fusion} $(OBJECTS.bpmap) -DIS_BIG_ENDIAN -o bpmap_cmd
 
 clean:
 	-rm -rf $(OBJECTS.fusion) $(LIB.fusion) *.o *.so
@@ -131,6 +115,8 @@ dependency:
 	echo -e "\tfusion_sdk/calvin_files/parsers/src/DataGroupHeaderReader.cpp\\" >> depend.tmp
 	echo -e "\tfusion_sdk/calvin_files/parsers/src/CelFileReader.cpp\\" >> depend.tmp
 	echo -e "\tfusion_sdk/file/CELFileData.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/file/CDFFileData.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/file/BPMAPFileData.cpp\\" >> depend.tmp
 	echo -e "\tfusion_sdk/calvin_files/parsers/src/FileHeaderReader.cpp\\" >> depend.tmp
 	echo -e "\tfusion_sdk/calvin_files/parsers/src/GenericDataHeaderReader.cpp\\" >> depend.tmp
 	echo -e "\tfusion_sdk/calvin_files/utils/src/checksum.cpp\\" >> depend.tmp
