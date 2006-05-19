@@ -58,6 +58,7 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/utils/src/FileUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/StringUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/checksum.cpp\
+	fusion_sdk/file/BPMAPFileData.cpp\
 	fusion_sdk/file/CDFFileData.cpp\
 	fusion_sdk/file/CELFileData.cpp\
 	fusion_sdk/file/FileIO.cpp
@@ -65,6 +66,7 @@ SOURCES.fusion = \
 SOURCES.package = \
 	R_affx_cel_parser.cpp\
 	R_affx_cdf_parser.cpp\
-	R_affx_cdf_extras.cpp
+	R_affx_cdf_extras.cpp\
+	R_affx_bpmap_parser.cpp
 
 OBJS=$(SOURCES.fusion:.cpp=.o) $(SOURCES.package:.cpp=.o)
