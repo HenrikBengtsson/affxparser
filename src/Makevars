@@ -1,6 +1,6 @@
 all: $(SHLIB)
 
-MYCXXFLAGS=-O1
+MYCXXFLAGS=-O0
 
 %.o: %.cpp
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
@@ -64,9 +64,11 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/utils/src/StringUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/checksum.cpp\
 	fusion_sdk/file/BPMAPFileData.cpp\
+	fusion_sdk/file/BPMAPFileWriter.cpp\
 	fusion_sdk/file/CDFFileData.cpp\
 	fusion_sdk/file/CELFileData.cpp\
-	fusion_sdk/file/FileIO.cpp
+	fusion_sdk/file/FileIO.cpp\
+	fusion_sdk/file/FileWriter.cpp
 
 SOURCES.package = \
 	R_affx_cel_parser.cpp\
