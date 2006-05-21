@@ -41,19 +41,27 @@
 
  \value{
    A named \code{\link[base]{list}} where the names corresponds to the names
-   of the units read.  Each element of the list is in turn a
-   \code{\link[base]{list}} structure with three components:
-   \item{groups}{A \code{\link[base]{list}} with one component for each group
-    (also called block). The information on each group is a
-    \code{\link[base]{list}} with five components: \code{x}, \code{y},
-    \code{pbase}, \code{tbase}, \code{expos}, and \code{indices}.}
-   \item{type}{An \code{\link[base]{integer}} specifying the type of the
-     unit, where 1 is "expression", 2 is "genotyping", 3 is "CustomSeq",
-     and 4 "tag".}
-   \item{direction}{An \code{\link[base]{integer}} specifying the direction
-     of the unit, which defines if the probes are interrogating the sense
-     or the anti-sense target, where 0 is "no direction", 1 is "sense", and
-     2 is "anti-sense".}
+   of the units read.  Each unit element of the list is in turn a
+   \code{\link[base]{list}} structure with one element \code{groups} which in turn
+   is a \code{\link[base]{list}}.  Each group element in \code{groups} is a \code{\link[base]{list}}
+   with a single field named \code{indices}.  Thus, the structure is
+   \preformatted{
+     cdf
+      +- unit #1
+      |   +- "groups"
+      |       +- group #1
+      |       |   +- "indices"
+      |       |  group #2
+      |       |   +- "indices"
+      |       .
+      |       +- group #K
+      |           +- "indices"
+      +- unit #2
+      .
+      +- unit #J
+   }
+ 
+   This is structure is compatible with what \code{\link{readCdfUnits}}() returns.
  }
 
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
