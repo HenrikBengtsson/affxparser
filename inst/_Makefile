@@ -121,5 +121,7 @@ dependency:
 	echo -e "\tfusion_sdk/calvin_files/parsers/src/GenericDataHeaderReader.cpp\\" >> depend.tmp
 	echo -e "\tfusion_sdk/calvin_files/utils/src/checksum.cpp\\" >> depend.tmp
 	echo -e "\tfusion_sdk/file/FileIO.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/file/BPMAPFileWriter.cpp\\" >> depend.tmp
+	echo -e "\tfusion_sdk/file/FileWriter.cpp\\" >> depend.tmp
 	sort depend.tmp | uniq > dependencies
 	rm depend.tmp depend.tmp2 depend.cel depend.cdf depend.bpmap
