@@ -216,7 +216,12 @@ extern "C" {
      *************************************************************/
 
 
-    SEXP R_affx_get_bpmap_file(SEXP fname, SEXP seqindices, SEXP verbose) 
+    SEXP R_affx_get_bpmap_file(SEXP fname, SEXP seqindices, 
+                               SEXP readSeqInfo, SEXP readStartPos,
+                               SEXP readCenterPos, SEXP readProbeSeq,
+                               SEXP readStrand, SEXP readPMXY, SEXP readMMXY,
+                               SEXP readMatchScore, SEXP readProbeLength,
+                               SEXP verbose) 
     {
         affxbpmap::CBPMAPFileData bpmap;
 
@@ -224,15 +229,15 @@ extern "C" {
          * Process arguments
          * - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         char* bpmapFileName   = CHAR(STRING_ELT(fname,0));
-//         int i_readSeqInfo     = INTEGER(readSeqInfo)[0];
-//         int i_readStartPos    = INTEGER(readStartPos)[0];
-//         int i_readCenterPos   = INTEGER(readCenterPos)[0];
-//         int i_readProbeSeq    = INTEGER(readProbeSeq)[0];
-//         int i_readStrand      = INTEGER(readStrand)[0];
-//         int i_readPMXY        = INTEGER(readPMXY)[0];
-//         int i_readMMXY        = INTEGER(readMMXY)[0];
-//         int i_readMatchScore  = INTEGER(readMatchScore)[0];
-//         int i_readProbeLength = INTEGER(readProbeLength)[0];
+        int i_readSeqInfo     = INTEGER(readSeqInfo)[0];
+        int i_readStartPos    = INTEGER(readStartPos)[0];
+        int i_readCenterPos   = INTEGER(readCenterPos)[0];
+        int i_readProbeSeq    = INTEGER(readProbeSeq)[0];
+        int i_readStrand      = INTEGER(readStrand)[0];
+        int i_readPMXY        = INTEGER(readPMXY)[0];
+        int i_readMMXY        = INTEGER(readMMXY)[0];
+        int i_readMatchScore  = INTEGER(readMatchScore)[0];
+        int i_readProbeLength = INTEGER(readProbeLength)[0];
         int i_verboseFlag     = INTEGER(verbose)[0];
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -295,9 +300,13 @@ extern "C" {
         affxbpmap::CGDACSequenceItem seq;
         affxbpmap::GDACSequenceHitItemType seqHit;
        
-        int seqObjLength = 11;
+        int seqObjLength = i_readSeqInfo + i_readStartPos + 
+            i_readCenterPos + i_readProbeSeq + i_readStrand + 
+            2 * i_readPMXY + 2 * i_readMMXY + i_readMatchScore + 
+            i_readProbeLength;
         int protectCount = 0;
-
+        int kk = 0;
+        
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          * Read the sequences.
          * - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -306,6 +315,7 @@ extern "C" {
             {
                 /* Initializing memory, we free it at the end of each sequence */ 
                 protectCount = 0;
+                kk = 0;
                 PROTECT(seqObj = NEW_LIST(seqObjLength));
                 protectCount++;
                 PROTECT(seqObjNames = NEW_CHARACTER(seqObjLength));
@@ -316,38 +326,57 @@ extern "C" {
                 } else {
                     /* Fusion indices are zero base */
                     bpmap.GetSequenceItem(INTEGER(seqindices)[i] - 1, seq);
-                }
+                } 
                 if (i_verboseFlag >= R_AFFX_VERBOSE) {
                     Rprintf("Reading sequence object: %s\n", seq.GetName().c_str());
                 }
-                SET_VECTOR_ELT(seqObj, 0, R_affx_bpmap_seqinfo_item(seq, i_verboseFlag));
-                SET_STRING_ELT(seqObjNames, 0, mkChar("seqInfo"));
-            
+                if(i_readSeqInfo) {
+                    SET_VECTOR_ELT(seqObj, kk, 
+                                   R_affx_bpmap_seqinfo_item(seq, i_verboseFlag));
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("seqInfo"));
+                }
+                
                 int nHits = seq.GetNumberHits();
                 if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
                     Rprintf("  Allocating memory for  %d hits\n", nHits);
                 }
-                // int onlyPM = seq.GetProbeMapping();
-                PROTECT(pmx = NEW_INTEGER(nHits));
-                protectCount++;
-                PROTECT(pmy = NEW_INTEGER(nHits));
-                protectCount++;
-                PROTECT(mmx = NEW_INTEGER(nHits));
-                protectCount++;
-                PROTECT(mmy = NEW_INTEGER(nHits));
-                protectCount++;
-                PROTECT(matchscore = NEW_NUMERIC(nHits));
-                protectCount++;
+                int onlyPM = seq.GetProbeMapping();
+                if (i_readPMXY) {
+                    PROTECT(pmx = NEW_INTEGER(nHits));
+                    protectCount++;
+                    PROTECT(pmy = NEW_INTEGER(nHits));
+                    protectCount++;
+                }
+                if (i_readMMXY and !onlyPM) {
+                    PROTECT(mmx = NEW_INTEGER(nHits));
+                    protectCount++;
+                    PROTECT(mmy = NEW_INTEGER(nHits));
+                    protectCount++;
+                }
+                if (i_readMatchScore) {
+                    PROTECT(matchscore = NEW_NUMERIC(nHits));
+                    protectCount++;
+                }
+                if (i_readStrand) {
                 PROTECT(strand = NEW_INTEGER(nHits));
                 protectCount++;
+                }
+                if (i_readProbeLength) {
                 PROTECT(probelength = NEW_INTEGER(nHits));
                 protectCount++;
+                }
+                if (i_readStartPos) {
                 PROTECT(startpos = NEW_INTEGER(nHits));
                 protectCount++;
+                }
+                if (i_readCenterPos) {
                 PROTECT(centerpos = NEW_INTEGER(nHits));
                 protectCount++;
+                }
+                if (i_readProbeSeq) {
                 PROTECT(probeseq = NEW_CHARACTER(nHits));
                 protectCount++;
+                }
                 if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
                     Rprintf("Reading hit number:\n");
                 }
@@ -360,40 +389,79 @@ extern "C" {
                                 Rprintf("  %d\n", j + 1);
                             }
                         }
-                        seq.GetHitItem(j, seqHit, true);
+                        seq.GetHitItem(j, seqHit, i_readProbeSeq);
+                        if (i_readPMXY) {
                         INTEGER(pmx)[j] = seqHit.PMX;
                         INTEGER(pmy)[j] = seqHit.PMY;
+                        }
+                        if (i_readMMXY & !onlyPM) {
                         INTEGER(mmx)[j] = seqHit.MMX;
                         INTEGER(mmy)[j] = seqHit.MMY;
+                        }
+                        if (i_readStrand) {
                         INTEGER(strand)[j] = (unsigned int)seqHit.TopStrand;
-                        SET_STRING_ELT(probeseq, j, mkChar(seqHit.PMProbe.c_str()));
-                        INTEGER(startpos)[j] = seqHit.getStartPosition();
+                        }
+                        if (i_readProbeSeq) {
+                        SET_STRING_ELT(probeseq, j, 
+                                       mkChar(seqHit.PMProbe.c_str()));
+                        }
+                        if (i_readStartPos) {
+                            INTEGER(startpos)[j] = seqHit.getStartPosition();
+                        }
+                        if (i_readCenterPos) {
                         INTEGER(centerpos)[j] = seqHit.getCenterPosition();
-                        REAL(matchscore)[j] = (double)seqHit.MatchScore;
+                        }
+                        if (i_readMatchScore) {
+                            REAL(matchscore)[j] = (double)seqHit.MatchScore;
+                        }
+                        if (i_readProbeLength) {
                         INTEGER(probelength)[j] = (int)seqHit.ProbeLength;
+                        }
                     }
                 /* Now it is time to finalize the seqObj */
-                SET_VECTOR_ELT(seqObj, 1, pmx);;
-                SET_STRING_ELT(seqObjNames, 1, mkChar("pmx"));
-                SET_VECTOR_ELT(seqObj, 2, pmy);;
-                SET_STRING_ELT(seqObjNames, 2, mkChar("pmy"));
-                SET_VECTOR_ELT(seqObj, 3, mmx);;
-                // FIXME: only return in case of a pm-mm probe mapping
-                SET_STRING_ELT(seqObjNames, 3, mkChar("mmx"));
-                SET_VECTOR_ELT(seqObj, 4, mmy);;
-                SET_STRING_ELT(seqObjNames, 4, mkChar("mmy"));
-                SET_VECTOR_ELT(seqObj, 5, probeseq);
-                SET_STRING_ELT(seqObjNames, 5, mkChar("probeseq"));
-                SET_VECTOR_ELT(seqObj, 6, strand);
-                SET_STRING_ELT(seqObjNames, 6, mkChar("strand"));
-                SET_VECTOR_ELT(seqObj, 7, startpos);
-                SET_STRING_ELT(seqObjNames, 7, mkChar("startpos"));
-                SET_VECTOR_ELT(seqObj, 8, centerpos);
-                SET_STRING_ELT(seqObjNames, 8, mkChar("centerpos"));
-                SET_VECTOR_ELT(seqObj, 9, probelength);
-                SET_STRING_ELT(seqObjNames, 9, mkChar("probelength"));
-                SET_VECTOR_ELT(seqObj, 10, matchscore);
-                SET_STRING_ELT(seqObjNames, 10, mkChar("matchscore"));
+                if (i_readPMXY) {
+                    SET_VECTOR_ELT(seqObj, kk, pmx);;
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("pmx"));
+                    SET_VECTOR_ELT(seqObj, kk, pmy);;
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("pmy"));
+                }
+                if (i_readMMXY) {
+                    if(!onlyPM) {
+                        SET_VECTOR_ELT(seqObj, kk, mmx);;
+                        SET_STRING_ELT(seqObjNames, kk++, mkChar("mmx"));
+                        SET_VECTOR_ELT(seqObj, kk, mmy);;
+                        SET_STRING_ELT(seqObjNames, kk++, mkChar("mmy"));
+                    } else {
+                        SET_VECTOR_ELT(seqObj, kk, R_NilValue);;
+                        SET_STRING_ELT(seqObjNames, kk++, mkChar("mmx"));
+                        SET_VECTOR_ELT(seqObj, kk, R_NilValue);;
+                        SET_STRING_ELT(seqObjNames, kk++, mkChar("mmy"));
+                    }
+                }
+                if (i_readProbeSeq) {
+                    SET_VECTOR_ELT(seqObj, kk, probeseq);
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("probeseq"));
+                }
+                if (i_readStrand) {
+                    SET_VECTOR_ELT(seqObj, kk, strand);
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("strand"));
+                }
+                if (i_readStartPos) {
+                    SET_VECTOR_ELT(seqObj, kk, startpos);
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("startpos"));
+                }
+                if (i_readCenterPos) {
+                    SET_VECTOR_ELT(seqObj, kk, centerpos);
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("centerpos"));
+                }
+                if (i_readProbeLength) {
+                    SET_VECTOR_ELT(seqObj, kk, probelength);
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("probelength"));
+                }
+                if (i_readMatchScore) {
+                    SET_VECTOR_ELT(seqObj, kk, matchscore);
+                    SET_STRING_ELT(seqObjNames, kk++, mkChar("matchscore"));
+                }
                 if (i_verboseFlag >= R_AFFX_VERBOSE) {
                     Rprintf("Finalizing sequence %s\n", seq.FullName().c_str());
                 }
