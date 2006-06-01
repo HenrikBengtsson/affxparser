@@ -82,47 +82,35 @@ extern "C" {
                 PROTECT(seqInfo = NEW_LIST(8));
                 PROTECT(seqInfoNames = NEW_CHARACTER(8));
 
-                SEXP tmp1;
-                PROTECT(tmp1 = 1);
-                UNPROTECT(1);
-
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("name"));
-                tmp = NEW_CHARACTER(1);
-                SET_VECTOR_ELT(seqInfo, kk++, tmp);
-                SET_STRING_ELT(tmp, 0, mkChar(seq.GetName().c_str()));
+                SET_VECTOR_ELT(seqInfo, kk++, 
+                               mkChar(seq.GetName().c_str()));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("groupname"));
-                tmp = NEW_CHARACTER(1);
-                SET_VECTOR_ELT(seqInfo, kk++, tmp);
-                SET_STRING_ELT(tmp, 0, mkChar(seq.GroupName().c_str()));
+                SET_VECTOR_ELT(seqInfo, kk++, 
+                               mkChar(seq.GroupName().c_str()));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("fullname"));
-                tmp = NEW_CHARACTER(1);
-                SET_VECTOR_ELT(seqInfo, kk++, tmp);
-                SET_STRING_ELT(tmp, 0, mkChar(seq.FullName().c_str()));
+                SET_VECTOR_ELT(seqInfo, kk++, 
+                               mkChar(seq.FullName().c_str()));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("version"));
-                tmp = NEW_CHARACTER(1);
-                SET_VECTOR_ELT(seqInfo, kk++, tmp);
-                SET_STRING_ELT(tmp, 0, mkChar(seq.GetSeqVersion().c_str()));
+                SET_VECTOR_ELT(seqInfo, kk++, 
+                               mkChar(seq.GetSeqVersion().c_str()));
                 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("mapping"));
-                tmp = NEW_CHARACTER(1);
-                SET_VECTOR_ELT(seqInfo, kk++, tmp);
                 if(seq.GetProbeMapping() == 0)
-                    SET_STRING_ELT(tmp, 0, mkChar("pmmm"));
+                    SET_VECTOR_ELT(seqInfo, kk++, mkChar("pmmm"));
                 else
-                    SET_VECTOR_ELT(tmp, 0, mkChar("onlypm"));
+                    SET_VECTOR_ELT(seqInfo, kk++, mkChar("onlypm"));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("number"));
-                tmp = NEW_INTEGER(1);
-                SET_VECTOR_ELT(seqInfo, kk++, tmp);
-                INTEGER(tmp)[0] = seq.GetNumber() + 1;
+                SET_VECTOR_ELT(seqInfo, kk++, 
+                               ScalarInteger(seq.GetNumber() + 1));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("numberOfHits"));
-                tmp = NEW_INTEGER(1);
-                SET_VECTOR_ELT(seqInfo, kk++, tmp);
-                INTEGER(tmp)[0] = seq.GetNumberHits();
+                SET_VECTOR_ELT(seqInfo, kk++, 
+                               ScalarInteger(seq.GetNumberHits()));
 
                 /* Now we read the parameters, which is basically
                  * a long character vector of different parameter
