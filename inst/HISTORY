@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.5.2 [2006-05-31]
+o Updated Fusion SDK to version 1.0.6.
+
 Version: 1.5.1 [2006-05-15]
 o Updated Fusion SDK to version 1.0.5.
 o BUG FIX; Made small changes to the SDK to allow it to compile 
