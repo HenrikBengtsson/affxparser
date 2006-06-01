@@ -29,6 +29,12 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute name for the probe array type of the physical array. */
 #define ARRAY_TYPE_PARAM_NAME L"affymetrix-array-type"
 
+/*! Defines the static attribute name for the master file. */
+#define MASTER_FILE_PARAM_NAME L"affymetrix-master-file"
+
+/*! Defines the static attribute name for the library package. */
+#define LIBRARY_PACKAGE_PARAM_NAME L"affymetrix-library-package"
+
 /*! Defines the number of characters to reserve in the parameter list for the array type name */
 #define ARRAY_TYPE_MAX_LEN 100
 

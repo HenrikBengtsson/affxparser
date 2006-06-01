@@ -25,7 +25,7 @@
 #include <fstream>
 #include <assert.h>
 
-#ifndef WIN32
+#ifndef _MSC_VER
 #include <sys/mman.h>
 #endif
 
@@ -161,7 +161,7 @@ CBARFileData::CBARFileData() :
 	m_bFileOpen(false),
 	m_bFileMapped(false)
 {
-#ifdef WIN32
+#ifdef _MSC_VER
 	m_hFileMap = INVALID_HANDLE_VALUE;
 	m_hFile = INVALID_HANDLE_VALUE;
 #else
@@ -433,7 +433,7 @@ bool CBARFileData::ReadDataSection()
 	m_bFileOpen = false;
 	m_bFileMapped = false;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	// Create the file.
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -537,7 +537,7 @@ void CBARFileData::Close()
 	m_ColumnTypes.erase(m_ColumnTypes.begin(), m_ColumnTypes.end());
 	m_Results.erase(m_Results.begin(), m_Results.end());
 
-#ifdef WIN32
+#ifdef _MSC_VER
 	if (m_bFileOpen)
 	{
 		if (m_bFileMapped)

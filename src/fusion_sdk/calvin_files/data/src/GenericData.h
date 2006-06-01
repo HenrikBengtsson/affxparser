@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <windows.h>
 #endif
 
@@ -231,7 +231,7 @@ protected:
 	/*! The header and generic header objects */
 	affymetrix_calvin_io::FileHeader header;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 	/*! Handle returned by CreateFileMapping */
 	HANDLE fileMapHandle;
 

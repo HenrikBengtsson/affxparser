@@ -27,7 +27,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #include <winsock2.h>
 #else
@@ -135,7 +135,7 @@ ReadInt16_N(IFSTREAM& instr, int16_t& val)
 void
 ReadFloatFromOldBPMAP_N(IFSTREAM &instr, float &fval)
 {
-#ifndef _BIG_ENDIAN
+#ifndef IS_BIG_ENDIAN
 	instr.read((char *)&fval, FLOAT_SIZE);
 	fval = (float) ntohl((uint32_t)fval);
 #else

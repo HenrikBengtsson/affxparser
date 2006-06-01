@@ -19,7 +19,6 @@
 /////////////////////////////////////////////////////////////////
 
 #include "DATFileUpdater.h"
-#include "FileHeaderUpdater.h"
 
 using namespace affymetrix_calvin_io;
 

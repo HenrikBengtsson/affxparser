@@ -29,10 +29,16 @@
 #include <iostream>
 #include <stdio.h>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
+#ifdef HAVE_SNPRINTF // If not using visual c++'s _snprintf include snprintf.
+extern "C" {
+#include "snprintf.h"
+} 
+#else // otherwise use _snprintf where normally use snprintf.
 #define snprintf _snprintf
-#endif
+#endif // HAVE_SNPRINTF
+#endif // _MSC_VER
 
 using namespace affxcel;
 
@@ -88,8 +94,8 @@ using namespace affxcel;
 /// Size of compact cel format identifier
 #define CCEL_HEADER_LEN 8
 
-#ifdef WIN32
-/// Line separator for WIN32
+#ifdef _MSC_VER
+/// Line separator for _MSC_VER
 #define LINE_SEPARATOR "\n"
 #else
 /// Line separator for unix/linux
@@ -823,10 +829,11 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
   // This is a double negative as I know that _DONT_USE_MEM_MAPPING_ isnt used
   // and I dont want to break the build. People who dont
   // want MEMMAPPING (Chuck) can define this
-  // FIXME: USE_MEM_MAPPING should be set in all the makefiles?
+
+  /// @todo USE_MEM_MAPPING should be set in all the makefiles?
 #ifndef _DONT_USE_MEM_MAPPING_
 
-#ifdef WIN32
+#ifdef _MSC_VER
 	// Memory map file on windows...
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
@@ -886,7 +893,7 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 		fclose(m_File);
 		m_File = NULL;
 	}
-#endif // WIN32
+#endif // _MSC_VER
 
 #else
   // No memory mapping ...
@@ -1124,7 +1131,7 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 	instr.close();
 
 	// Memory map file
-#ifdef WIN32
+#ifdef _MSC_VER
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -1349,7 +1356,7 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 		return true;
 
 	// Memory map file
-#ifdef WIN32
+#ifdef _MSC_VER
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -1840,7 +1847,7 @@ void CCELFileData::Munmap()
 	m_pMeanIntensities = NULL;
 
 	// free the map
-#ifdef WIN32
+#ifdef _MSC_VER
 	if (m_lpFileMap != NULL)
 	{
 		UnmapViewOfFile(m_lpFileMap);
@@ -2687,7 +2694,7 @@ void CCELFileData::SetDimensions(int rows, int cols)
 	grid.lowerright.y = rows;
 	m_HeaderData.SetGridCorners(grid);
 
-  // FIXME: UnMap
+  /// @todo UnMap
   // delete [] m_lpData;
   // m_lpData=NULL;
 	delete [] m_pEntries;

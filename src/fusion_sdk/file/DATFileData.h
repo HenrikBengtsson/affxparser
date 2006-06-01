@@ -25,6 +25,9 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "affy-base-types.h"
+#ifdef sun
+#include <stdint.h>
+#endif
 #include "GridCoordinates.h"
 #include <fstream>
 #include <string>

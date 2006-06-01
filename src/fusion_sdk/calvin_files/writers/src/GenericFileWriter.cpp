@@ -50,6 +50,11 @@ void GenericFileWriter::SeekFromBeginPos(int32_t offset)
 	os.seekp(offset, std::ios::beg);
 }
 
+void GenericFileWriter::SeekFromEndPos(int32_t offset)
+{
+	os.seekp(offset, std::ios::end);
+}
+
 void GenericFileWriter::WriteHeader()
 {
 	FileHeaderWriter writer;

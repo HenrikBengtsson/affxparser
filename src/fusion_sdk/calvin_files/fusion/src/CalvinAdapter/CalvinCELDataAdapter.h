@@ -130,6 +130,14 @@ public:
 	 *	\return The chip type of the cell.
 	 */
 	virtual std::wstring GetChipType() { return calvinCel.GetArrayType(); }
+	/*! \brief Get the library package
+	 *	\return library package name
+	 */
+    std::wstring GetLibraryPackageName() { return calvinCel.GetLibraryPackageName(); }
+	/*! \brief Get the master file
+	 *	\return master file name
+	 */
+    std::wstring GetMasterFileName() { return calvinCel.GetMasterFileName(); }
 	/*! \brief Get cell margin.
 		\return The cell margin.
 	 */

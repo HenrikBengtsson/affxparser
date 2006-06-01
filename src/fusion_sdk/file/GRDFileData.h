@@ -22,7 +22,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <windows.h>
 #endif
 
@@ -299,7 +299,7 @@ protected:
 	/*! A pointer to the memory mapped file. */
 	char  *m_lpData;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	/*! A file handle. */
 	HANDLE m_hFileMap;

@@ -32,7 +32,7 @@
 #include "ColumnInfo.h"
 #include "BitFlag.h"
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
 #endif
 
@@ -51,9 +51,9 @@ public:
 
 private:
 
-	/*! total rows in the dataGroup */
+	/*! total rows in the data set */
 	int32_t rowCount;
-	/*! data dataGroup name */
+	/*! data data set name */
 	std::wstring name;
 	/*! name/value pairs */
 	ParameterNameValueTypeVector nameValParams;

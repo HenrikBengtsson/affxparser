@@ -33,7 +33,7 @@ using namespace affymetrix_calvin_io;
  */
 GenericData::GenericData()
 {
-#ifdef WIN32
+#ifdef _MSC_VER
 	fileMapHandle = NULL;
 	fileHandle = INVALID_HANDLE_VALUE;
 #endif
@@ -262,7 +262,7 @@ DataSet* GenericData::DataSet(const std::wstring& dataGroupName, const std::wstr
 DataSet* GenericData::CreateDataSet(DataSetHeader* dsh)
 {
 	void* handle = 0;
-#ifdef WIN32
+#ifdef _MSC_VER
 	handle = fileMapHandle;
 #endif
 	ReadFullDataSetHeader(dsh);
@@ -310,7 +310,7 @@ affymetrix_calvin_io::DataGroup GenericData::DataGroup(u_int32_t dataGroupFilePo
 		fs.close();
 
 	void* handle = 0;
-#ifdef WIN32
+#ifdef _MSC_VER
 	handle = fileMapHandle;
 #endif
 
@@ -465,7 +465,7 @@ void GenericData::Close()
  */
 bool GenericData::MapFile()
 {
-#ifdef WIN32	// On Windows the map is open in the GenericData object, otherwise it is opened in the DataSet
+#ifdef _MSC_VER	// On Windows the map is open in the GenericData object, otherwise it is opened in the DataSet
 	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
 		// Create the file.
@@ -494,7 +494,7 @@ bool GenericData::MapFile()
  */
 void GenericData::UnmapFile()
 {
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	if (fileHandle != INVALID_HANDLE_VALUE)
 	{

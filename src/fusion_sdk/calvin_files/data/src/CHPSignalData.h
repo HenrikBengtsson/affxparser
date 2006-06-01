@@ -39,6 +39,9 @@ namespace affymetrix_calvin_io
 /*! The column name for the probe set name. */
 #define SIGNAL_PROBE_SET_NAME std::wstring(L"ProbeSetName")
 
+/*! The column name for the probe set id. */
+#define SIGNAL_PROBE_SET_ID std::wstring(L"ProbeSetId")
+
 /*! Holds data associated with signal array CHP files. */
 class CHPSignalData
 {
@@ -56,7 +59,7 @@ public:
 
 private:
 	/*! Flag indicating if the probe set names were stored in wide character format. */
-	bool wideProbeSetNames;
+    DataSetColumnTypes firstColumnType;
 
 	/*! The generic data item. */
 	GenericData genericData;
@@ -91,11 +94,16 @@ public:
 	/*! Sets the array type.  */
 	void SetArrayType(const std::wstring& value);
 	
-	/*! Sets the number of entries (probe sets)
+	/*! Sets the number of entries (probe sets). Use this function if names are to be stored.
 	 * @param ln The number of probe sets.
 	 * @param maxln The maximum length of a probe set name.
 	 */
 	void SetEntryCount(int32_t ln, int32_t maxln);
+	
+	/*! Sets the number of entries (probe sets). Use this function if ids are to be stored.
+	 * @param ln The number of probe sets.
+	 */
+	void SetEntryCount(int32_t ln);
 
 	/*! Gets the number of entries (probe sets) */
 	int32_t GetEntryCount();
@@ -176,9 +184,9 @@ private:
 
 	/*! Adds the columns to the data set.
 	 * @param hdr The data set header.
-	 * @param maxProbeSetName The max probe set name length.
+	 * @param keyIsID True if the probe set ids are to be stored, false for probe set names.
 	 */
-	void AddColumns(DataSetHeader& hdr);
+	void AddColumns(DataSetHeader& hdr, bool keyIsID);
 
 };
 
