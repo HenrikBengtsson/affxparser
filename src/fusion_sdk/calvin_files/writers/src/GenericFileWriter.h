@@ -28,7 +28,7 @@
 #include "FileOutput.h"
 
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
 #endif
 
@@ -61,6 +61,8 @@ public:
 	void SeekFromCurrentPos(int32_t offset);
 
 	void SeekFromBeginPos(int32_t offset);
+
+	void SeekFromEndPos(int32_t offset);
 
 	DataGroupWriter* CreateDataGroupWriter(DataGroupHeader& hdr);
 

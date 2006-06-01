@@ -20,7 +20,7 @@
 #include "SMDFileData.h"
 #include <sys/stat.h>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #define snprintf _snprintf
 #endif
 

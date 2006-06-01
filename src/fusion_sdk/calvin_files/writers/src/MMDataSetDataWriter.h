@@ -29,7 +29,7 @@
 #include "DataSetHeader.h"
 #include "DataSetHeaderWriter.h"
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
 #endif
 

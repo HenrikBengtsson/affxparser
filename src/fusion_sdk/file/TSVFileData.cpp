@@ -17,6 +17,8 @@
 //
 ////////////////////////////////////////////////////////////////
 
+// WARNING: This class is deprecated! Use file/TsvFile instead.
+
 #include "TSVFileData.h"
 #include "FileIO.h"
 #include "FileWriter.h"
@@ -29,7 +31,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #define snprintf _snprintf
 #endif
 

@@ -23,7 +23,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #endif
 

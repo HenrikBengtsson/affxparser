@@ -25,14 +25,14 @@
 #include <stdio.h>
 #include <sstream>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // ignore deprecated functions warning
 #include <winsock2.h>
 #include <process.h>
 #define getpid _getpid
 #endif
 
-#ifndef WIN32
+#ifndef _MSC_VER
 #include <unistd.h>
 #endif
 
@@ -59,7 +59,7 @@ void InitializeRandomNumberGenerator()
  */
 AffymetrixGuid::AffymetrixGuid()
 {
-#ifdef WIN32
+#ifdef _MSC_VER
 	// initialize Winsock library
 	WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(1, 1);
@@ -73,7 +73,7 @@ AffymetrixGuid::AffymetrixGuid()
  */
 AffymetrixGuid::~AffymetrixGuid()
 {
-#ifdef WIN32
+#ifdef _MSC_VER
 	WSACleanup();
 #endif
 }

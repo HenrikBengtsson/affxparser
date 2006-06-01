@@ -39,7 +39,7 @@ using namespace affymetrix_calvin_parameter;
 using namespace affymetrix_calvin_utilities;
 XERCES_CPP_NAMESPACE_USE
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // ignore deprecated functions warning
 #endif
 
@@ -236,10 +236,10 @@ bool TemplateFileWriter::Write(const std::string &fileName, affymetrix_calvin_te
 
 	// Create a DOM implementation object and create the document type for it.
 	DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ToXMLCh(L"LS"));
-	DOMDocumentType* dt  = impl->createDocumentType(ToXMLCh(TEMPLATE_FILE_ELEMENT), 0, ToXMLCh(TEMPLATE_FILE_DTD));
+	//DOMDocumentType* dt  = impl->createDocumentType(ToXMLCh(TEMPLATE_FILE_ELEMENT), 0, ToXMLCh(TEMPLATE_FILE_DTD));
 	DOMDocument* doc = impl->createDocument();
 	doc->setStandalone(true);
-	doc->appendChild(dt);
+	//doc->appendChild(dt);
 
 	// Create the serializer.
 	DOMWriter *theSerializer = ((DOMImplementationLS*)impl)->createDOMWriter();

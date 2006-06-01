@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <windows.h>
 #else
 #include <dirent.h>
@@ -96,7 +96,7 @@ list<string> FileUtils::ListFiles(const char *pathName, const char *ext)
 	}
 	string exten = ext;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	WIN32_FIND_DATA findData;
 	string search = basePath + "*.";

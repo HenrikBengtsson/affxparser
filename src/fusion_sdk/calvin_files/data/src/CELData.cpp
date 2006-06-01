@@ -593,6 +593,38 @@ std::wstring CelFileData::GetArrayType()
 }
 
 /*
+ * Set the master file
+ */
+void CelFileData::SetMasterFileName(const std::wstring& value)
+{
+	SetWStringToGenericHdr(MASTER_FILE_PARAM_NAME, value);
+}
+
+/*
+ * Get the master file
+ */
+std::wstring CelFileData::GetMasterFileName()
+{
+    return GetWStringFromGenericHdr(MASTER_FILE_PARAM_NAME);
+}
+
+/* 
+ * Set the library package
+ */
+void CelFileData::SetLibraryPackageName(const std::wstring& value)
+{
+	SetWStringToGenericHdr(LIBRARY_PACKAGE_PARAM_NAME, value);
+}
+
+/*
+ * Get the library package
+ */
+std::wstring CelFileData::GetLibraryPackageName()
+{
+    return GetWStringFromGenericHdr(LIBRARY_PACKAGE_PARAM_NAME);
+}
+
+/*
  * Set name of the algorithm used to generate the results.
  */
 void CelFileData::SetAlgorithmName(const std::wstring& value)
@@ -606,6 +638,22 @@ void CelFileData::SetAlgorithmName(const std::wstring& value)
 std::wstring CelFileData::GetAlgorithmName()
 {
 	return GetWStringFromGenericHdr(ALGORITHM_NAME_PARAM_NAME);
+}
+
+/*
+ * Set name of the algorithm used to generate the results.
+ */
+void CelFileData::SetAlgorithmVersion(const std::wstring& value)
+{
+	SetWStringToGenericHdr(ALG_VERSION_PARAM_NAME, value);
+}
+
+/*
+ * Get the name of the algorithm used to generate the results.
+ */
+std::wstring CelFileData::GetAlgorithmVersion()
+{
+	return GetWStringFromGenericHdr(ALG_VERSION_PARAM_NAME);
 }
 
 /*

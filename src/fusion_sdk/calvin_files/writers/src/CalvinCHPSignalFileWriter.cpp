@@ -25,7 +25,7 @@ using namespace affymetrix_calvin_io;
 
 CHPSignalFileWriter::CHPSignalFileWriter(CHPSignalData &p)
 {
-	maxProbeSetName = p.GetMaxProbeSetName();
+    maxProbeSetName = p.GetMaxProbeSetName();
 	writer = new GenericFileWriter(p.GetFileHeader());
 	WriteHeaders();
 }
@@ -63,10 +63,11 @@ void CHPSignalFileWriter::SeekToDataSet()
 
 void CHPSignalFileWriter::WriteEntry(const affymetrix_calvin_data::ProbeSetSignalData& p)
 {
-	//writer->SeekFromBeginPos(entryPos);
-	dataSetWriter->Write(p.name, maxProbeSetName);
+    if (maxProbeSetName == -1)
+        dataSetWriter->Write(p.id);
+    else
+        dataSetWriter->Write(p.name, maxProbeSetName);
 	dataSetWriter->Write(p.signal);
-	//entryPos = writer->GetFilePos();
 }
 
 int32_t CHPSignalFileWriter::SetFilePositions()

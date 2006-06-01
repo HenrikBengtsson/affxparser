@@ -24,8 +24,9 @@
 #include "DATData.h"
 #include "GenericFileWriter.h"
 #include "DATFileReader.h"
+#include "FileHeaderUpdater.h"
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
 #endif
 

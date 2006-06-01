@@ -25,6 +25,7 @@
  */
 
 #include <string>
+#include "AffymetrixBaseTypes.h"
 
 namespace affymetrix_calvin_data
 {
@@ -34,6 +35,9 @@ typedef struct _ProbeSetSignalData
 {
 	/*! The name of the probe set. */
 	std::string name;
+
+    /*! The probe set id. */
+    int32_t id;
 
 	/*! The signal associated to the name. */
 	float signal;

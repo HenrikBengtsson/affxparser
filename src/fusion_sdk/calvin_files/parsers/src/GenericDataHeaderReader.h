@@ -27,7 +27,7 @@
 #include "GenericDataHeader.h"
 #include <fstream>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4290) // dont show warnings about throw keyword on function declarations.
 #endif
 

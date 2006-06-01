@@ -132,6 +132,14 @@ public:
 	 *	\return The chip type of the cell.
 	 */
 	virtual std::wstring GetChipType();
+	/*! \brief Get the library package
+	 *	\return blank value
+	 */
+    virtual std::wstring GetLibraryPackageName() { return L""; }
+	/*! \brief Get the master file
+	 *	\return blank value
+	 */
+	virtual std::wstring GetMasterFileName() { return L""; }
 	/*! \brief Get cell margin.
 		\return The cell margin.
 	 */

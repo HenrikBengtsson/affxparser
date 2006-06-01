@@ -29,7 +29,7 @@ using namespace affymetrix_calvin_exceptions;
 #define DATE_PRINTF_FORMAT std::wstring(L"%02d-%02d-%02d")
 #define TIME_PRINTF_FORMAT std::wstring(L"%02d:%02d:%02d")
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // Turn off warnings for depricated VC++ functions.
 #endif
 

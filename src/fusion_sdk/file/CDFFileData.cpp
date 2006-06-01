@@ -28,11 +28,11 @@
 #include "CDFFileData.h"
 #include "FileIO.h"
 #include <stdio.h>
-#ifndef WIN32
+#ifndef _MSC_VER
 #include <sys/mman.h>
 #endif
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #endif
 
@@ -67,7 +67,7 @@ CCDFFileData::CCDFFileData() :
 	m_bFileOpen(false),
 	m_bFileMapped(false)
 {
-#ifdef WIN32
+#ifdef _MSC_VER
 	m_hFileMap = INVALID_HANDLE_VALUE;
 	m_hFile = INVALID_HANDLE_VALUE;
 #else
@@ -367,7 +367,7 @@ std::string CCDFProbeSetNames::GetName(int index) const
 {
 	if (m_bMapped == true)
 	{
-    // FIXME: allocate std::string and then memcpy to it -- this is a double copy
+    /// @todo allocate std::string and then memcpy to it -- this is a double copy
 		char name[MAX_PROBE_SET_NAME_LENGTH + 1];
 		memcpy(name, m_lpData + index*MAX_PROBE_SET_NAME_LENGTH, MAX_PROBE_SET_NAME_LENGTH);
 		name[MAX_PROBE_SET_NAME_LENGTH] ='\0';
@@ -409,7 +409,7 @@ void CCDFFileData::Close()
 	m_QCProbeSets.clear();
 	m_ProbeSetNames.Clear();
 
-#ifdef WIN32
+#ifdef _MSC_VER
 	if (m_bFileOpen)
 	{
 		if (m_bFileMapped)
@@ -668,7 +668,7 @@ bool CCDFFileData::ReadXDAFormatUsingMemMap(bool bReadHeaderOnly)
 	m_bFileOpen = false;
 	m_bFileMapped = false;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	// Create the file.
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,

@@ -23,7 +23,7 @@
 #include <istream>
 #include <fstream>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #endif
 

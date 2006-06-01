@@ -24,7 +24,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4786) // identifier was truncated in the debug information
 #endif
 

@@ -21,9 +21,6 @@
 #ifndef _DataSet_HEADER_
 #define _DataSet_HEADER_
 
-/*! \file DataSet.h This file provides access to the DataSet data.
- */
-
 #include "AffymetrixBaseTypes.h"
 #include "AffyStlCollectionTypes.h"
 #include "DataSetHeader.h"
@@ -31,7 +28,7 @@
 #include <string>
 #include <fstream>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <windows.h>
 #endif
 
@@ -250,7 +247,7 @@ protected:
 	template<typename T> void ClearAndSizeVector(std::vector<T>& values, u_int32_t size);
 
 	/*! Platform specific memory-mapping method */
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	bool MapDataWin32(u_int32_t start, u_int32_t bytes);
 
@@ -261,7 +258,7 @@ protected:
 #endif
 
 protected:
-	/*! name of the file containing the data dataGroup.  */
+	/*! name of the file containing the data data set*.  */
 	std::string fileName;
 
 	/*! copy of the DataSetHeader */
@@ -278,7 +275,7 @@ protected:
 	 */
 	Int32Vector columnByteOffsets;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	/*! Handle returned by CreateFileMapping */
 	HANDLE fileMapHandle;
