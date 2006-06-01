@@ -20,7 +20,7 @@
 #include "BEDFileData.h"
 #include <fstream>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #define snprintf _snprintf
 #endif
 
@@ -28,7 +28,7 @@
 using namespace std;
 using namespace affxbed;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996)
 #endif
 

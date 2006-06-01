@@ -24,7 +24,7 @@
 /*! \file CDFProbeGroupInformation.h This file defines the CDFProbeGroupInformation class.
  */
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #include <windows.h>
 #endif
 

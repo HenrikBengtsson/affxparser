@@ -23,7 +23,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 
-#ifndef WIN32
+#ifndef _MSC_VER
 #include <sys/mman.h>
 #endif
 
@@ -211,7 +211,7 @@ CGRDFileData::CGRDFileData() :
 	m_lpData(NULL),
 	m_bFileMapped(false)
 {
-#ifdef WIN32
+#ifdef _MSC_VER
 	m_hFileMap = INVALID_HANDLE_VALUE;
 	m_hFile = INVALID_HANDLE_VALUE;
 #else
@@ -250,7 +250,7 @@ bool CGRDFileData::Open()
 	m_bFileOpen = false;
 	m_bFileMapped = false;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	// Create the file.
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -360,7 +360,7 @@ bool CGRDFileData::Read()
 void CGRDFileData::Close()
 {
 
-#ifdef WIN32
+#ifdef _MSC_VER
 	if (m_bFileOpen)
 	{
 		if (m_bFileMapped)

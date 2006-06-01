@@ -29,12 +29,16 @@
 #include <algorithm>
 #include <iostream>
 
-#ifdef WIN32
-#define snprintf _snprintf
-#endif
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
-#endif
+#ifdef HAVE_SNPRINTF // If not using visual c++'s _snprintf include snprintf.
+extern "C" {
+#include "snprintf.h"
+} 
+#else // otherwise use _snprintf where normally use snprintf.
+#define snprintf _snprintf
+#endif // HAVE_SNPRINTF
+#endif // _MSC_VER
 
 using namespace affxcel;
 
@@ -90,8 +94,8 @@ using namespace affxcel;
 /// Size of compact cel format identifier
 #define CCEL_HEADER_LEN 8
 
-#ifdef WIN32
-/// Line separator for WIN32
+#ifdef _MSC_VER
+/// Line separator for _MSC_VER
 #define LINE_SEPARATOR "\n"
 #else
 /// Line separator for unix/linux

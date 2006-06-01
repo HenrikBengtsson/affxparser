@@ -237,6 +237,24 @@ std::wstring FusionCELData::GetChipType()
 }
 
 /*
+ * Get the library package
+ */
+std::wstring FusionCELData::GetLibraryPackageName()
+{
+   	CheckAdapter();
+    return adapter->GetLibraryPackageName();
+}
+
+/*
+ * Get the master file
+ */
+std::wstring FusionCELData::GetMasterFileName()
+{
+   	CheckAdapter();
+    return adapter->GetMasterFileName();
+}
+
+/*
  * Retrieve cell margin.
  */
 int FusionCELData::GetCellMargin()

@@ -30,7 +30,7 @@
 #include "Coords.h"
 #include <set>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
 #endif
 
@@ -149,6 +149,26 @@ public:
 	 */
 	std::wstring GetArrayType();
 
+	/*! Set the master file
+	 *	@param value master file name
+	 */
+	void SetMasterFileName(const std::wstring& value);
+
+	/*! Get the master file
+	 *	@return master file name
+	 */
+	std::wstring GetMasterFileName();
+    
+	/*! Set the library package
+	 *	@param value library package name
+	 */
+	void SetLibraryPackageName(const std::wstring& value);
+
+	/*! Get the library package
+	 *	@return library package name
+	 */
+	std::wstring GetLibraryPackageName();
+
 	/*! Set name of the algorithm used to generate the results.
 	 *	@param value algorithm name
 	 */
@@ -158,6 +178,14 @@ public:
 	 *	@return Algorithm name
 	 */
 	std::wstring GetAlgorithmName();
+	/*! Set version of the algorithm used to generate the results.
+	 *	@param value algorithm name
+	 */
+	void SetAlgorithmVersion(const std::wstring& value);
+	/*
+	 * Get the version of the algorithm used to generate the results.
+	 */
+	std::wstring CelFileData::GetAlgorithmVersion();
 
 	/*! Set the number of rows of cells on the array.
 	 *	@param value Number of rows of cells.

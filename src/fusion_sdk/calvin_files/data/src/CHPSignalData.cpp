@@ -31,14 +31,16 @@ static const std::wstring CHIP_SUMMARY_PARAMETER_NAME_PREFIX = L"affymetrix-chip
 
 CHPSignalData::CHPSignalData()
 {
-	wideProbeSetNames = false;
+    maxProbeSetName = -1;
+	firstColumnType = UnicodeCharColType;
 	entries = NULL;
 	Clear();
 }
 
 CHPSignalData::CHPSignalData(const std::string& filename) 
 { 
-	wideProbeSetNames = false;
+    maxProbeSetName = -1;
+	firstColumnType = UnicodeCharColType;
 	entries = NULL;
 	Clear();
 	SetFilename(filename);
@@ -77,13 +79,27 @@ int32_t CHPSignalData::GetEntryCount()
 
 void CHPSignalData::SetEntryCount(int32_t ln, int32_t maxln)
 {
+    firstColumnType = ASCIICharColType;
 	maxProbeSetName = maxln;
 	ParameterNameValueType param;
 	DataGroupHeader* dcHdr = &genericData.Header().GetDataGroup(0);
 	DataSetHeader dpHdr;
 	dpHdr.SetRowCnt(ln);
 	dpHdr.SetName(SIGNAL_SIGNAL_NAME);
-	AddColumns(dpHdr);
+	AddColumns(dpHdr, false);
+	dcHdr->AddDataSetHdr(dpHdr);
+}
+
+void CHPSignalData::SetEntryCount(int32_t ln)
+{
+    firstColumnType = IntColType;
+	maxProbeSetName = -1;
+	ParameterNameValueType param;
+	DataGroupHeader* dcHdr = &genericData.Header().GetDataGroup(0);
+	DataSetHeader dpHdr;
+	dpHdr.SetRowCnt(ln);
+	dpHdr.SetName(SIGNAL_SIGNAL_NAME);
+	AddColumns(dpHdr, true);
 	dcHdr->AddDataSetHdr(dpHdr);
 }
 
@@ -92,21 +108,28 @@ void CHPSignalData::GetSignalEntry(int index, affymetrix_calvin_data::ProbeSetSi
 	OpenSignalDataSet();
 	if (entries && entries->IsOpen())
 	{
-		if (wideProbeSetNames == false)
+        entry.id = -1;
+        entry.name.clear();
+		if (firstColumnType == ASCIICharColType)
 			entries->GetData(index, 0, entry.name);
-		else
+		else if (firstColumnType == UnicodeCharColType)
 		{
-			std::wstring wprobeSetName;
-			entries->GetData(index, 0, wprobeSetName);
-			 entry.name = StringUtils::ConvertWCSToMBS(wprobeSetName);
+            std::wstring wprobeSetName;
+            entries->GetData(index, 0, wprobeSetName);
+            entry.name = StringUtils::ConvertWCSToMBS(wprobeSetName);
 		}
+        else if (firstColumnType == IntColType)
+            entries->GetData(index, 0, entry.id);
 		entries->GetData(index, 1, entry.signal);
 	}
 }
 
-void CHPSignalData::AddColumns(DataSetHeader& hdr)
+void CHPSignalData::AddColumns(DataSetHeader& hdr, bool keyIsID)
 {
-	hdr.AddAsciiColumn(SIGNAL_PROBE_SET_NAME, maxProbeSetName);
+    if (keyIsID == false)
+        hdr.AddAsciiColumn(SIGNAL_PROBE_SET_NAME, maxProbeSetName);
+    else
+        hdr.AddIntColumn(SIGNAL_PROBE_SET_ID);
 	hdr.AddFloatColumn(SIGNAL_SIGNAL_NAME);
 }
 
@@ -118,7 +141,7 @@ void CHPSignalData::OpenSignalDataSet()
 		if (entries)
 		{
 			entries->Open();
-			wideProbeSetNames = (entries->Header().GetColumnInfo(0).GetColumnType() == UnicodeCharColType);
+			firstColumnType = entries->Header().GetColumnInfo(0).GetColumnType();
 		}
 	}
 }

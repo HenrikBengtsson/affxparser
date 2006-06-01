@@ -25,7 +25,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4786) // identifier was truncated in the debug information
 #include <windows.h>
 #endif
@@ -275,7 +275,7 @@ protected:
 
 	/*! Pointer to the data in the memory mapped file. */
 	char  *m_lpData;
-#ifdef WIN32
+#ifdef _MSC_VER
 
 	/*! Windows handle to the file. */
 	HANDLE m_hFileMap;

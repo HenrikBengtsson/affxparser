@@ -151,6 +151,16 @@ public:
 	 */
 	std::wstring GetChipType();
 
+	/*! Get the library package
+	 *	@return library package name (blank for GCOS format CEL files)
+	 */
+	std::wstring GetLibraryPackageName();
+
+	/*! Get the master file
+	 *	@return master file name (blank for GCOS format CEL files)
+	 */
+	std::wstring GetMasterFileName();
+    
 	/*!	Retrieve cell margin
 	 *	@return Cell margin
 	 */

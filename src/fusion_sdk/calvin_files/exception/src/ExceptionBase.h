@@ -35,7 +35,7 @@ namespace affymetrix_calvin_exceptions
 	class CalvinException
 	{
 		protected:
-			/*! Source in the WIN32 use case is used for registry lookup to determine the resource file. 
+			/*! Source in the _MSC_VER use case is used for registry lookup to determine the resource file. 
 				The message code is used incojuction with source to lookup the specific message string based on code.
 			*/
 			std::wstring sourceName;
