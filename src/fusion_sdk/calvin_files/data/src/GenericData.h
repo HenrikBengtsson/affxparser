@@ -231,7 +231,7 @@ protected:
 	/*! The header and generic header objects */
 	affymetrix_calvin_io::FileHeader header;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	/*! Handle returned by CreateFileMapping */
 	HANDLE fileMapHandle;
 

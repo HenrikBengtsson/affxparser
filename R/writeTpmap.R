@@ -1,5 +1,4 @@
 writeTpmap <- function(filename, bpmaplist, verbose = 0){
-    out <- file(filename, open = "w")
     writeSequence <- function(seq){
         if(length(setdiff(c("seqInfo", "pmx", "pmy", "probeseq", "startpos", "strand"),
                           names(seq))) != 0 ||
@@ -23,12 +22,20 @@ writeTpmap <- function(filename, bpmaplist, verbose = 0){
                                    seq[c("startpos", "pmx", "pmy", "mmx", "mmy", "matchscore")])))
         write(hits, file = out, ncolumns = nrow(hits), append = TRUE)
         return(NULL)
+    } # writeSequence()
+
+    if (file.exists(filename)) {
+      stop("Could not write TPMAP file. File already exists: ", filename)
     }
+
+    out <- file(filename, open = "w")
+    on.exit(close(out))
+
     for(i in 1:length(bpmaplist)) {
         if(verbose)
             cat(paste("Writing sequence", names(bpmaplist)[i], "\n"))
         writeSequence(bpmaplist[[i]])
     }
-    close(out)
+
     invisible(NULL)
 }
