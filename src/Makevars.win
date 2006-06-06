@@ -1,4 +1,5 @@
 PKG_LIBS+=-lws2_32
+
 PKG_CPPFLAGS+=\
  -imacros R_affx_constants.h\
  -Ifusion_sdk/calvin_files/array/src\
