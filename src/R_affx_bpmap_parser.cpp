@@ -71,7 +71,8 @@ extern "C" {
      *
      *************************************************************/
 
-    SEXP R_affx_bpmap_seqinfo_item(affxbpmap::CGDACSequenceItem &seq, int i_verboseFlag){
+    SEXP R_affx_bpmap_seqinfo_item(affxbpmap::CGDACSequenceItem &seq, 
+                                   int i_verboseFlag){
                 if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
                     Rprintf("  Reading seqInfo\n");
                 }
@@ -129,7 +130,8 @@ extern "C" {
                             SET_STRING_ELT(seqInfoParameters, j, 
                                            mkChar(seq.GetParameter(j).Value.c_str()));
                         }
-                    setAttrib(seqInfoParameters, R_NamesSymbol, seqInfoParameterNames);
+                    setAttrib(seqInfoParameters, R_NamesSymbol, 
+                              seqInfoParameterNames);
                     SET_VECTOR_ELT(seqInfo, 7, seqInfoParameters);
                     UNPROTECT(2);
                 } else {
@@ -189,7 +191,8 @@ extern "C" {
         } else {
             /* and some error checking of the argument */
             for(int i = 0; i < nSequenceIndices; i++){
-                if(INTEGER(seqindices)[i] < 0 | INTEGER(seqindices)[i] > nSequences)
+                if(INTEGER(seqindices)[i] < 0 | 
+                   INTEGER(seqindices)[i] > nSequences)
                     error("seqIndices out of range");
                         }
             nSequences = nSequenceIndices;
@@ -214,10 +217,13 @@ extern "C" {
                 bpmap.GetSequenceItem(INTEGER(seqindices)[i] - 1, seq);
             }
             if (i_verboseFlag >= R_AFFX_VERBOSE) {
-                Rprintf("Reading sequence object: %s\n", seq.GetName().c_str());
+                Rprintf("Reading sequence object: %s\n", 
+                        seq.GetName().c_str());
             }
-            SET_VECTOR_ELT(returnList, i, R_affx_bpmap_seqinfo_item(seq, i_verboseFlag));
-            SET_STRING_ELT(returnListNames, i, mkChar(seq.FullName().c_str()));
+            SET_VECTOR_ELT(returnList, i, 
+                           R_affx_bpmap_seqinfo_item(seq, i_verboseFlag));
+            SET_STRING_ELT(returnListNames, i, 
+                           mkChar(seq.FullName().c_str()));
         }
         setAttrib(returnList, R_NamesSymbol, returnListNames);
         bpmap.Close();
