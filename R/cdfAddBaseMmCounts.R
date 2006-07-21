@@ -17,7 +17,10 @@
 # @synopsis
 #
 # \arguments{
-#  \item{groups}{A @list structure with groups.}
+#  \item{groups}{A @list structure with groups.  
+#    Each group must contain the fields \code{tbase}, \code{pbase}, and 
+#    \code{offset} (from @see "cdfAddProbeOffsets").
+#  }
 #  \item{...}{Not used.}
 # }
 #
@@ -49,6 +52,7 @@
 # }
 #
 # \seealso{
+#  To add required probe offsets, @see "cdfAddProbeOffsets".
 #  @see "applyCdfGroups".
 # }
 #
@@ -115,6 +119,8 @@ cdfAddBaseMmCounts <- function(groups, ...) {
 
 ############################################################################
 # HISTORY:
+# 2006-06-19
+# o Added more Rdoc help.
 # 2006-03-07
 # o Created.
 ############################################################################  

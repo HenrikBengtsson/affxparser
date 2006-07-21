@@ -13,7 +13,9 @@
 # @synopsis
 #
 # \arguments{
-#  \item{groups}{A @list structure with groups.}
+#  \item{groups}{A @list structure with groups.
+#    Each group must contain the fields \code{tbase}, and \code{expos}.
+#  }
 #  \item{...}{Not used.}
 # }
 #
@@ -87,6 +89,8 @@ cdfAddProbeOffsets <- function(groups, ...) {
 
 ############################################################################
 # HISTORY:
+# 2006-06-19
+# o Added more Rdoc help.
 # 2006-03-07
 # o Created.
 ############################################################################  

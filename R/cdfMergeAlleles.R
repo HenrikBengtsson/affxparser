@@ -88,14 +88,16 @@ cdfMergeAlleles <- function(groups, compReverseBases=FALSE, collapse="", ...) {
   }
 
   if (compReverseBases) {
-str(groupNames);
     groupNames[c(3,4)] <- c(A="T", C="G", G="C", T="A")[groupNames[c(3,4)]];
-str(groupNames);
   }
 
   nameFwd <- paste(groupNames[c(1,2)], collapse=collapse);
-  nameRev <- paste(groupNames[c(3,4)], collapse=collapse);
-  names(newGroups) <- c(nameFwd, nameRev);
+  if (nbrOfStrands == 2) {
+    nameRev <- paste(groupNames[c(3,4)], collapse=collapse);
+    names(newGroups) <- c(nameFwd, nameRev);
+  } else {
+    names(newGroups) <- nameFwd;
+  }
 
   newGroups;
 }

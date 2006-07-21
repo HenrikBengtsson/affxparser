@@ -26,7 +26,10 @@
 \usage{cdfAddBaseMmCounts(groups, ...)}
 
 \arguments{
- \item{groups}{A \code{\link[base]{list}} structure with groups.}
+ \item{groups}{A \code{\link[base]{list}} structure with groups.
+   Each group must contain the fields \code{tbase}, \code{pbase}, and
+   \code{offset} (from \code{\link{cdfAddProbeOffsets}}()).
+ }
  \item{...}{Not used.}
 }
 
@@ -58,6 +61,7 @@
 }
 
 \seealso{
+ To add required probe offsets, \code{\link{cdfAddProbeOffsets}}().
  \code{\link{applyCdfGroups}}().
 }
 
