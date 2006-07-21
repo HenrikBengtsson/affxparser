@@ -1,6 +1,18 @@
 Package: affxparser
 ===================
 
+Version: 1.5.3 [2006-07-21]
+o Improved the speed of updateCel() substantially by first working with
+  raw vector in memory and then writing the whole chunk of data to file 
+  at once.
+o Added functional prototype of updateCel() to *update* binary (v4) CEL 
+  files.  Currently, the code does make use the Fusion SDK.  There is
+  currently no writeCel() to create a CEL file from scratch.  However,
+  with the auxillary function copyCel() one can copy an existing CEL 
+  file and then update that one.  Thus, it is now possible to write,
+  say, normalized probe intensities to a CEL file.  Note that this is
+  only a first prototype and functions may change in a future release.
+
 Version: 1.5.2 [2006-05-31]
 o Updated Fusion SDK to version 1.0.6.
 

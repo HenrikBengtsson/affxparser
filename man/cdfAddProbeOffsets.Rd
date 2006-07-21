@@ -22,7 +22,9 @@
 \usage{cdfAddProbeOffsets(groups, ...)}
 
 \arguments{
- \item{groups}{A \code{\link[base]{list}} structure with groups.}
+ \item{groups}{A \code{\link[base]{list}} structure with groups.
+   Each group must contain the fields \code{tbase}, and \code{expos}.
+ }
  \item{...}{Not used.}
 }
 

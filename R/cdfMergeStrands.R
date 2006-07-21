@@ -40,13 +40,11 @@
 #**/#######################################################################
 cdfMergeStrands <- function(groups, ...) {
   nbrOfGroups <- length(groups);
-  if (nbrOfGroups != 4)
+  if (nbrOfGroups != 2 && nbrOfGroups != 4)
     return(groups);
 
   names <- names(groups);
   unames <- unique(names);
-  if (length(unames) != 2)
-    return(groups);
 
   res <- list();
   for (name in unames) {
