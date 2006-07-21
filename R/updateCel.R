@@ -12,7 +12,7 @@
 # \arguments{
 #   \item{filename}{The filename of the CEL file.}
 #   \item{indices}{A @numeric @vector of cell (probe) indices specifying 
-#     which cells to updated.}
+#     which cells to updated.  If @NULL, all indices are considered.}
 #   \item{intensities}{A @numeric @vector of intensity values to be stored.
 #     Alternatively, it can also be a named @data.frame or @matrix (or @list)
 #     where the named columns (elements) are the fields to be updated.}
@@ -131,35 +131,30 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Reorder data such that it is written in optimal order
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  o <- order(indices);
-  indices <- indices[o];
-  if (!is.null(intensities))
-    intensities <- intensities[o];
-  if (!is.null(stdvs))
-    stdvs <- stdvs[o];
-  if (!is.null(pixels))
-    pixels <- pixels[o];
-
+  if (is.null(indices)) {
+    indices <- 1:nbrOfIndices;
+  } else {
+    o <- order(indices);
+    indices <- indices[o];
+    if (!is.null(intensities))
+      intensities <- intensities[o];
+    if (!is.null(stdvs))
+      stdvs <- stdvs[o];
+    if (!is.null(pixels))
+      pixels <- pixels[o];
+  }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Write data to file
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   version <- header$version;
   if (version == 4) {
-    writeFloat <- function(con, value, ...) {
-      writeBin(con=con, as.double(value), size=4, endian="little");
-    }
-  
-    writeShort <- function(con, value, ...) {
-      writeBin(con=con, as.integer(value), size=2, endian="little");
-    }
-  
     # Open CEL file
     con <- file(filename, open="r+b");
     on.exit(close(con));
 
     # Skip CEL header
-    .readCelHeaderV4(con);
+    hdr <- .readCelHeaderV4(con);
 
     # "Cell entries - this consists of an intensity value, standard 
     #  deviation value and pixel count for each cell in the array.
@@ -168,44 +163,74 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     #  defined by XY coordinates: (0,0), (1,0), (2,0), (3,0), (4,0).
     #  Type: (float, float, short) = 4 + 4 + 2 = 10 bytes / cell
     #  cellData <- c(readFloat(con), readFloat(con), readShort(con));
+    sizeOfCell <- 10;
+
     # Current file position
     dataOffset <- seek(con);
 
-    # File position offset for all cells to be updated
-    sizeOfCell <- 10;
-    offsets <- (dataOffset - sizeOfCell) + sizeOfCell*indices;
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Read the data section of the CEL file
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # There is no need to read data before the first index
+    minIndex <- min(indices);
+    dataOffset <- dataOffset + sizeOfCell*(minIndex-1);
+    indices <- indices - minIndex + 1;
+
+    # There is no need to read beyond the last index
+    maxIndex <- max(indices);
+    seek(con, where=dataOffset);
+    rawAll <- readBin(con=con, what="raw", n=sizeOfCell*maxIndex);
+#print(matrix(rawAll[1:30], ncol=10, byrow=TRUE));
+
+    tmp <- sizeOfCell*(indices-1);
+    indices4 <- rep(tmp, each=4);
+    indices2 <- rep(tmp, each=2);
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Update 'intensities'
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     if (!is.null(intensities)) {
-      for (kk in 1:nbrOfIndices) {
-        seek(con, where=offsets[kk], rw="write");
-        writeFloat(con, intensities[kk]);
-      }
+      # Write floats (size=4) to raw vector
+      raw <- raw(length=4*nbrOfIndices);
+      raw <- writeBin(con=raw, intensities, size=4, endian="little");
+      # Updated 'rawAll' accordingly
+      idx <- indices4 + 1:4;
+      rawAll[idx] <- raw;
     }
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Update 'stdvs'
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    offsets <- offsets + 4;
     if (!is.null(stdvs)) {
-      for (kk in 1:nbrOfIndices) {
-        seek(con, where=offsets[kk], rw="write");
-        writeFloat(con, stdvs[kk]);
-      }
+      # Write floats (size=4) to raw vector
+      raw <- raw(length=4*nbrOfIndices);
+      raw <- writeBin(con=raw, stdvs, size=4, endian="little");
+
+      # Updated 'rawAll' accordingly
+      idx <- indices4 + 5:8;
+      rawAll[idx] <- raw;
     }
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Update 'pixels'
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    offsets <- offsets + 4;
     if (!is.null(pixels)) {
-      for (kk in 1:nbrOfIndices) {
-        seek(con, where=offsets[kk], rw="write");
-        writeShort(con, pixels[kk]);
-      }
+      # Write short integers (size=2) to raw vector
+      raw <- raw(length=2*nbrOfIndices);
+      raw <- writeBin(con=raw, pixels, size=2, endian="little");
+
+      # Updated 'rawAll' accordingly
+      idx <- indices2 + 9:10;
+      rawAll[idx] <- raw;
     }
+
+#print(matrix(rawAll[1:30], ncol=10, byrow=TRUE));
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Write raw data back to file
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    seek(con, where=dataOffset, rw="write");
+    writeBin(con=con, rawAll);
   } # if (version ...)
 
   invisible(filename);
@@ -214,6 +239,14 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
 ############################################################################
 # HISTORY:
+# 2006-07-21
+# o updateCel() was really slow when updating a large number of cells.
+#   Now the idea is to write to raw vectors stored in memory.  By reading
+#   the chunk of the CEL data section that is going to be updated as a raw
+#   data vector and then updating this in memory first, and the re-write
+#   that chuck of raw data to file, things are much faster.
+# o BUG FIX: updateCel(..., indices=NULL) would generate an error, because
+#   we tried to reorder by order(indices).
 # 2006-06-19
 # o Replace 'data' argument with arguments 'intensities', 'stdvs', and
 #   'pixels'. /HB

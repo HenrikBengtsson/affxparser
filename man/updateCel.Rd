@@ -21,7 +21,7 @@
  \arguments{
    \item{filename}{The filename of the CEL file.}
    \item{indices}{A \code{\link[base]{numeric}} \code{\link[base]{vector}} of cell (probe) indices specifying
-     which cells to updated.}
+     which cells to updated.  If \code{\link[base]{NULL}}, all indices are considered.}
    \item{intensities}{A \code{\link[base]{numeric}} \code{\link[base]{vector}} of intensity values to be stored.
      Alternatively, it can also be a named \code{\link[base]{data.frame}} or \code{\link[base]{matrix}} (or \code{\link[base]{list}})
      where the named columns (elements) are the fields to be updated.}
