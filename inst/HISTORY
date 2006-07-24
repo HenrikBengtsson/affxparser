@@ -1,10 +1,12 @@
 Package: affxparser
 ===================
 
-Version: 1.5.3 [2006-07-21]
+Version: 1.5.3 [2006-07-24]
 o Improved the speed of updateCel() substantially by first working with
-  raw vector in memory and then writing the whole chunk of data to file 
-  at once.
+  raw vector in memory and then write binary data to file.  Data is also
+  written in chunks (instead of all at once), to minimize the memory
+  overhead of using raw vectors, which is especially important for
+  the larger chips, e.g. 500K.
 o Added functional prototype of updateCel() to *update* binary (v4) CEL 
   files.  Currently, the code does make use the Fusion SDK.  There is
   currently no writeCel() to create a CEL file from scratch.  However,
