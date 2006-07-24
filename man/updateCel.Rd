@@ -12,7 +12,7 @@
 
  \title{Updates a CEL file}
 
- \usage{updateCel(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, ..., verbose=FALSE)}
+ \usage{updateCel(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, ..., verbose=0)}
 
  \description{
    Updates a CEL file.

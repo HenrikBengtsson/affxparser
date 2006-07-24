@@ -152,19 +152,21 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
     } # for (uu ...)
   } else if (stratifyBy == "pm") {
     for (uu in seq(along=cdf)) {
-      groups <- cdf[[uu]]$groups;
+#      groups <- cdf[[uu]]$groups;
+      groups <- .subset2(.subset2(cdf, uu), "groups");
       ngroups <- length(groups);
       if (ngroups == 0)
         next;
 
       for (gg in 1:ngroups) {
-        group <- groups[[gg]];
+#        group <- groups[[gg]];
+        group <- .subset2(groups, gg);
         ngroup <- length(group);
         if (ngroup == 0)
           next;
 
         pm <- .subset2(.subset2(isPm, uu), gg);
-        pm <- (1:length(pm))[pm]; # Note: which(!pm) is about 60% slower!
+        pm <- (1:length(pm))[pm]; # Note: which(pm) is about 60% slower!
         for (kk in 1:ngroup) {
           group[[kk]] <- .subset(.subset2(group, kk), pm);
         }
@@ -174,13 +176,15 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
     } # for (uu ...)
   } else if (stratifyBy == "mm") {
     for (uu in seq(along=cdf)) {
-      groups <- cdf[[uu]]$groups;
+#      groups <- cdf[[uu]]$groups;
+      groups <- .subset2(.subset2(cdf, uu), "groups");
       ngroups <- length(groups);
       if (ngroups == 0)
         next;
 
       for (gg in 1:ngroups) {
-        group <- groups[[gg]];
+#        group <- groups[[gg]];
+        group <- .subset2(groups, gg);
         ngroup <- length(group);
         if (ngroup == 0)
           next;
@@ -202,6 +206,8 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
 
 ############################################################################
 # HISTORY:
+# 2006-07-22
+# o Making more use of .subset2().
 # 2006-05-20
 # o Rd fix: The \value{} was incorrect.
 # 2006-05-12

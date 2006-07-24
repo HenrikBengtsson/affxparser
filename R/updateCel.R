@@ -40,7 +40,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, ..., verbose=FALSE) {
+updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, ..., verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -94,7 +94,8 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
   # Argument 'intensities':
   if (!is.null(intensities)) {
-    intensities <- as.double(intensities);
+    if (!is.double(intensities))
+      intensities <- as.double(intensities);
     if (length(intensities) != nbrOfIndices) {
       stop("Number of 'intensities' values does not match the number of cell indices: ", length(intensities), " != ", nbrOfIndices);
     }
@@ -102,7 +103,8 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
   # Argument 'stdvs':
   if (!is.null(stdvs)) {
-    stdvs <- as.double(stdvs);
+    if (!is.double(stdvs))
+      stdvs <- as.double(stdvs);
     if (length(stdvs) != nbrOfIndices) {
       stop("Number of 'stdvs' values does not match the number of cell indices: ", length(stdvs), " != ", nbrOfIndices);
     }
@@ -110,7 +112,8 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
   # Argument 'pixels':
   if (!is.null(pixels)) {
-    pixels <- as.integer(pixels);
+    if (!is.integer(pixels))
+      pixels <- as.integer(pixels);
     if (length(pixels) != nbrOfIndices) {
       stop("Number of 'pixels' values does not match the number of cell indices: ", length(pixels), " != ", nbrOfIndices);
     }
@@ -134,6 +137,8 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
   if (is.null(indices)) {
     indices <- 1:nbrOfIndices;
   } else {
+    if (verbose >= 2)
+      cat("Re-ordering data for optimal write order...");
     o <- order(indices);
     indices <- indices[o];
     if (!is.null(intensities))
@@ -142,6 +147,9 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
       stdvs <- stdvs[o];
     if (!is.null(pixels))
       pixels <- pixels[o];
+    rm(o);
+    if (verbose >= 2)
+      cat("done.\n");
   }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -154,7 +162,9 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     on.exit(close(con));
 
     # Skip CEL header
-    hdr <- .readCelHeaderV4(con);
+    if (verbose >= 2)
+      cat("Skipping to beginging of data section...");
+    .readCelHeaderV4(con);
 
     # "Cell entries - this consists of an intensity value, standard 
     #  deviation value and pixel count for each cell in the array.
@@ -167,70 +177,142 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
     # Current file position
     dataOffset <- seek(con);
+    if (verbose >= 2)
+      cat("done.\n");
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Read the data section of the CEL file
+    # Update in chunks
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # There is no need to read data before the first index
-    minIndex <- min(indices);
-    dataOffset <- dataOffset + sizeOfCell*(minIndex-1);
-    indices <- indices - minIndex + 1;
+    CHUNK.SIZE <- 2^19; # = 524288 indices
 
-    # There is no need to read beyond the last index
-    maxIndex <- max(indices);
-    seek(con, where=dataOffset);
-    rawAll <- readBin(con=con, what="raw", n=sizeOfCell*maxIndex);
-#print(matrix(rawAll[1:30], ncol=10, byrow=TRUE));
+    # Work with zero-based indices
+    indices <- indices - 1;
 
-    tmp <- sizeOfCell*(indices-1);
-    indices4 <- rep(tmp, each=4);
-    indices2 <- rep(tmp, each=2);
+    count <- 1;
+    offset <- dataOffset;
+    while (length(indices) > 0) {
+      if (verbose >= 1) {
+        cat("Number of indices left: ", length(indices), "\n");
+        cat("Updating chunk #", count, "...\n");
+      }
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Update 'intensities'
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (!is.null(intensities)) {
-      # Write floats (size=4) to raw vector
-      raw <- raw(length=4*nbrOfIndices);
-      raw <- writeBin(con=raw, intensities, size=4, endian="little");
-      # Updated 'rawAll' accordingly
-      idx <- indices4 + 1:4;
-      rawAll[idx] <- raw;
-    }
+      # Recall: All indices are ordered!
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Update 'stdvs'
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (!is.null(stdvs)) {
-      # Write floats (size=4) to raw vector
-      raw <- raw(length=4*nbrOfIndices);
-      raw <- writeBin(con=raw, stdvs, size=4, endian="little");
+      # Shift offset to the first index.
+      firstIndex <- indices[1];
+      offset <- offset + sizeOfCell*firstIndex;
 
-      # Updated 'rawAll' accordingly
-      idx <- indices4 + 5:8;
-      rawAll[idx] <- raw;
-    }
+      # Shift indices such that first index is one.
+      indices <- indices - firstIndex;
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Update 'pixels'
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (!is.null(pixels)) {
-      # Write short integers (size=2) to raw vector
-      raw <- raw(length=2*nbrOfIndices);
-      raw <- writeBin(con=raw, pixels, size=2, endian="little");
+      # Get largest index
+      maxIndex <- indices[length(indices)];
 
-      # Updated 'rawAll' accordingly
-      idx <- indices2 + 9:10;
-      rawAll[idx] <- raw;
-    }
+      # Identify the indices to update such no more than CHUNK.SIZE cells
+      # are read/updated.
+      n <- which.max(indices >= CHUNK.SIZE);
+      if (n == 1)
+        n <- maxIndex;
 
-#print(matrix(rawAll[1:30], ncol=10, byrow=TRUE));
+      subset <- 1:n;
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Write raw data back to file
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    seek(con, where=dataOffset, rw="write");
-    writeBin(con=con, rawAll);
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      # Read the data section of the CEL file
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      if (verbose >= 1)
+        cat("Reading chunk data section...");
+
+      seek(con, where=offset);
+      rawAll <- readBin(con=con, what="raw", n=sizeOfCell*n);
+      if (verbose >= 1)
+        cat("done.\n");
+#  print(matrix(rawAll[1:30], ncol=10, byrow=TRUE));
+
+      # Common to all fields
+      raw <- NULL;
+  
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      # Update 'intensities'
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      if (!is.null(intensities)) {
+        if (verbose >= 1)
+          cat("Updating 'intensities'...");
+        # Write floats (size=4) to raw vector
+        raw <- raw(length=4*n);
+        raw <- writeBin(con=raw, intensities[subset], size=4, endian="little");
+        intensities <- intensities[-subset]; # Not needed anymore
+
+        # Updated 'rawAll' accordingly
+        idx <- rep(sizeOfCell*indices[subset], each=4) + 1:4;
+        rawAll[idx] <- raw;
+        rm(idx);
+        if (verbose >= 1)
+          cat("done.\n");
+      }
+  
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      # Update 'stdvs'
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      if (!is.null(stdvs)) {
+        if (verbose >= 1)
+          cat("Updating 'stdvs'...");
+        # Write floats (size=4) to raw vector
+        if (length(raw) != 4*n)
+          raw <- raw(length=4*n);
+        raw <- writeBin(con=raw, stdvs[subset], size=4, endian="little");
+        stdvs <- stdvs[-subset]; # Not needed anymore
+  
+        # Updated 'rawAll' accordingly
+        idx <- rep(sizeOfCell*indices[subset], each=4) + 5:8;
+        rawAll[idx] <- raw;
+        rm(idx);
+        if (verbose >= 1)
+          cat("done.\n");
+      }
+      rm(raw);
+  
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      # Update 'pixels'
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      if (!is.null(pixels)) {
+        if (verbose >= 1)
+          cat("Updating 'pixels'...");
+        # Write short integers (size=2) to raw vector
+        raw <- raw(length=2*n);
+        raw <- writeBin(con=raw, pixels[subset], size=2, endian="little");
+        pixels <- pixels[-subset]; # Not needed anymore
+  
+        # Updated 'rawAll' accordingly
+        idx <- rep(sizeOfCell*indices[subset], each=2) + 9:10;
+        rawAll[idx] <- raw;
+        rm(idx);
+        if (verbose >= 1)
+          cat("done.\n");
+      }
+      rm(raw);
+  
+      # Remove updated indices
+      indices <- indices[-subset];
+      rm(subset);
+
+#      print(matrix(rawAll[1:30], ncol=10, byrow=TRUE));
+
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      # Write raw data back to file
+      # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      if (verbose >= 1)
+        cat("Writing chunk to data section...");
+      seek(con, where=offset, rw="write");
+      writeBin(con=con, rawAll);
+      if (verbose >= 1)
+        cat("done.\n");
+
+      rm(rawAll);
+
+      if (verbose >= 1)
+        cat("Updating chunk #", count, "...done\n");
+      count <- count + 1;
+    } # while (...)
   } # if (version ...)
 
   invisible(filename);
@@ -239,6 +321,16 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
 ############################################################################
 # HISTORY:
+# 2006-07-22
+# o Update updateCel() to update data in chunks, because updating the 
+#   complete data section is expensive.  For example, a 500K chip has
+#   6553600 cells each of size 10 bytes, i.e. >65Mb or raw memory.  With
+#   copying etc it costs >100-200Mb of memory to update a CEL file if only
+#   the first *and* the last cell is updated.  Now it should only be of
+#   the order of 10-20Mb per chunk.
+# o Added verbose output to updateCel().
+# o Now updateCel() deallocates objects as soon as possible in order to
+#   free up as much memory as possible. Had memory problems with the 500K's.
 # 2006-07-21
 # o updateCel() was really slow when updating a large number of cells.
 #   Now the idea is to write to raw vectors stored in memory.  By reading
