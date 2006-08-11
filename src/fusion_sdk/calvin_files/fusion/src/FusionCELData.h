@@ -144,7 +144,7 @@ public:
 	/*! Get the DatHeader string.
 	 *	@return The DatHeader string.
 	 */
-	virtual std::wstring GetDatHeader();
+	std::wstring GetDatHeader();
 
 	/*!	Retrieve chip type
 	 *	@return	Chip type

@@ -23,7 +23,7 @@
 
 using namespace affymetrix_calvin_io;
 
-#if !defined(_MSC_VER) && !defined(WIN32)
+#ifndef _MSC_VER
 #include <sys/mman.h>
 #endif
 

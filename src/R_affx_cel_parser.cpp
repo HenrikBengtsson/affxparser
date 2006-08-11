@@ -145,10 +145,12 @@ extern "C" {
 
     char* celFileName = CHAR(STRING_ELT(fname,0));
     cel.SetFileName(celFileName);
-    if (cel.ReadHeader() == false) {
+    // if (cel.ReadHeader() == false) {
+    if (cel.Exists() == false) {
       Rprintf("Unable to read file: %s\n", celFileName);
       return R_NilValue;
     }
+    cel.Read();
 
     return R_affx_extract_cel_file_meta(cel);
   }

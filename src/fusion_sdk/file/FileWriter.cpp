@@ -26,7 +26,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #include <winsock2.h>
 #else
 #include <inttypes.h>

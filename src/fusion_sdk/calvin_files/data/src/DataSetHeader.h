@@ -30,7 +30,6 @@
 #include "GenericDataHeader.h"
 #include "AffyStlCollectionTypes.h"
 #include "ColumnInfo.h"
-#include "BitFlag.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
@@ -131,7 +130,7 @@ public:
 	void SetHeaderStartFilePos(u_int32_t pos) { headerStartFilePos = pos; }
 	/*! Get the file position of the start of the DataSet header. */
 	u_int32_t GetHeaderStartFilePos() const { return headerStartFilePos; }
-	/*! 
+
 	/*! Set the file position of the start of the DataSet data.
 	*  The value set here is not written to the file.
 	*/
