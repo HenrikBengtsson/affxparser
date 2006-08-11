@@ -775,6 +775,8 @@ public:
 	 */
 	bool IsXDACompatibleFile();
 
+	bool IsMas5File();
+
 	/*! Sets the file name.
 	 * @param name The full path to the CHP file
 	 */

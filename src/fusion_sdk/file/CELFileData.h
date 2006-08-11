@@ -38,7 +38,7 @@
 ///  Set page mask value for memory mapping used under CYGWIN
 #define PAGE_MASK	(~(PAGE_SIZE-1))
 
-#elif defined (_MSC_VER) || defined (WIN32)
+#elif defined (_MSC_VER)
 #include <windows.h>
 ///  Structure alignment requirement for g++
 ///  @remark Structure alignment for Visual C++ is included in #pragma
@@ -70,12 +70,12 @@
 namespace affxcel
 {
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER 
 #pragma pack(push, 1)
 #endif
 ///////////////////////////////////////////////////////////////////////////////
 ///  typedef as CELFileEntryType
-///  \brief Structure of CEL file entries for text and xda format
+///  @brief Structure of CEL file entries for text and xda format
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct _CELFileEntryType
 {
@@ -89,7 +89,7 @@ typedef struct _CELFileEntryType
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  typedef as CELFileTranscriptomeEntryType
-///  \brief Structure of CEL file entries for bcel format
+///  @brief Structure of CEL file entries for bcel format
 ///////////////////////////////////////////////////////////////////////////////
 typedef struct _CELFileTranscriptomeEntryType
 {
@@ -101,13 +101,13 @@ typedef struct _CELFileTranscriptomeEntryType
 	unsigned char Pixels /* \cond */ STRUCT_ALIGNMENT /*! \endcond */ ;
 } CELFileTranscriptomeEntryType;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #pragma pack(pop)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  affxcel::CCELFileHeaderData
-///  \brief CEL file header information
+///  @brief CEL file header information
 ///
 ///  @remarks Object instance is included in affxcel::CCELFileData
 ///////////////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetMagic
-	///  \brief Set magic number for xda format
+	///  @brief Set magic number for xda format
 	///  @param  i int  	Magic number
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -168,14 +168,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetMagic
-	///  \brief Retrieve magic number from xda format
+	///  @brief Retrieve magic number from xda format
 	///  @return int	Magic number
 	///////////////////////////////////////////////////////////////////////////////
 	int GetMagic() { return m_Magic; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetVersion
-	///  \brief Set file format version number
+	///  @brief Set file format version number
 	///  @param  i int  	Version number
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -183,14 +183,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetVersion
-	///  \brief Retrieve fiel format version number
+	///  @brief Retrieve fiel format version number
 	///  @return int	Version number
 	///////////////////////////////////////////////////////////////////////////////
 	int GetVersion() { return m_Version; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetCols
-	///  \brief Set number of columns in array
+	///  @brief Set number of columns in array
 	///  @param  i int  	Number of columns
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -198,14 +198,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetCols
-	///  \brief Retrieve number of columns in array
+	///  @brief Retrieve number of columns in array
 	///  @return int	Number of columns
 	///////////////////////////////////////////////////////////////////////////////
 	int GetCols() { return m_nCols; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetRows
-	///  \brief Set number of rows in array
+	///  @brief Set number of rows in array
 	///  @param  i int  	Number of rows
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -213,14 +213,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetRows
-	///  \brief Retrieve number of rows in array
+	///  @brief Retrieve number of rows in array
 	///  @return int	Number of rows
 	///////////////////////////////////////////////////////////////////////////////
 	int GetRows() { return m_nRows; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetCells
-	///  \brief Set number of cells in array
+	///  @brief Set number of cells in array
 	///  @param  i int  	Number of cells
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -228,14 +228,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetCells
-	///  \brief Retrieve number of cells in array
+	///  @brief Retrieve number of cells in array
 	///  @return int	Number of cells
 	///////////////////////////////////////////////////////////////////////////////
 	int GetCells() { return m_nCells; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  AppendHeader
-	///  \brief Append data to header string
+	///  @brief Append data to header string
 	///  @param  p const char * 	Header information
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -243,7 +243,7 @@ public:
 	
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetHeader
-	///  \brief Set header information of CEL File in a single string
+	///  @brief Set header information of CEL File in a single string
 	///  @param  p const char * 	Header string
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -251,14 +251,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  public  GetHeader
-	///  \brief Concatenate header data into a string and return it
+	///  @brief Concatenate header data into a string and return it
 	///  @return std::string	Header string
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetHeader();
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetAlg
-	///  \brief Set algorithm name
+	///  @brief Set algorithm name
 	///  @param  p const char * 	Algorithm name
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -266,14 +266,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetAlg
-	///  \brief Retrieve algorithm name
+	///  @brief Retrieve algorithm name
 	///  @return std::string	Algorithm name
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetAlg() { return m_Alg; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetParams
-	///  \brief Set algorithm parameters
+	///  @brief Set algorithm parameters
 	///  @param  p const char * 	Algorithm parameters
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -281,21 +281,21 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetParams
-	///  \brief Retrieve algorithm parameters
+	///  @brief Retrieve algorithm parameters
 	///  @return std::string	Algorithm parameters
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetParams() { return m_Params; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  public  ParseChipType
-	///  \brief Parse chip type of array from header string
+	///  @brief Parse chip type of array from header string
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
 	void ParseChipType();
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetChipType
-	///  \brief Set chip type of array
+	///  @brief Set chip type of array
 	///  @param  p const char * 	Chip type
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -303,28 +303,28 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetChipType
-	///  \brief Retrieve chip type of array
+	///  @brief Retrieve chip type of array
 	///  @return std::string	Chip type
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetChipType() { return m_ChipType; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  public  ParseDatHeader
-	///  \brief Parse DAT header from header string
+	///  @brief Parse DAT header from header string
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
 	void ParseDatHeader();
 	
 	///////////////////////////////////////////////////////////////////////////////
 	///  public overloaded  SetDatHeader
-	///  \brief Set default DAT header
+	///  @brief Set default DAT header
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
 	void SetDatHeader();
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public overloaded  SetDatHeader
-	///  \brief Set DAT header with input string
+	///  @brief Set DAT header with input string
 	///  @param  p const char * 	DAT header
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -332,14 +332,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetDatHeader
-	///  \brief Retrieve DAT header
+	///  @brief Retrieve DAT header
 	///  @return std::string	DAT header
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetDatHeader() { return m_DatHeader; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetMargin
-	///  \brief Set cell margin
+	///  @brief Set cell margin
 	///  @param  i int  	Cell margin
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -347,14 +347,14 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetMargin
-	///  \brief Retrieve cell margin
+	///  @brief Retrieve cell margin
 	///  @return int	Cell margin
 	///////////////////////////////////////////////////////////////////////////////
 	int GetMargin() { return m_Margin; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetOutliers
-	///  \brief Set number of outliers
+	///  @brief Set number of outliers
 	///  @param  l unsigned int32_t  	Number of outliers
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -362,28 +362,28 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetOutliers
-	///  \brief Retrieve number of outliers
+	///  @brief Retrieve number of outliers
 	///  @return unsigned int32_t	Number of outliers
 	///////////////////////////////////////////////////////////////////////////////
   	uint32_t GetOutliers() { return m_nOutliers; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  IncrementOutliers
-	///  \brief Increment number of outliers by 1
+	///  @brief Increment number of outliers by 1
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
 	void IncrementOutliers() { m_nOutliers++; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  DecrementOutliers
-	///  \brief Decrement number of outliers by 1
+	///  @brief Decrement number of outliers by 1
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
 	void DecrementOutliers() { m_nOutliers--; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  SetMasked
-	///  \brief Set number of masked cells
+	///  @brief Set number of masked cells
 	///  @param  l unsigned int32_t  	Number of masked cells
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -391,21 +391,21 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetMasked
-	///  \brief Retrieve number of masked cells
+	///  @brief Retrieve number of masked cells
 	///  @return uint32_t	Number of masked cells
 	///////////////////////////////////////////////////////////////////////////////
 	uint32_t GetMasked() { return m_nMasked; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  IncrementMasked
-	///  \brief Increment number of masked cells by 1
+	///  @brief Increment number of masked cells by 1
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
 	void IncrementMasked() { m_nMasked++; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  DecrementMasked
-	///  \brief Decrement number of masked cells by 1
+	///  @brief Decrement number of masked cells by 1
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
 	void DecrementMasked() { m_nMasked--; }
@@ -475,7 +475,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetGridCorners
-	///  \brief Retrieve grid coordinates
+	///  @brief Retrieve grid coordinates
 	///  @return GridCoordinatesType	Grid coordinates
 	///////////////////////////////////////////////////////////////////////////////
 	GridCoordinatesType GetGridCorners() { return m_CellGrid; }
@@ -486,7 +486,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 ///  affxcel::CCELFileData
 ///
-///  \brief CEL file object
+///  @brief CEL file object
 ///
 ///  Include read and write support of the following file formats:
 ///  - text (version 3)
@@ -567,7 +567,7 @@ protected:
 	/// Flag to determine if outlier data should be read
 	bool m_bReadOutliers;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	/// File handle used by CreateFileMapping in _MSC_VER
 	HANDLE m_hFile;
 	/// File map handle used by MapViewOfFile in _MSC_VER
@@ -631,21 +631,21 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetError
-	///  \brief Retrieve error string
+	///  @brief Retrieve error string
 	///  @return std::string	Error string
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetError() { return m_strError; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetThisPtr
-	///  \brief Retrieve the pointer of the current object instance
+	///  @brief Retrieve the pointer of the current object instance
 	///  @return affxcel::CCELFileData *	Pointer to current object instance
 	///////////////////////////////////////////////////////////////////////////////
 	affxcel::CCELFileData *GetThisPtr() { return this; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public constant  SetFileName
-	///  \brief Set CEL file name 
+	///  @brief Set CEL file name 
 	///  @param str const char*		File name
 	///  @return void	
 	///////////////////////////////////////////////////////////////////////////////
@@ -653,7 +653,7 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public constant  GetFileName
-	///  \brief Retrieve CEL file name
+	///  @brief Retrieve CEL file name
 	///  @return std::string	File name
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetFileName() const { return m_FileName; }
@@ -663,73 +663,73 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetVersion
-	///  \brief Call affxcel::CCELFileHeaderData::GetVersion() to retrieve file format version number
+	///  @brief Call affxcel::CCELFileHeaderData::GetVersion() to retrieve file format version number
 	///  @return int	File format version number
-	///  \see affxcel::CCELFileHeaderData::GetVersion
+	///  @see affxcel::CCELFileHeaderData::GetVersion
 	///////////////////////////////////////////////////////////////////////////////
 	int GetVersion() { return m_HeaderData.GetVersion(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetCols
-	///  \brief Call affxcel::CCELFileHeaderData::GetCols() to retrieve number of columns in array
+	///  @brief Call affxcel::CCELFileHeaderData::GetCols() to retrieve number of columns in array
 	///  @return int	Number of columns in array
-	///  \see affxcel::CCELFileHeaderData::GetCols
+	///  @see affxcel::CCELFileHeaderData::GetCols
 	///////////////////////////////////////////////////////////////////////////////
 	int GetCols() { return m_HeaderData.GetCols(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetRows
-	///  \brief Call affxcel::CCELFileHeaderData::GetRows() to retrieve number of rows in array
+	///  @brief Call affxcel::CCELFileHeaderData::GetRows() to retrieve number of rows in array
 	///  @return int	Number of rows in array
-	///  \see affxcel::CCELFileHeaderData::GetRows
+	///  @see affxcel::CCELFileHeaderData::GetRows
 	///////////////////////////////////////////////////////////////////////////////
 	int GetRows() { return m_HeaderData.GetRows(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetNumCells
-	///  \brief Call affxcel::CCELFileHeaderData::GetNumCells() to retrieve number of cells in array
+	///  @brief Call affxcel::CCELFileHeaderData::GetNumCells() to retrieve number of cells in array
 	///  @return int	Number of cells in array
-	///  \see affxcel::CCELFileHeaderData::GetNumCells
+	///  @see affxcel::CCELFileHeaderData::GetNumCells
 	///////////////////////////////////////////////////////////////////////////////
 	int GetNumCells() { return m_HeaderData.GetCells(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetHeaderString
-	///  \brief Call affxcel::CCELFileHeaderData::GetHeader() to retrieve header in a single string
+	///  @brief Call affxcel::CCELFileHeaderData::GetHeader() to retrieve header in a single string
 	///  @return std::string	Header string
-	///  \see affxcel::CCELFileHeaderData::GetHeader
+	///  @see affxcel::CCELFileHeaderData::GetHeader
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetHeaderString() { return m_HeaderData.GetHeader(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  public  GetHeader
-	///  \brief Gets the header object.
+	///  @brief Gets the header object.
 	///  @return CCELFileHeaderData	The header object.
 	///////////////////////////////////////////////////////////////////////////////
 	CCELFileHeaderData &GetHeader() { return m_HeaderData; }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetAlg
-	///  \brief Call affxcel::CCELFileHeaderData::GetAlg() to retrieve algorithm name
+	///  @brief Call affxcel::CCELFileHeaderData::GetAlg() to retrieve algorithm name
 	///  @return std::string	Algorithm name
-	///  \see affxcel::CCELFileHeaderData::GetAlg
+	///  @see affxcel::CCELFileHeaderData::GetAlg
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetAlg() { return m_HeaderData.GetAlg(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetParams
-	///  \brief Call affxcel::CCELFileHeaderData::GetParams() to retrieve algorithm parameters
+	///  @brief Call affxcel::CCELFileHeaderData::GetParams() to retrieve algorithm parameters
 	///  @return std::string	Algorithm parameters
-	///  \see affxcel::CCELFileHeaderData::GetParams
+	///  @see affxcel::CCELFileHeaderData::GetParams
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetParams() { return m_HeaderData.GetAlgorithmParameters(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetAlgorithmParameter
-	///  \brief Call affxcel::CCELFileHeaderData::GetAlgorithmParameter() to retrieve algorithm parameter of specified tag
+	///  @brief Call affxcel::CCELFileHeaderData::GetAlgorithmParameter() to retrieve algorithm parameter of specified tag
 	///  @param tag const char* Algorithm parameter tag
 	///  @return std::string	Algorithm parameter value
-	///  \see affxcel::CCELFileHeaderData::GetAlgorithmParameter
+	///  @see affxcel::CCELFileHeaderData::GetAlgorithmParameter
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetAlgorithmParameter(const char *tag) { return m_HeaderData.GetAlgorithmParameter(tag); }
 
@@ -746,57 +746,57 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetAlgorithmParameters
-	///  \brief Call affxcel::CCELFileHeaderData::GetAlgorithmParameters() to retrieve algorithm parameters
+	///  @brief Call affxcel::CCELFileHeaderData::GetAlgorithmParameters() to retrieve algorithm parameters
 	///  @return std::string	Algorithm parameters
-	///  \see affxcel::CCELFileHeaderData::GetAlgorithmParameters
+	///  @see affxcel::CCELFileHeaderData::GetAlgorithmParameters
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetAlgorithmParameters() { return m_HeaderData.GetAlgorithmParameters(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetDatHeader
-	///  \brief Call affxcel::CCELFileHeaderData::GetDatHeader() to retrieve DAT header
+	///  @brief Call affxcel::CCELFileHeaderData::GetDatHeader() to retrieve DAT header
 	///  @return std::string	DAT header
-	///  \see affxcel::CCELFileHeaderData::GetDatHeader
+	///  @see affxcel::CCELFileHeaderData::GetDatHeader
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetDatHeader() { return m_HeaderData.GetDatHeader(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetChipType
-	///  \brief Call affxcel::CCELFileHeaderData::GetChipType() to retrieve chip type
+	///  @brief Call affxcel::CCELFileHeaderData::GetChipType() to retrieve chip type
 	///  @return std::string	Chip type
-	///  \see affxcel::CCELFileHeaderData::GetChipType
+	///  @see affxcel::CCELFileHeaderData::GetChipType
 	///////////////////////////////////////////////////////////////////////////////
 	std::string GetChipType() { return m_HeaderData.GetChipType(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetCellMargin
-	///  \brief Call affxcel::CCELFileHeaderData::GetCellMargin() to retrieve cell margin
+	///  @brief Call affxcel::CCELFileHeaderData::GetCellMargin() to retrieve cell margin
 	///  @return int	Cell margin
-	///  \see affxcel::CCELFileHeaderData::GetCellMargin
+	///  @see affxcel::CCELFileHeaderData::GetCellMargin
 	///////////////////////////////////////////////////////////////////////////////
 	int GetCellMargin() { return m_HeaderData.GetMargin(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetNumOutliers
-	///  \brief Call affxcel::CCELFileHeaderData::GetNumOutliers() to retrieve number of outliers
+	///  @brief Call affxcel::CCELFileHeaderData::GetNumOutliers() to retrieve number of outliers
 	///  @return uint32_t	Number of outliers
-	///  \see affxcel::CCELFileHeaderData::GetNumOutliers
+	///  @see affxcel::CCELFileHeaderData::GetNumOutliers
 	///////////////////////////////////////////////////////////////////////////////
 	uint32_t GetNumOutliers() { return m_HeaderData.GetOutliers(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetNumMasked
-	///  \brief Call affxcel::CCELFileHeaderData::GetNumMasked() to retrieve number of masked cells
+	///  @brief Call affxcel::CCELFileHeaderData::GetNumMasked() to retrieve number of masked cells
 	///  @return uint32_t	Number of masked cells
-	///  \see affxcel::CCELFileHeaderData::GetNumMasked
+	///  @see affxcel::CCELFileHeaderData::GetNumMasked
 	///////////////////////////////////////////////////////////////////////////////
 	uint32_t GetNumMasked() { return m_HeaderData.GetMasked(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  GetGridCorners
-	///  \brief Call affxcel::CCELFileHeaderData::GetGridCorners() to retrieve grid coordinates
+	///  @brief Call affxcel::CCELFileHeaderData::GetGridCorners() to retrieve grid coordinates
 	///  @return GridCoordinatesType	Grid coordinates
-	///  \see affxcel::CCELFileHeaderData::GetGridCorners
+	///  @see affxcel::CCELFileHeaderData::GetGridCorners
 	///////////////////////////////////////////////////////////////////////////////
 	GridCoordinatesType GetGridCorners() { return m_HeaderData.GetGridCorners(); }
 
@@ -804,21 +804,21 @@ public:
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  IndexToX
-	///  \brief Get x coordinates from index
+	///  @brief Get x coordinates from index
 	///  @return int	X coordinates
 	///////////////////////////////////////////////////////////////////////////////
 	int IndexToX(int index) { return index % m_HeaderData.GetCols(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  IndexToY
-	///  \brief Get y coordinates from index
+	///  @brief Get y coordinates from index
 	///  @return int	Y coordinates
 	///////////////////////////////////////////////////////////////////////////////
 	int IndexToY(int index) { return index / m_HeaderData.GetCols(); }
 
 	///////////////////////////////////////////////////////////////////////////////
 	///  inline public  XYToIndex
-	///  \brief Convert x, y coordinates to index
+	///  @brief Convert x, y coordinates to index
 	///  @return int	Index
 	///////////////////////////////////////////////////////////////////////////////
 	int XYToIndex(int x, int y) { return XYToIndex(x,y, m_HeaderData.GetRows(), m_HeaderData.GetCols()); }
