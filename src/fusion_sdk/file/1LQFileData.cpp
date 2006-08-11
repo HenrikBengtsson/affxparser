@@ -108,7 +108,7 @@ bool C1LQFileData::Read()
  * If the number of columns is not what is expected then return a false.
  * Ignore any lines that begin with a #.
  */
-bool C1LQFileData::Read(ifstream &instr)
+bool C1LQFileData::Read(std::ifstream &instr)
 {
 	const int maxSize = 128;
 	char line[MAXLINELENGTH];

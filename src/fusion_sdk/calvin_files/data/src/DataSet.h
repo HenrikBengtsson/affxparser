@@ -28,7 +28,7 @@
 #include <string>
 #include <fstream>
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #include <windows.h>
 #endif
 
@@ -215,6 +215,7 @@ protected:
 	 *	@param rowCount The number of rows to ensure are mapped starting at rowStart
 	 *	@return Pointer to the data element at rowStart
 	 *	@exception affymetrix_calvin_exceptions::DataSetNotOpenException The file is not open.
+	 *	@exception affymetrix_calvin_exceptions::DataSetRemapException There was an error during a remap.
 	 */
 	char* FilePosition(int32_t rowStart, int32_t col, int32_t rowCount=1);
 
@@ -247,7 +248,7 @@ protected:
 	template<typename T> void ClearAndSizeVector(std::vector<T>& values, u_int32_t size);
 
 	/*! Platform specific memory-mapping method */
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 	bool MapDataWin32(u_int32_t start, u_int32_t bytes);
 
@@ -275,7 +276,7 @@ protected:
 	 */
 	Int32Vector columnByteOffsets;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 	/*! Handle returned by CreateFileMapping */
 	HANDLE fileMapHandle;

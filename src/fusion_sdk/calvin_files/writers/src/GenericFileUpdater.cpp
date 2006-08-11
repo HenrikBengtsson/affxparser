@@ -50,6 +50,10 @@ DataSetWriter* GenericFileUpdater::GetUpdateDataSetWriter(DataSetHeader& dataSet
 		{
 			//append dataset
 			offset = lastDataSetHdr.GetNextSetFilePos();
+
+			//increment data set count
+			IncrementDataSetCnt();
+
 		}
 		u_int32_t lastDataGrpIndex = fileHdr.GetDataGroupCnt() - 1;
 		writer->SeekFromBeginPos(offset);
@@ -106,8 +110,10 @@ bool GenericFileUpdater::FindLastDataSetHeader(FileHeader& fileHdr, DataSetHeade
 void GenericFileUpdater::IncrementDataSetCnt()
 {
 	lastDataGrpDataSetCnt++;
+	u_int32_t currentPos = writer->GetFilePos();
 	writer->SeekFromBeginPos(lastDataGrpOffset + 8);
 	writer->Write(lastDataGrpDataSetCnt);
+	writer->SeekFromBeginPos(currentPos);
 }
 
 u_int32_t GenericFileUpdater::GetLastDataGroupDataSetCnt()

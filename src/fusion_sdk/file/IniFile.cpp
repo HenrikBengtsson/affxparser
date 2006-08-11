@@ -32,7 +32,7 @@ CIniFile::~CIniFile(void)
 }
 
 // A function to trim whitespace from both sides of a given string
-void CIniFile::Trim(string& str, const std::string & ChrsToTrim, int TrimDir)
+void CIniFile::Trim(std::string& str, const std::string & ChrsToTrim, int TrimDir)
 {
     size_t startIndex = str.find_first_not_of(ChrsToTrim);
     if (startIndex == std::string::npos){str.erase(); return;}
@@ -41,7 +41,7 @@ void CIniFile::Trim(string& str, const std::string & ChrsToTrim, int TrimDir)
 }
 
 // Load the contents of the INI file
-bool CIniFile::Load(string FileName, vector<Record>& content)
+bool CIniFile::Load(std::string FileName, std::vector<Record>& content)
 {
 	string s;												// Holds the current line from the ini file
 	string CurrentSection;									// Holds the current section name
@@ -105,7 +105,7 @@ bool CIniFile::Load(string FileName, vector<Record>& content)
 }
 
 // Returns all sections names of a given file
-vector<string> CIniFile::GetSectionNames(string FileName)
+std::vector<std::string> CIniFile::GetSectionNames(std::string FileName)
 {
 	vector<string> data;									// Holds the return data
 	vector<Record> content;									// Holds the current record													// Holds the current record
@@ -142,7 +142,7 @@ vector<CIniFile::Record> CIniFile::GetSection(string SectionName, string FileNam
 }
 
 // Returns the contents of a specific key within a given section
-vector<CIniFile::Record> CIniFile::GetRecord(string KeyName, string SectionName, string FileName)
+std::vector<CIniFile::Record> CIniFile::GetRecord(std::string KeyName, std::string SectionName, std::string FileName)
 {
 	vector<Record> data;									// Holds the return data
 	vector<Record> content;									// Holds the current record													// Holds the current record
@@ -172,7 +172,7 @@ string CIniFile::GetValue(string KeyName, string SectionName, string FileName)
 }
 
 // Returns all key contents of all sections
-vector<CIniFile::Record> CIniFile::GetSections(string FileName)
+std::vector<CIniFile::Record> CIniFile::GetSections(std::string FileName)
 {
 	vector<Record> data;									// Holds the return data
 	vector<Record> content;									// Holds the current record													// Holds the current record
@@ -190,7 +190,7 @@ vector<CIniFile::Record> CIniFile::GetSections(string FileName)
 }
 
 // Returns all key contents of the file.
-vector<CIniFile::Record> CIniFile::GetAllRecords(std::string FileName)
+std::vector<CIniFile::Record> CIniFile::GetAllRecords(std::string FileName)
 {
 	vector<Record> content;								// Collection for the Records
 	Load(FileName, content);							// Read the file.

@@ -26,7 +26,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #pragma warning(disable: 4786) // identifier was truncated in the debug information
 #include <windows.h>
 #endif
@@ -709,7 +709,7 @@ protected:
 	/*! A pointer to data in a memory mapped file. */
 	char  *m_lpData;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	/*! A windows handle used for memory mapping. */
 	HANDLE m_hFileMap;
 

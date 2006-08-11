@@ -1366,3 +1366,31 @@ bool CCHPFileData::IsXDACompatibleFile()
 }
 
 //////////////////////////////////////////////////////////////////////
+
+bool CCHPFileData::IsMas5File()
+{
+	// Open the file.
+	std::ifstream instr(m_FileName.c_str(), std::ios::in | std::ios::binary);
+	if (!instr) return false;
+
+	// Read the string that defines the CHP file (older format).
+	char vString[256]="";
+	char AppName[256]="GeneChip Sequence File";
+	ReadFixedCString(instr, vString, (int) strlen(AppName));
+	if (strcmp(vString, AppName))
+	{
+		return false;
+	}
+
+	// Read the version number
+	int32_t ival;
+	ReadInt32_I(instr, ival);
+	if(ival < 12)
+	{
+		return false;
+	}
+	instr.close();
+
+	return true;
+}
+

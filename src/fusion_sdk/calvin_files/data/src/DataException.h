@@ -61,6 +61,9 @@ class CDFAccessNotSupportedByModeException : public CalvinException
 {
 };
 
+class DataSetRemapException : public CalvinException
+{
+};
 
 }
 

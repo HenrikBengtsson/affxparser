@@ -16,11 +16,9 @@ PKG_CPPFLAGS+=\
  -Ifusion_sdk/calvin_files/writers/src\
  -Ifusion_sdk/file\
  -Ifusion_sdk/portability\
- -Ifusion_sdk/gcast/src\
  -D_USE_MEM_MAPPING_
 
 SOURCES.fusion = \
-	fusion_sdk/calvin_files/data/src/BitFlag.cpp\
 	fusion_sdk/calvin_files/data/src/CDFData.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeGroupInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeInformation.cpp\
