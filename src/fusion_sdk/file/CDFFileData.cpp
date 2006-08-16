@@ -425,7 +425,12 @@ void CCDFFileData::Close()
 		m_bFileOpen = false;
 	}
 #else
-	if (m_fp == NULL)
+	/** JHB: temporarily changing to reflect Seth's fix. 
+	    changed: 
+   	    if (m_fp == NULL)
+	    to:
+	**/
+	if (m_fp != NULL) 
 	{
 		if (m_bFileMapped == true)
 		{
