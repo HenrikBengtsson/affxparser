@@ -1,6 +1,14 @@
 Package: affxparser
 ===================
 
+Version: 1.5.4 [2006-08-18]
+o Updated Fusion SDK to version 1.0.7.
+o BUG FIX: The new implementation of updateCel() utilizing raw vectors
+  was not correct; extra zeros was written too.  The example code of
+  updateCel reveals such errors much easier now.
+o BUG FIX: updateCel() would in some cases give "Error: subscript out of 
+  bounds" when writing the last chunk.
+
 Version: 1.5.3 [2006-07-24]
 o Improved the speed of updateCel() substantially by first working with
   raw vector in memory and then write binary data to file.  Data is also

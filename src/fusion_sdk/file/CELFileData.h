@@ -38,7 +38,7 @@
 ///  Set page mask value for memory mapping used under CYGWIN
 #define PAGE_MASK	(~(PAGE_SIZE-1))
 
-#elif defined (_MSC_VER)
+#elif defined (_MSC_VER) || defined (WIN32)
 #include <windows.h>
 ///  Structure alignment requirement for g++
 ///  @remark Structure alignment for Visual C++ is included in #pragma
@@ -70,7 +70,7 @@
 namespace affxcel
 {
 
-#ifdef _MSC_VER 
+#if defined(_MSC_VER) || defined(WIN32)
 #pragma pack(push, 1)
 #endif
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ typedef struct _CELFileTranscriptomeEntryType
 	unsigned char Pixels /* \cond */ STRUCT_ALIGNMENT /*! \endcond */ ;
 } CELFileTranscriptomeEntryType;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 #pragma pack(pop)
 #endif
 
@@ -567,7 +567,7 @@ protected:
 	/// Flag to determine if outlier data should be read
 	bool m_bReadOutliers;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	/// File handle used by CreateFileMapping in _MSC_VER
 	HANDLE m_hFile;
 	/// File map handle used by MapViewOfFile in _MSC_VER

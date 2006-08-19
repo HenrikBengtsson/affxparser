@@ -28,6 +28,7 @@ using namespace affymetrix_calvin_io;
 
 #ifndef _MSC_VER
 #include <unistd.h>
+#ifndef WIN32
 #include <sys/mman.h>
 
 #ifndef PAGE_SIZE
@@ -43,6 +44,7 @@ using namespace affymetrix_calvin_io;
 #define PAGE_TRUNC(ptr) (ptr&(PAGE_MASK))
 #endif
 #endif
+#endif
 
 /*
  * Initialize the object to use memory-mapping to access the file.
@@ -56,7 +58,7 @@ DataSet::DataSet(const std::string& fileName_, const DataSetHeader& header_, voi
 	data = 0;
 	isOpen = false;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	fileMapHandle = handle;
 #else
 	fp = 0;
@@ -80,7 +82,7 @@ DataSet::DataSet(const std::string& fileName_, const affymetrix_calvin_io::DataS
 	data = 0;
 	isOpen = false;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	fileMapHandle = 0;
 #else
 	fp = 0;
@@ -132,7 +134,7 @@ bool DataSet::Open()
  */
 bool DataSet::OpenMM()
 {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	if (MapDataWin32(header.GetDataStartFilePos(), header.GetDataSize()) == false)
 		return false;
 #else
@@ -177,7 +179,7 @@ void DataSet::Close()
 		ClearStreamData();
 }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 
 std::string GetErrorMsg()
 {
@@ -289,7 +291,7 @@ bool DataSet::MapDataPosix(u_int32_t start, u_int32_t bytes)
  */
 void DataSet::UnmapFile()
 {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 
 	// Unmap the view
 	if (mappedData != 0 )
@@ -383,7 +385,7 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 	// Byte offset in data set + byte offset of data set in file
 	u_int32_t startByte = BytesPerRow()*rowStart + columnByteOffsets[col] + header.GetDataStartFilePos();
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 
 	if (useMemoryMapping)
 	{
@@ -403,20 +405,11 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 				if (reverseStartByte < header.GetDataStartFilePos())
 					reverseStartByte = header.GetDataStartFilePos();
 
-				if (MapDataWin32(reverseStartByte, header.GetDataStartFilePos() + header.GetDataSize() - reverseStartByte) == false)
-				{
-					affymetrix_calvin_exceptions::DataSetRemapException e;
-					throw e;
-				}
+				MapDataWin32(reverseStartByte, header.GetDataSize() - reverseStartByte);
+
 			}
 			else	// forward
-			{
-				if (MapDataWin32(startByte, header.GetDataStartFilePos() + header.GetDataSize() - startByte) == false)
-				{
-					affymetrix_calvin_exceptions::DataSetRemapException e;
-					throw e;
-				}
-			}
+				MapDataWin32(startByte, header.GetDataSize() - startByte);
 		}
 	}
 #endif

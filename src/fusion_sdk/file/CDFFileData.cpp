@@ -28,11 +28,11 @@
 #include "CDFFileData.h"
 #include "FileIO.h"
 #include <stdio.h>
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(WIN32)
 #include <sys/mman.h>
 #endif
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER)
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #endif
 
@@ -67,7 +67,7 @@ CCDFFileData::CCDFFileData() :
 	m_bFileOpen(false),
 	m_bFileMapped(false)
 {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	m_hFileMap = INVALID_HANDLE_VALUE;
 	m_hFile = INVALID_HANDLE_VALUE;
 #else
@@ -409,7 +409,7 @@ void CCDFFileData::Close()
 	m_QCProbeSets.clear();
 	m_ProbeSetNames.Clear();
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	if (m_bFileOpen)
 	{
 		if (m_bFileMapped)
@@ -425,12 +425,7 @@ void CCDFFileData::Close()
 		m_bFileOpen = false;
 	}
 #else
-	/** JHB: temporarily changing to reflect Seth's fix. 
-	    changed: 
-   	    if (m_fp == NULL)
-	    to:
-	**/
-	if (m_fp != NULL) 
+	if (m_fp == NULL)
 	{
 		if (m_bFileMapped == true)
 		{
@@ -673,7 +668,7 @@ bool CCDFFileData::ReadXDAFormatUsingMemMap(bool bReadHeaderOnly)
 	m_bFileOpen = false;
 	m_bFileMapped = false;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 
 	// Create the file.
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
