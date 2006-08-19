@@ -23,6 +23,12 @@ cdf0 <- readCdfUnits(cdfFile, units=unit, stratifyBy="pmmm")
 cat("Default CDF structure:\n")
 print(cdf0)
 
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Tabulate the information in each group
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+cdf <- readCdfUnits(cdfFile, units=unit)
+cdf <- applyCdfGroups(cdf, lapply, as.data.frame)
+print(cdf)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Infer the (true or the relative) offset for probe quartets.
@@ -30,7 +36,6 @@ print(cdf0)
 cdf <- applyCdfGroups(cdf0, cdfAddProbeOffsets)
 cat("Probe offsets:\n")
 print(cdf)
-
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Identify the number of nucleotides that mismatch the 
