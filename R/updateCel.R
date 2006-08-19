@@ -184,7 +184,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     # Update in chunks
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     CHUNK.SIZE <- 2^19; # = 524288 indices == 5.2Mb
-    CHUNK.SIZE <- 2^20; # = 1048576 indices == 10.5Mb
+    CHUNK.SIZE <- 2^23; # = 1048576 indices == 10.5Mb
 
     # Work with zero-based indices
     indices <- indices - 1;
@@ -203,7 +203,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
       firstIndex <- indices[1];
       offset <- offset + sizeOfCell*firstIndex;
 
-      # Shift indices such that first index is one.
+      # Shift indices such that first index is zero.
       indices <- indices - firstIndex;
 
       # Get largest index
