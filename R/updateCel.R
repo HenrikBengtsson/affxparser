@@ -183,7 +183,8 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Update in chunks
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    CHUNK.SIZE <- 2^19; # = 524288 indices
+    CHUNK.SIZE <- 2^19; # = 524288 indices == 5.2Mb
+    CHUNK.SIZE <- 2^20; # = 1048576 indices == 10.5Mb
 
     # Work with zero-based indices
     indices <- indices - 1;
@@ -207,12 +208,13 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
       # Get largest index
       maxIndex <- indices[length(indices)];
+#      verbose && cat(verbose, "Largest index: ", maxIndex, "\n");
 
       # Identify the indices to update such no more than CHUNK.SIZE cells
       # are read/updated.
       n <- which.max(indices >= CHUNK.SIZE);
       if (n == 1)
-        n <- maxIndex;
+        n <- length(indices);
 
       subset <- 1:n;
 
@@ -223,11 +225,9 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
         cat("Reading chunk data section...");
 
       seek(con, where=offset);
-      rawAll <- readBin(con=con, what="raw", n=sizeOfCell*n);
+      rawAll <- readBin(con=con, what="raw", n=sizeOfCell*(indices[n]+1));
       if (verbose >= 1)
         cat("done.\n");
-#  print(matrix(rawAll[1:30], ncol=10, byrow=TRUE));
-
       # Common to all fields
       raw <- NULL;
   
@@ -269,12 +269,12 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
         if (verbose >= 1)
           cat("done.\n");
       }
-      rm(raw);
   
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       # Update 'pixels'
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       if (!is.null(pixels)) {
+        rm(raw);
         if (verbose >= 1)
           cat("Updating 'pixels'...");
         # Write short integers (size=2) to raw vector
@@ -290,12 +290,10 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
           cat("done.\n");
       }
       rm(raw);
-  
+
       # Remove updated indices
       indices <- indices[-subset];
       rm(subset);
-
-#      print(matrix(rawAll[1:30], ncol=10, byrow=TRUE));
 
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       # Write raw data back to file
@@ -321,6 +319,13 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
 ############################################################################
 # HISTORY:
+# 2006-08-18
+# o BUG FIX: The new implementation where data was written to raw vectors 
+#   was incorrect.  A lot of extra zeros was written.  The "eastern egg" in
+#   the updated example contains an image from http://tpo.berkeley.edu/.
+# 2006-08-14
+# o BUG FIX: updateCel() would in some cases give "Error: subscript out of 
+#   bounds" when writing the last chunk.
 # 2006-07-22
 # o Update updateCel() to update data in chunks, because updating the 
 #   complete data section is expensive.  For example, a 500K chip has

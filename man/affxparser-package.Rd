@@ -8,7 +8,7 @@
 \description{
   The \pkg{affxparser} package provides methods for fast and memory
   efficient parsing of Affymetrix files [1] using the Affymetrix' 
-  Fusion SDK [2].  Both traditional ASCII- and binary-based files are
+  Fusion SDK [2].  Both traditional ASCII- and binary (XDA)-based files are
   supported, as well as Affymetrix future binary format "Calvin". The
   efficiency of the parsing is dependent on whether a specific file is
   binary or ASCII.
