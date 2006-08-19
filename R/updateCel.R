@@ -176,7 +176,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     sizeOfCell <- 10;
 
     # Current file position
-    dataOffset <- seek(con);
+    dataOffset <- seek(con, origin="start", rw="read");
     if (verbose >= 2)
       cat("done.\n");
 
@@ -184,7 +184,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     # Update in chunks
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     CHUNK.SIZE <- 2^19; # = 524288 indices == 5.2Mb
-    CHUNK.SIZE <- 2^23; # = 1048576 indices == 10.5Mb
+    CHUNK.SIZE <- 2^20; # = 1048576 indices == 10.5Mb
 
     # Work with zero-based indices
     indices <- indices - 1;
@@ -224,7 +224,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
       if (verbose >= 1)
         cat("Reading chunk data section...");
 
-      seek(con, where=offset);
+      seek(con, origin="start", where=offset, rw="read");
       rawAll <- readBin(con=con, what="raw", n=sizeOfCell*(indices[n]+1));
       if (verbose >= 1)
         cat("done.\n");
@@ -300,7 +300,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       if (verbose >= 1)
         cat("Writing chunk to data section...");
-      seek(con, where=offset, rw="write");
+      seek(con, origin="start", where=offset, rw="write");
       writeBin(con=con, rawAll);
       if (verbose >= 1)
         cat("done.\n");
@@ -319,6 +319,15 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
 ############################################################################
 # HISTORY:
+# 2006-08-19
+# o BUG FIX: Wow wow wow.  This one was tricky to find.  If not specifying
+#   the 'rw' argument in seek() it defaults to "", which is not "read" as
+#   I naively though (because I did not read the inner details of ?seek),
+#   but the latest call to seek.  In other words, since I at the end of
+#   every "chunk" loop call seek(..., rw="write") the seek(..., [rw=""])
+#   was equal to a seek(..., rw="write"), but I wanted seek(..., rw="read")!
+#   That made updateCel() do funny things and write to the wrongs parts
+#   of the file etc.
 # 2006-08-18
 # o BUG FIX: The new implementation where data was written to raw vectors 
 #   was incorrect.  A lot of extra zeros was written.  The "eastern egg" in
