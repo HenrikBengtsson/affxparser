@@ -1,29 +1,30 @@
-CPPFLAGS=-Ifusion_sdk/calvin_files/data/src\
+CPPFLAGS=\
  -Ifusion_sdk/calvin_files/array/src\
- -Ifusion_sdk/calvin_files/portability/src\
- -Ifusion_sdk/calvin_files/utils/src\
+ -Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/exception/src\
  -Ifusion_sdk/calvin_files/parameter/src\
  -Ifusion_sdk/calvin_files/parsers/src\
+ -Ifusion_sdk/calvin_files/portability/src\
  -Ifusion_sdk/calvin_files/template/src\
+ -Ifusion_sdk/calvin_files/utils/src\
+ -Ifusion_sdk/calvin_files/writers/src\
  -Ifusion_sdk/file\
  -Ifusion_sdk/portability\
- -Ifusion_sdk/gcast/src\
  -Ifusion_sdk/calvin_files/fusion/src\
  -Ifusion_sdk/calvin_files/fusion/src/GCOSAdapter\
  -Ifusion_sdk/calvin_files/fusion/src/CalvinAdapter\
  -I/usr/lib/R/include\
+# /usr/local/gcc4.0/lib/libstdc++.dylib\
  -DIS_BIG_ENDIAN\
  -D_USE_MEM_MAPPING_
 
-CXXFLAGS=-O1 -g
+CXXFLAGS= -g
 
 CC=g++
 
 CCONMAC=/usr/local/gcc4.0/bin/g++-4.0
 
 SOURCES.fusion = \
-	fusion_sdk/calvin_files/data/src/BitFlag.cpp\
 	fusion_sdk/calvin_files/data/src/CDFData.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeGroupInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeInformation.cpp\
@@ -61,10 +62,23 @@ SOURCES.fusion = \
 	fusion_sdk/calvin_files/utils/src/FileUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/StringUtils.cpp\
 	fusion_sdk/calvin_files/utils/src/checksum.cpp\
+	fusion_sdk/calvin_files/writers/src/CDFFileWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/CDFProbeSetWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/CalvinCelFileWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/DataGroupWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/DataGroupHeaderWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/DataSetHeaderWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/DataSetWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/FileHeaderWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/FileOutput.cpp\
+	fusion_sdk/calvin_files/writers/src/GenericDataHeaderWriter.cpp\
+	fusion_sdk/calvin_files/writers/src/GenericFileWriter.cpp\
 	fusion_sdk/file/CDFFileData.cpp\
 	fusion_sdk/file/CELFileData.cpp\
+	fusion_sdk/file/CELFileWriter.cpp\
 	fusion_sdk/file/BPMAPFileData.cpp\
 	fusion_sdk/file/FileIO.cpp\
+	fusion_sdk/file/FileWriter.cpp\
 
 SOURCES.affxparser = \
 	R_affx_cel_parser.cpp\
@@ -77,6 +91,15 @@ SOURCES.cmdline = \
 SOURCES.bpmap = \
 	R_affx_test_bpmap_cmdline.cpp
 
+SOURCES.celwriter = \
+	R_affx_test_celwriter_cmdline.cpp
+
+SOURCES.cdfwriter = \
+	R_affx_test_cdfwriter_cmdline.cpp
+
+SOURCES.header = \
+	R_affx_test_header.cpp
+
 OBJECTS.affxparser=$(SOURCES.affxparser:.cpp=.o)
 
 OBJECTS.fusion=$(SOURCES.fusion:.cpp=.o)
@@ -84,6 +107,12 @@ OBJECTS.fusion=$(SOURCES.fusion:.cpp=.o)
 OBJECTS.cmdline=$(SOURCES.cmdline:.cpp=.o)
 
 OBJECTS.bpmap=$(SOURCES.bpmap:.cpp=.o)
+
+OBJECTS.celwriter=$(SOURCES.celwriter:.cpp=.o)
+
+OBJECTS.cdfwriter=$(SOURCES.cdfwriter:.cpp=.o)
+
+OBJECTS.header=$(SOURCES.header:.cpp=.o)
 
 LIB.fusion=./affx_fusion.lib
 
@@ -95,6 +124,15 @@ cmd_line: $(OBJECTS.fusion) $(OBJECTS.cmdline)
 
 bpmap: $(OBJECTS.fusion) $(OBJECTS.bpmap)
 	${CC} ${CPPFLAGS} ${CXXFLAGS} ${OBJECTS.fusion} $(OBJECTS.bpmap) -DIS_BIG_ENDIAN -o bpmap_cmd
+
+celwriter: $(OBJECTS.fusion) $(OBJECTS.celwriter)
+	${CCONMAC} ${CPPFLAGS} ${CXXFLAGS} ${OBJECTS.fusion} $(OBJECTS.celwriter) -o celwriter_cmd
+
+cdfwriter: $(OBJECTS.fusion) $(OBJECTS.cdfwriter)
+	${CCONMAC} ${CPPFLAGS} ${CXXFLAGS} ${OBJECTS.fusion} $(OBJECTS.cdfwriter) -o cdfwriter_cmd
+
+header: $(OBJECTS.fusion) $(OBJECTS.header)
+	${CCONMAC} ${CPPFLAGS} ${CXXFLAGS} ${OBJECTS.fusion} $(OBJECTS.header) -o header_cmd
 
 clean:
 	-rm -rf $(OBJECTS.fusion) $(LIB.fusion) *.o *.so

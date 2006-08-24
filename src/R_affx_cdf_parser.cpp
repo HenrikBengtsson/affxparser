@@ -211,47 +211,72 @@ extern "C" {
    * Use R_affx_get_cdf_units() instead.
    *
    ************************************************************************/
-  SEXP R_affx_get_cdf_file(SEXP fname, SEXP verbose) 
+
+    /* ToDo list/Structure
+    **   do not return names? is it necessary
+    **   try to save memory on the groupnames
+    **   structure:
+    **     - list of probesets
+    **     - every probeset has the following structure:
+    **       - list of groups
+    **       - probset info
+    **       - the list of groups have the structure
+    **         - every element is group
+    **         - group structure
+    **           - the first elements are cell specific
+    **           - then group specific information follows 
+    */
+
+    SEXP R_affx_get_cdf_file(SEXP fname, SEXP unitIndices, SEXP verbose,
+                             SEXP returnUnitType, 
+                             SEXP returnUnitDirection,
+                             SEXP returnUnitAtomNumbers,
+                             SEXP returnUnitNumber,
+                             SEXP returnXY, SEXP returnIndices,
+                             SEXP returnBases, SEXP returnAtoms,
+                             SEXP returnIndexpos, SEXP returnBlockDirection,
+                             SEXP returnBlockAtomNumbers)
   {
     FusionCDFData cdf;
-    FusionCDFFileHeader header;
+    
+    SEXP
+        r_units_list = R_NilValue,
+        r_units_list_names = R_NilValue,
+        r_unit = R_NilValue,
+        r_unit_names = R_NilValue,
+        r_blocks_list = R_NilValue, 
+        r_blocks_list_names = R_NilValue, 
+        r_block = R_NilValue,
+        r_block_names = R_NilValue,
+        r_xvals = R_NilValue,
+        r_yvals = R_NilValue,
+        r_indices = R_NilValue,
+        r_pbase = R_NilValue,
+        r_tbase = R_NilValue,
+        r_expos = R_NilValue,
+        r_indexpos  = R_NilValue;
     
     /*
-     * What about returning the header as well?
-     */
-    
-    SEXP names = R_NilValue, 
-      probe_sets = R_NilValue,
-      cell_list = R_NilValue,
-      cell_list_names = R_NilValue,
-      xvals = R_NilValue,
-      yvals = R_NilValue,
-      pbase = R_NilValue,
-      tbase = R_NilValue,
-      expos = R_NilValue,
-      r_group_list = R_NilValue, 
-      r_group_names = R_NilValue, 
-      r_probe_set = R_NilValue, /** one might already want to standardize on this naming scheme... **/
-      r_probe_set_names = R_NilValue,
-      tmp = R_NilValue; 
-    
+    ** First we read in the cdf files and get the number of units.
+    */
 
-    int nsets = 0; 
+    int numUnits = 0;
+    int numCols = 0;
+    int numUnitsInFile = 0; 
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
-
-    /** 
-     XXX: I am not sure this is the most elegant way to handle these in R. 
-          I initialize it hear for kicks.
-    **/
-    char p_base[2] = "X";
-    char t_base[2] = "X";
-    
-    /** pointer to the name of the probeset. **/
-    const char* name;
-    int probeSetType, direction;
-    
-    FusionCDFProbeSetInformation probeset;
+    int i_returnUnitType = INTEGER(returnUnitType)[0];
+    int i_returnUnitDirection = INTEGER(returnUnitDirection)[0];
+    int i_returnUnitAtomNumbers = INTEGER(returnUnitAtomNumbers)[0];
+    int i_returnUnitNumber = INTEGER(returnUnitAtomNumbers)[0];
+    int i_returnXY = INTEGER(returnXY)[0];
+    int i_returnIndices = INTEGER(returnIndices)[0];
+    int i_returnBases = INTEGER(returnBases)[0];
+    int i_returnAtoms = INTEGER(returnAtoms)[0];
+    int i_returnIndexpos = INTEGER(returnIndexpos)[0];
+    int i_returnBlockDirection = INTEGER(returnBlockDirection)[0];
+    int i_returnBlockAtomNumbers = INTEGER(returnBlockAtomNumbers)[0];
+    bool readEveryUnit = true;
 
     cdf.SetFileName(cdfFileName);
     if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -263,142 +288,371 @@ extern "C" {
       return R_NilValue;
     }
 
-    header = cdf.GetHeader();
-    nsets  = header.GetNumProbeSets();
+    numUnitsInFile  = cdf.GetHeader().GetNumProbeSets();
+    numCols = cdf.GetHeader().GetCols();
+    if(length(unitIndices) != 0){
+        for(int i = 0; i++; i < length(unitIndices)) {
+            if(INTEGER(unitIndices)[i] < 1 || 
+               INTEGER(unitIndices)[i] > numUnitsInFile)
+                error("Argument 'units' contains an element out of range.");
+        }
+        numUnits = length(unitIndices);
+        readEveryUnit = false;
+    } else {
+        numUnits = numUnitsInFile;
+        readEveryUnit = true;
+    }
 
-    PROTECT(names = NEW_CHARACTER(nsets));
-    PROTECT(probe_sets = NEW_LIST(nsets)); 
+    /*
+    ** Now we set up stuff for the different objects we need to return
+    */
 
-    for (int iset = 0; iset < nsets; iset++) {
-      cdf.GetProbeSetInformation(iset, probeset);
-      
-      /** i am not sure why there is not a method on ProbeSetInformation 
-          for the name. **/
-      name = cdf.GetProbeSetName(iset).c_str();
-      
-      probeSetType = probeset.GetProbeSetType();
-      direction = probeset.GetDirection();
+    FusionCDFProbeSetInformation unit;
+    FusionCDFProbeGroupInformation block;
+    FusionCDFProbeInformation probe;
+    int unitNumBlocks;
+    int blockNumCells;
+    const char *unitName, *blockName;
+    string pbaseString, tbaseString;
+    int ii, unit_idx, 
+        unprotectBlockInfo, numBlockArguments, 
+        numUnitArguments;
 
+    PROTECT(r_units_list_names = NEW_CHARACTER(numUnits));
+    PROTECT(r_units_list = NEW_LIST(numUnits));
+
+    /*
+    ** First the units themselves
+    */
+ 
+    numUnitArguments = i_returnUnitType + 
+        i_returnUnitDirection + 3 * i_returnUnitAtomNumbers +
+        i_returnUnitNumber + 1;
+    PROTECT(r_unit_names = NEW_CHARACTER(numUnitArguments));
+    ii = 0;
+    SET_STRING_ELT(r_unit_names, ii++, mkChar("blocks"));
+    if(i_returnUnitType)
+        SET_STRING_ELT(r_unit_names, ii++, mkChar("unittype"));
+    if(i_returnUnitDirection)
+        SET_STRING_ELT(r_unit_names, ii++, mkChar("unitdirection"));
+    if(i_returnUnitAtomNumbers) {
+        SET_STRING_ELT(r_unit_names, ii++, mkChar("natoms"));
+        SET_STRING_ELT(r_unit_names, ii++, mkChar("ncells"));
+        SET_STRING_ELT(r_unit_names, ii++, mkChar("ncellsperatom"));
+    }
+    if(i_returnUnitNumber)
+        SET_STRING_ELT(r_unit_names, ii++, mkChar("unitnumber"));
+    
+    /*
+    ** Because the length of the block list can change
+    ** from unit to unit, we have to protect these
+    ** things below.
+    */
+
+    /*
+    ** Now an individual block.
+    */
+    numBlockArguments = 2 * i_returnXY + i_returnIndices +
+        2 * i_returnBases + i_returnAtoms + 2 * i_returnBlockAtomNumbers + 
+        i_returnBlockDirection + i_returnIndexpos;
+    unprotectBlockInfo = 0;
+    PROTECT(r_block_names = NEW_CHARACTER(numBlockArguments));
+    ii = 0;
+    if(i_returnXY) {
+        SET_STRING_ELT(r_block_names, ii++, mkChar("x"));
+        unprotectBlockInfo++;
+        SET_STRING_ELT(r_block_names, ii++, mkChar("y"));
+        unprotectBlockInfo++;
+    }
+    if(i_returnIndices)
+        SET_STRING_ELT(r_block_names, ii++, mkChar("indices"));
+        unprotectBlockInfo++;
+    if(i_returnBases) {
+        SET_STRING_ELT(r_block_names, ii++, mkChar("pbase"));
+        unprotectBlockInfo++;
+        SET_STRING_ELT(r_block_names, ii++, mkChar("tbase"));
+        unprotectBlockInfo++;
+    }
+    if(i_returnAtoms)
+        SET_STRING_ELT(r_block_names, ii++, mkChar("atom"));
+        unprotectBlockInfo++;
+    if(i_returnIndexpos)
+        SET_STRING_ELT(r_block_names, ii++, mkChar("indexpos"));
+        unprotectBlockInfo++;
+    if(i_returnBlockDirection)
+        SET_STRING_ELT(r_block_names, ii++, mkChar("blockdirection"));
+    if(i_returnBlockAtomNumbers){
+        SET_STRING_ELT(r_block_names, ii++, mkChar("natoms"));
+        SET_STRING_ELT(r_block_names, ii++, mkChar("ncellsperatom"));
+    } 
+
+    /*
+    ** This needed in order to reduce memory for the Unit/Block type
+    */
+
+    SEXP r_typeAsString;
+    PROTECT(r_typeAsString = NEW_STRING(5));
+    SET_STRING_ELT(r_typeAsString, 0, mkChar("expression"));
+    SET_STRING_ELT(r_typeAsString, 1, mkChar("genotyping"));
+    SET_STRING_ELT(r_typeAsString, 2, mkChar("tag"));
+    SET_STRING_ELT(r_typeAsString, 3, mkChar("resequencing"));
+    SET_STRING_ELT(r_typeAsString, 4, mkChar("unknown"));
+
+    SEXP r_directionAsString;
+    PROTECT(r_directionAsString = NEW_STRING(4));
+    SET_STRING_ELT(r_directionAsString, 0, mkChar("nodirection"));
+    SET_STRING_ELT(r_directionAsString, 1, mkChar("sense"));
+    SET_STRING_ELT(r_directionAsString, 2, mkChar("antisense"));
+    SET_STRING_ELT(r_directionAsString, 3, mkChar("unknown"));
+
+    /*
+    ** Reading in the units.
+    */
+
+    if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
+        Rprintf("Finished setup, commencing unit parsing.\n");
+    }
+
+    for (int iunit = 0; iunit < numUnits; iunit++) {
+      /* Check for interrupts */
+      if(iunit % 1000 == 999) 
+          R_CheckUserInterrupt();
+      /* The index, which is 0-based in Fusion unlike our R-api */
+      if(readEveryUnit)
+          unit_idx = iunit;
+      else
+          unit_idx = INTEGER(unitIndices)[iunit] - 1;
+      cdf.GetProbeSetInformation(unit_idx, unit);
+
+      PROTECT(r_unit = NEW_LIST(numUnitArguments));
+      unitName = cdf.GetProbeSetName(unit_idx).c_str();
       if (i_verboseFlag >= R_AFFX_VERBOSE) {
-        Rprintf("Processing probeset: %s with type: %d, direction: %d\n ", name, probeSetType, direction);
+          Rprintf("Processing unit: %s\n", unitName);
       }
-      
-      /** the probe set names. **/
-      SET_STRING_ELT(names, iset, mkChar(name));
+      /* There is no direct GetName method for a unit - strange */
+      unitNumBlocks = unit.GetNumGroups();
+      ii = 1; /* we always return the blocks */
 
-      int ngroups = probeset.GetNumGroups();
-      
-      PROTECT(r_group_list = NEW_LIST(ngroups));
-      PROTECT(r_group_names = NEW_CHARACTER(ngroups));
 
-      for (int igroup = 0; igroup < ngroups; igroup++) {
-        FusionCDFProbeGroupInformation group;
-        probeset.GetGroupInformation(igroup, group);
-        
-        int ncells = group.GetNumCells();
-        int unp = 0, n_list_elts = 5; 
-        
-        PROTECT(cell_list = NEW_LIST(n_list_elts));
-        PROTECT(cell_list_names = NEW_STRING(n_list_elts));
-
-        PROTECT(xvals = NEW_INTEGER(ncells));
-        PROTECT(yvals = NEW_INTEGER(ncells));
-        PROTECT(pbase = NEW_STRING(ncells));
-        PROTECT(tbase = NEW_STRING(ncells));
-        PROTECT(expos = NEW_INTEGER(ncells));
-
-        for (int icell = 0; icell < ncells; icell++) {
-          FusionCDFProbeInformation probe;
-          group.GetCell(icell, probe);
-
-          if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
-            Rprintf("icell: %d x: %d, y: %d, pbase: %c, tbase: %c, expos: %d\n", icell, probe.GetX(), probe.GetY(), probe.GetPBase(), probe.GetTBase(), probe.GetExpos());
+      if(i_returnUnitType) {
+          switch (unit.GetProbeSetType()) {
+          case affxcdf::ExpressionProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++,
+                             ScalarString(STRING_ELT(r_typeAsString, 0)));
+              break;
+          case affxcdf::GenotypingProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++,
+                             ScalarString(STRING_ELT(r_typeAsString, 1)));
+              break;
+          case affxcdf::TagProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++,
+                             ScalarString(STRING_ELT(r_typeAsString, 2)));
+              break;
+          case affxcdf::ResequencingProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++, 
+                             ScalarString(STRING_ELT(r_typeAsString, 3)));
+              break;
+          case affxcdf::UnknownProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++, 
+                             ScalarString(STRING_ELT(r_typeAsString, 4)));
+              break;
+          default:
+              SET_VECTOR_ELT(r_unit, ii++, 
+                             ScalarString(STRING_ELT(r_typeAsString, 4)));
+              break;
           }
-          
-          INTEGER(xvals)[icell] = probe.GetX();
-          INTEGER(yvals)[icell] = probe.GetY();
-          
-          p_base[0] = probe.GetPBase();
-          t_base[0] = probe.GetTBase();
-          
-          SET_STRING_ELT(pbase, icell, mkChar(p_base));
-          SET_STRING_ELT(tbase, icell, mkChar(t_base));
-          
-          INTEGER(expos)[icell] = probe.GetExpos(); 
+      }
+
+      if(i_returnUnitDirection) {
+          switch (unit.GetDirection()) {
+          case affxcdf::NoDirection:
+              SET_VECTOR_ELT(r_unit, ii++, 
+                             ScalarString(STRING_ELT(r_directionAsString, 0)));
+              break;
+          case affxcdf::SenseDirection:
+              SET_VECTOR_ELT(r_unit, ii++, 
+                             ScalarString(STRING_ELT(r_directionAsString, 1)));
+              break;
+          case affxcdf::AntiSenseDirection:
+              SET_VECTOR_ELT(r_unit, ii++, 
+                             ScalarString(STRING_ELT(r_directionAsString, 2)));
+              break;
+          default:
+              SET_VECTOR_ELT(r_unit, ii++, 
+                             ScalarString(STRING_ELT(r_directionAsString, 3)));
+              break;
+          }
+      }
+
+      if(i_returnUnitAtomNumbers) {
+          SET_VECTOR_ELT(r_unit, ii++, 
+                         ScalarInteger(unit.GetNumLists()));
+          SET_VECTOR_ELT(r_unit, ii++, 
+                         ScalarInteger(unit.GetNumCells()));
+          SET_VECTOR_ELT(r_unit, ii++, 
+                         ScalarInteger(unit.GetNumCellsPerList()));
+      }
+
+      if(i_returnUnitNumber)
+          SET_VECTOR_ELT(r_unit, ii++,
+                         ScalarInteger(unit.GetProbeSetNumber()));
+
+      PROTECT(r_blocks_list = NEW_LIST(unitNumBlocks));
+      PROTECT(r_blocks_list_names = NEW_CHARACTER(unitNumBlocks));
+
+      /*
+      ** Now for the blocks
+      */
+
+      for (int iblock = 0; iblock < unitNumBlocks; iblock++) {
+        unit.GetGroupInformation(iblock, block);
+        PROTECT(r_block = NEW_LIST(numBlockArguments));
+        blockNumCells = block.GetNumCells();
+        blockName = block.GetName().c_str();
+        if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
+            Rprintf("Processing block %s\n", blockName);
+        }
+        if(i_returnXY) {
+            PROTECT(r_xvals = NEW_INTEGER(blockNumCells));
+            PROTECT(r_yvals = NEW_INTEGER(blockNumCells));
+        }
+        if(i_returnIndices) 
+            PROTECT(r_indices = NEW_INTEGER(blockNumCells));
+        if(i_returnBases) {
+            PROTECT(r_pbase = NEW_CHARACTER(blockNumCells));
+            PROTECT(r_tbase = NEW_CHARACTER(blockNumCells));
+        }
+        if(i_returnAtoms)
+            PROTECT(r_expos = NEW_INTEGER(blockNumCells));
+        if(i_returnIndexpos)
+            PROTECT(r_indexpos = NEW_INTEGER(blockNumCells));
+
+        for (int icell = 0; icell < blockNumCells; icell++) {
+          block.GetCell(icell, probe);
+          if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
+            Rprintf("icell: %d x: %d, y: %d, pbase: %c, tbase: %c, expos: %d, indexpos: %d\n", 
+                    icell, probe.GetX(), probe.GetY(), probe.GetPBase(), 
+                    probe.GetTBase(), probe.GetExpos(), probe.GetListIndex());
+          }
+
+          if(i_returnXY) {
+              INTEGER(r_xvals)[icell] = probe.GetX();
+              INTEGER(r_yvals)[icell] = probe.GetY();
+          }
+
+          if(i_returnIndices) {
+              INTEGER(r_indices)[icell] = probe.GetY() * numCols +
+                  probe.GetX() + 1;
+          }
+
+          if(i_returnBases) {
+              pbaseString = probe.GetPBase();
+              SET_STRING_ELT(r_pbase, icell, mkChar(pbaseString.c_str()));
+              tbaseString = probe.GetTBase();
+              SET_STRING_ELT(r_tbase, icell, mkChar(tbaseString.c_str()));
+          }
+
+          if(i_returnAtoms)
+              INTEGER(r_expos)[icell] = probe.GetExpos();
+
+          if(i_returnIndexpos)
+              INTEGER(r_indexpos)[icell] = probe.GetListIndex();
         }
 
         if (i_verboseFlag >= R_AFFX_VERBOSE) {
-          Rprintf("finished reading probeset information for: %s\n", name);
+          Rprintf("finished reading unit information for: %s\n", unitName);
         }
 
-        /** do I have to make the attribute vector everytime? **/
-        SET_VECTOR_ELT(cell_list, unp, xvals);
-        SET_STRING_ELT(cell_list_names, unp++, mkChar("x"));
- 
-        SET_VECTOR_ELT(cell_list, unp, yvals);
-        SET_STRING_ELT(cell_list_names, unp++, mkChar("y"));
-        
-        SET_VECTOR_ELT(cell_list, unp, pbase);
-        SET_STRING_ELT(cell_list_names, unp++, mkChar("pbase"));
- 
-        SET_VECTOR_ELT(cell_list, unp, tbase);
-        SET_STRING_ELT(cell_list_names, unp++, mkChar("tbase"));
+        /** Write everything into the r_block object, 
+         ** finalize it and unprotect **/
 
-        SET_VECTOR_ELT(cell_list, unp, expos);
-        SET_STRING_ELT(cell_list_names, unp++, mkChar("expos"));
+        ii = 0;
 
-        
-        /** set the names of the new list, dont really know if I need to do
-            this each and every time. **/
-        setAttrib(cell_list, R_NamesSymbol, cell_list_names);
-        
-        /** set these cells in the group list. **/
-        SET_VECTOR_ELT(r_group_list, igroup, cell_list);
-        SET_STRING_ELT(r_group_names, igroup, mkChar(group.GetName().c_str()));
-        
-        /** unprotect the vectors stored in our list. **/
-        UNPROTECT(unp + 2);
+        if(i_returnXY) {
+            SET_VECTOR_ELT(r_block, ii++, r_xvals);
+            SET_VECTOR_ELT(r_block, ii++, r_yvals);
+        }
+
+        if(i_returnIndices)
+            SET_VECTOR_ELT(r_block, ii++, r_indices);
+
+        if(i_returnBases) {
+            SET_VECTOR_ELT(r_block, ii++, r_pbase);
+            SET_VECTOR_ELT(r_block, ii++, r_tbase);
+        }
+
+        if(i_returnAtoms)
+            SET_VECTOR_ELT(r_block, ii++, r_expos);
+
+        if(i_returnIndexpos)
+            SET_VECTOR_ELT(r_block, ii++, r_indexpos);
+
+        if(i_returnBlockDirection) {
+          switch (block.GetDirection()) {
+          case affxcdf::NoDirection:
+              SET_VECTOR_ELT(r_block, ii++, 
+                             ScalarString(STRING_ELT(r_directionAsString, 0)));
+              break;
+          case affxcdf::SenseDirection:
+              SET_VECTOR_ELT(r_block, ii++, 
+                             ScalarString(STRING_ELT(r_directionAsString, 1)));
+              break;
+          case affxcdf::AntiSenseDirection:
+              SET_VECTOR_ELT(r_block, ii++, 
+                             ScalarString(STRING_ELT(r_directionAsString, 2)));
+              break;
+          default:
+              SET_VECTOR_ELT(r_block, ii++, 
+                             ScalarString(STRING_ELT(r_directionAsString, 3)));
+              break;
+
+          }
+        }
+        if(i_returnBlockAtomNumbers) {
+            SET_VECTOR_ELT(r_block, ii++,
+                           ScalarInteger(block.GetNumLists()));
+            SET_VECTOR_ELT(r_block, ii++, 
+                           ScalarInteger(block.GetNumCellsPerList()));
+        }
+        setAttrib(r_block, R_NamesSymbol, r_block_names);
+        UNPROTECT(unprotectBlockInfo);
+
+        /** Put the block into the r_blocks_list and unprotect it **/
+        SET_VECTOR_ELT(r_blocks_list, iblock, r_block);
+        SET_STRING_ELT(r_blocks_list_names, iblock, 
+                       mkChar(block.GetName().c_str()));
+        UNPROTECT(1);
       }
-      
-      /** set the group names. **/
-      setAttrib(r_group_list, R_NamesSymbol, r_group_names);
 
-      int rpsi = 0;
-      PROTECT(r_probe_set = NEW_LIST(3));
-      PROTECT(r_probe_set_names = NEW_LIST(3));
+      /** set the r_block_list names. **/
+      setAttrib(r_blocks_list, R_NamesSymbol, r_blocks_list_names);
 
-      SET_VECTOR_ELT(r_probe_set, rpsi, r_group_list);
-      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("groups"));
-            
-      PROTECT(tmp = allocVector(INTSXP, 1));
-      INTEGER(tmp)[0] = probeSetType;
-      SET_VECTOR_ELT(r_probe_set, rpsi, tmp);
-      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("type"));
+      /** Finalize the unit object, and unprotect
+       ** the r_blocks_list and r_blocks_list_names **/
+      SET_VECTOR_ELT(r_unit, 0, r_blocks_list);
+      setAttrib(r_unit, R_NamesSymbol, r_unit_names);
+      UNPROTECT(2);
+
+      /** now set the unit in the main units_list, 
+       ** and unprotect it. **/
+      SET_VECTOR_ELT(r_units_list, iunit, r_unit);
+      SET_STRING_ELT(r_units_list_names, iunit, mkChar(unitName));
       UNPROTECT(1);
-      
-      PROTECT(tmp = allocVector(INTSXP, 1));
-      INTEGER(tmp)[0] = direction;
-      SET_VECTOR_ELT(r_probe_set, rpsi, tmp);
-      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("direction"));
-      UNPROTECT(1);
-
-      /** set up the names. **/
-      setAttrib(r_probe_set, R_NamesSymbol, r_probe_set_names);
-
-      /** now set the probe_set in the main probe_set list. **/
-      SET_VECTOR_ELT(probe_sets, iset, r_probe_set);
-
-      /** pop the names and the probe_set of the stack. **/
-      UNPROTECT(4);
     }
+
+    /* The type and direction vectors */
+    UNPROTECT(2);
     
     /** set the names down here at the end. **/
-    setAttrib(probe_sets, R_NamesSymbol, names);
+    setAttrib(r_units_list, R_NamesSymbol, r_units_list_names);
 
-    /** unprotect the names and the main probe set list.**/
-    UNPROTECT(2);
+    /* unprotect everything we started with, that is 
+    ** r_units_list, r_units_list_names as well as
+    ** r_unit_names, r_block_names **/
+
+    UNPROTECT(4);
    
-    return probe_sets;
+    return r_units_list;
   } /* R_affx_get_cdf_file() */
 
 
@@ -626,7 +880,7 @@ extern "C" {
    * plan is to remove the latter.
    *
    ************************************************************************/
-  SEXP R_affx_get_cdf_units(SEXP fname, SEXP units, SEXP readXY, SEXP readBases, SEXP readExpos, SEXP readType, SEXP readDirection, SEXP readIndices, SEXP verbose) 
+  SEXP R_affx_get_cdf_units(SEXP fname, SEXP units, SEXP readXY, SEXP readBases, SEXP readExpos, SEXP readType, SEXP readDirection, SEXP readIndices, SEXP verbose)
   {
     FusionCDFData cdf;
 
