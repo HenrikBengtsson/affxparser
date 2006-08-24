@@ -61,6 +61,9 @@ int main(int argc, char **argv)
                   double sum = 0;
                   FusionCDFProbeSetInformation set;
                   cdf.GetProbeSetInformation(iset, set);
+                  cout << "Unit type is " << set.GetProbeSetType() << endl;
+                  if(set.GetProbeSetType() == affxcdf::ExpressionProbeSetType)
+                      cout << "Exp" << endl;
                   int ngroups = set.GetNumGroups();
                   for (int igroup=0; igroup<ngroups; igroup++)
                       {
