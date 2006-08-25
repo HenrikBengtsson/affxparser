@@ -110,15 +110,320 @@ extern "C" {
    * R_affx_get_cdf_file_qc()
    *
    ************************************************************************/
-  SEXP R_affx_get_cdf_file_qc(SEXP fname, SEXP units, SEXP verbose) 
+    SEXP R_affx_get_cdf_file_qc(SEXP fname, SEXP unitIndices, SEXP verbose,
+                                SEXP returnIndices, SEXP returnXY,
+                                SEXP returnLengths,
+                                SEXP returnPMInfo, SEXP returnBackgroundInfo,
+                                SEXP returnType, SEXP returnQCNumbers) 
   {
-    /** 
-     * XXX: This might look very similar to the code for reading of the normal
-     * probe sets ; so i am going to wait until i am confident that i have that
-     * implemented nicely.
-     **/
-    SEXP ans = R_NilValue;
-    return ans;
+    FusionCDFData cdf;
+    
+    SEXP
+        r_qcunits_list = R_NilValue,
+        r_qcunit = R_NilValue,
+        r_qcunit_names = R_NilValue,
+        r_indices = R_NilValue,
+        r_xvals = R_NilValue,
+        r_yvals = R_NilValue,
+        r_lengths = R_NilValue,
+        r_pminfo = R_NilValue,
+        r_backgroundinfo = R_NilValue;
+
+    int numQCUnits = 0;
+    int nqccells = 0;
+    int numCols = 0;
+    int numQCUnitsInFile = 0; 
+    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    int i_verboseFlag = INTEGER(verbose)[0];
+    int i_returnIndices = INTEGER(returnIndices)[0];
+    int i_returnXY = INTEGER(returnXY)[0];
+    int i_returnLengths = INTEGER(returnLengths)[0];
+    int i_returnPMInfo = INTEGER(returnPMInfo)[0];
+    int i_returnBackgroundInfo = INTEGER(returnBackgroundInfo)[0];
+    int i_returnType = INTEGER(returnType)[0];
+    int i_returnQCNumbers = INTEGER(returnQCNumbers)[0];
+    bool readEveryUnit = true;
+    int ii = 0;
+    int qcunit_idx;
+
+    cdf.SetFileName(cdfFileName);
+    if (i_verboseFlag >= R_AFFX_VERBOSE) {
+      Rprintf("Attempting to read CDF File: %s\n", cdf.GetFileName().c_str());
+    }
+
+    if (cdf.Read() == false) {
+      Rprintf("Failed to read the CDF file.");
+      return R_NilValue;
+    }
+
+    numQCUnitsInFile  = cdf.GetHeader().GetNumQCProbeSets();
+    numCols = cdf.GetHeader().GetCols();
+    if(length(unitIndices) != 0){
+        for(int i = 0; i++; i < length(unitIndices)) {
+            if(INTEGER(unitIndices)[i] < 1 || 
+               INTEGER(unitIndices)[i] > numQCUnitsInFile)
+                error("Argument 'units' contains an element out of range.");
+        }
+        numQCUnits = length(unitIndices);
+        readEveryUnit = false;
+    } else {
+        numQCUnits = numQCUnitsInFile;
+        readEveryUnit = true;
+    }
+
+    /*
+    ** Now we set up stuff for the different objects we need to return
+    */
+
+    FusionCDFQCProbeSetInformation qcunit;
+    FusionCDFQCProbeInformation qcprobe;
+
+    /*
+    ** First the units themselves
+    */
+
+    int numCellArguments =  i_returnIndices + 2 * i_returnXY +
+        i_returnLengths + i_returnPMInfo + i_returnBackgroundInfo;
+
+    int numQCUnitArguments = numCellArguments + 
+        i_returnType + i_returnQCNumbers;
+
+    PROTECT(r_qcunit_names = NEW_CHARACTER(numQCUnitArguments));
+
+    ii = 0;
+    if(i_returnXY) {
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("x"));
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("y"));
+    }
+    if(i_returnIndices) {
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("indices"));
+    }
+    if(i_returnLengths) {
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("length"));
+    }
+    if(i_returnPMInfo) {
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("pm"));
+    }
+    if(i_returnBackgroundInfo) {
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("background"));
+    }
+    if(i_returnType) {
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("type"));
+    }
+    if(i_returnQCNumbers) {
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("nqcunits"));
+    }
+
+    /*
+    ** Now fixing up the QC type
+    */
+
+    SEXP r_qcTypeAsString;
+    PROTECT(r_qcTypeAsString = NEW_CHARACTER(19));
+    SET_STRING_ELT(r_qcTypeAsString, 0, mkChar("unknown"));
+    SET_STRING_ELT(r_qcTypeAsString, 1, mkChar("checkerboardNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 2, mkChar("checkerboardPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 3, mkChar("hybeNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 4, mkChar("hybePositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 5, mkChar("textFeaturesNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 6, mkChar("textFeaturesPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 7, mkChar("centralNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 8, mkChar("centralPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 9, mkChar("geneExpNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 10, mkChar("geneExpPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 11, mkChar("cycleFidelityNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 12, mkChar("cycleFidelityPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 13, mkChar("centralCrossNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 14, mkChar("centralCrossPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 15, mkChar("crossHybeNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 16, mkChar("crossHybePositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 17, mkChar("SpatialNormNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 18, mkChar("SpatialNormPositive"));
+
+    PROTECT(r_qcunits_list = NEW_LIST(numQCUnits));
+
+    if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
+        Rprintf("Finished setup, commencing unit parsing.\n");
+    }
+
+    /*
+    ** Parsing the QCUnits
+    */
+
+
+    for (int iqcunit = 0; iqcunit < numQCUnits; iqcunit++) {
+      /* Check for interrupts */
+      if(iqcunit % 1000 == 999) 
+          R_CheckUserInterrupt();
+      /* The index, which is 0-based in Fusion unlike our R-api */
+      if(readEveryUnit)
+          qcunit_idx = iqcunit;
+      else
+          qcunit_idx = INTEGER(unitIndices)[iqcunit] - 1;
+      cdf.GetQCProbeSetInformation(qcunit_idx, qcunit);
+
+      PROTECT(r_qcunit = NEW_LIST(numQCUnitArguments));
+
+      if (i_verboseFlag >= R_AFFX_VERBOSE) {
+          Rprintf("Processing QC unit: %d\n", qcunit_idx + 1);
+      }
+
+      nqccells = qcunit.GetNumCells();
+
+      if(numCellArguments > 0) {
+          if(i_returnXY) {
+              PROTECT(r_xvals = NEW_INTEGER(nqccells));
+              PROTECT(r_yvals = NEW_INTEGER(nqccells));
+          }
+          if(i_returnIndices)
+              PROTECT(r_indices = NEW_INTEGER(nqccells));
+          if(i_returnLengths)
+              PROTECT(r_lengths = NEW_INTEGER(nqccells));
+          if(i_returnPMInfo)
+              PROTECT(r_pminfo = NEW_INTEGER(nqccells));
+          if(i_returnBackgroundInfo)
+              PROTECT(r_backgroundinfo = NEW_INTEGER(nqccells));
+
+          for(int icell = 0; icell < nqccells; icell++) {
+              qcunit.GetProbeInformation(icell, qcprobe);
+              if(i_returnXY) {
+                  INTEGER(r_xvals)[icell] = qcprobe.GetX();
+                  INTEGER(r_yvals)[icell] = qcprobe.GetY();
+              }
+              if(i_returnIndices) {
+                  INTEGER(r_indices)[icell] = qcprobe.GetY() * numCols +
+                      qcprobe.GetX() + 1;
+              }
+              if(i_returnLengths) {
+                  INTEGER(r_lengths)[icell] = qcprobe.GetPLen();
+              }
+              if(i_returnPMInfo) {
+                  INTEGER(r_pminfo)[icell] = qcprobe.IsPerfectMatchProbe();
+              }
+              if(i_returnBackgroundInfo) {
+                  INTEGER(r_backgroundinfo)[icell] = 
+                      qcprobe.IsBackgroundProbe();
+              }
+          }
+
+          ii = 0;
+          if(i_returnXY) {
+              SET_VECTOR_ELT(r_qcunit, ii++, r_xvals);
+              SET_VECTOR_ELT(r_qcunit, ii++, r_yvals);
+          }
+          if(i_returnIndices) {
+              SET_VECTOR_ELT(r_qcunit, ii++, r_indices);
+          }
+          if(i_returnLengths) {
+              SET_VECTOR_ELT(r_qcunit, ii++, r_lengths);
+          }
+          if(i_returnPMInfo) {
+              SET_VECTOR_ELT(r_qcunit, ii++, r_pminfo);
+          }
+          if(i_returnBackgroundInfo) {
+              SET_VECTOR_ELT(r_qcunit, ii++, r_backgroundinfo);
+          }
+          UNPROTECT(numCellArguments);
+      }
+      
+      if(i_returnType) {
+          switch (qcunit.GetQCProbeSetType()) {
+          case affxcdf::UnknownQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 0)));
+              break;
+          case affxcdf::CheckerboardNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 1)));
+              break;
+          case affxcdf::CheckerboardPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 2)));
+              break;
+          case affxcdf::HybNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 3)));
+              break;
+          case affxcdf::HybPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 4)));
+              break;
+          case affxcdf::TextFeaturesNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 5)));
+              break;
+          case affxcdf::TextFeaturesPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 6)));
+              break;
+          case affxcdf::CentralNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 7)));
+              break;
+          case affxcdf::CentralPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 8)));
+              break;
+          case affxcdf::GeneExpNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 9)));
+              break;
+          case affxcdf::GeneExpPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 10)));
+              break;
+          case affxcdf::CycleFidelityNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 11)));
+              break;
+          case affxcdf::CycleFidelityPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 12)));
+              break;
+          case affxcdf::CentralCrossNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 13)));
+              break;
+          case affxcdf::CentralCrossPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 14)));
+              break;
+          case affxcdf::CrossHybNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 15)));
+              break;
+          case affxcdf::CrossHybPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 16)));
+              break;
+          case affxcdf::SpatialNormalizationNegativeQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 17)));
+              break;
+          case affxcdf::SpatialNormalizationPositiveQCProbeSetType:
+              SET_VECTOR_ELT(r_qcunit, ii++,
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 18)));
+              break;
+          default:
+              SET_VECTOR_ELT(r_qcunit, ii++, 
+                             ScalarString(STRING_ELT(r_qcTypeAsString, 0)));
+              break;
+          }
+      }
+
+      if(i_returnQCNumbers) {
+          SET_VECTOR_ELT(r_qcunit, ii++, ScalarInteger(nqccells));
+      }
+      
+      setAttrib(r_qcunit, R_NamesSymbol, r_qcunit_names);
+      SET_VECTOR_ELT(r_qcunits_list, iqcunit, r_qcunit);
+      UNPROTECT(1);
+    }
+
+    /* r_qcunit_names, r_qcunits_list, r_qcTypeAsString */
+    UNPROTECT(3);
+ 
+    return r_qcunits_list;
   }
 
 
@@ -159,31 +464,31 @@ extern "C" {
      * Luis should add a version number
      */
 
-    SET_STRING_ELT(names, ii, mkChar("cols"));
+    SET_STRING_ELT(names, ii, mkChar("ncols"));
     PROTECT(tmp = allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = header.GetCols();
     SET_VECTOR_ELT(vals, ii++, tmp); 
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, ii, mkChar("rows"));
+    SET_STRING_ELT(names, ii, mkChar("nrows"));
     PROTECT(tmp = allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = header.GetRows();
     SET_VECTOR_ELT(vals, ii++, tmp); 
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, ii, mkChar("probesets"));
+    SET_STRING_ELT(names, ii, mkChar("nunits"));
     PROTECT(tmp = allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = header.GetNumProbeSets();
     SET_VECTOR_ELT(vals, ii++, tmp); 
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, ii, mkChar("qcprobesets"));
+    SET_STRING_ELT(names, ii, mkChar("nqcunits"));
     PROTECT(tmp = allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = header.GetNumQCProbeSets();
     SET_VECTOR_ELT(vals, ii++, tmp); 
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, ii, mkChar("reference"));
+    SET_STRING_ELT(names, ii, mkChar("refseq"));
     SET_VECTOR_ELT(vals, ii++, mkString(header.GetReference().c_str()));
 
     SET_STRING_ELT(names, ii, mkChar("chiptype"));
@@ -208,24 +513,9 @@ extern "C" {
    * R_affx_get_cdf_file()
    *
    * Note: 
-   * Use R_affx_get_cdf_units() instead.
+   * Currently being updated....
    *
    ************************************************************************/
-
-    /* ToDo list/Structure
-    **   do not return names? is it necessary
-    **   try to save memory on the groupnames
-    **   structure:
-    **     - list of probesets
-    **     - every probeset has the following structure:
-    **       - list of groups
-    **       - probset info
-    **       - the list of groups have the structure
-    **         - every element is group
-    **         - group structure
-    **           - the first elements are cell specific
-    **           - then group specific information follows 
-    */
 
     SEXP R_affx_get_cdf_file(SEXP fname, SEXP unitIndices, SEXP verbose,
                              SEXP returnUnitType, 
@@ -284,7 +574,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      Rprintf("Failed to read the CDF file.");
+      Rprintf("Failed to read the CDF file.\n");
       return R_NilValue;
     }
 
