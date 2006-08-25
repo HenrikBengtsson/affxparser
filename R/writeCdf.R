@@ -1,8 +1,16 @@
-initializeCdf <- function(con, nrows = 5, ncols = 5,
+initializeCdf <- function(con, nrows = 1, ncols = 1,
                           nunits = 1, nqcunits = 0,
-                          refseq = "") {
+                          refseq = "",
+                          unitnames = rep("", nunits),
+                          qcunitpositions = rep(1, nqcunits),
+                          unitpositions = rep(2, nunits),
+                          ...) {
+    if(length(unitpositions) != nunits)
+        stop("unitpositions argument is not matching nunits")
+    if(length(unitpositions) != nunits)
+        stop("qcunitpositions argument is not matching nqcunits")
     if(length(refseq) != 1)
-        stop("refseq argument wrong")
+        stop("refseq argument is wrong")
     lrefseq <- nchar(refseq)
     ## Magic number and version number
     writeBin(object = as.integer(c(67, 1)),
@@ -21,13 +29,13 @@ initializeCdf <- function(con, nrows = 5, ncols = 5,
         writeChar(as.character(refseq),
                   con = con, eos = NULL)
     ## Unit names
-    writeChar(as.character(rep(" ", nunits)),
+    writeChar(as.character(unitnames),
               nchars = rep(64, nunits), con = con, eos = NULL)
     ## QC units file positions
-    writeBin(as.integer(rep(1, nqcunits)),
+    writeBin(as.integer(qcunitpositions),
              con = con, size = 4, endian = "little")
     ## Units file positions
-    writeBin(as.integer(rep(2, nunits)),
+    writeBin(as.integer(unitpositions),
              con = con, size = 4, endian = "little")
     ## positions return argument
     offset <- 24 + lrefseq
@@ -37,12 +45,15 @@ initializeCdf <- function(con, nrows = 5, ncols = 5,
     return(positions)
 }
 
-writeUnit <- function(unit, unitname, positions, con) {
+writeUnit <- function(unit, con, unitname = NULL, positions = NULL,
+                      addName = TRUE, addPosition = TRUE) {
     ## 1. Write the name in the start of the CDF file
-    seek(con = con, where = positions$unitName,
-         origin = "start")
-    writeChar(as.character(unitname), nchars = 64,
-              con = con, eos = NULL)
+    if(addName) {
+        seek(con = con, where = positions$unitName,
+             origin = "start")
+        writeChar(as.character(unitname), nchars = 64,
+                  con = con, eos = NULL)
+    }
     ## 2. Jump to the end to start writing the unit
     seek(con = con, where = 1,
          origin = "end", rw = "write")
@@ -110,22 +121,69 @@ writeUnit <- function(unit, unitname, positions, con) {
     }
     ## 4. Go back to the start of the file and write
     ##    where the unit starts
-    seek(con = con, where = positions$unitFP,
-         origin = "start", rw = "write")
-    writeBin(as.integer(endPosition),
-             con = con, size = 4, endian = "little")
+    if(addPosition) {
+        seek(con = con, where = positions$unitFP,
+             origin = "start", rw = "write")
+        writeBin(as.integer(endPosition),
+                 con = con, size = 4, endian = "little")
+    }
     ## 5. Update the positions and return
-    positions$unitName <- positions$unitName + 64
-    positions$unitFP <- positions$unitFP + 4
-    return(positions)
+    if(!is.null(positions)) {
+        positions$unitName <- positions$unitName + 64
+        positions$unitFP <- positions$unitFP + 4
+        return(positions)
+    } else {
+        return(NULL)
+    }
+}
+
+writeQCUnit <- function(qcunit, con, positions = NULL,
+                        addPosition = TRUE) {
+    ## 1. Jump to end to write a qcunit
+    seek(con = con, where = 1,
+         origin = "end", rw = "write")
+    endPosition <- seek(con = con, where = 1,
+                        origin = "end", rw = "write")
+    ## 3. Jump top front to write the qc position
+    if(addPosition) {
+        seek(con = con, where = positions$qcunitFP,
+             origin = "start", rw = "write")
+        writeBin(as.integer(endPosition),
+                 con = con, size = 4, endian = "little")
+    }
+    qcunitInfo <- as.integer(c(qcunit$type, qcunit$ncells))
+    writeBin(qcunitInfo[1], con = con, size = 2, endian = "little")
+    writeBin(qcunitInfo[1], con = con, size = 4, endian = "little")
+    ## this should be looped
+    writeBin(x, con = con, size = 2, endian = "little")
+    writeBin(y, con = con, size = 2, endian = "little")
+    writeBin(length, con = con, size = 1, endian = "little")
+    writeBin(pmFlag, con = con, size = 1, endian = "little")
+    writeBin(backgroungFlag, con = con, size = 1, endian = "little")
+    ## end loop
+    if(!is.null(positions)) {
+        positions$qcunitFP <- positions$qcunitFP + 4
+        return(positions)
+    } else {
+        return(NULL)
+    }
+    
 }
 
 
-writeCdf <- function(fname, cdf, verbose = 0) {
+writeCdf <- function(fname, cdfheader, cdf,
+                     overwrite = FALSE, verbose = 0) {
     if(verbose)
         cat("Trying to create CDF file\n  ", fname, "\n")
+    if(file.exists(fname) && !overwrite)
+        stop(paste("file", fname, "already exists"))
     cdfcon <- file(fname, open = "wb")
-    positions <- initializeCdf(con = cdfcon, nunits = 2)
+    positions <- initializeCdf(con = cdfcon,
+                               nunits = cdfheader$nunits,
+                               nqcunits = 0, # Writing qcunits not supported 
+                               refseq = cdfheader$refseq,
+                               nrows = cdfheader$nrows,
+                               ncol = cdfheader$ncols)
     for(i in seq(along.with = cdf)){
         if(verbose)
             cat(names(cdf)[i], "\n")
@@ -140,3 +198,7 @@ writeCdf <- function(fname, cdf, verbose = 0) {
     return(invisible(NULL))
 }
 
+textCdf2binCdf <- function(binname, textname, includeqcunits = TRUE){
+    header <- readCdfHeader(textname)
+    ## Hmm, want to support writing qc units first
+}
