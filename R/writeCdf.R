@@ -41,7 +41,7 @@ initializeCdf <- function(con, nrows = 1, ncols = 1,
     offset <- 24 + lrefseq
     positions <- list(unitName = offset,
                       qcunitFP = offset + 64 * nunits,
-                      unitFP = offset + 64 * nunits)
+                      unitFP = offset + 64 * nunits + 4 * nqcunits)
     return(positions)
 }
 
@@ -53,11 +53,11 @@ writeUnit <- function(unit, con, unitname = NULL, positions = NULL,
              origin = "start")
         writeChar(as.character(unitname), nchars = 64,
                   con = con, eos = NULL)
+        positions$unitName <- positions$unitName + 64
     }
     ## 2. Jump to the end to start writing the unit
-    seek(con = con, where = 1,
-         origin = "end", rw = "write")
-    endPosition <- seek(con = con, where = 1,
+    seek(con = con, where = 0, origin = "end", rw = "write")
+    endPosition <- seek(con = con, where = 0,
                         origin = "end", rw = "write")
     ## 3. Write the unit
     unittype <- switch(unit$unittype,
@@ -126,52 +126,68 @@ writeUnit <- function(unit, con, unitname = NULL, positions = NULL,
              origin = "start", rw = "write")
         writeBin(as.integer(endPosition),
                  con = con, size = 4, endian = "little")
+        positions$unitFP <- positions$unitFP + 4
     }
     ## 5. Update the positions and return
-    if(!is.null(positions)) {
-        positions$unitName <- positions$unitName + 64
-        positions$unitFP <- positions$unitFP + 4
+    if(!is.null(positions))
         return(positions)
-    } else {
+    else
         return(NULL)
-    }
 }
 
 writeQCUnit <- function(qcunit, con, positions = NULL,
                         addPosition = TRUE) {
     ## 1. Jump to end to write a qcunit
-    seek(con = con, where = 1,
-         origin = "end", rw = "write")
-    endPosition <- seek(con = con, where = 1,
+    seek(con = con, where = 0, origin = "end", rw = "write")
+    endPosition <- seek(con = con, where = 0,
                         origin = "end", rw = "write")
+    ## 2. Actually write the qcunit
+    type <- switch(qcunit$type,
+                   unknown = 0,
+                   checkerboardNegative = 1,
+                   checkerboardPositive = 2,
+                   hybeNegative = 3,
+                   hybePositive = 4,
+                   textFeaturesNegative = 5,
+                   textFeaturesPositive = 6,
+                   centralNegative = 7,
+                   centralPositive = 8,
+                   geneExpNegative = 9,
+                   geneExpPositive = 10,
+                   cycleFidelityNegative = 11,
+                   cycleFidelityPositive = 12,
+                   centralCrossNegative = 13,
+                   centralCrossPositive = 14,
+                   crossHybeNegative = 15,
+                   crossHybePositive = 16,
+                   SpatialNormNegative = 17,
+                   SpatialNormPositive = 18)
+    qcunitInfo <- as.integer(c(type, qcunit$ncells))
+    writeBin(qcunitInfo[1], con = con, size = 2, endian = "little")
+    writeBin(qcunitInfo[2], con = con, size = 4, endian = "little")
+
+    cells <- matrix(as.integer(c(qcunit$x, qcunit$y, qcunit$length,
+                                 qcunit$pm, qcunit$background)),
+                    ncol = 5)
+    for(icell in seq(along.with = qcunit$x)) {
+        writeBin(cells[icell, 1:2], con = con, size = 2, endian = "little")
+        writeBin(cells[icell, 3:5], con = con, size = 1, endian = "little")
+    }
     ## 3. Jump top front to write the qc position
     if(addPosition) {
         seek(con = con, where = positions$qcunitFP,
              origin = "start", rw = "write")
         writeBin(as.integer(endPosition),
                  con = con, size = 4, endian = "little")
-    }
-    qcunitInfo <- as.integer(c(qcunit$type, qcunit$ncells))
-    writeBin(qcunitInfo[1], con = con, size = 2, endian = "little")
-    writeBin(qcunitInfo[1], con = con, size = 4, endian = "little")
-    ## this should be looped
-    writeBin(x, con = con, size = 2, endian = "little")
-    writeBin(y, con = con, size = 2, endian = "little")
-    writeBin(length, con = con, size = 1, endian = "little")
-    writeBin(pmFlag, con = con, size = 1, endian = "little")
-    writeBin(backgroungFlag, con = con, size = 1, endian = "little")
-    ## end loop
-    if(!is.null(positions)) {
         positions$qcunitFP <- positions$qcunitFP + 4
-        return(positions)
-    } else {
-        return(NULL)
     }
-    
+    if(!is.null(positions))
+        return(positions)
+    else 
+        return(NULL)
 }
 
-
-writeCdf <- function(fname, cdfheader, cdf,
+writeCdf <- function(fname, cdfheader, cdf, cdfqc, 
                      overwrite = FALSE, verbose = 0) {
     if(verbose)
         cat("Trying to create CDF file\n  ", fname, "\n")
@@ -180,10 +196,17 @@ writeCdf <- function(fname, cdfheader, cdf,
     cdfcon <- file(fname, open = "wb")
     positions <- initializeCdf(con = cdfcon,
                                nunits = cdfheader$nunits,
-                               nqcunits = 0, # Writing qcunits not supported 
+                               nqcunits = cdfheader$nqcunits,
                                refseq = cdfheader$refseq,
                                nrows = cdfheader$nrows,
                                ncol = cdfheader$ncols)
+    for(i in seq(along.with = cdfqc)){
+        if(verbose)
+            cat("QC unit ", i, "\n")
+        positions <- writeQCUnit(qcunit = cdfqc[[i]],
+                                 positions = positions,
+                                 con = cdfcon)
+    }
     for(i in seq(along.with = cdf)){
         if(verbose)
             cat(names(cdf)[i], "\n")
@@ -202,3 +225,4 @@ textCdf2binCdf <- function(binname, textname, includeqcunits = TRUE){
     header <- readCdfHeader(textname)
     ## Hmm, want to support writing qc units first
 }
+
