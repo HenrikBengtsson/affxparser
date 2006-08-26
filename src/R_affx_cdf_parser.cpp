@@ -211,7 +211,7 @@ extern "C" {
         SET_STRING_ELT(r_qcunit_names, ii++, mkChar("type"));
     }
     if(i_returnQCNumbers) {
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("nqcunits"));
+        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("ncells"));
     }
 
     /*
@@ -280,9 +280,9 @@ extern "C" {
           if(i_returnLengths)
               PROTECT(r_lengths = NEW_INTEGER(nqccells));
           if(i_returnPMInfo)
-              PROTECT(r_pminfo = NEW_INTEGER(nqccells));
+              PROTECT(r_pminfo = NEW_LOGICAL(nqccells));
           if(i_returnBackgroundInfo)
-              PROTECT(r_backgroundinfo = NEW_INTEGER(nqccells));
+              PROTECT(r_backgroundinfo = NEW_LOGICAL(nqccells));
 
           for(int icell = 0; icell < nqccells; icell++) {
               qcunit.GetProbeInformation(icell, qcprobe);
@@ -298,10 +298,11 @@ extern "C" {
                   INTEGER(r_lengths)[icell] = qcprobe.GetPLen();
               }
               if(i_returnPMInfo) {
-                  INTEGER(r_pminfo)[icell] = qcprobe.IsPerfectMatchProbe();
+                  LOGICAL(r_pminfo)[icell] = 
+                      qcprobe.IsPerfectMatchProbe();
               }
               if(i_returnBackgroundInfo) {
-                  INTEGER(r_backgroundinfo)[icell] = 
+                  LOGICAL(r_backgroundinfo)[icell] = 
                       qcprobe.IsBackgroundProbe();
               }
           }
