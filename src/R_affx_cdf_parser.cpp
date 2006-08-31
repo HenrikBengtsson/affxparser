@@ -1018,7 +1018,9 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error(sprintf("Argument 'units' contains an element out of range: %d", unitIdx);
+          char s[256];
+          sprintf(s, "Argument 'units' contains an element out of range: %d", unitIdx);
+          error(s);
         }
       }
     }
@@ -1260,7 +1262,9 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error(sprintf("Argument 'units' contains an element out of range: %d", unitIdx);
+          char s[256];
+          sprintf(s, "Argument 'units' contains an element out of range: %d", unitIdx);
+          error(s);
         }
       }
     }
@@ -1635,7 +1639,9 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error(sprintf("Argument 'units' contains an element out of range: %d", unitIdx);
+          char s[256];
+          sprintf(s, "Argument 'units' contains an element out of range: %d", unitIdx);
+          error(s);
         }
       }
     }
