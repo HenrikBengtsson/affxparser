@@ -1018,7 +1018,7 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error("Argument 'units' contains an element out of range.");
+          error(sprintf("Argument 'units' contains an element out of range: %d", unitIdx);
         }
       }
     }
@@ -1260,7 +1260,7 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error("Argument 'units' contains an element out of range.");
+          error(sprintf("Argument 'units' contains an element out of range: %d", unitIdx);
         }
       }
     }
@@ -1635,7 +1635,7 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error("Argument 'units' contains an element out of range.");
+          error(sprintf("Argument 'units' contains an element out of range: %d", unitIdx);
         }
       }
     }
@@ -1670,6 +1670,8 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2006-08-28
+ * o If a unit index is out of range, the error now show the invalid index.
  * 2006-04-02
  * o Added R_affx_get_cdf_cell_indices() for faster reading of cell indices.
  * 2006-04-01
