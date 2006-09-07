@@ -70,7 +70,7 @@ convertCdf <- function(filename, outFilename, version="4", force=FALSE, ..., .va
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (verbose)
     cat("Reading CDF header...\n");
-  cdfHeader <- readCdfHeader(cdfFile);
+  cdfHeader <- readCdfHeader(filename);
 #  if (version == cdfHeader$version) {
 #    if (!force) {
 #      warning("The original CDF file is already in file-format version ", 
