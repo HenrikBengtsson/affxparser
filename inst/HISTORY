@@ -1,6 +1,8 @@
 Package: affxparser
 ===================
 
+o Added convertCdf() utilizing the new writeCdf().
+o Added trial version of createCel().
 o Added trial version of updateCelUnits().
 
 Version: 1.5.4 [2006-08-18]

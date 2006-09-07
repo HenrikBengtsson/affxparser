@@ -43,7 +43,7 @@ initializeCdf <- function(con, nrows = 1, ncols = 1,
                       qcunitFP = offset + 64 * nunits,
                       unitFP = offset + 64 * nunits + 4 * nqcunits)
     return(positions)
-}
+} # initializeCdf()
 
 writeUnit <- function(unit, con, unitname = NULL, positions = NULL,
                       addName = TRUE, addPosition = TRUE) {
@@ -133,7 +133,7 @@ writeUnit <- function(unit, con, unitname = NULL, positions = NULL,
         return(positions)
     else
         return(NULL)
-}
+} # writeUnit()
 
 writeQCUnit <- function(qcunit, con, positions = NULL,
                         addPosition = TRUE) {
@@ -185,21 +185,30 @@ writeQCUnit <- function(qcunit, con, positions = NULL,
         return(positions)
     else 
         return(NULL)
-}
+} # writeQCUnit()
+
+
 
 writeCdf <- function(fname, cdfheader, cdf, cdfqc, 
                      overwrite = FALSE, verbose = 0) {
     if(verbose)
         cat("Trying to create CDF file\n  ", fname, "\n")
     if(file.exists(fname) && !overwrite)
-        stop(paste("file", fname, "already exists"))
-    cdfcon <- file(fname, open = "wb")
+        stop("file", fname, "already exists")
+
+    # Open output connection (and make sure it is closed afterwards)
+    cdfcon <- file(fname, open = "wb");
+    on.exit(close(cdfcon));
+
+    # Create CDF and write header
     positions <- initializeCdf(con = cdfcon,
                                nunits = cdfheader$nunits,
                                nqcunits = cdfheader$nqcunits,
                                refseq = cdfheader$refseq,
                                nrows = cdfheader$nrows,
-                               ncol = cdfheader$ncols)
+                               ncol = cdfheader$ncols);
+
+    # Write all QC units
     for(i in seq(along.with = cdfqc)){
         if(verbose)
             cat("QC unit ", i, "\n")
@@ -207,6 +216,8 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
                                  positions = positions,
                                  con = cdfcon)
     }
+
+    # Write all units
     for(i in seq(along.with = cdf)){
         if(verbose)
             cat(names(cdf)[i], "\n")
@@ -215,14 +226,20 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
                                positions = positions,
                                con = cdfcon)
     }
-    close(cdfcon)
+
     if(verbose)
         cat("CDF file created.\n")
-    return(invisible(NULL))
-}
 
-textCdf2binCdf <- function(binname, textname, includeqcunits = TRUE){
-    header <- readCdfHeader(textname)
-    ## Hmm, want to support writing qc units first
-}
+    return(invisible(NULL));
+} # writeCdf()
 
+
+############################################################################
+# HISTORY:
+# 2006-09-07 /HB
+# o Maybe initalizeCdf(), writeUnit(), and writeQcUnit() should be made
+#   private functions of this package.
+# o Removed textCdf2binCdf() skeleton. See convertCdf() instead.
+# o Updated writeCdf() such that the connection is guaranteed to be closed
+#   regardless.
+############################################################################

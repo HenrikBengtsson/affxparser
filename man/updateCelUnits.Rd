@@ -40,6 +40,17 @@
    Returns what \code{\link{updateCel}}() returns.
  }
 
+ \section{Working with re-arranged CDF structures}{
+   Note that if the \code{cdf} structure is specified the CDF file is
+   \emph{not} queried, but all information about cell x and y locations,
+   that is, cell indices is expected to be in this structure.  This can
+   be very useful when one work with a cdf structure that originates
+   from the underlying CDF file, but has been restructured for instance
+   through the \code{\link{applyCdfGroups}}() method, and \code{data}
+   correspondingly.  This update method knows how to update such
+   structures too.
+ }
+
  \examples{
 for (zzz in 0) {
 
