@@ -10,7 +10,7 @@
 }
 
 \usage{
-  readCdf(filename, verbose = 0)
+  readCdf(filename, units = NULL, verbose = 0)
 }
 
 \arguments{
