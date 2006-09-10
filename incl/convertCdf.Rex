@@ -12,7 +12,7 @@ if (is.null(cdfFile))
 # Create an identical CDF structure
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 cdfHeader <- readCdfHeader(cdfFile)
-pathname <- sprintf("%s-copy.cdf", cdfHeader$chiptype)
+outFile <- sprintf("%s-copy.cdf", cdfHeader$chiptype)
 convertCdf(cdfFile, outFile, overwrite=TRUE, verbose=TRUE)
 
 # Clean up

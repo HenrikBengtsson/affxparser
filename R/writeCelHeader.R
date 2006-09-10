@@ -83,11 +83,15 @@ writeCelHeader <- function(con, header, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Unwrap/wrap header
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+str(header);
   # First, try to unwrap CEL header in case it isn't.
   tryCatch({
     header <- .unwrapCelHeaderV4(header);
-  }, error = function(ex) {});
+  }, error = function(ex) {
+    # If this happens, we assumes that the header was already unwrapped.
+  });
 
+str(header);
   # Then wrap it up again to make sure it has the right format.  This will
   # also override redundant fields.
   header <- .wrapCelHeaderV4(header);

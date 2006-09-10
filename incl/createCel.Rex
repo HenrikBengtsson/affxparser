@@ -1,8 +1,9 @@
 for (zzz in 0) {  # Only so that 'break' can be used
 
 # Scan current directory for CEL files
+outFile <- "zzz.CEL"
 files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-files <- setdiff(files, "foo.CEL")
+files <- setdiff(files, outFile)
 if (length(files) == 0)
   break
 
@@ -19,9 +20,9 @@ if (hdr$version != 4)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Create a CEL v4 file of the same chip type
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-createCel("foo.CEL", hdr, overwrite=TRUE)
+createCel(outFile, hdr, overwrite=TRUE)
 
-hdr2 <- readCelHeader("foo.CEL")
+hdr2 <- readCelHeader(outFile)
 
 keep <- setdiff(names(hdr), "filename")
 hdr <- hdr[keep]

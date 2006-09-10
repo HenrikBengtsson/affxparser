@@ -92,7 +92,7 @@ readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
   # Read CDF header and process 'units' further
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   header <- readCdfHeader(filename);
-  nbrOfCells <- header$cols * header$rows;
+  nbrOfCells <- header$ncols * header$nrows;
   nbrOfUnits <- header$probesets;
 
   nok <- (units > nbrOfUnits);
@@ -155,6 +155,9 @@ readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
 
 ############################################################################
 # HISTORY:
+# 2006-09-07
+# o BUG FIX: Tried to access fields 'cols' and 'rows' instead of 'ncols'
+#   and 'nrows' in the CDF header.
 # 2006-04-01
 # o Now using readCdfCellIndices() to get cell indices.
 # 2006-03-30
