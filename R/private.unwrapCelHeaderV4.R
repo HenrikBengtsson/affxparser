@@ -1,4 +1,9 @@
 .unwrapTagValuePairs <- function(bfr, ...) {
+  trim <- function(s) {
+    s <- gsub("^ *", "", s);
+    s <- gsub(" *$", "", s);
+  }
+
   bfr <- trim(bfr);
   patterns <- c("^([^:]*):([^;]*)[;]*(.*)$", "^([^=]*)=([^ ]*)[ ]*(.*)$");
   tags <- values <- c();
@@ -257,6 +262,8 @@
 
 ############################################################################
 # HISTORY:
+# 2006-09-10
+# o BUG FIX: Local trim() was missing in one of the private functions.
 # 2006-09-06
 # o Created.  This is used by writeCelHeaderV4().
 ############################################################################

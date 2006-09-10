@@ -107,6 +107,7 @@
 
 
 .wrapCelHeaderV4 <- function(header, ...) {
+str(header);
   # Make sure the fields are consistent
   header$version <- 4;
   header$total <- header$cols * header$rows;

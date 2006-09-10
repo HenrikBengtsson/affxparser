@@ -81,7 +81,6 @@ createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbo
     stop("Failed create binary (XDA) CEL v4 file. Header object has a different version: ", header$version);
   }
 
-
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Check CEL header against CDF
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,7 +107,7 @@ createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbo
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Write CEL header
   #
-  # The function takes care of redundant fields
+  # The function takes care of redundant fields, unwrapping & wrapping...
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   writeCelHeader(con=con, header, verbose=verbose);
   
