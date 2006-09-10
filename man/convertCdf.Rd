@@ -10,12 +10,12 @@
 \alias{convertCdf}
 
 
- \title{Converts a CDF into the same CDF but in another format}
+ \title{Converts a CDF into the same CDF but with another format}
 
  \usage{convertCdf(filename, outFilename, version="4", force=FALSE, ..., .validate=TRUE, verbose=FALSE)}
 
  \description{
-   Converts a CDF into the same CDF but in another format.
+   Converts a CDF into the same CDF but with another format.
    Currently only CDF files in version 4 (binary/XDA) can be written.
    However, any input format is recognized.
  }
