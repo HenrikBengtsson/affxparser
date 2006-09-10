@@ -1,6 +1,7 @@
 Package: affxparser
 ===================
 
+o Added compareCdfs() to verify that a converted CDF is correct.
 o Added convertCdf() utilizing the new writeCdf().
 o Added trial version of createCel().
 o Added trial version of updateCelUnits().

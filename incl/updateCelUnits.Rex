@@ -23,7 +23,8 @@ if (is.null(cdfFile))
   break
 
 hdr <- readCdfHeader(cdfFile)
-nbrOfUnits <- hdr$probesets
+nbrOfUnits <- hdr$nunits
+print(nbrOfUnits);
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Example: Read and re-write the same data
@@ -42,7 +43,7 @@ stopifnot(identical(data1, data2))
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Example: Random read and re-write "stress test"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-for (kk in 1:100) {
+for (kk in 1:10) {
   nunits <- sample(min(1000,nbrOfUnits), size=1)
   units <- sample(nbrOfUnits, size=nunits)
   cat(sprintf("%02d. Selected %d random units: reading", kk, nunits));
