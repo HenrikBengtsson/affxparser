@@ -16,13 +16,16 @@
  Applies a function over the blocks in a CDF structure.
 }
 
-\usage{applyCdfBlocks(cdf, fcn, ...)}
+\usage{applyCdfBlocks(cdf, fcn, ..., .key="blocks")}
 
 \arguments{
  \item{cdf}{A CDF \code{\link[base]{list}} structure.}
  \item{fcn}{A \code{\link[base]{function}} that takes a \code{\link[base]{list}} structure of block elements
   and returns an updated \code{\link[base]{list}} of blocks.}
  \item{...}{Arguments passed to the \code{fcn} function.}
+ \item{.key}{The name of the unit element containing the blocks.  This
+  used for backward compatibility when this field was also called
+  \code{groups}.}
 }
 
 \value{
