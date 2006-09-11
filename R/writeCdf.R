@@ -17,12 +17,22 @@ initializeCdf <- function(con, nrows = 1, ncols = 1,
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # CDF header
+    #
+    # 1 Magic number. Always set to 67.                           [integer]
+    # 2 Version number.                                           [integer]
+    # 3 The number of columns of cells on the array.       [unsigned short]
+    # 4 The number of rows of cells on the array.          [unsigned short]
+    # 5 The number of units in the array not including QC units. The term 
+    #   unit is an internal term which means probe set.           [integer]
+    # 6 The number of QC units.                                   [integer]
+    # 7 The length of the resequencing reference sequence.        [integer]
+    # 8 The resequencing reference sequence.                    [char[len]]
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     ## Magic number and version number
     writeBin(object = as.integer(c(67, 1)),
              con = con, size = 4, endian = "little")
-    ## Nrows, Ncols
-    writeBin(object = as.integer(c(nrows, ncols)),
+    ## Ncols, Nrows
+    writeBin(object = as.integer(c(ncols, nrows)),
              con = con, size = 2, endian = "little")
     ## NumberUnits, NumberQCUnits
     writeBin(object = as.integer(c(nunits, nqcunits)),
@@ -380,6 +390,8 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
 
 ############################################################################
 # HISTORY:
+# 2006-09-11 /HB
+# o BUG FIX: nrows & ncols were swapped in the CDF header.
 # 2006-09-09 /HB
 # o Updated writeCdf() has been validate with compareCdfs() on a few arrays.
 # o With the below "optimizations" writeCdf() now writes Hu6800.CDF with
