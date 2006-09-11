@@ -12,7 +12,7 @@
 
  \title{Compares the contents of two CDF files}
 
- \usage{compareCdfs(pathname, other, verbose=0, ...)}
+ \usage{compareCdfs(pathname, other, quick=FALSE, verbose=0, ...)}
 
  \description{
    Compares the contents of two CDF files.
@@ -21,6 +21,8 @@
  \arguments{
    \item{pathname}{The pathname of the first CDF file.}
    \item{other}{The pathname of the seconds CDF file.}
+   \item{quick}{If \code{\link[base:logical]{TRUE}}, only a subset of the units are compared,
+     otherwise all units are compared.}
    \item{verbose}{An \code{\link[base]{integer}}. The larger the more details are printed.}
    \item{...}{Not used.}
  }
