@@ -50,8 +50,8 @@
   bfr <- gsub(pattern, "\\1", header);
   header2 <- gsub(pattern, "\\2", header);
 
-  bfr <- trim(bfr);
-  pattern <- "^([^ ]*)[ ]*([^ ]*)[ ]*";
+  bfr <- trim(bfr);                           # Example: "[12..40151]  Fetal 3"
+  pattern <- "^([^\]]*])[ ]*(.*)[ ]*";
   pixelRange <- gsub(pattern, "\\1", bfr);
   sampleName <- gsub(pattern, "\\2", bfr);
 
@@ -144,7 +144,9 @@
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   pattern <- "\024 ([^\024]*)(.*)";
   values <- c();
-  while (nchar(bfr) > 0) {
+  lastNchar <- -Inf;
+  while (nchar(bfr) != lastNchar) {
+    lastNchar <- nchar(bfr);
     value <- gsub(pattern, "\\1", bfr);
     value <- trim(value);
     bfr <- gsub(pattern, "\\2", bfr);
@@ -189,8 +191,8 @@
   #   coordinates.
   # GridCornerLL - XY coordinates of the lower left grid corner in pixel
   #   coordinates.
-  # Axis-InvertX - Not used, always 0.
-  # Axis-InvertY - Not used, always 0.
+  # Axis-invertX - Not used, always 0.
+  # AxisInvertY - Not used, always 0.
   # swapXY - Not used, always 0.
   # DatHeader - The header from the DAT file.
   # Algorithm  - The algorithm name used to create the CEL file.
@@ -203,12 +205,12 @@
   values <- gsub(pattern, "\\2", header);
   names(values) <- names;
   header <- as.list(values);
-  # Fix some mishaps in names, e.g. Axis-InvertX instead of Axis-invertX.
-  names(header) <- gsub("^Axis-invert", "Axis-Invert", names(header));
-  names(header) <- gsub("^AxisInvert", "Axis-Invert", names(header));
+  # Fix some mishaps in names (sic!; see DevNet forum this week) /HB 2006-09-10
+#  names(header) <- gsub("^Axis-invert", "Axis-Invert", names(header));
+#  names(header) <- gsub("^AxisInvert", "Axis-Invert", names(header));
 
   # Assert that all mandatory fields are there
-  knownFields <- c("Cols", "Rows", "TotalX", "TotalY", "OffsetX", "OffsetY", "GridCornerUL", "GridCornerUR", "GridCornerLR", "GridCornerLL", "Axis-InvertX", "Axis-InvertY", "swapXY", "DatHeader", "Algorithm", "AlgorithmParameters");
+  knownFields <- c("Cols", "Rows", "TotalX", "TotalY", "OffsetX", "OffsetY", "GridCornerUL", "GridCornerUR", "GridCornerLR", "GridCornerLL", "Axis-invertX", "AxisInvertY", "swapXY", "DatHeader", "Algorithm", "AlgorithmParameters");
   missing <- !(knownFields %in% names(header));
   if (any(missing)) {
     stop("Argument 'header' does not contain all mandatory fields: ", 

@@ -21,26 +21,14 @@ if (hdr$version != 4)
 # Create a CEL v4 file of the same chip type
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 createCel(outFile, hdr, overwrite=TRUE)
+str(readCelHeader(outFile))
 
-hdr2 <- readCelHeader(outFile)
-
-keep <- setdiff(names(hdr), "filename")
-hdr <- hdr[keep]
-hdr2 <- hdr2[keep]
-trim <- function(s) gsub("^[ \t\n]*", "", gsub("[ \t\n]*$", "", s));
-for (kk in seq(along=hdr)) {
-  value1 <- trim(hdr[[kk]]);
-  value2 <- trim(hdr2[[kk]]);
-  if (names(hdr)[kk] == "header") {
-
-  }
-  equals <- identical(agrep(value1, value2), 1:1)
-  if (!equals) {
-    print(value1)
-    print(value2)
-    stop(sprintf("Header field '%s' differs.", names(hdr)[kk]))
-  }
-}
+# Verify correctness by update and re-read a few cells
+intensities <- as.double(1:100)
+indices <- seq(along=intensities)
+updateCel(outFile, indices=indices, intensities=intensities)
+value <- readCel(outFile, indices=indices)$intensities
+stopifnot(identical(intensities, value))
 
 # Clean up
 #rm(files, file, hdr, hdr2)

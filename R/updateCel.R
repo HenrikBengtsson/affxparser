@@ -164,7 +164,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     # Skip CEL header
     if (verbose >= 2)
       cat("Skipping to beginging of data section...");
-    .readCelHeaderV4(con);
+    h <- .readCelHeaderV4(con);
 
     # "Cell entries - this consists of an intensity value, standard 
     #  deviation value and pixel count for each cell in the array.
@@ -177,6 +177,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
     # Current file position
     dataOffset <- seek(con, origin="start", rw="read");
+
     if (verbose >= 2)
       cat("done.\n");
 
