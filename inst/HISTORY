@@ -1,6 +1,8 @@
 Package: affxparser
 ===================
 
+o BUG FIX: nrows and ncols were swapped in the CDF header. Was missed
+  because all tested CDFs were rectangular.
 o Added compareCdfs() to verify that a converted CDF is correct.
 o Added convertCdf() utilizing the new writeCdf().
 o Added trial version of createCel().
