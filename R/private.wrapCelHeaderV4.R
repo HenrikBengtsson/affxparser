@@ -57,13 +57,21 @@
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  # [123456789012345678900123456789001234567890] (????)
   # "<scanner-id> <scanner-type>   "
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  fmtstr <- "%s  %s   ";
-  value <- sprintf(fmtstr, header$scanner$id, header$scanner$type);
+  if (nchar(header$scanner$id) == 0) {
+    value <- "   ";
+  } else {
+    fmtstr <- "%s  %s   ";
+    value <- sprintf(fmtstr, header$scanner$id, header$scanner$type);
+  }
   bfr <- c(bfr, value);
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  # [123456789012345678900123456789001234567890] (????)
   # "\024  \024 <chip-type> \024  \024  \024  \024  \024  \024  \024  \024  \024 "
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Make sure 'misc' is of length 10.
+  header$misc <- c(header$misc, rep("", 20-length(header$misc)));
+  header$misc <- header$misc[1:10];
+
   # IMPORTANT: Overwrite 'chip type' value
   if (is.null(header$chipType))
     stop("DAT header has not 'chipType' field.");
@@ -72,6 +80,7 @@
   fmtstr <- "\024 %s ";
   values <- sprintf(fmtstr, header$misc);
   values <- paste(values, collapse="");
+#  values <- paste(values, "\024 6", sep="");  
   bfr <- c(bfr, values);
 
   bfr <- paste(bfr, collapse="");
@@ -86,8 +95,8 @@
   header$TotalY <- header$Rows;
   header$OffsetX <- 0;
   header$OffsetY <- 0;
-  header$"Axis-InvertX" <- 0;
-  header$"Axis-InvertY" <- 0;
+  header$"Axis-invertX" <- 0;
+  header$"AxisInvertY" <- 0;
   header$swapXY <- 0;
 
   # Wrap up the DAT header
@@ -107,7 +116,6 @@
 
 
 .wrapCelHeaderV4 <- function(header, ...) {
-str(header);
   # Make sure the fields are consistent
   header$version <- 4;
   header$total <- header$cols * header$rows;

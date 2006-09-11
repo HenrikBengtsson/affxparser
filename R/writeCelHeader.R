@@ -45,13 +45,18 @@ writeCelHeader <- function(con, header, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  writeDWord <- function(con, data, ...) {
+    writeBin(con=con, as.integer(data), size=4, endian="little");
+  }
+  
   writeInteger <- function(con, data, ...) {
     writeBin(con=con, as.integer(data), size=4, endian="little");
   }
   
   writeString <- function(con, str, ...) {
-    writeInteger(con=con, nchar(str)+1);
-    writeChar(con=con, str);
+    # Strings must not be null terminated! /HB 2006-09-10
+    writeInteger(con=con, nchar(str));
+    writeChar(con=con, str, eos=NULL);
   }
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,7 +88,6 @@ writeCelHeader <- function(con, header, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Unwrap/wrap header
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-str(header);
   # First, try to unwrap CEL header in case it isn't.
   tryCatch({
     header <- .unwrapCelHeaderV4(header);
@@ -91,7 +95,6 @@ str(header);
     # If this happens, we assumes that the header was already unwrapped.
   });
 
-str(header);
   # Then wrap it up again to make sure it has the right format.  This will
   # also override redundant fields.
   header <- .wrapCelHeaderV4(header);
@@ -130,15 +133,18 @@ str(header);
   writeInteger(con=con, header$cellmargin);
 
   # "Number of outlier cells."
-  writeInteger(con=con, header$noutliers);
+  writeDWord(con=con, header$noutliers);
 
   # "Number of masked cells."
-  writeInteger(con=con, header$nmasked);
+  writeDWord(con=con, header$nmasked);
 } # writeCelHeader()
 
 
 ############################################################################
 # HISTORY:
+# 2006-09-10
+# o BUG FIX: A hard to find bug was that strings in the CEL header must 
+#   *not* be written with a null terminator.
 # 2006-09-07
 # o With help of all the private unwrap and wrap functions, it seems to
 #   work now.

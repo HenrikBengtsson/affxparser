@@ -160,6 +160,9 @@ convertCdf <- function(filename, outFilename, version="4", force=FALSE, ..., .va
 ############################################################################
 # HISTORY:
 # 2006-09-09
+# o More benchmarking: A binary-to-binary convertion of Mapping50K_Hind240
+#   (56.0Mb; 57299 units) takes in total 25 mins.  It is the writing of 
+#   units that is slow.
 # o Simple benchmarking: On Thinkpad A31 1Gb RAM; HG-U133A.CDF (22283 units)
 #   ASCII (40.3Mb) -> XDA (10.8Mb): ~15s to read ASCII, ~270s to write XDA,
 #   and ~420s to validate.

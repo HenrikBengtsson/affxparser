@@ -12,6 +12,8 @@
 # \arguments{
 #   \item{pathname}{The pathname of the first CDF file.}
 #   \item{other}{The pathname of the seconds CDF file.}
+#   \item{quick}{If @TRUE, only a subset of the units are compared, 
+#     otherwise all units are compared.}
 #   \item{verbose}{An @integer. The larger the more details are printed.}
 #   \item{...}{Not used.}
 # }
@@ -37,7 +39,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-compareCdfs <- function(pathname, other, verbose=0, ...) {
+compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -108,11 +110,15 @@ compareCdfs <- function(pathname, other, verbose=0, ...) {
   if (verbose >= 1)
     cat("  Comparing QC units...done\n");
 
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Compare units
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  if (verbose >= 1)
+  if (verbose >= 1) {
     cat("  Comparing units...\n");
+    if (quick)
+      cat("    Quick mode. Will only check a subset of the units...done\n");
+  }
   if (verbose >= 2)
     cat("    Progress: ");
   units <- 1:h1$nunits;
@@ -129,6 +135,8 @@ compareCdfs <- function(pathname, other, verbose=0, ...) {
     if (!identical(res, TRUE))
       return(different("Units: ", value1=v1, value2=v2));
     count <- count + length(uu);
+    if (quick)
+      break;
     rm(v1,v2,uu,head);
   }
   if (verbose >= 2)
@@ -145,6 +153,8 @@ compareCdfs <- function(pathname, other, verbose=0, ...) {
 
 ############################################################################
 # HISTORY:
+# 2006-09-10
+# o Added argument 'quick' to check only a subset of the units.
 # 2006-09-09
 # o Created.
 ############################################################################

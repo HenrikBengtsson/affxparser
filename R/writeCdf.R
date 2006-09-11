@@ -279,7 +279,7 @@ writeCdfQcUnit <- function(qcunit, con, positions = NULL,
 writeCdf <- function(fname, cdfheader, cdf, cdfqc, 
                      overwrite = FALSE, verbose = 0) {
     if(verbose >= 1) {
-      cat("Writing CDF file...");
+      cat("Writing CDF file...\n");
       cat("  Pathname: ", fname, "\n", sep="");
     }
 
@@ -372,7 +372,7 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
       cat("  Writes ", length(cdf), " units...done\n", sep="");
 
     if(verbose >= 1)
-      cat("Writing CDF file...done");
+      cat("Writing CDF file...done\n");
 
     invisible(NULL);
 } # writeCdf()
