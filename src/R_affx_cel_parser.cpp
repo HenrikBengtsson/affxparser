@@ -61,29 +61,33 @@ extern "C" {
     char* cstr; 
     
     str_length = cel.GetAlg().size();
-    cstr = Calloc(str_length, char);
+    cstr = Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetAlg().c_str(), str_length);
+    cstr[str_length] = '\0';
     SET_STRING_ELT(names, kk, mkChar("algorithm"));
     SET_VECTOR_ELT(vals, kk++, mkString(cstr)); 
     Free(cstr);
 
     str_length = cel.GetParams().size();
-    cstr = Calloc(str_length, char);
+    cstr = Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetParams().c_str(), str_length);
+    cstr[str_length] = '\0';
     SET_STRING_ELT(names, kk, mkChar("parameters"));
     SET_VECTOR_ELT(vals, kk++, mkString(cstr));
     Free(cstr);
    
     str_length = cel.GetChipType().size();
-    cstr = Calloc(str_length, char);
+    cstr = Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetChipType().c_str(), str_length);
+    cstr[str_length] = '\0';
     SET_STRING_ELT(names, kk, mkChar("chiptype"));
     SET_VECTOR_ELT(vals, kk++, mkString(cstr));
     Free(cstr);
         
     str_length = cel.GetHeader().size();
-    cstr = Calloc(str_length, char);
+    cstr = Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetHeader().c_str(), str_length);
+    cstr[str_length] = '\0';
     SET_STRING_ELT(names, kk, mkChar("header"));
     SET_VECTOR_ELT(vals, kk++, mkString(cstr));
     Free(cstr);
@@ -477,6 +481,10 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2006-09-15
+ * o BUG FIX: Forgot to allocate space for NULL terminator in 'd' in call
+ *   wcstombs(d,s,n), alternatively making sure d[last] == '\0'.  I added
+ *   both explicitly just in case.
  * 2006-03-28
  * o Cell indices are now one-based. /HB
  * o Added validation to argument 'indices'. /HB
