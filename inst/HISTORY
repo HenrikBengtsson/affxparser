@@ -1,8 +1,13 @@
 Package: affxparser
 ===================
 
-o BUG FIX: nrows and ncols were swapped in the CDF header. Was missed
-  because all tested CDFs were rectangular.
+Version: 1.5.x [2006-09-15]
+o BUG FIX: The C code for readCelHeader() did not allocate space for
+  the string null terminator for the header elements that originates 
+  from wide C++ string.  This caused readCelHeader() to contain 
+  string elements with random characters at the end.
+o BUG FIX: nrows and ncols were swapped in the CDF header when written
+  by writeCdf(). This was missed because all tested CDFs were square.
 o Added compareCdfs() to verify that a converted CDF is correct.
 o Added convertCdf() utilizing the new writeCdf().
 o Added trial version of createCel().
