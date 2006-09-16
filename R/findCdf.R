@@ -29,9 +29,9 @@
 #   The default search path is consituted of:
 #   \enumerate{
 #    \item \code{"."}
+#    \item \code{"cdf/;data/cdf/"}
 #    \item \code{getOption("AFFX_CDF_PATH")}
 #    \item \code{Sys.getenv("AFFX_CDF_PATH")}
-#    \item \code{"cdf/;data/cdf/"}
 #   }
 #
 #   One of the easiest ways to set system variables for \R is to
@@ -63,11 +63,13 @@ findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ..
   # Argument 'paths':
   if (is.null(paths)) {
     paths <- paste(".", 
+                   "cdf/", "data/cdf/", 
                    getOption("AFFX_CDF_PATH"), 
                    Sys.getenv("AFFX_CDF_PATH"),
-                   "cdf/", "data/cdf/", 
              sep=";", collapse=";");
   }
+  paths <- c(".", paths);
+  paths <- unique(paths);
 
   # Argument 'chipType':
   if (!is.null(chipType)) {
@@ -81,6 +83,10 @@ findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ..
 
 ############################################################################
 # HISTORY:
+# 2006-09-15
+# o The current directory "." was not the first directory scanned as
+#   documented. Also added cdf/ and data/cdf to the beginning and not
+#   at the end of the search path.
 # 2006-03-14
 # o Now making use of findFiles(), which makes this function much shorter.
 # o Migrated the code to work without R.utils too.
