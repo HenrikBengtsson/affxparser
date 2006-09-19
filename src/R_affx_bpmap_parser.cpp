@@ -85,25 +85,25 @@ extern "C" {
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("name"));
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               mkChar(seq.GetName().c_str()));
+                               ScalarString(mkChar(seq.GetName().c_str())));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("groupname"));
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               mkChar(seq.GroupName().c_str()));
+                               ScalarString(mkChar(seq.GroupName().c_str())));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("fullname"));
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               mkChar(seq.FullName().c_str()));
+                               ScalarString(mkChar(seq.FullName().c_str())));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("version"));
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               mkChar(seq.GetSeqVersion().c_str()));
+                               ScalarString(mkChar(seq.GetSeqVersion().c_str())));
                 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("mapping"));
                 if(seq.GetProbeMapping() == 0)
-                    SET_VECTOR_ELT(seqInfo, kk++, mkChar("pmmm"));
+                    SET_VECTOR_ELT(seqInfo, kk++, ScalarString(mkChar("pmmm")));
                 else
-                    SET_VECTOR_ELT(seqInfo, kk++, mkChar("onlypm"));
+                    SET_VECTOR_ELT(seqInfo, kk++, ScalarString(mkChar("onlypm")));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("number"));
                 SET_VECTOR_ELT(seqInfo, kk++, 

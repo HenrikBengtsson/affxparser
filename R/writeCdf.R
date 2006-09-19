@@ -225,6 +225,104 @@ writeCdfUnit <- function(unit, con, unitname = NULL, positions = NULL,
 } # writeCdfUnit()
 
 
+writeUnit2 <- function(unit, con, unitname = NULL, positions = NULL,
+                      addName = TRUE, addPosition = TRUE) {
+    ## 1. Write the name in the start of the CDF file
+    if(addName) {
+        seek(con = con, where = positions$unitName,
+             origin = "start")
+        writeChar(as.character(unitname), nchars = 64,
+                  con = con, eos = NULL)
+        positions$unitName <- positions$unitName + 64
+    }
+    ## 2. Jump to the end to start writing the unit
+    seek(con = con, where = 0, origin = "end", rw = "write")
+    endPosition <- seek(con = con, where = 0,
+                        origin = "end", rw = "write")
+    ## 3. Write the unit
+    unittype <- switch(unit$unittype,
+                       expression = 1,
+                       genotyping = 2,
+                       tag = 3,
+                       resequencing = 4,
+                       unknown = 5)
+    unitdirection <- switch(unit$unitdirection,
+                            nodirection = 0,
+                            sense = 1,
+                            antisense = 2,
+                            unknown = 3)
+    unitInfo <- as.integer(c(unittype, unitdirection,
+                             unit$natoms, length(unit$blocks),
+                             unit$ncells, unit$unitnumber,
+                             unit$ncellsperatom))
+    rawUnit <- raw(...)
+    raw[1] <- writeBin(unitInfo[1], con = raw(),
+                       size = 2, endian = "little")
+    raw[c(3,20)] <- writeBin(unitInfo[c(2,7)], con = raw(),
+                             size = 1, endian = "little")
+    raw[4:19] <- writeBin(unitInfo[3:6], con = raw(),
+                          size = 4, endian = "little")
+    ## Unitinfo = 20 bytes
+    ## Blockinfo = 18 + 64 = 82 bytes
+    ## Cellinfo = 14 bytes
+    ## total = 20 + 82*nblock + 14*ncells
+    offset <- 20
+    ## Writing each block in turn
+    for(iblock in seq(along.with = unit$blocks)) {
+        block <- unit$blocks[[iblock]]
+        blockdirection <- switch(block$blockdirection,
+                                 nodirection = 0,
+                                 sense = 1,
+                                 antisense = 2,
+                                 unknown = 3)
+        blockInfo <- as.integer(c(block$natoms, length(block$x),
+                                  block$ncellsperatom,
+                                  blockdirection, min(block$atoms, 0)))
+        raw[offset + c(1:8,11:18)] <- writeBin(blockInfo[c(1:2, 5:6)],
+                                               con = raw(),
+                                               size = 4, endian = "little")
+        raw[offset + 9:10] <- writeBin(blockInfo[3:4], con = raw(),
+                                       size = 1, endian = "little")
+        raw[offset + 19:82] <- writeChar(as.character(names(unit$blocks)
+                                                      [iblock]),
+                                         con = raw(), nchars = 64, eos = NULL)
+        offset <- offset + 82
+        ## Writing each cell in turn
+        cells <- matrix(as.integer(c(block$atom, block$x,
+                                     block$y, block$indexpos)),
+                        ncol = 4)
+
+
+        
+        for(icell in seq(along.with = block$x)) {
+            writeBin(cells[icell, 1],
+                     con = con, size = 4, endian = "little")
+            writeBin(cells[icell, 2:3],
+                     con = con, size = 2, endian = "little")
+            writeBin(cells[icell, 4],
+                     con = con, size = 4, endian = "little")
+            writeChar(as.character(c(block$pbase[icell],
+                                     block$tbase[icell])),
+                      con = con, nchars = c(1,1), eos = NULL)
+        }
+    }
+    ## 4. Go back to the start of the file and write
+    ##    where the unit starts
+    if(addPosition) {
+        seek(con = con, where = positions$unitFP,
+             origin = "start", rw = "write")
+        writeBin(as.integer(endPosition),
+                 con = con, size = 4, endian = "little")
+        positions$unitFP <- positions$unitFP + 4
+    }
+    ## 5. Update the positions and return
+    if(!is.null(positions))
+        return(positions)
+    else
+        return(NULL)
+}
+
+
 writeCdfQcUnit <- function(qcunit, con, positions = NULL,
                         addPosition = TRUE) {
     ## 1. Jump to end to write a qcunit
