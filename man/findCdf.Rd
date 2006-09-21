@@ -38,9 +38,9 @@
   The default search path is consituted of:
   \enumerate{
    \item \code{"."}
+   \item \code{"cdf/;data/cdf/"}
    \item \code{getOption("AFFX_CDF_PATH")}
    \item \code{Sys.getenv("AFFX_CDF_PATH")}
-   \item \code{"cdf/;data/cdf/"}
   }
 
   One of the easiest ways to set system variables for \R is to
@@ -59,14 +59,17 @@
 cdfFile <- findCdf("Mapping50K_Xba240")
 print(cdfFile)
 
-# Find all CDF files in search path
-cdfFiles <- findCdf(firstOnly=FALSE)
-print(cdfFiles)
-
 # Find the first CDF file (no matter what it is)
 cdfFile <- findCdf()
 print(cdfFile)
 
+# Find all CDF files in search path and display their headers
+cdfFiles <- findCdf(firstOnly=FALSE)
+for (cdfFile in cdfFiles) {
+  cat("=======================================\n")
+  hdr <- readCdfHeader(cdfFile)
+  str(hdr)
+}
 }
 
 \seealso{

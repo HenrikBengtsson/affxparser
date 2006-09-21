@@ -157,7 +157,6 @@ readCel(filename,
   Daniel Hansen, \email{khansen@stat.berkeley.edu}} 
 
 \seealso{
-  \code{\link{affxparserInfo}} for a package overview and
   \code{\link{readCelHeader}()} for a description of the header output.
   Often a user only wants to read the intensities, look at
   \code{\link{readCelIntensities}()} for a function specialized for 

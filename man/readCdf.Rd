@@ -45,9 +45,7 @@
 }
 
 \seealso{
-  \code{\link{affxparserInfo}} for general information about the
-  package/Fusion SDK and \code{\link{readCdfHeader}()} for getting the
-  header of a CDF file.
+  \code{\link{readCdfHeader}()} for getting the header of a CDF file.
 }
 
 \keyword{file}
