@@ -73,6 +73,8 @@ findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ..
 
   # Argument 'chipType':
   if (!is.null(chipType)) {
+    if (regexpr("[.](c|C)(d|D)(f|F)$", chipType) !=-1)
+      warning("Argument 'chipType' of findCdf() has suffix '.cdf':", chipType);
     pattern <- paste(chipType, pattern, sep="");
   }
 
@@ -83,6 +85,9 @@ findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ..
 
 ############################################################################
 # HISTORY:
+# 2006-09-21
+# o findCdf() now gives a warning *.cdf extension is given, but tries not
+#   to resolve it.
 # 2006-09-15
 # o The current directory "." was not the first directory scanned as
 #   documented. Also added cdf/ and data/cdf to the beginning and not
