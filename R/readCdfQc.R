@@ -9,12 +9,9 @@ readCdfQc <- function(filename, units = NULL, verbose = 0){
   returnPMInfo <- TRUE;
   returnBackgroundInfo <- TRUE;
   returnType <- TRUE;
-  returnQCNumbers <- TRUE;
+  returnQcNumbers <- TRUE;
   return(.Call("R_affx_get_cdf_file_qc",
                 filename, as.integer(units), as.integer(verbose),
                 returnIndices, returnXY, returnLength, returnPMInfo,
-                returnBackgroundInfo, returnType, returnQCNumbers))
+                returnBackgroundInfo, returnType, returnQcNumbers))
 }
-
-# For backward compatibility
-readCdfQC <- readCdfQc

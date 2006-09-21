@@ -1,3 +1,32 @@
+########################################################################/**
+# @RdocFunction cdfHeaderToCelHeader
+#
+# @title "Creates a valid CEL header from a CDF header"
+#
+# \description{
+#  @get "title".
+# }
+#
+# @synopsis
+#
+# \arguments{
+#  \item{cdfHeader}{A CDF @list structure.}
+#  \item{sampleName}{The name of the sample to be added to the CEL header.}
+#  \item{date}{The (scan) date to be added to the CEL header.}
+#  \item{...}{Not used.}
+#  \item{version}{The file-format version of the generated CEL file.
+#     Currently only version 4 is supported.}
+# }
+#
+# \value{
+#  Returns a CDF @list structure.
+# }
+#
+# @author
+#
+# @keyword programming
+# @keyword internal
+#**/#######################################################################
 cdfHeaderToCelHeader <- function(cdfHeader, sampleName="noname", date=Sys.time(), ..., version="4") {
   # Argument 'version':
   version <- match.arg(version);
