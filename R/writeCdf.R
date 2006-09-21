@@ -116,8 +116,10 @@ writeCdfUnit <- function(unit, con, unitname = NULL, positions = NULL,
         # at once instead. /HB
         seek(con = con, where = positions$unitName,
              origin = "start")
-        writeChar(as.character(unitname), nchars = 64,
-                  con = con, eos = NULL)
+        suppressWarnings({
+          writeChar(as.character(unitname), nchars = 64,
+                    con = con, eos = NULL)
+        })
         positions$unitName <- positions$unitName + 64
     }
 
@@ -184,12 +186,17 @@ writeCdfUnit <- function(unit, con, unitname = NULL, positions = NULL,
                  con = con, size = 4, endian = "little")
 
         # Number of bytes: 64 bytes
-        writeChar(as.character(names(unit$blocks)[iblock]),
-                  con = con, nchars = 64, eos = NULL) 
+        suppressWarnings({
+          writeChar(as.character(names(unit$blocks)[iblock]),
+                    con = con, nchars = 64, eos = NULL) 
+        })
 
         ## Writing each cell in turn
-        cells <- matrix(as.integer(c(block$atom, block$x,
-                                     block$y, block$indexpos)),
+#        cells <- matrix(as.integer(c(block$atom, block$x,
+#                                     block$y, block$indexpos)),
+#                        ncol = 4)
+        cells <- matrix(as.integer(c(block$indexpos, block$x,
+                                     block$y, block$atom)),
                         ncol = 4)
 
         # Number of bytes: 14*nbrOfCells bytes
@@ -231,8 +238,10 @@ writeUnit2 <- function(unit, con, unitname = NULL, positions = NULL,
     if(addName) {
         seek(con = con, where = positions$unitName,
              origin = "start")
-        writeChar(as.character(unitname), nchars = 64,
-                  con = con, eos = NULL)
+        suppressWarnings({
+          writeChar(as.character(unitname), nchars = 64,
+                    con = con, eos = NULL)
+        })
         positions$unitName <- positions$unitName + 64
     }
     ## 2. Jump to the end to start writing the unit
@@ -488,6 +497,10 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
 
 ############################################################################
 # HISTORY:
+# 2006-09-21 /HB
+# o BUG FIX: The 'atom' and 'indexpos' fields were swapped.
+# o Now suppressing warnings "writeChar: more characters requested..." in
+#   writeCdf().
 # 2006-09-11 /HB
 # o BUG FIX: nrows & ncols were swapped in the CDF header.
 # 2006-09-09 /HB

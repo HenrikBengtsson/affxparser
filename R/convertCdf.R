@@ -135,10 +135,14 @@ convertCdf <- function(filename, outFilename, version="4", force=FALSE, ..., .va
     cat("Writing CDF structure...\n");
   verbose2 <- verbose-1;
   if (verbose2 < 0) verbose2 <- 0;
-#t <- system.time({
+t <- system.time({
   writeCdf(outFilename, cdfheader=cdfHeader, cdf=cdfUnits, 
          cdfqc=cdfQcUnits, overwrite=TRUE, verbose=verbose2);
-#}); print(t);
+}); 
+  if (verbose) {
+    cat("Timing for writeCdf():\n");
+    print(t);
+  }
   if (verbose)
     cat("Writing CDF structure...done\n");
 
@@ -149,6 +153,7 @@ convertCdf <- function(filename, outFilename, version="4", force=FALSE, ..., .va
   if (.validate) {
     res <- compareCdfs(filename, outFilename, verbose=verbose);
     if (!res) {
+      res2 <<- res;
       stop("An inconsistency between source and destination CDF was detected. Reason:", attr(res, "reason"));
     }
   } # if (.validate)
