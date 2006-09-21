@@ -1,7 +1,8 @@
 Package: affxparser
 ===================
 
-Version: 1.5.x [2006-09-15]
+Version: 1.5.x [2006-09-21]
+o Now the package passes R CMD check without warnings.
 o BUG FIX: The C code for readCelHeader() did not allocate space for
   the string null terminator for the header elements that originates 
   from wide C++ string.  This caused readCelHeader() to contain 

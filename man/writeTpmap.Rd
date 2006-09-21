@@ -5,7 +5,6 @@
 \title{Writes BPMAP and TPMAP files.}
 \description{
   Writes BPMAP and TPMAP files.
-  }
 }
 \usage{
 writeTpmap(filename, bpmaplist, verbose = 0)

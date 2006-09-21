@@ -9,6 +9,7 @@
 \name{applyCdfGroups}
 \alias{applyCdfGroups}
 
+\alias{applyCdfBlocks}
 
 \title{Applies a function over the groups in a CDF structure}
 

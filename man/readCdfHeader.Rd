@@ -49,8 +49,7 @@ print(header)
 }
 
 \seealso{
-  \code{\link{affxparserInfo}} for general information about the
-  package and \code{\link{readCdfUnits}()} for information about CDF files.
+  \code{\link{readCdfUnits}()}.
 }
 
 \references{}
