@@ -1,4 +1,4 @@
-initializeCdf <- function(con, nrows = 1, ncols = 1,
+.initializeCdf <- function(con, nrows = 1, ncols = 1,
                           nunits = 1, nqcunits = 0,
                           refseq = "",
                           unitnames = rep("", nunits),
@@ -105,7 +105,7 @@ initializeCdf <- function(con, nrows = 1, ncols = 1,
 } # initializeCdf()
 
 
-writeCdfUnit <- function(unit, con, unitname = NULL, positions = NULL,
+.writeCdfUnit <- function(unit, con, unitname = NULL, positions = NULL,
                       addName = TRUE, addPosition = TRUE) {
 
     ## 1. Write the name in the start of the CDF file
@@ -232,7 +232,7 @@ writeCdfUnit <- function(unit, con, unitname = NULL, positions = NULL,
 } # writeCdfUnit()
 
 
-writeUnit2 <- function(unit, con, unitname = NULL, positions = NULL,
+.writeCdfUnit2 <- function(unit, con, unitname = NULL, positions = NULL,
                       addName = TRUE, addPosition = TRUE) {
     ## 1. Write the name in the start of the CDF file
     if(addName) {
@@ -332,7 +332,7 @@ writeUnit2 <- function(unit, con, unitname = NULL, positions = NULL,
 }
 
 
-writeCdfQcUnit <- function(qcunit, con, positions = NULL,
+.writeCdfQcUnit <- function(qcunit, con, positions = NULL,
                         addPosition = TRUE) {
     ## 1. Jump to end to write a qcunit
     if(addPosition) {
@@ -429,7 +429,7 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
     lens <- unlist(lens, use.names=FALSE);
     unitLengths <- lens;
 
-    positions <- initializeCdf(con = cdfcon,
+    positions <- .initializeCdf(con = cdfcon,
                                nunits = cdfheader$nunits,
                                nqcunits = cdfheader$nqcunits,
                                refseq = cdfheader$refseq,
@@ -446,7 +446,7 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
     # Write all QC units
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     if (verbose >= 1) {
-      cat("  Writes QC units...\n");
+        cat("  Writes QC units...\n");
       if(verbose >= 2)
         cat("    Units: ");
     }
@@ -455,7 +455,7 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
         if (kk %% 100 == 0)
           cat(kk, ", ", sep="");
       }
-      positions <- writeCdfQcUnit(qcunit = cdfqc[[kk]], addPosition=FALSE,
+      positions <- .writeCdfQcUnit(qcunit = cdfqc[[kk]], addPosition=FALSE,
                                   positions = positions,
                                   con = cdfcon)
     }
@@ -477,7 +477,7 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
         if (kk %% 100 == 0)
           cat(kk, ", ", sep="");
       }
-      positions <- writeCdfUnit(unit = cdf[[kk]], 
+      positions <- .writeCdfUnit(unit = cdf[[kk]], 
                                 addName=FALSE, addPosition=FALSE,
                                 unitname = names(cdf)[kk],
                                 positions = positions,
