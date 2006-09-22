@@ -4,9 +4,6 @@
 
 \description{
   Reads the QC units of CDF file.
-
-  \emph{This function will most likely be replaced by the more
-        general \code{\link{readCdfUnits}()} function.}
 }
 
 \usage{
@@ -15,7 +12,9 @@
 
 \arguments{
   \item{filename}{name of the CDF file.}
-  \item{units}{The QC unit index.}
+  \item{units}{The QC unit indices as a vector of integers. \code{NULL}
+  indicates that all units 
+  should be read.}
   \item{verbose}{how verbose should the output be. 0 means no output,
     with higher numbers being more verbose.}
 }
