@@ -56,7 +56,7 @@
 # @keyword file
 # @keyword IO
 #**/#######################################################################
-findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ...) {
+findCdf <- function(chipType=NULL, paths=NULL, pattern="[^.]*(|[.][a-zA-Z0-9]*)[.](c|C)(d|D)(f|F)$", ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,6 +85,8 @@ findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ..
 
 ############################################################################
 # HISTORY:
+# 2006-09-23
+# o Added support for additional "pre-extension" extension.
 # 2006-09-21
 # o findCdf() now gives a warning *.cdf extension is given, but tries not
 #   to resolve it.
