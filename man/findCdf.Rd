@@ -16,7 +16,7 @@
  Search for CDF files in multiple directories.
 }
 
-\usage{findCdf(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ...)}
+\usage{findCdf(chipType=NULL, paths=NULL, pattern="[^.]*(|[.][a-zA-Z0-9]*)[.](c|C)(d|D)(f|F)$", ...)}
 
 \arguments{
  \item{chipType}{A \code{\link[base]{character}} string of the chip type to search for.}
