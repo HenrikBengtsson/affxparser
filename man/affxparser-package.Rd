@@ -131,14 +131,14 @@ Some of the functions in this package search for CDF files automatically by scan
 
 \section{License}{
   The releases of this package is licensed under LGPL version 2.1 or
-  newer. This includes the Fusion SDK.
+  newer. This applies also to the Fusion SDK.
 }
 
 \references{
   [1] Affymetrix Inc, Affymetrix GCOS 1.x compatible file formats,
-      June 14, 2005.
+      April, 2006.
       \url{http://www.affymetrix.com/support/developer/}\cr
-  [2] Affymetrix Inc, Fusion Software Developers Kit (SDK), 2005.
+  [2] Affymetrix Inc, Fusion Software Developers Kit (SDK), 2006.
       \url{http://www.affymetrix.com/support/developer/fusion/}\cr
 }
 
