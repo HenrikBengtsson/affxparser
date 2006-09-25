@@ -47,11 +47,7 @@ Some of the functions in this package search for CDF files automatically by scan
 
 \section{Future Work}{
   Other Affymetrix files can be parsed using the Fusion SDK. Given
-  sufficient interest we will implement this. Most notably are BPMAP
-  files (which we will support shortly) and DAT files (image files).
-
-  We are also investigating ways to efficiently access parts of a given
-  file, see a lot of the already included functions.
+  sufficient interest we will implement this, e.g. DAT files (image files).
 }
 
 \section{Running examples}{
@@ -75,7 +71,7 @@ Some of the functions in this package search for CDF files automatically by scan
   which may be parsed using Fusion.
 
   The SDK supports parsing of all the different versions of a specific
-  fileformat. This means that ascii, binary as well as the new binary
+  fileformat. This means that ASCII, binary as well as the new binary
   format (codename Calvin) used by Affymetrix is supported through a
   single API. We also expect any future changes to the file formats to
   be reflected in the SDK, and subsequently in this package.
