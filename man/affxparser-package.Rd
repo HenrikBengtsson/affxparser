@@ -114,7 +114,7 @@ Some of the functions in this package search for CDF files automatically by scan
   With the introduction of the Fusion SDK (and the next version of their
   file formats) Affymetrix has made it possible to use multibyte
   character sets. This implies that character information may be
-  inaccesible if the compiler used to compile the c++ code does not
+  inaccesible if the compiler used to compile the C++ code does not
   support multibyte character sets (specifically we require that the R
   installation has defined the macro \code{SUPPORT_MCBS} in the
   \code{Rconfig.h} header file). For example GCC needs to be version 3.4
