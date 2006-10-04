@@ -1,6 +1,14 @@
 Package: affxparser
 ===================
 
+Version: 1.6.1 [2006-10-xx]
+o Made readCelUnits() a bit more clever if a 'cdf' structure with only
+  cell indices is passed. Then all fields are just indices and one can
+  call unlist immediately.  This speeds things up a bit.
+
+Version: 1.6.0 [2006-10-03]
+o The version number was bumped up with the Bioconductor release.
+
 Version: 1.5.x [2006-09-21]
 o Now the package passes R CMD check without warnings.
 o BUG FIX: The C code for readCelHeader() did not allocate space for
