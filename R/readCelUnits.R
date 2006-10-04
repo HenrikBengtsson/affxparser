@@ -125,12 +125,16 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
     if (!is.list(groups))
       stop("Argument 'cdf' is of unknown format: Units Does not contain the list 'groups'.");
 
+    extractGroups <- (length(names(aUnit)) > 1);
+
     # Check for group fields 'indices' or 'x' & 'y' in one of the groups.
     aGroup <- groups[[1]];
 
+    extractFields <- TRUE;
     fields <- names(aGroup);
     if ("indices" %in% fields) {
       cdfType <- "indices";
+      extractFields <- (length(fields) > 1);
     } else if (all(c("x", "y") %in% fields)) {
       cdfType <- "x";
       searchForCdf <- TRUE;
@@ -218,18 +222,27 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   # 1. Read cell indices for units of interest from the CDF file?
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(cdf)) {
-    verbose && enter(verbose, "Reading cell indices from CDF file");
+#    verbose && enter(verbose, "Reading cell indices from CDF file");
     cdf <- readCdfCellIndices(cdfFile, units=units, stratifyBy=stratifyBy, verbose=FALSE);
-    verbose && exit(verbose);
+#    verbose && exit(verbose);
 
     # Assume 'cdf' contains only "indices" fields.
     indices <- unlist(cdf, use.names=FALSE);
   } else {
     if (cdfType == "indices") {
-      # Clean up CDF list structure from other elements than groups
-      cdf <- lapply(cdf, FUN=function(unit) list(groups=unit$groups));
-      # Clean up CDF list structure from other group fields than "indices".
-      cdf <- applyCdfGroups(cdf, cdfGetFields, fields="indices");
+      # Clean up CDF list structure from other elements than groups?
+      if (extractGroups) {
+#        verbose && enter(verbose, "Extracting groups...");
+        cdf <- lapply(cdf, FUN=function(unit) list(groups=unit$groups));
+#        verbose && exit(verbose);
+      }
+
+      # Clean up CDF list structure from other group fields than "indices"?
+      if (extractFields) {
+#        verbose && enter(verbose, "Extracting fields...");
+        cdf <- applyCdfGroups(cdf, cdfGetFields, fields="indices");
+#        verbose && exit(verbose);
+      }
       indices <- unlist(cdf, use.names=FALSE);
     } else {
       verbose && enter(verbose, "Calculating cell indices from (x,y) positions");
@@ -432,6 +445,10 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
 ############################################################################
 # HISTORY:
+# 2006-10-04 [HB]
+# o Made readCelUnits() a bit more clever if a 'cdf' structure with only
+#   cell indices is passed. Then all fields are just indices and one can
+#   call unlist immediately.  This speeds things up a bit.
 # 2006-05-12 [HB]
 # o Rearranged order of arguments such that the most often used/most user-
 #   friendly arguments come first.  This was done as a first step after
