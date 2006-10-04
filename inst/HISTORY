@@ -1,10 +1,11 @@
 Package: affxparser
 ===================
 
-Version: 1.6.1 [2006-10-xx]
+Version: 1.7.0 [2006-10-xx]
 o Made readCelUnits() a bit more clever if a 'cdf' structure with only
   cell indices is passed. Then all fields are just indices and one can
   call unlist immediately.  This speeds things up a bit.
+o The devel version number was bumped up with the Bioconductor release.
 
 Version: 1.6.0 [2006-10-03]
 o The version number was bumped up with the Bioconductor release.
