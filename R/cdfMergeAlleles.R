@@ -27,6 +27,11 @@
 #  and \code{reverse}, if the latter exists.
 # }
 #
+# \details{
+#  Allele A and allele B are merged into a @matrix where first row
+#  hold the elements for allele A and the second elements for allele B.
+# }
+#
 # \seealso{
 #  @see "applyCdfGroups".
 # }
