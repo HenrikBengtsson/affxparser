@@ -24,6 +24,12 @@
 #  Returns a @list structure with only two groups.
 # }
 #
+# \details{
+#  If a unit has two strands, they are merged such that the elements
+#  for the second strand are concattenated to the end of the elements
+#  of first strand (This is done seperately for the two alleles).
+# }
+#
 # \seealso{
 #  @see "applyCdfGroups".
 # }
