@@ -3,6 +3,8 @@
 // #include "FusionBPMAPData.h"
 #include "R_affx_constants.h"
 
+using namespace std;
+
 /* ToDo: Implement partial reading */
 /* Need to take care of mmx, mmy, when we have a pmonly */
 
@@ -76,28 +78,54 @@ extern "C" {
                 if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
                     Rprintf("  Reading seqInfo\n");
                 }
-                SEXP seqInfo, seqInfoNames, tmp, 
+                SEXP seqInfo, seqInfoNames,  
                     seqInfoParameters, seqInfoParameterNames;
                 int kk = 0;
+                string str;
+                int str_length; 
+                char* cstr; 
 
                 PROTECT(seqInfo = NEW_LIST(8));
                 PROTECT(seqInfoNames = NEW_CHARACTER(8));
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("name"));
-                SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarString(mkChar(seq.GetName().c_str())));
+								str = seq.GetName();
+								str_length = str.size();
+								cstr = Calloc(str_length+1, char);
+								strncpy(cstr, str.c_str(), str_length);
+								cstr[str_length] = '\0';
+                SET_VECTOR_ELT(seqInfo, kk++, ScalarString(mkChar(cstr)));
+                Free(cstr);
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("groupname"));
+								str = seq.GroupName();
+								str_length = str.size();
+								cstr = Calloc(str_length+1, char);
+								strncpy(cstr, str.c_str(), str_length);
+								cstr[str_length] = '\0';
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarString(mkChar(seq.GroupName().c_str())));
+                               ScalarString(mkChar(cstr)));
+                Free(cstr);
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("fullname"));
+								str = seq.FullName();
+								str_length = str.size();
+								cstr = Calloc(str_length+1, char);
+								strncpy(cstr, str.c_str(), str_length);
+								cstr[str_length] = '\0';
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarString(mkChar(seq.FullName().c_str())));
+                               ScalarString(mkChar(cstr)));
+                Free(cstr);
 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("version"));
+								str = seq.GetSeqVersion();
+								str_length = str.size();
+								cstr = Calloc(str_length+1, char);
+								strncpy(cstr, str.c_str(), str_length);
+								cstr[str_length] = '\0';
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarString(mkChar(seq.GetSeqVersion().c_str())));
+                               ScalarString(mkChar(cstr)));
+                Free(cstr);
                 
                 SET_STRING_ELT(seqInfoNames, kk, mkChar("mapping"));
                 if(seq.GetProbeMapping() == 0)
@@ -125,10 +153,21 @@ extern "C" {
                     PROTECT(seqInfoParameterNames = NEW_CHARACTER(nParameters));
                     for(int j = 0; j < nParameters; j++)
                         {
-                            SET_STRING_ELT(seqInfoParameterNames, j, 
-                                           mkChar(seq.GetParameter(j).Tag.c_str()));
-                            SET_STRING_ELT(seqInfoParameters, j, 
-                                           mkChar(seq.GetParameter(j).Value.c_str()));
+													str = seq.GetParameter(j).Tag;
+													str_length = str.size();
+													cstr = Calloc(str_length+1, char);
+													strncpy(cstr, str.c_str(), str_length);
+													cstr[str_length] = '\0';
+                          SET_STRING_ELT(seqInfoParameterNames, j, 
+                                          mkChar(cstr));
+	  											Free(cstr);
+													str = seq.GetParameter(j).Value;
+													cstr = Calloc(str_length+1, char);
+													strncpy(cstr, str.c_str(), str_length);
+													cstr[str_length] = '\0';
+                          SET_STRING_ELT(seqInfoParameters, j, 
+                                           mkChar(cstr));
+		  										Free(cstr);
                         }
                     setAttrib(seqInfoParameters, R_NamesSymbol, 
                               seqInfoParameterNames);
@@ -153,6 +192,9 @@ extern "C" {
 
     SEXP R_affx_get_bpmap_seqinfo(SEXP fname, SEXP seqindices, SEXP verbose){
         affxbpmap::CBPMAPFileData bpmap;
+        string str;
+        int str_length; 
+        char* cstr; 
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          * Process arguments
@@ -222,8 +264,13 @@ extern "C" {
             }
             SET_VECTOR_ELT(returnList, i, 
                            R_affx_bpmap_seqinfo_item(seq, i_verboseFlag));
-            SET_STRING_ELT(returnListNames, i, 
-                           mkChar(seq.FullName().c_str()));
+            str = seq.FullName();
+						str_length = str.size();
+						cstr = Calloc(str_length+1, char);
+						strncpy(cstr, str.c_str(), str_length);
+						cstr[str_length] = '\0';
+            SET_STRING_ELT(returnListNames, i, mkChar(cstr));
+            Free(cstr);
         }
         setAttrib(returnList, R_NamesSymbol, returnListNames);
         bpmap.Close();
@@ -247,6 +294,9 @@ extern "C" {
                                SEXP verbose) 
     {
         affxbpmap::CBPMAPFileData bpmap;
+        string str;
+        int str_length; 
+        char* cstr; 
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          * Process arguments
@@ -316,9 +366,7 @@ extern "C" {
         SEXP seqObj, seqObjNames;
         /* slots in seqObj */
         SEXP pmx, pmy, mmx, mmy, probeseq, strand, probelength,
-            matchscore, startpos, centerpos, 
-            seqInfo, seqInfoNames, seqInfoParameters, 
-            seqInfoParameterNames;
+             matchscore, startpos, centerpos;
 
         affxbpmap::CGDACSequenceItem seq;
         affxbpmap::GDACSequenceHitItemType seqHit;
@@ -425,8 +473,13 @@ extern "C" {
                         INTEGER(strand)[j] = (unsigned int)seqHit.TopStrand;
                         }
                         if (i_readProbeSeq) {
-                        SET_STRING_ELT(probeseq, j, 
-                                       mkChar(seqHit.PMProbe.c_str()));
+													str = seqHit.PMProbe;
+													str_length = str.size();
+													cstr = Calloc(str_length+1, char);
+													strncpy(cstr, str.c_str(), str_length);
+													cstr[str_length] = '\0';
+                          SET_STRING_ELT(probeseq, j, mkChar(cstr));
+													Free(cstr);
                         }
                         if (i_readStartPos) {
                             INTEGER(startpos)[j] = seqHit.getStartPosition();
@@ -443,21 +496,21 @@ extern "C" {
                     }
                 /* Now it is time to finalize the seqObj */
                 if (i_readPMXY) {
-                    SET_VECTOR_ELT(seqObj, kk, pmx);;
+                    SET_VECTOR_ELT(seqObj, kk, pmx);
                     SET_STRING_ELT(seqObjNames, kk++, mkChar("pmx"));
-                    SET_VECTOR_ELT(seqObj, kk, pmy);;
+                    SET_VECTOR_ELT(seqObj, kk, pmy);
                     SET_STRING_ELT(seqObjNames, kk++, mkChar("pmy"));
                 }
                 if (i_readMMXY) {
                     if(!onlyPM) {
-                        SET_VECTOR_ELT(seqObj, kk, mmx);;
+                        SET_VECTOR_ELT(seqObj, kk, mmx);
                         SET_STRING_ELT(seqObjNames, kk++, mkChar("mmx"));
-                        SET_VECTOR_ELT(seqObj, kk, mmy);;
+                        SET_VECTOR_ELT(seqObj, kk, mmy);
                         SET_STRING_ELT(seqObjNames, kk++, mkChar("mmy"));
                     } else {
-                        SET_VECTOR_ELT(seqObj, kk, R_NilValue);;
+                        SET_VECTOR_ELT(seqObj, kk, R_NilValue);
                         SET_STRING_ELT(seqObjNames, kk++, mkChar("mmx"));
-                        SET_VECTOR_ELT(seqObj, kk, R_NilValue);;
+                        SET_VECTOR_ELT(seqObj, kk, R_NilValue);
                         SET_STRING_ELT(seqObjNames, kk++, mkChar("mmy"));
                     }
                 }
@@ -490,8 +543,13 @@ extern "C" {
                 }
                 setAttrib(seqObj, R_NamesSymbol, seqObjNames);
                 SET_VECTOR_ELT(resultList, i, seqObj);
-                SET_STRING_ELT(resultListNames, i, 
-                               mkChar(seq.FullName().c_str()));
+								str = seq.FullName();
+								str_length = str.size();
+								cstr = Calloc(str_length+1, char);
+								strncpy(cstr, str.c_str(), str_length);
+								cstr[str_length] = '\0';
+                SET_STRING_ELT(resultListNames, i, mkChar(cstr));
+                Free(cstr);
                 UNPROTECT(protectCount);
             }
     
@@ -525,6 +583,7 @@ extern "C" {
         affxbpmapwriter::CBPMAPFileWriter bpmap;
         bpmap.SetTpmapFileName(tpmapFileName);
         int i_verboseFlag = INTEGER(verbose)[0];
+
         if(bpmap.TpmapExists() ==  false){
             Rprintf("tpmap file %s does not exist.\n", tpmapFileName);
             return R_NilValue;

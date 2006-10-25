@@ -1,7 +1,18 @@
 Package: affxparser
 ===================
 
-Version: 1.7.0 [2006-10-xx]
+Version: 1.7.0 [2006-10-25]
+o BUG FIX: writeCdf() would create an invalid CDF file if there were
+  no QC units.  This would in turn make readCdfUnits() etc core dump.
+o BUG FIX: Similar to get bug fix in the C code for readCelHeader(),
+  much of the C-level code for CDF (and BPMAP) files assumes that the
+  strings from Fusion SDK have a null terminator. At least for CDF 
+  unit names, this is not necessarily the case.  To be on the safe
+  side, for all retrieved Fusion SDK strings we now make sure there
+  is a null terminator before converting it into an R string.
+  Thanks to Ken Simpson at WEHI for all troubleshooting on this.  
+o Because of the above bug fix, the ASCII mouse exon CDF can now be
+  converted into a valid binary CDF.
 o Made readCelUnits() a bit more clever if a 'cdf' structure with only
   cell indices is passed. Then all fields are just indices and one can
   call unlist immediately.  This speeds things up a bit.

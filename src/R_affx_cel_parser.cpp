@@ -24,12 +24,21 @@ extern "C" {
     SEXP names, vals;
     SEXP tmp;
     int kk = 0;
+    string str;
+    int str_length; 
+    char* cstr; 
 
     PROTECT(names = NEW_CHARACTER(12));
     PROTECT(vals  = NEW_LIST(12));
 
     SET_STRING_ELT(names, kk, mkChar("filename"));
-    SET_VECTOR_ELT(vals, kk++, mkString(cel.GetFileName().c_str()));
+    str = cel.GetFileName();
+    str_length = str.size();
+    cstr = Calloc(str_length+1, char);
+    strncpy(cstr, str.c_str(), str_length);
+    cstr[str_length] = '\0';
+    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
+    Free(cstr);
 
     SET_STRING_ELT(names, kk, mkChar("version"));
     PROTECT(tmp = allocVector(INTSXP, 1));
@@ -57,9 +66,6 @@ extern "C" {
    
 
 #ifdef SUPPORT_MBCS
-    int str_length; 
-    char* cstr; 
-    
     str_length = cel.GetAlg().size();
     cstr = Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetAlg().c_str(), str_length);
