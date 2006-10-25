@@ -509,7 +509,6 @@ extern "C" {
 
     SET_STRING_ELT(names, ii, mkChar("chiptype"));
     str = cdf.GetChipType();
-    str = header.GetReference();
     str_length = str.size();
     cstr = Calloc(str_length+1, char);
     strncpy(cstr, str.c_str(), str_length);
