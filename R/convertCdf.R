@@ -151,11 +151,15 @@ t <- system.time({
   # Validate?
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (.validate) {
+    if (verbose)
+      cat("Comparing CDFs...\n");
     res <- compareCdfs(filename, outFilename, verbose=verbose);
     if (!res) {
       res2 <<- res;
       stop("An inconsistency between source and destination CDF was detected. Reason:", attr(res, "reason"));
     }
+    if (verbose)
+      cat("Comparing CDFs...done\n");
   } # if (.validate)
 
   invisible(TRUE);

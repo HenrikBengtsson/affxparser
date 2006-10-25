@@ -21,6 +21,9 @@ extern "C" {
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
+    string str;
+    int str_length; 
+    char* cstr; 
     
     SEXP names = R_NilValue, 
          probe_sets = R_NilValue,
@@ -33,9 +36,6 @@ extern "C" {
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
 
-    /** pointer to the name of the probeset. **/
-    const char* name;
-    
     FusionCDFProbeSetInformation probeset;
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -91,8 +91,13 @@ extern "C" {
       cdf.GetProbeSetInformation(iset, probeset);
       
       /* Record its name */
-      name = cdf.GetProbeSetName(iset).c_str();
-      SET_STRING_ELT(names, ii, mkChar(name));
+      str = cdf.GetProbeSetName(iset);
+      str_length = str.size();
+      cstr = Calloc(str_length+1, char);
+      strncpy(cstr, str.c_str(), str_length);
+      cstr[str_length] = '\0';
+      SET_STRING_ELT(names, ii, mkChar(cstr));
+      Free(cstr);
       
       /* Get the number of groups in the unit */
       int ngroups = probeset.GetNumGroups();
@@ -111,8 +116,13 @@ extern "C" {
         probeset.GetGroupInformation(igroup, group);
 
         /* Get the name of the group */
-        const char *groupName = group.GetName().c_str();
-        SET_STRING_ELT(r_group_names, igroup, mkChar(groupName));
+        str = group.GetName();
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
+        SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
+        Free(cstr);
 
         /* Get the number of cells (probes) in the group */
         int ncells = group.GetNumCells();
@@ -149,6 +159,9 @@ extern "C" {
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
+    string str;
+    int str_length; 
+    char* cstr; 
     
     SEXP names = R_NilValue, 
          probe_sets = R_NilValue,
@@ -162,7 +175,7 @@ extern "C" {
 
     /** pointer to the name of the probeset. **/
     const char* name;
-    char str[512];
+    char bfr[512];
 
     FusionCDFProbeSetInformation probeset;
 
@@ -219,8 +232,13 @@ extern "C" {
       cdf.GetProbeSetInformation(iset, probeset);
       
       /* Record its name */
-      name = cdf.GetProbeSetName(iset).c_str();
-      SET_STRING_ELT(names, ii, mkChar(name));
+      str = cdf.GetProbeSetName(iset);
+      str_length = str.size();
+      cstr = Calloc(str_length+1, char);
+      strncpy(cstr, str.c_str(), str_length);
+      cstr[str_length] = '\0';
+      SET_STRING_ELT(names, ii, mkChar(cstr));
+      Free(cstr);
       
       /* Get the number of groups in the unit */
       int ngroups = probeset.GetNumGroups();
@@ -238,20 +256,25 @@ extern "C" {
         probeset.GetGroupInformation(igroup, group);
 
         /* Get the name of the group */
-        const char *groupName = group.GetName().c_str();
+        str = group.GetName();
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
  
         /* If group name starts with the unit name, strip it off. */
         int len = strlen(name);
-        int res = strncmp(groupName, name, len);
+        int res = strncmp(cstr, name, len);
         if (res == 0) {
-          int last = strlen(groupName)-len;
+          int last = strlen(cstr)-len;
           for (int kk = 0; kk < last; kk++)
-            str[kk] = groupName[len+kk];
-          str[last] = '\0';
-          SET_STRING_ELT(r_group_names, igroup, mkChar(str));
+            bfr[kk] = cstr[len+kk];
+          bfr[last] = '\0';
+          SET_STRING_ELT(r_group_names, igroup, mkChar(bfr));
         } else {
-          SET_STRING_ELT(r_group_names, igroup, mkChar(groupName));
+          SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
         }
+        Free(cstr);
       }
       
       /** now set the probe_set in the main probe_set list. **/
@@ -281,6 +304,9 @@ extern "C" {
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
+    string str;
+    int str_length; 
+    char* cstr; 
     
     SEXP names = R_NilValue, 
          probe_sets = R_NilValue,
@@ -293,9 +319,6 @@ extern "C" {
     int iset = 0;
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
-
-    /** pointer to the name of the probeset. **/
-    const char* name;
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Opens file
@@ -352,8 +375,13 @@ extern "C" {
       cdf.GetProbeSetInformation(iset, probeset);
       
       /* Record its name */
-      name = cdf.GetProbeSetName(iset).c_str();
-      SET_STRING_ELT(names, ii, mkChar(name));
+      str = cdf.GetProbeSetName(iset);
+      str_length = str.size();
+      cstr = Calloc(str_length+1, char);
+      strncpy(cstr, str.c_str(), str_length);
+      cstr[str_length] = '\0';
+      SET_STRING_ELT(names, ii, mkChar(cstr));
+      Free(cstr);
       
       /* Get the number of groups in the unit */
       int ngroups = probeset.GetNumGroups();
@@ -372,8 +400,13 @@ extern "C" {
         probeset.GetGroupInformation(igroup, group);
 
         /* Get the name of the group */
-        const char *groupName = group.GetName().c_str();
-        SET_STRING_ELT(r_group_names, igroup, mkChar(groupName));
+        str = group.GetName();
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
+        SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
+        Free(cstr);
 
         /* Get the number of cells (probes) in the group */
         int ncells = group.GetNumCells();
@@ -442,6 +475,9 @@ extern "C" {
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
+    string str;
+    int str_length; 
+    char* cstr; 
     
     SEXP names = R_NilValue, 
          probe_sets = R_NilValue,
@@ -455,8 +491,6 @@ extern "C" {
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
 
-    /** pointer to the name of the probeset. **/
-    const char* name;
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Opens file
@@ -513,9 +547,14 @@ extern "C" {
       cdf.GetProbeSetInformation(iset, probeset);
       
       /* Record its name */
-      name = cdf.GetProbeSetName(iset).c_str();
-      SET_STRING_ELT(names, ii, mkChar(name));
-      
+      str = cdf.GetProbeSetName(iset);
+      str_length = str.size();
+      cstr = Calloc(str_length+1, char);
+      strncpy(cstr, str.c_str(), str_length);
+      cstr[str_length] = '\0';
+      SET_STRING_ELT(names, ii, mkChar(cstr));
+      Free(cstr);
+     
       /* Get the number of groups in the unit */
       int ngroups = probeset.GetNumGroups();
       
@@ -533,8 +572,13 @@ extern "C" {
         probeset.GetGroupInformation(igroup, group);
 
         /* Get the name of the group */
-        const char *groupName = group.GetName().c_str();
-        SET_STRING_ELT(r_group_names, igroup, mkChar(groupName));
+        str = group.GetName();
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
+        SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
+        Free(cstr);
 
         /* Get the number of cells (probes) in the group */
         int ncells = group.GetNumCells();
@@ -582,6 +626,9 @@ extern "C" {
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
+    string str;
+    int str_length; 
+    char* cstr; 
     
     SEXP names = R_NilValue, 
          probe_sets = R_NilValue,
@@ -595,8 +642,6 @@ extern "C" {
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
 
-    /** pointer to the name of the probeset. **/
-    const char* name;
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Opens file
@@ -653,8 +698,13 @@ extern "C" {
       cdf.GetProbeSetInformation(iset, probeset);
       
       /* Record its name */
-      name = cdf.GetProbeSetName(iset).c_str();
-      SET_STRING_ELT(names, ii, mkChar(name));
+      str = cdf.GetProbeSetName(iset);
+      str_length = str.size();
+      cstr = Calloc(str_length+1, char);
+      strncpy(cstr, str.c_str(), str_length);
+      cstr[str_length] = '\0';
+      SET_STRING_ELT(names, ii, mkChar(cstr));
+      Free(cstr);
       
       /* Get the number of groups in the unit */
       int ngroups = probeset.GetNumGroups();
@@ -673,8 +723,13 @@ extern "C" {
         probeset.GetGroupInformation(igroup, group);
 
         /* Get the name of the group */
-        const char *groupName = group.GetName().c_str();
-        SET_STRING_ELT(r_group_names, igroup, mkChar(groupName));
+        str = group.GetName();
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
+        SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
+        Free(cstr);
 
         /* Get the number of cells (probes) in the group */
         int ncells = group.GetNumCells();

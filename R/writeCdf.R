@@ -9,7 +9,7 @@
                           ...) {
     if(length(unitpositions) != nunits)
         stop("unitpositions argument is not matching nunits")
-    if(length(unitpositions) != nunits)
+    if(length(qcunitpositions) != nqcunits)
         stop("qcunitpositions argument is not matching nqcunits")
     if(length(refseq) != 1)
         stop("refseq argument is wrong")
@@ -73,25 +73,35 @@
     bytesOfUnits <- 4 * nunits;
     offset <- offset + bytesOfUnits;
 
-
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # QC units file positions
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    csum <- cumsum(qcUnitLengths);
-    nextOffset <- csum[nqcunits];
-    starts <- c(0, csum[-nqcunits]);
-    starts <- as.integer(offset + starts);
-    writeBin(starts, con = con, size = 4, endian = "little")
+    if (nqcunits > 0) {
+      csum <- cumsum(qcUnitLengths);
+      nextOffset <- csum[nqcunits];
+      starts <- c(0, csum[-nqcunits]);
+      starts <- as.integer(offset + starts);
+      writeBin(starts, con = con, size = 4, endian = "little")
+    } else {
+      nextOffset <- 0;
+#      starts <- 0;
+#      starts <- as.integer(offset + starts);
+#      writeBin(starts, con = con, size = 4, endian = "little")
+    }
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Units file positions
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     offset <- offset + nextOffset;
-    csum <- cumsum(unitLengths);
-    nextOffset <- csum[nunits];
-    starts <- c(0, csum[-nunits]);
-    starts <- as.integer(offset + starts);
-    writeBin(starts, con = con, size = 4, endian = "little")
+    if (nunits > 0) {
+      csum <- cumsum(unitLengths);
+      nextOffset <- csum[nunits];
+      starts <- c(0, csum[-nunits]);
+      starts <- as.integer(offset + starts);
+      writeBin(starts, con = con, size = 4, endian = "little");
+    } else {
+      nextOffset <- 0;
+    }
 
     # Return
     ## positions return argument
@@ -393,8 +403,19 @@
 
 
 
-writeCdf <- function(fname, cdfheader, cdf, cdfqc, 
-                     overwrite = FALSE, verbose = 0) {
+writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite = FALSE, verbose = 0) {
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Consistency checks
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    if (length(cdf) != cdfheader$nunits) {
+      throw("Number of units in 'cdf' does not match the number of units in the CDF header: ", length(cdf), " != ", cdfheader$nunits);
+    }
+
+    if (length(cdfqc) != cdfheader$nqcunits) {
+      throw("Number of QC units in 'cdfqc' does not match the number of QC units in the CDF header: ", length(cdfqc), " != ", cdfheader$nqcunits);
+    }
+
+
     if(verbose >= 1) {
       cat("Writing CDF file...\n");
       cat("  Pathname: ", fname, "\n", sep="");
@@ -413,21 +434,29 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
     if (verbose >= 1)
       cat("  Writes CDF header and unit names...\n");
 
-    # Start positions for QC units
-    lens <- lapply(cdfqc, FUN=.subset2, "ncells");
-    lens <- unlist(lens, use.names=FALSE);
-    lens <- 6 + 7*lens;
-    qcUnitLengths <- lens;
+    if (cdfheader$nqcunits > 0) {
+      # Start positions for QC units
+      lens <- lapply(cdfqc, FUN=.subset2, "ncells");
+      lens <- unlist(lens, use.names=FALSE);
+      lens <- 6 + 7*lens;
+      qcUnitLengths <- lens;
+    } else {
+      qcUnitLengths <- NULL;
+    }
 
-    # Start positions for units
-    # Number of bytes: 20 + (18+64)*nbrOfBlocks + 14*totalNbrOfCells bytes
-    lens <- lapply(cdf, FUN=function(unit) { 
-      ncells <- .subset2(unit, "ncells");
-      nblocks <- length(.subset2(unit, "blocks"));
-      20 + 82*nblocks + 14*ncells;
-    })
-    lens <- unlist(lens, use.names=FALSE);
-    unitLengths <- lens;
+    if (cdfheader$nunits > 0) {
+      # Start positions for units
+      # Number of bytes: 20 + (18+64)*nbrOfBlocks + 14*totalNbrOfCells bytes
+      lens <- lapply(cdf, FUN=function(unit) { 
+        ncells <- .subset2(unit, "ncells");
+        nblocks <- length(.subset2(unit, "blocks"));
+        20 + 82*nblocks + 14*ncells;
+      })
+      lens <- unlist(lens, use.names=FALSE);
+      unitLengths <- lens;
+    } else {
+      unitLengths <- NULL;
+    }
 
     positions <- .initializeCdf(con = cdfcon,
                                nunits = cdfheader$nunits,
@@ -497,6 +526,9 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc,
 
 ############################################################################
 # HISTORY:
+# 2006-10-25 /HB (+KS)
+# o BUG FIX: .initializeCdf() was writing false file offset for QC units
+#   when the number QC nunits were zero.  This would core dump readCdfNnn().
 # 2006-09-21 /HB
 # o BUG FIX: The 'atom' and 'indexpos' fields were swapped.
 # o Now suppressing warnings "writeChar: more characters requested..." in
