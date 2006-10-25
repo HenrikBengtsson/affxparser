@@ -40,7 +40,7 @@
 #   reading data by saving data such that cells in the same unit are
 #   stored together.  A \emph{write map} is used to remap cell indices
 #   to file indices.  When later reading that data back, a 
-#   \emph{read map} is used to remp file indices to cell indices.
+#   \emph{read map} is used to remap file indices to cell indices.
 #   Read and write maps are described next.
 # }
 #
@@ -127,8 +127,8 @@
 #   }
 #
 #   \emph{Warning}, do not misunderstand this example.  It can not be used
-#   improve reading speed of default CEL files.  For this, the data in the
-#   CEL files has to be rearranged (by the corresponding write map).
+#   improve the reading speed of default CEL files.  For this, the data in 
+#   the CEL files has to be rearranged (by the corresponding write map).
 # }
 #
 # @author
