@@ -8,7 +8,6 @@ using namespace affymetrix_fusion_io;
 extern "C" {
   #include <R.h>
   #include <Rdefines.h>  
-  
   #include <wchar.h>
   #include <wctype.h>
 
@@ -28,6 +27,9 @@ extern "C" {
     int nRows = 0, nCols = 0;
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
+    string str;
+    int str_length; 
+    char* cstr; 
 
     cdf.SetFileName(cdfFileName);
 
@@ -50,13 +52,16 @@ extern "C" {
     nCols = header.GetCols();
 
     for (int iset = 0; iset < nsets; iset++) {
-      const char* name = cdf.GetProbeSetName(iset).c_str();
-
+      str = cdf.GetProbeSetName(iset);
+      str_length = str.size();
+      cstr = Calloc(str_length+1, char);
+      strncpy(cstr, str.c_str(), str_length);
+      cstr[str_length] = '\0';
+      SET_STRING_ELT(names, iset, mkChar(cstr));
       if (i_verboseFlag >= R_AFFX_VERBOSE) {
-        Rprintf("Processing probeset: %s\n", name);
+        Rprintf("Processing probeset: %s\n", cstr);
       }
-
-      SET_STRING_ELT(names, iset, mkChar(name));
+      Free(cstr);
 
       FusionCDFProbeSetInformation set;
       cdf.GetProbeSetInformation(iset, set);
@@ -117,6 +122,7 @@ extern "C" {
                                 SEXP returnType, SEXP returnQCNumbers) 
   {
     FusionCDFData cdf;
+    string str;
     
     SEXP
         r_qcunits_list = R_NilValue,
@@ -438,6 +444,9 @@ extern "C" {
   {
     FusionCDFData cdf;
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    string str;
+    int str_length; 
+    char* cstr; 
     
     cdf.SetFileName(cdfFileName);
    
@@ -490,13 +499,32 @@ extern "C" {
     UNPROTECT(1);
     
     SET_STRING_ELT(names, ii, mkChar("refseq"));
-    SET_VECTOR_ELT(vals, ii++, mkString(header.GetReference().c_str()));
+    str = header.GetReference();
+    str_length = str.size();
+    cstr = Calloc(str_length+1, char);
+    strncpy(cstr, str.c_str(), str_length);
+    cstr[str_length] = '\0';
+    SET_VECTOR_ELT(vals, ii++, mkString(cstr));
+    Free(cstr);
 
     SET_STRING_ELT(names, ii, mkChar("chiptype"));
-    SET_VECTOR_ELT(vals, ii++, mkString(cdf.GetChipType().c_str()));
+    str = cdf.GetChipType();
+    str = header.GetReference();
+    str_length = str.size();
+    cstr = Calloc(str_length+1, char);
+    strncpy(cstr, str.c_str(), str_length);
+    cstr[str_length] = '\0';
+    SET_VECTOR_ELT(vals, ii++, mkString(cstr));
+    Free(cstr);
 
     SET_STRING_ELT(names, ii, mkChar("filename"));
-    SET_VECTOR_ELT(vals, ii++, mkString(cdf.GetFileName().c_str()));
+    str = cdf.GetFileName();
+    str_length = str.size();
+    cstr = Calloc(str_length+1, char);
+    strncpy(cstr, str.c_str(), str_length);
+    cstr[str_length] = '\0';
+    SET_VECTOR_ELT(vals, ii++, mkString(cstr));
+    Free(cstr);
 
     /** set the names down here at the end. **/
     setAttrib(vals, R_NamesSymbol, names);
@@ -529,6 +557,9 @@ extern "C" {
                              SEXP returnBlockAtomNumbers)
   {
     FusionCDFData cdf;
+    string str;
+    int str_length; 
+    char* cstr; 
     
     SEXP
         r_units_list = R_NilValue,
@@ -603,7 +634,8 @@ extern "C" {
     FusionCDFProbeInformation probe;
     int unitNumBlocks;
     int blockNumCells;
-    const char *unitName, *blockName;
+    char *unitName;
+    const char *blockName;
     string pbaseString, tbaseString;
     int ii, unit_idx, 
         unprotectBlockInfo, numBlockArguments, 
@@ -716,7 +748,11 @@ extern "C" {
       cdf.GetProbeSetInformation(unit_idx, unit);
 
       PROTECT(r_unit = NEW_LIST(numUnitArguments));
-      unitName = cdf.GetProbeSetName(unit_idx).c_str();
+      str = cdf.GetProbeSetName(unit_idx);
+      str_length = str.size();
+      unitName = Calloc(str_length+1, char);
+      strncpy(unitName, str.c_str(), str_length);
+      unitName[str_length] = '\0';
       if (i_verboseFlag >= R_AFFX_VERBOSE) {
           Rprintf("Processing unit: %s\n", unitName);
       }
@@ -909,9 +945,14 @@ extern "C" {
         UNPROTECT(unprotectBlockInfo);
 
         /** Put the block into the r_blocks_list and unprotect it **/
+        str = block.GetName();
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
         SET_VECTOR_ELT(r_blocks_list, iblock, r_block);
-        SET_STRING_ELT(r_blocks_list_names, iblock, 
-                       mkChar(block.GetName().c_str()));
+        SET_STRING_ELT(r_blocks_list_names, iblock, mkChar(cstr));
+        Free(cstr);
         UNPROTECT(1);
       }
 
@@ -928,6 +969,7 @@ extern "C" {
        ** and unprotect it. **/
       SET_VECTOR_ELT(r_units_list, iunit, r_unit);
       SET_STRING_ELT(r_units_list_names, iunit, mkChar(unitName));
+      Free(unitName);
       UNPROTECT(1);
     }
 
@@ -963,6 +1005,9 @@ extern "C" {
   SEXP R_affx_get_cdf_cell_indices(SEXP fname, SEXP units, SEXP verbose) 
   {
     FusionCDFData cdf;
+    string str;
+    int str_length; 
+    char* cstr; 
 
     SEXP
       /* Returned list of units */
@@ -1072,10 +1117,14 @@ extern "C" {
 
       /* get the name */
       /* 'name' is a pointer to a const char: */
-      const char* name = cdf.GetProbeSetName(unitIdx).c_str();
-
+      str = cdf.GetProbeSetName(unitIdx);
+      str_length = str.size();
+      cstr = Calloc(str_length+1, char);
+      strncpy(cstr, str.c_str(), str_length);
+      cstr[str_length] = '\0';
       /** ...and add to list of unit names. **/
-			SET_STRING_ELT(unitNames, uu, mkChar(name));
+			SET_STRING_ELT(unitNames, uu, mkChar(cstr));
+      Free(cstr);
 
       PROTECT(r_probe_set = NEW_LIST(1));
 
@@ -1124,7 +1173,13 @@ extern "C" {
 
         /** set these cells in the group list. **/
         SET_VECTOR_ELT(r_group_list, igroup, cell_list);
-        SET_STRING_ELT(r_group_names, igroup, mkChar(group.GetName().c_str()));
+        str = group.GetName();
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
+        SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
+        Free(cstr);
 
         /* Unprotect in reverse order */
  		    UNPROTECT(2);  /* 'indices' and then 'cell_list' */
@@ -1176,6 +1231,9 @@ extern "C" {
   SEXP R_affx_get_cdf_units(SEXP fname, SEXP units, SEXP readXY, SEXP readBases, SEXP readExpos, SEXP readType, SEXP readDirection, SEXP readIndices, SEXP verbose)
   {
     FusionCDFData cdf;
+    string str;
+    int str_length; 
+    char* cstr; 
 
     SEXP
       /* Returned list of units */
@@ -1254,7 +1312,7 @@ extern "C" {
     maxNbrOfUnits = header.GetNumProbeSets();
     nbrOfUnits = length(units);
     if (nbrOfUnits == 0) {
-      nbrOfUnits  = maxNbrOfUnits;
+      nbrOfUnits = maxNbrOfUnits;
     } else {
       readAll = false;
       /* Validate argument 'units': */
@@ -1371,37 +1429,14 @@ extern "C" {
       }
       
       /* get the name */
-      /* 'name' is a pointer to a const char: */
-      const char* name = cdf.GetProbeSetName(unitIdx).c_str();
-
-      if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
-        /* TROUBLESHOOTING: Something goes wrong with 'name'?!? */
-        Rprintf("name: [0x%x:", name);
-        for (int kk=0; kk < 20; kk++) {
-          printf(" %02d", kk);   /* TROUBLESHOOTING: kk=0 is outputted */ 
-          char ch = (char)name[kk];   /* When R crashes it happens here! */
-          printf("=");           /* TROUBLESHOOTING: ...but not this! */
-          int value = (int)name[kk];
-          printf("=");
-          printf("(%03d)", value);
-          printf("%c", ch);
-        }
-				/* 
-        for (int kk=0; kk < 20; kk++) {
-          Rprintf(" %02d", kk);
-          int value = (int)name[kk];
-          Rprintf("=");
-          Rprintf("(%03d)", value);
-          Rprintf("%c", (char)name[kk]);
-        }
-				*/
-        Rprintf("] ");
-        /* TROUBLESHOOTING: If the above is removed, it crashed below: */
-        Rprintf("%s\n", name);
-      }
-
+      str = cdf.GetProbeSetName(unitIdx);
+      str_length = str.size();
+      cstr = Calloc(str_length+1, char);
+      strncpy(cstr, str.c_str(), str_length);
+      cstr[str_length] = '\0';
       /** ...and add to list of unit names. **/
-			SET_STRING_ELT(unitNames, uu, mkChar(name));
+			SET_STRING_ELT(unitNames, uu, mkChar(cstr));
+      Free(cstr);
 
       
       PROTECT(r_probe_set = NEW_LIST(nbrOfUnitElements));
@@ -1544,7 +1579,13 @@ extern "C" {
 
           /** set these cells in the group list. **/
           SET_VECTOR_ELT(r_group_list, igroup, cell_list);
-          SET_STRING_ELT(r_group_names, igroup, mkChar(group.GetName().c_str()));
+          str = group.GetName();
+          str_length = str.size();
+          cstr = Calloc(str_length+1, char);
+          strncpy(cstr, str.c_str(), str_length);
+          cstr[str_length] = '\0';
+          SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
+          Free(cstr);
           UNPROTECT(1); /* 'cell_list' */
 
 					/*
@@ -1604,6 +1645,9 @@ extern "C" {
   SEXP R_affx_get_cdf_unit_names(SEXP fname, SEXP units, SEXP verbose) 
   {
     FusionCDFData cdf;
+    string str;
+    int str_length; 
+    char* cstr; 
     
     SEXP names = R_NilValue;
 
@@ -1613,9 +1657,7 @@ extern "C" {
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
 
-    /** pointer to the name of the probeset. **/
-    const char* name;
-    
+
     cdf.SetFileName(cdfFileName);
     if (i_verboseFlag >= R_AFFX_VERBOSE) {
       Rprintf("Attempting to read CDF File: %s\n", cdf.GetFileName().c_str());
@@ -1650,15 +1692,25 @@ extern "C" {
     PROTECT(names = NEW_CHARACTER(nbrOfUnits));
     if (readAll) {
       for (int uu = 0; uu < nbrOfUnits; uu++) {
-        name = cdf.GetProbeSetName(uu).c_str();
-        SET_STRING_ELT(names, uu, mkChar(name));
+        str = cdf.GetProbeSetName(uu);
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
+        SET_STRING_ELT(names, uu, mkChar(cstr));
+        Free(cstr);
       }
     } else {
       for (int uu = 0; uu < nbrOfUnits; uu++) {
         /* Unit indices are zero-based in Fusion SDK. */
         unitIdx = INTEGER(units)[uu] - 1;
-        name = cdf.GetProbeSetName(unitIdx).c_str();
-        SET_STRING_ELT(names, uu, mkChar(name));
+        str = cdf.GetProbeSetName(unitIdx);
+        str_length = str.size();
+        cstr = Calloc(str_length+1, char);
+        strncpy(cstr, str.c_str(), str_length);
+        cstr[str_length] = '\0';
+        SET_STRING_ELT(names, uu, mkChar(cstr));
+        Free(cstr);
       }
     }
 

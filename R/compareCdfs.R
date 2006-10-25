@@ -95,7 +95,7 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   if (verbose >= 1)
     cat("  Comparing QC units...\n");
-  units <- 1:h1$nqcunits;
+  units <- seq(length=h1$nqcunits);
   while (length(units) > 0) {
     head <- 1:min(length(units),10);
     uu <- units[head];
@@ -121,7 +121,7 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
   }
   if (verbose >= 2)
     cat("    Progress: ");
-  units <- 1:h1$nunits;
+  units <- seq(length=h1$nunits);
   count <- 0;
   while (length(units) > 0) {
     head <- 1:min(length(units),500);
