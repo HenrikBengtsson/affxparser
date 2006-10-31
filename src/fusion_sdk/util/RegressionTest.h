@@ -29,6 +29,7 @@
 #ifndef REGRESSION_TEST_H
 #define REGRESSION_TEST_H
 
+#include <assert.h>
 #include <string>
 #include <stdlib.h>
 #include "Util.h"

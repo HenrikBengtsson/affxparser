@@ -27,7 +27,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #include <winsock2.h>
 #else

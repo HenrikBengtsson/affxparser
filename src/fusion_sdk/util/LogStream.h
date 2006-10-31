@@ -25,8 +25,8 @@
  * @date   Tue Mar 21 10:35:22 PST 2006
  * 
  * @brief  Output verbose messages to log file as we go along.
- * 
  */
+
 #ifndef LOGSTREAM_H
 #define LOGSTREAM_H
 
@@ -35,6 +35,9 @@
 #include <time.h>
 #include "MsgHandler.h"
 
+/**
+ * @brief Log messages with timestamps.
+ */
 class LogStream : public MsgHandler, public ProgressHandler {
 
 public:

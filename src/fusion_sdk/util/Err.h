@@ -31,6 +31,7 @@
 #ifndef ERR_H
 #define ERR_H
 
+#include <assert.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -63,7 +64,8 @@ class Err {
         delete m_ErrHandlers[i];
       }
     }
-    std::vector<ErrHandler *> m_ErrHandlers;
+
+    std::vector<ErrHandler *> m_ErrHandlers; ///< vector of handlers
     bool m_Throw; ///< Should we throw an exception rather than exit(1)?
   };
     

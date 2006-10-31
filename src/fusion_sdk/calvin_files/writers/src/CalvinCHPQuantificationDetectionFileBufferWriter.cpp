@@ -1,25 +1,25 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 /**
- * @file   CalvinCHPQuantificationFileBufferWriter.cpp
+ * @file   CalvinCHPQuantificationDetectionFileBufferWriter.cpp
  * @author David Le
  * @date   Mon May 15 12:09:42 2006
  * 
@@ -27,69 +27,65 @@
  */
 
 #include "CalvinCHPFileUpdater.h"
-#include "CalvinCHPQuantificationFileBufferWriter.h"
+#include "CalvinCHPQuantificationDetectionFileBufferWriter.h"
 
 using namespace affymetrix_calvin_io;
 
-CHPQuantificationFileBufferWriter::CHPQuantificationFileBufferWriter()
+CHPQuantificationDetectionFileBufferWriter::CHPQuantificationDetectionFileBufferWriter()
 {
 	m_BufferSize = 0;
+	m_MaxBufferSize = MAX_BUFFER_SIZE;
 }
 
-CHPQuantificationFileBufferWriter::~CHPQuantificationFileBufferWriter()
+CHPQuantificationDetectionFileBufferWriter::~CHPQuantificationDetectionFileBufferWriter()
 {
 	FlushBuffer();
 	Cleanup();
 }
 
-void CHPQuantificationFileBufferWriter::Cleanup()
+void CHPQuantificationDetectionFileBufferWriter::Cleanup()
 {
-	for (int target=0; target<m_TargetQuantificationBuffers.size(); target++) 
+	for (int target=0; target<m_TargetQuantificationDetectionBuffers.size(); target++) 
 	{ 
-		m_TargetQuantificationBuffers[target].erase(m_TargetQuantificationBuffers[target].begin(), m_TargetQuantificationBuffers[target].end());
+		m_TargetQuantificationDetectionBuffers[target].erase(m_TargetQuantificationDetectionBuffers[target].begin(), m_TargetQuantificationDetectionBuffers[target].end());
 	}
-	m_TargetQuantificationBuffers.erase(m_TargetQuantificationBuffers.begin(), m_TargetQuantificationBuffers.end());
+	m_TargetQuantificationDetectionBuffers.erase(m_TargetQuantificationDetectionBuffers.begin(), m_TargetQuantificationDetectionBuffers.end());
 }
 
-void CHPQuantificationFileBufferWriter::Initialize(std::vector<std::string> *CHPFileNames)
+void CHPQuantificationDetectionFileBufferWriter::Initialize(std::vector<std::string> *CHPFileNames)
 {
 	m_CHPFileNames = CHPFileNames;
 	Cleanup();
 	for (int i=0; i<m_CHPFileNames->size(); i++)
 	{
 		std::vector<float> quantificationBuffer;
-		m_TargetQuantificationBuffers.push_back(quantificationBuffer);
-		m_TargetQuantificationRowIndexes.push_back(0);
+		m_TargetQuantificationDetectionBuffers.push_back(quantificationBuffer);
+		m_TargetQuantificationDetectionRowIndexes.push_back(0);
 	}
 	m_BufferSize = 0;
 }
 
-void CHPQuantificationFileBufferWriter::WriteQuantificationEntry(int target, float quantification)
+void CHPQuantificationDetectionFileBufferWriter::WriteQuantificationEntry(int target, float quantification)
 {
-	m_TargetQuantificationBuffers[target].push_back(quantification);
+	m_TargetQuantificationDetectionBuffers[target].push_back(quantification);
 	m_BufferSize += sizeof(float);
-	if (m_BufferSize > MAX_BUFFER_SIZE)
+	if (m_BufferSize > m_MaxBufferSize)
 	{
 		FlushBuffer();
 	}
 }
 
-void CHPQuantificationFileBufferWriter::FlushBuffer()
+void CHPQuantificationDetectionFileBufferWriter::FlushBuffer()
 {
 	if(m_BufferSize > 0) {
 		for (int target=0; target<m_CHPFileNames->size(); target++)
 		{
 			CalvinCHPFileUpdater updater;
 			updater.OpenCHPFile((*m_CHPFileNames)[target].c_str());
-			for (int i=0; i<m_TargetQuantificationBuffers[target].size(); i++)
-			{
-				updater.UpdateExpressionQuantification(
-					m_TargetQuantificationRowIndexes[target]+i, 
-					m_TargetQuantificationBuffers[target][i]);
-			}
+			updater.UpdateExpressionQuantificationBuffer(m_TargetQuantificationDetectionRowIndexes[target], m_TargetQuantificationDetectionBuffers[target]);
 			updater.CloseCHPFile();
-			m_TargetQuantificationRowIndexes[target] += m_TargetQuantificationBuffers[target].size();
-			m_TargetQuantificationBuffers[target].erase(m_TargetQuantificationBuffers[target].begin(), m_TargetQuantificationBuffers[target].end());
+			m_TargetQuantificationDetectionRowIndexes[target] += m_TargetQuantificationDetectionBuffers[target].size();
+			m_TargetQuantificationDetectionBuffers[target].clear();
 		}
 	}
 	m_BufferSize = 0;

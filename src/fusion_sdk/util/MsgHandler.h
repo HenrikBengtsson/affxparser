@@ -25,13 +25,16 @@
  * @date   Mon Jan 30 16:46:01 2006
  * 
  * @brief  File for handling messages from Verbose handler.
- * 
  */
+
 #ifndef MSGHANDLER_H
 #define MSGHANDLER_H
 
 #include <string>
 
+/**
+ * @brief An abstract handler for messages.
+ */
 class MsgHandler {
 
 public:
@@ -59,7 +62,6 @@ public:
 protected:
   
   int m_Verbosity;  ///< What level of verbosity is processed, higher == more messages.
-
 
 };
 

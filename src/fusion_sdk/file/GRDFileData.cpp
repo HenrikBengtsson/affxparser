@@ -41,6 +41,17 @@ using namespace affxgrd;
 
 //////////////////////////////////////////////////////////////////////
 
+const char affxgrd::SZ_PARENT_DAT_PROP_NAME[]="Parent DAT File";
+const char affxgrd::SZ_SCAN_DATE_TIME_PROP_NAME[]= "Scan Date-Time";
+const char affxgrd::SZ_SCANNER_ID_PROP_NAME[]="Scanner ID";
+
+void affxgrd_use_SZ_arrays_above_to_supress_warnings() {
+  const char* junk;
+  junk=affxgrd::SZ_PARENT_DAT_PROP_NAME;
+  junk=affxgrd::SZ_SCAN_DATE_TIME_PROP_NAME;
+  junk=affxgrd::SZ_SCANNER_ID_PROP_NAME;
+}
+
 /*
  * Initialize the header object to zero values.
  */
@@ -119,7 +130,7 @@ bool CGRDFileData::ReadFixedHeader(char* pData)
 bool CGRDFileData::ReadTagHeader(char* pData)
 {
 	// Extract the number of bytes in the tag header section.
-	uint32_t numBtyes = MmGetUInt32_N((uint32_t *)(pData + m_HeaderData.m_nHeaderBytes));
+	// uint32_t numBtyes = MmGetUInt32_N((uint32_t *)(pData + m_HeaderData.m_nHeaderBytes));
 	m_HeaderData.m_nHeaderBytes += INT32_SIZE;
 
 	// Extract the number of name-value pairs
@@ -166,7 +177,7 @@ bool CGRDFileData::ReadTagHeader(char* pData)
 bool CGRDFileData::ReadOptimumCornerHeader(char* pData)
 {
 	// Extract the number of bytes in the optimum corner header section.
-	uint32_t numBtyes = MmGetUInt32_N((uint32_t *)(pData + m_HeaderData.m_nHeaderBytes));
+	//uint32_t numBtyes = MmGetUInt32_N((uint32_t *)(pData + m_HeaderData.m_nHeaderBytes));
 	m_HeaderData.m_nHeaderBytes += INT32_SIZE;
 
 	// Extract the number of subgrids
@@ -206,9 +217,9 @@ bool CGRDFileData::ReadOptimumCornerHeader(char* pData)
  * Null the fields.
  */
 CGRDFileData::CGRDFileData() :
-	m_bFileOpen(false),
 	m_lpFileMap(NULL),
 	m_lpData(NULL),
+	m_bFileOpen(false),
 	m_bFileMapped(false)
 {
 #ifdef _MSC_VER

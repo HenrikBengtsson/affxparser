@@ -29,7 +29,12 @@
  * 
  */
 
+//
 #include <errno.h>
+#include <fcntl.h>
+#include <map>
+#include <math.h>
+#include <sstream>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,26 +42,33 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <vector>
+//
+#include "Convert.h"
+#include "Err.h"
+#include "RowFile.h"
+#include "TableFile.h"
+#include "Util.h"
+#include "Verbose.h"
+
+#define	POSIX_OPEN open
+#define POSIX_CLOSE close
+#define	POSIX_MKDIR mkdir
 
 #ifdef WIN32
-#include <windows.h>
-#include <io.h>
-#include <stdio.h>
 #include <direct.h>
-#include <stdlib.h>
+#include <io.h>
+#include <windows.h>
 #define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
 
-#ifndef _DLL /* _MSC_VER < 1400 */
 #ifndef __MINGW32__
-#define		open	_open
-#define		close	_close
-#define		mkdir	_mkdir
-#endif
-#endif
+#define	POSIX_OPEN _open
+#define POSIX_CLOSE _close
+#define	POSIX_MKDIR _mkdir
+#endif /* __MINGW32__ */
 
 #else
 #include <unistd.h>
-#endif
+#endif /* WIN32 */
 
 // OS stuff for memInfo
 #ifdef __APPLE__
@@ -65,19 +77,10 @@
 #ifdef __linux__
 #include <sys/sysinfo.h>
 #endif
+#ifdef __sun__
+#include <unistd.h>
+#endif
 
-//
-#include <fcntl.h>
-#include <errno.h>
-#include <math.h>
-#include <map>
-
-#include "Verbose.h"
-#include "Err.h"
-#include "Util.h"
-#include "Convert.h"
-#include "RowFile.h"
-#include "TableFile.h"
 
 using namespace std;
 
@@ -89,14 +92,15 @@ using namespace std;
  */
 char *Util::cloneString(const char *s) {
   char *copy = NULL;
-  int length = -1;
   if(s == NULL)
     return NULL;
 
-  length = strlen(s);
+  size_t length = strlen(s);
   //  copy = new ( sizeof(char) * (length+1) );
   copy = new char[length + 1];
-  strncpy(copy, s, length+1);
+  // strncpy is deprecated
+  // strncpy(copy, s, length+1);
+  memcpy(copy,s,length+1);
   return copy;
 }
 
@@ -137,8 +141,8 @@ void Util::carefulClose(std::ofstream &out) {
 void Util::carefulClose(std::fstream &out) {
   // If file is open, do some checks to make sure that it was successful...
   if(out.is_open()) {
-    if(!out.bad()) {
-      //      Err::errAbort("Util::carefulClose() - Error ofstream bad.");
+    if(out.bad()) {
+      Err::errAbort("Util::carefulClose() - Error ofstream bad.");
     }
   }
   out.close();
@@ -150,10 +154,10 @@ void Util::carefulClose(std::fstream &out) {
  */
 bool Util::fileReadable(const char *fileName) {
   int f;
-  f = open(fileName, O_RDONLY);
+  f = POSIX_OPEN(fileName, O_RDONLY);
   if(f < 0) 
     return false;
-  close(f);
+  POSIX_CLOSE(f);
   return true;
 }
 
@@ -270,9 +274,9 @@ bool Util::directoryWritable(const char *dirname) {
 bool Util::makeDir(const char *dirName) {
   int error;
 #ifdef WIN32
-  error = mkdir(dirName);
+  error = POSIX_MKDIR(dirName);
 #else
-  error = mkdir(dirName, 0777);
+  error = POSIX_MKDIR(dirName, 0777);
 #endif
   if(error != 0 && errno == EEXIST) 
     return false;
@@ -318,7 +322,7 @@ std::string* Util::createDir(const char *dirName) {
       Mode |= S_IXGRP;
     if (Mode & (S_IROTH | S_IWOTH))
       Mode |= S_IXOTH;
-    const int mkdirError = mkdir (dirName, Mode);
+    const int mkdirError = POSIX_MKDIR (dirName, Mode);
 
     // Restore caller's umask.
     umask (Umask);
@@ -530,25 +534,19 @@ int32_t Util::schrageRandom(int32_t *ix) {
   rand = (*ix); 
   return rand;
 }
-  
 
-/** 
- * Determine the free and total amount of memory in bytes on this
- * machine.
- * 
- * @param free -  Bytes available currently.
- * @param total - Total bytes installed on machine.
- * @param swapAvail - Amount of swap available on machine.
- * @param memAvail  - Amount of space we should consider available.
- * 
- * @return true if successful, false otherwise.
- */
-bool Util::memInfo(uint64_t &free, uint64_t &total, uint64_t &swapAvail, uint64_t& memAvail) {
-  bool success = false;
 
 #ifdef WIN32 
-#define meminfo_defined
-
+#define memInfo_defined 1
+/// @brief     Query windows for its memInfo.
+/// @param     free      The amount of free memory. (bytes)
+/// @param     total     The physical memory installed (bytes)
+/// @param     swapAvail The amount of swap avail. (bytes)
+/// @param     memAvail  Suggested amount of memory to use.
+/// @return    true on success
+bool memInfo_win32(uint64_t &free, uint64_t &total,
+                   uint64_t &swapAvail, uint64_t& memAvail)
+{
   MEMORYSTATUSEX statex;
   statex.dwLength = sizeof(statex);
   if(GlobalMemoryStatusEx(&statex) == 0) {
@@ -558,60 +556,152 @@ bool Util::memInfo(uint64_t &free, uint64_t &total, uint64_t &swapAvail, uint64_
   total = statex.ullTotalPhys;
   swapAvail = statex.ullAvailVirtual - statex.ullAvailPhys;
   memAvail = (uint64_t)(free * 0.90);
-  success = true;
+
+  return true;
+}
 #endif
-
-// 386 systems cant map more than 2GB of user memory.
-// (unless you patch...)
-#define MEMINFO_2GB_MAX (2UL*1024*1024*1024)
-
-
+  
 #ifdef __linux__
-#define meminfo_defined
-  struct sysinfo info;
-  if(sysinfo(&info) != 0) {
-    Err::errAbort("Util::memInfo() - Could not determine memory usage with: sysinfo().");
+#define memInfo_defined 1
+
+/// @brief     Read and parse the contents of /proc/meminfo on 2.4 and 2.6 systems.
+/// @param     proc_meminfo_filename File to parse (changeable for testing)
+/// @param     free      The amount of free memory. (bytes)
+/// @param     total     The physical memory installed (bytes)
+/// @param     swapAvail The amount of swap avail. (bytes)
+/// @param     memAvail  Suggested amount of memory to use.
+/// @return    true on success
+bool memInfo_linux(std::string proc_meminfo_filename,
+                   uint64_t &free, uint64_t &total,
+                   uint64_t &swapAvail, uint64_t& memAvail)
+{
+  std::ifstream proc_meminfo;
+  std::string key;
+  std::string line;
+  //char line_buf[1024];
+  //std::istringstream line_stm(line_buf,sizeof(line_buf));
+  uint64_t val;
+  std::string units;
+  uint64_t buffersUsed=0, cached=0;
+  
+  free=total=swapAvail=memAvail=0;
+
+  // 2.4
+  // total: used: free: shared: buffers: cached:
+  // Mem:  4097478656 2765283328 1332195328 0 219951104 2328576000
+  // Swap: 3224301568        0 3224301568
+
+  // 2.6
+  // MemTotal:      4059404 kB
+  // MemFree:       2169240 kB
+  // Buffers:         33776 kB
+  // Cached:        1618328 kB
+
+  proc_meminfo.open(proc_meminfo_filename.c_str());
+  while (!proc_meminfo.eof()) {
+    getline(proc_meminfo,line);
+    //cout<<"L: "<<line<<"\n";
+    std::istringstream line_stm(line);
+    
+    //proc_meminfo.getline(line_buf,sizeof(line_buf));
+    //line_stm.seekg(0,ios_base::beg);
+    //cout << line_stm;
+    key="";
+    val=0;
+    units="";
+    // MemTotal:      4059404 kB
+    line_stm >> key;
+    line_stm >> val;
+    line_stm >> units;
+
+    // Handle the linux-2.4 case.
+    if (key=="total:") {
+      std::string ignore;
+      std::string line_mem;
+      getline(proc_meminfo,line_mem);
+      std::istringstream line_stm_24_mem(line_mem);
+      line_stm_24_mem >> key;
+      line_stm_24_mem >> total;       // total:
+      line_stm_24_mem >> ignore;      // used:
+      line_stm_24_mem >> free;        // free:
+      line_stm_24_mem >> ignore;      // shared:
+      line_stm_24_mem >> buffersUsed; // buffers:
+      //
+      std::string line_swap;
+      getline(proc_meminfo,line_swap);
+      std::istringstream line_stm_24_swap(line_swap);
+      line_stm_24_swap >> ignore;      // Swap:
+      line_stm_24_swap >> swapAvail;
+      // we dont need any more data
+      break;
+    }
+    //
+    //printf("%-20s=%10lu %4s\n",key.c_str(),val,units.c_str());
+    //
+    if (units=="kB") {
+      val=val*1024;
+    } 
+    else if (units=="MB") {
+      val=val*1024*1024;
+    } else {
+      // just give up if the units arent there.
+      break;
+      // assert(0);
+    }
+    //
+    if (key=="MemTotal:") {
+      total=val;
+    }
+    else if (key=="MemFree:") {
+      free=val;
+    }
+    else if (key=="SwapFree:") {
+      swapAvail=val;
+    }
+    else if (key=="Buffers:") {
+      buffersUsed=val;
+    }
+    else if (key=="Cached:") {
+      cached=val;
+    } 
   }
-  free = info.freeram * info.mem_unit;
-  total = info.totalram * info.mem_unit;
-  swapAvail = info.freeswap * info.mem_unit;
-
-  // We use this as a guesstimate of how much ram we can safely allocate on the system.
-  // The factor of 0.90 is to leave a bit of memory for other users.
-  memAvail=(uint64_t)(free+0.90*(info.bufferram*info.mem_unit));
-
-#ifdef __i386__
-  // we test for __i386__ as these systems cant map more than 2GB of space
-  // even if they have more RAM in the system.
-  if (memAvail>MEMINFO_2GB_MAX) {
-    memAvail=MEMINFO_2GB_MAX;
-  }
-#endif
-  success = true;
+  proc_meminfo.close();
+  
+  memAvail=(uint64_t)(free+0.90*buffersUsed+cached);
+  
+  return true;
+}
 #endif
 
-  /// @todo Cant we test for __DARWIN__?
 #ifdef __APPLE__
-#define meminfo_defined
-
+#define memInfo_defined 1
+/// @brief     Query the mach kernel for memInfo.
+/// @param     free      The amount of free memory. (bytes)
+/// @param     total     The physical memory installed (bytes)
+/// @param     swapAvail The amount of swap avail. (bytes)
+/// @param     memAvail  Suggested amount of memory to use.
+/// @return    true on success
+bool memInfo_darwin(uint64_t &free, uint64_t &total,
+                    uint64_t &swapAvail, uint64_t& memAvail)
+{
   // ask mach 
   struct vm_statistics vm_stat;
   vm_size_t   my_pagesize;
   mach_port_t my_host=mach_host_self();
   mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
-
+  
   if (host_page_size(my_host,&my_pagesize)!=KERN_SUCCESS) {
     Err::errAbort("Util::memInfo() - Didnt succeed with 'host_page_size'.");
   }
   if (host_statistics(my_host, HOST_VM_INFO,(integer_t*)&vm_stat,&count) != KERN_SUCCESS) {
     Err::errAbort("Util::memInfo() - Didnt succeed with 'host_statistics'.");
   }
-
+  
   // there isnt a total in the struct; sum it up.
   total=(vm_stat.free_count+vm_stat.active_count+vm_stat.inactive_count+vm_stat.wire_count);
   // THEN multiply by the page size.  (a 64b multiply)
   total=total*my_pagesize;
-
+  
 //#define PRINT_IT(x) printf("%-30s: %8d\n",#x,x)
 //  PRINT_IT(vm_stat.free_count);
 //  PRINT_IT(vm_stat.active_count);
@@ -625,19 +715,212 @@ bool Util::memInfo(uint64_t &free, uint64_t &total, uint64_t &swapAvail, uint64_
   swapAvail=0;
   // our guess as to what we can allocate
   memAvail=(uint64_t)(0.90*(vm_stat.free_count+vm_stat.inactive_count)*my_pagesize);
+  
+  return true;
+}
+#endif
 
-  // clamp it to 2GB
-  if (memAvail>MEMINFO_2GB_MAX) {
-    memAvail=MEMINFO_2GB_MAX;
+#ifdef __sun__
+#define memInfo_defined 1
+/// @brief     Query a solaris kernel for memInfo
+/// @param     free      The amount of free memory. (bytes)
+/// @param     total     The physical memory installed (bytes)
+/// @param     swapAvail The amount of swap avail. (always zero.)
+/// @param     memAvail  Suggested amount of memory to use.
+/// @return    true on success
+bool memInfo_solaris(uint64_t &free, uint64_t &total,
+                     uint64_t &swapAvail, uint64_t& memAvail)
+{
+  uint64_t page_size=sysconf(_SC_PAGESIZE);
+
+  free  =sysconf(_SC_AVPHYS_PAGES)*page_size;
+  total =sysconf(_SC_PHYS_PAGES  )*page_size;
+  // figure we can use a quarter of the allocated memory
+  memAvail=free+((total-free)/4);
+  // dont want to call swapctl...
+  swapAvail=0;
+
+  return true;
+}
+#endif
+
+#ifdef __which_system_was_this_for__
+#define memInfo_defined 1
+/// @brief     Use linux sysinfo to get linux memInfo. (the old interface)
+/// @param     free      The amount of free memory. (bytes)
+/// @param     total     The physical memory installed (bytes)
+/// @param     swapAvail The amount of swap avail. (bytes)
+/// @param     memAvail  Suggested amount of memory to use.
+/// @return    true on success
+bool memInfo_sysinfo(uint64_t &free, uint64_t &total,
+                     uint64_t &swapAvail, uint64_t& memAvail)
+{
+  struct sysinfo info;
+  if(sysinfo(&info) != 0) {
+    Err::errAbort("Util::memInfo() - Could not determine memory usage with: sysinfo().");
   }
+  free = info.freeram * info.mem_unit;
+  total = info.totalram * info.mem_unit;
+  swapAvail = info.freeswap * info.mem_unit;
+  // We use this as a guesstimate of how much ram we can safely allocate on the system.
+  // The factor of 0.90 is to leave a bit of memory for other users.
+  memAvail=(uint64_t)(free+0.90*(info.bufferram*info.mem_unit));
 
-  success = true;
+  return true;
+}
+#endif
+
+/** 
+ * Determine the free and total amount of memory in bytes on this machine.
+ * 
+ * @param free      - Bytes available currently.
+ * @param total     - Total bytes installed on machine.
+ * @param swapAvail - Amount of swap available on machine.
+ * @param memAvail  - Amount of space we should consider available.
+ * @param cap32bit  - Cap the memory at 4GB.
+ * 
+ * @return true if successful, false otherwise.
+ */
+bool Util::memInfo(uint64_t &free, uint64_t &total, 
+                   uint64_t &swapAvail, uint64_t& memAvail, 
+                   bool cap32bit) {
+  bool success = false;
+  bool is32bit = false;
+  free=total=swapAvail=memAvail=0;
+
+  // One of these should be defined.
+#ifdef WIN32
+  is32bit = true;
+  success=memInfo_win32(free,total,swapAvail,memAvail);
+#endif
+#ifdef __linux__
+  success=memInfo_linux("/proc/meminfo",free,total,swapAvail,memAvail);
+#endif
+#ifdef __APPLE__
+  is32bit = true; // Until 10.5 OS X can't address big mem even on G5, what a bummer
+  success=memInfo_darwin(free,total,swapAvail,memAvail);
+#endif
+#ifdef __sun__
+  success=memInfo_solaris(free,total,swapAvail,memAvail);
+#endif
+#ifdef __i386__
+  is32bit = true;
 #endif
 
   // The catch all clause
-#ifndef meminfo_defined
-  success = false;
-#endif
+  //#ifndef memInfo_defined
+  //#error memInfo is not defined for this platform
+  //#endif
+
+  //#ifdef __i386__ ||
+  // we test for __i386__ as these systems cant map more than 2GB of space
+  // even if they have more RAM in the system.
+  if (memAvail>MEMINFO_2GB_MAX && is32bit && cap32bit) {
+    memAvail=MEMINFO_2GB_MAX;
+  }
+  //#endif
 
   return success;
+}
+
+/** 
+ * Return a pointer to the next character that is white space
+ * or NULL if none found. 
+ * @param s - cstring to find white space in.
+ * @return - Pointer to next whitespace character or NULL if none
+ *   found. 
+ */
+const char *Util::nextWhiteSpace(const char *s) {
+  while(s[0] != '\0' && !isspace(s[0])) {
+    s++;
+  }
+  return s;
+}
+
+/**
+ * Print a string wrapping at max width from the current
+ * position.
+ * @param out - stream to output string to.
+ * @param str - The cstring to be printed.
+ * @param prefix - How many spaces to put on begining of newline.
+ * @param maxWidth - Where to wrap text at.
+ * @param currentPos - What position in the line is 
+ *                      cursor currently at.
+ */
+void Util::printStringWidth(std::ostream &out, const char *str, int prefix,
+                            int currentPos, int maxWidth ) {
+  const char *wStart = NULL, *wEnd = NULL; /* Start and end of word pointers. */
+  int position = currentPos;
+  int nextSize = 0;
+  int i = 0;
+  wStart = str;
+
+  /* While there are still characters to be printed. */
+  while(*wStart != '\0') {
+    
+    /* Clean out any whitespace. */
+    while(isspace(*wStart) && *wStart != '\0') {
+      if(*wStart == '\n') {
+        out.put('\n');
+	for(i = 0; i < prefix; i++) 
+	  out.put(' ');
+        fflush(stdout);
+        position = prefix;
+      }
+      *wStart++;
+    }
+
+    if(*wStart == '\0')
+      break;
+
+    /* Find the end of current word. */
+    wEnd = wStart;
+    while(!isspace(*wEnd) && *wEnd != '\0')
+      wEnd++;
+    
+    /* Time for a newline? */
+    if((wEnd - wStart) + position >= maxWidth) {
+      out.put('\n');
+      for(i = 0; i < prefix; i++) 
+	out.put(' ');      
+      position = prefix;
+    }
+    
+    /* Print out the word. */
+    while(wStart < wEnd) {
+      out.put(*wStart);
+      fflush(stdout);
+      wStart++;
+      position++;
+    }
+
+    /* Look to see where next word is. */
+    while(isspace(*wEnd)) {
+      if(*wEnd == '\n') {
+        out.put('\n');
+	for(i = 0; i < prefix; i++) 
+	  out.put(' ');      
+	position = prefix;
+      }
+      wEnd++;
+    }
+     
+    /* Figure out the size of the next word. */
+    wStart = nextWhiteSpace(wEnd);
+    if(wStart != NULL)
+      nextSize = wStart - wEnd;
+    else
+      nextSize = 0;
+
+    /* Print a space if we're not going to 
+       print a newline. */
+    if(wEnd != '\0' &&
+       nextSize + position < maxWidth && 
+       position != 0) {
+      out.put(' ');
+      position++;
+    }
+
+    wStart = wEnd;
+  }
 }

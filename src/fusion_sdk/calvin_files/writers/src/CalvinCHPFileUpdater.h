@@ -1,22 +1,22 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2006 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 /*! \file CalvinCHPFileUpdater.h Provides interfaces to update data in a "Calvin" binary "signal" data file. */
 
@@ -25,6 +25,7 @@
 
 #include <fstream>
 #include "DataSetUpdater.h"
+#include "CalvinCHPFileBufferWriter.h"
 
 namespace affymetrix_calvin_io
 {
@@ -53,6 +54,12 @@ public:
 	 */
 	void UpdateExpressionQuantification(int row, float quantification);
 
+	/*! Seek to appropriate file position and update expression signal vector
+	 * @param row_start The start row for updating.
+	 * @param expressionSignalBuffer The vector contain all buffered signals to be updated.
+	 */
+	void UpdateExpressionQuantificationBuffer(int row_start, std::vector<float> &expressionSignalBuffer);
+
 	/*! Seek to appropriate file position and update genotype entry
 	 * @param row The row index.
 	 * @param call CHP call representation.
@@ -65,6 +72,12 @@ public:
 	 * @param noCall CHP noCall value.
 	 */
 	void UpdateGenotypeEntry(int row, u_int8_t call, float confidence, float RAS1, float RAS2, float aaCall, float abCall, float bbCall, float noCall);
+
+	/*! Seek to appropriate file position and update genotype entry vector
+	 * @param row_start The start row for updating.
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateGenotypeEntryBuffer(int row_start, std::vector<CHPFileBufferWriter::GenotypeBufferEntry> &genotypeEntryBuffer);
 
 	/*! Close CHP signal file. */
 	void CloseCHPFile();

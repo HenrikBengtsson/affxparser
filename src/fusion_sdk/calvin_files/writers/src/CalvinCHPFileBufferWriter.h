@@ -1,22 +1,22 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 /**
  * @file   CalvinCHPFileBufferWriter.h
@@ -39,6 +39,7 @@ namespace affymetrix_calvin_io
 {
 class CHPFileBufferWriter
 {
+public:
 	class GenotypeBufferEntry
 	{
 	public:
@@ -68,7 +69,7 @@ public:
 	/*! Initialize entry buffer writer
 	 * @param CHPFileNames Reference to a list of CHP file names.
 	 */
-	void Initialize(std::vector<std::string> *CHPFileNames, bool XDACHPFormat = false);
+	void Initialize(std::vector<std::string> *CHPFileNames);
 
 	/*! Write an entry to buffer. If the buffer is full, flush it.
 	 * @param target Target for the Signal entry.
@@ -76,14 +77,8 @@ public:
 	 */
 	void WriteGenotypeEntry(int target, CHPGenotypeEntry &entry);
 
-	/*! Write the content of the buffer to CHP files. */
-	void FlushBuffer();
-
 	/*! Write the content of the buffer to Command Console CHP file. */
-	void FlushBufferCC();
-
-	/*! Write the content of the buffer to GCOS XDA CHP file. */
-	void FlushBufferXDA();
+	void FlushBuffer();
 
 private:
 	// Pointer to list of CHP file names.
@@ -98,11 +93,8 @@ private:
 	// Size of the current buffer in bytes.
 	int m_BufferSize;
 
-	// Maximum size of the buffer before it gets flushed
+	// Maximum size of buffer before it gets flushed
 	int m_MaxBufferSize;
-
-	// XDA or CC CHP format
-	bool m_XDACHPFormat;
 };
 
 }

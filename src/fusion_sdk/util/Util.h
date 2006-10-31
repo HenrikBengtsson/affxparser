@@ -39,24 +39,53 @@
 #include "util/Convert.h"
 #include "util/Err.h"
 #include "portability/affy-base-types.h"
+
+/// The string which seperates path components on windows
+#define PATH_SEPARATOR_WIN32      "\\"
+/// The character which seperates path components on windows
+#define PATH_SEPARATOR_WIN32_CHAR '\\'
+/// The string which seperates path components on unix
+#define PATH_SEPARATOR_UNIX       "/"
+/// The character which seperates path components on unix
+#define PATH_SEPARATOR_UNIX_CHAR  '/'
+
 /// Path separator depends on OS...
 #if defined (WIN32)
-#define PATH_SEPARATOR "\\"
+/// The perferred string for path separators on this system
+#define PATH_SEPARATOR      PATH_SEPARATOR_WIN32
+/// The perferred char for path separators on this system
+#define PATH_SEPARATOR_CHAR PATH_SEPARATOR_WIN32_CHAR
 #else
-#define PATH_SEPARATOR "/"
+#define PATH_SEPARATOR      PATH_SEPARATOR_UNIX
+#define PATH_SEPARATOR_CHAR PATH_SEPARATOR_UNIX_CHAR
 #endif
 
+/// 386 systems cant map more than 2GB of user memory.
+/// (unless you have a patched kernel...)
+#ifdef WIN32
+// cap at 1.8G on Windows due to expected memory fragmentation
+#define MEMINFO_2GB_MAX floor(1.7f*1024*1024*1024)
+#else
+#define MEMINFO_2GB_MAX (2UL*1024*1024*1024)
+#endif
+
+/// Log base two
 #define log2(x) ( log((x))/log((2.0)) )
+/// Square of the two numbers
+/// (Note: this is bad style due to X being evaled twice.)
 #define sqr(x) ((x)*(x))
 
+/// Returns the number of elements in the array.
 #define ArraySize(a) (sizeof(a)/sizeof((a)[0]))
+
 /** delete function that deletes the pointer and sets it to NULL. */
 template<class T> inline void Freez(T*& p) { delete p; p = 0; }
 /** delete function that deletes an array and sets the pointer to NULL. */
 template<class T> inline void FreezArray(T*& p) { delete[] p; p = 0; }
 
-/**                                                                                                                               * @name InstanceOf
- *                                                                                                                          
+/** 
+ * @name InstanceOf 
+ * 
  * Check at run time if an object is an instance of a class.  This differs from
  * comparing the result of type_id, as it takes inheritance into account.  Note
  * that base class must be polymorphic, that is it must have a virtual function
@@ -276,9 +305,37 @@ public:
    * @param ix - pointer to integer seed, cannot be zero.
    */
   static int32_t schrageRandom(int32_t *ix);
-  
-  static bool memInfo(uint64_t &free, uint64_t &total, uint64_t &swapAvail,uint64_t& memAvail);
+
+  static bool memInfo(uint64_t &free, uint64_t &total, uint64_t &swapAvail,uint64_t& memAvail, bool cap32bit=true);
+
+  /** 
+   * Return a pointer to the next character that is white space
+   * or NULL if none found. 
+   * @param s - cstring to find white space in.
+   * @return - Pointer to next whitespace character or NULL if none
+   *   found. 
+   */
+  static const char *Util::nextWhiteSpace(const char *s);
+
+  /**
+   * Print a string wrapping at max width from the current
+   * position.
+   * @param out - stream to output string to.
+   * @param str - The cstring to be printed.
+   * @param prefix - How many spaces to put on begining of newline.
+   * @param maxWidth - Where to wrap text at.
+   * @param currentPos - What position in the line is 
+   *                      cursor currently at.
+   */
+  static void printStringWidth(std::ostream &out, const char *str, int prefix,
+                               int currentPos, int maxWidth=70 );
   
 };
+
+#ifdef __linux__
+bool memInfo_linux(std::string proc_meminfo_filename,
+                   uint64_t &free, uint64_t &total,
+                   uint64_t &swapAvail, uint64_t& memAvail);
+#endif
 
 #endif /* _UTIL_H */

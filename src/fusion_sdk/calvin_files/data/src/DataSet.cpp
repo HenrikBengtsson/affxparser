@@ -1,22 +1,22 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 #include "DataSet.h"
 #include "GenericData.h"
@@ -28,7 +28,6 @@ using namespace affymetrix_calvin_io;
 
 #ifndef _MSC_VER
 #include <unistd.h>
-#ifndef WIN32
 #include <sys/mman.h>
 
 #ifndef PAGE_SIZE
@@ -44,7 +43,6 @@ using namespace affymetrix_calvin_io;
 #define PAGE_TRUNC(ptr) (ptr&(PAGE_MASK))
 #endif
 #endif
-#endif
 
 /*
  * Initialize the object to use memory-mapping to access the file.
@@ -58,7 +56,7 @@ DataSet::DataSet(const std::string& fileName_, const DataSetHeader& header_, voi
 	data = 0;
 	isOpen = false;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	fileMapHandle = handle;
 #else
 	fp = 0;
@@ -82,7 +80,7 @@ DataSet::DataSet(const std::string& fileName_, const affymetrix_calvin_io::DataS
 	data = 0;
 	isOpen = false;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	fileMapHandle = 0;
 #else
 	fp = 0;
@@ -134,7 +132,7 @@ bool DataSet::Open()
  */
 bool DataSet::OpenMM()
 {
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	if (MapDataWin32(header.GetDataStartFilePos(), header.GetDataSize()) == false)
 		return false;
 #else
@@ -179,7 +177,7 @@ void DataSet::Close()
 		ClearStreamData();
 }
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 std::string GetErrorMsg()
 {
@@ -291,7 +289,7 @@ bool DataSet::MapDataPosix(u_int32_t start, u_int32_t bytes)
  */
 void DataSet::UnmapFile()
 {
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 	// Unmap the view
 	if (mappedData != 0 )
@@ -385,7 +383,7 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 	// Byte offset in data set + byte offset of data set in file
 	u_int32_t startByte = BytesPerRow()*rowStart + columnByteOffsets[col] + header.GetDataStartFilePos();
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 	if (useMemoryMapping)
 	{
@@ -405,11 +403,20 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 				if (reverseStartByte < header.GetDataStartFilePos())
 					reverseStartByte = header.GetDataStartFilePos();
 
-				MapDataWin32(reverseStartByte, header.GetDataSize() - reverseStartByte);
-
+				if (MapDataWin32(reverseStartByte, header.GetDataStartFilePos() + header.GetDataSize() - reverseStartByte) == false)
+				{
+					affymetrix_calvin_exceptions::DataSetRemapException e;
+					throw e;
+				}
 			}
 			else	// forward
-				MapDataWin32(startByte, header.GetDataSize() - startByte);
+			{
+				if (MapDataWin32(startByte, header.GetDataStartFilePos() + header.GetDataSize() - startByte) == false)
+				{
+					affymetrix_calvin_exceptions::DataSetRemapException e;
+					throw e;
+				}
+			}
 		}
 	}
 #endif
@@ -426,12 +433,12 @@ char* DataSet::LoadDataAndReturnFilePosition(int32_t rowStart, int32_t col, int3
 	// Delete the previous data
 	ClearStreamData();
 
-	int32_t len = BytesPerRow()*rowCount;
-	int32_t startPos = BytesPerRow()*rowStart + columnByteOffsets[col] + header.GetDataStartFilePos();
+	mapLen = BytesPerRow()*rowCount;
+	mapStart = BytesPerRow()*rowStart + columnByteOffsets[col] + header.GetDataStartFilePos();
 
-	data = new char[len];
-	fileStream->seekg(startPos);
-	fileStream->read(data, len);
+	data = new char[mapLen];
+	fileStream->seekg(mapStart);
+	fileStream->read(data, mapLen);
 	return data;
 }
 
@@ -531,7 +538,7 @@ template<typename T> void DataSet::ClearAndSizeVector(std::vector<T>& values, u_
 	values.resize(size);
 }
 
-void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, Uint8Vector& values)
+template<typename T> void DataSet::GetDataT(int32_t col, int32_t startRow, int32_t count, T& values)
 {
 	int32_t endRow = ComputeEndRow(startRow, count);
 	ClearAndSizeVector(values, endRow-startRow);
@@ -542,414 +549,236 @@ void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, Uint8Vector&
 		{
 			// Get the data
 			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadUInt8(instr);
+			AssignValue(row-startRow, values, instr);
 		}
 	}
 	else
 	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
+		char* instr = FilePosition(startRow, col, count);
+		int32_t recomputePositionRow = LastRowMapped();
+
 		for (int32_t row = startRow; row < endRow; ++row)
 		{
-			values[row-startRow] = FileInput::ReadUInt8(instr);	// Is this much of an optimization?
+			if (row > recomputePositionRow)
+			{
+				instr = FilePosition(row, col, count-row);
+				recomputePositionRow = LastRowMapped();
+			}
+			AssignValue(row-startRow, values, instr);
 		}
 	}
+}
+
+void DataSet::AssignValue(int32_t index, Uint8Vector& values, char*& instr)
+{
+	values[index] = FileInput::ReadUInt8(instr);
+}
+
+void DataSet::AssignValue(int32_t index, Int8Vector& values, char*& instr)
+{
+	values[index] = FileInput::ReadInt8(instr);
+}
+
+void DataSet::AssignValue(int32_t index, Uint16Vector& values, char*& instr)
+{
+	values[index] = FileInput::ReadUInt16(instr);
+}
+
+void DataSet::AssignValue(int32_t index, Int16Vector& values, char*& instr)
+{
+	values[index] = FileInput::ReadInt16(instr);
+}
+
+void DataSet::AssignValue(int32_t index, Uint32Vector& values, char*& instr)
+{
+	values[index] = FileInput::ReadUInt32(instr);
+}
+
+void DataSet::AssignValue(int32_t index, Int32Vector& values, char*& instr)
+{
+	values[index] = FileInput::ReadInt32(instr);
+}
+
+void DataSet::AssignValue(int32_t index, FloatVector& values, char*& instr)
+{
+	values[index] = FileInput::ReadFloat(instr);
+}
+
+void DataSet::AssignValue(int32_t index, StringVector& values, char*& instr)
+{
+	values[index] = FileInput::ReadString8(instr);
+}
+
+void DataSet::AssignValue(int32_t index, WStringVector& values, char*& instr)
+{
+	values[index] = FileInput::ReadString16(instr);
+}
+
+void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, Uint8Vector& values)
+{
+	GetDataT(col, startRow, count, values);
 }
 
 void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, Int8Vector& values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-	ClearAndSizeVector(values, endRow-startRow);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			// Get the data
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadInt8(instr);
-		}
-	}
-	else
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadInt8(instr);	// Is this much of an optimization?
-		}
-	}
+	GetDataT(col, startRow, count, values);
 }
 
 void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, Uint16Vector& values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-	ClearAndSizeVector(values, endRow-startRow);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			// Get the data
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadUInt16(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadUInt16(instr);	// Is this much of an optimization?
-		}
-	}
+	GetDataT(col, startRow, count, values);
 }
 
 void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, Int16Vector& values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-	ClearAndSizeVector(values, endRow-startRow);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			// Get the data
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadInt16(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadInt16(instr);	// Is this much of an optimization?
-		}
-	}
+	GetDataT(col, startRow, count, values);
 }
 
 void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, Uint32Vector& values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-	ClearAndSizeVector(values, endRow-startRow);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			// Get the data
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadUInt32(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadUInt32(instr);	// Is this much of an optimization?
-		}
-	}
+	GetDataT(col, startRow, count, values);
 }
 
 void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, Int32Vector& values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-	ClearAndSizeVector(values, endRow-startRow);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			// Get the data
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadInt32(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadInt32(instr);	// Is this much of an optimization?
-		}
-	}
+	GetDataT(col, startRow, count, values);
 }
 
 void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, FloatVector& values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-	ClearAndSizeVector(values, endRow-startRow);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			// Get the data
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadFloat(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadFloat(instr);	// Is this much of an optimization?
-		}
-	}
+	GetDataT(col, startRow, count, values);
 }
 
 void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, std::vector<std::string>& values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-	ClearAndSizeVector(values, endRow-startRow);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			// Get the data
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadString8(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadString8(instr);	// Is this much of an optimization?
-		}
-	}
+	GetDataT(col, startRow, count, values);
 }
 
 void DataSet::GetData(int32_t col, int32_t startRow, int32_t count, WStringVector& values)
 {
+	GetDataT(col, startRow, count, values);
+}
+
+template<typename T> int32_t DataSet::GetDataRawT(int32_t col, int32_t startRow, int32_t count, T* values)
+{
 	int32_t endRow = ComputeEndRow(startRow, count);
-	ClearAndSizeVector(values, endRow-startRow);
 
 	if (header.GetColumnCnt() > 1)
 	{
 		for (int32_t row = startRow; row < endRow; ++row)
 		{
-			// Get the data
 			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadString16(instr);
+			AssignValue(row-startRow, values, instr);
 		}
 	}
 	else // optimize
 	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
+		char* instr = FilePosition(startRow, col, count);
+		int32_t recomputePositionRow = LastRowMapped();
+
 		for (int32_t row = startRow; row < endRow; ++row)
 		{
-			values[row-startRow] = FileInput::ReadString16(instr);	// Is this much of an optimization?
+			if (row > recomputePositionRow)
+			{
+				instr = FilePosition(row, col, count-row);
+				recomputePositionRow = LastRowMapped();
+			}
+			AssignValue(row-startRow, values, instr);
 		}
 	}
+	return endRow-startRow;
+}
+
+void DataSet::AssignValue(int32_t index, u_int8_t* values, char*& instr)
+{
+	values[index] = FileInput::ReadUInt8(instr);
+}
+
+void DataSet::AssignValue(int32_t index, int8_t* values, char*& instr)
+{
+	values[index] = FileInput::ReadInt8(instr);
+}
+
+void DataSet::AssignValue(int32_t index, u_int16_t* values, char*& instr)
+{
+	values[index] = FileInput::ReadUInt16(instr);
+}
+
+void DataSet::AssignValue(int32_t index, int16_t* values, char*& instr)
+{
+	values[index] = FileInput::ReadInt16(instr);
+}
+
+void DataSet::AssignValue(int32_t index, u_int32_t* values, char*& instr)
+{
+	values[index] = FileInput::ReadUInt32(instr);
+}
+
+void DataSet::AssignValue(int32_t index, int32_t* values, char*& instr)
+{
+	values[index] = FileInput::ReadInt32(instr);
+}
+
+void DataSet::AssignValue(int32_t index, float* values, char*& instr)
+{
+	values[index] = FileInput::ReadFloat(instr);
+}
+
+void DataSet::AssignValue(int32_t index, std::string* values, char*& instr)
+{
+	values[index] = FileInput::ReadString8(instr);
+}
+void DataSet::AssignValue(int32_t index, std::wstring* values, char*& instr)
+{
+	values[index] = FileInput::ReadString16(instr);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, u_int8_t* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadUInt8(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadUInt8(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+	return GetDataRawT(col, startRow, count, values);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, int8_t* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadInt8(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadInt8(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+	return GetDataRawT(col, startRow, count, values);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, u_int16_t* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadUInt16(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadUInt16(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+	return GetDataRawT(col, startRow, count, values);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, int16_t* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadInt16(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadInt16(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+	return GetDataRawT(col, startRow, count, values);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, u_int32_t* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadUInt32(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadUInt32(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+	return GetDataRawT(col, startRow, count, values);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, int32_t* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadInt32(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadInt32(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+	return GetDataRawT(col, startRow, count, values);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, float* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadFloat(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadFloat(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+	return GetDataRawT(col, startRow, count, values);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, std::string* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
-
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadString8(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadString8(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+	return GetDataRawT(col, startRow, count, values);
 }
 
 int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, std::wstring* values)
 {
-	int32_t endRow = ComputeEndRow(startRow, count);
+	return GetDataRawT(col, startRow, count, values);
+}
 
-	if (header.GetColumnCnt() > 1)
-	{
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			char* instr = FilePosition(row, col);
-			values[row-startRow] = FileInput::ReadString16(instr);
-		}
-	}
-	else // optimize
-	{
-		char* instr = FilePosition(startRow, col, count);	// ensure that the entire region is mapped.
-		for (int32_t row = startRow; row < endRow; ++row)
-		{
-			values[row-startRow] = FileInput::ReadString16(instr);	// Is this much of an optimization?
-		}
-	}
-	return endRow-startRow;
+int32_t DataSet::LastRowMapped()
+{
+	return (mapStart+mapLen)/BytesPerRow() - 1;
 }

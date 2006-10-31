@@ -56,8 +56,10 @@ enum MDLAnalysisType
 
 //////////////////////////////////////////////////////////////////////
 
+#ifdef _MSC_VER
 /*! Use one byte alignment for memory mapping functionality */
 #pragma pack(push, 1)
+#endif
 
 /*! PLIER model file header structure */
 typedef struct _MDLHeader
@@ -71,8 +73,10 @@ typedef struct _MDLHeader
 	char	sReserve[RESERVED_SIZE]; /*! Reserved for future use */
 } MDLHeader;
 
+#ifdef _MSC_VER
 /*! End of one byte alignment */
 #pragma pack(pop)
+#endif
 
 /*! This is the size of the object */
 #define MDLHEADERSIZE sizeof(MDLHeader)
@@ -163,8 +167,10 @@ public:
 
 //////////////////////////////////////////////////////////////////////
 
+#ifdef _MSC_VER
 /*! Use one byte alignment for memory mapping functionality */
 #pragma pack(push, 1)
+#endif
 
 /*! PLIER model data structure */
 typedef struct _MDLData
@@ -175,8 +181,10 @@ typedef struct _MDLData
 	float	Offset;					/*! Reserved for future use */
 } MDLData;
 
+#ifdef _MSC_VER
 /*! End of one byte alignment */
 #pragma pack(pop)
+#endif
 
 /*! This is the size of the object */
 #define MDLDATASIZE sizeof(MDLData)

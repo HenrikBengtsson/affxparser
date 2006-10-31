@@ -246,7 +246,7 @@ bool TableFile::columnFromFile(const char *fileName, std::vector<std::string> &c
   RowFile rf;
   vector<string> words;
   rf.open(fileName);
-  int colIx = npos;
+  unsigned int colIx = npos;
 
   /* Skip rows. */
   while(skipCols > 0 && rf.nextRow(words)) {

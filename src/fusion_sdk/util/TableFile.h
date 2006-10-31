@@ -52,7 +52,7 @@ public:
 
   /** 
    * Constructor.
-   * @param delim - Character to use for word separator. i.e. ',' or '\t'
+   * @param delim - Character to use for word separator. i.e. ',' or '\\t'
    * @param comment - Character that comment lines begin with.
    * @param useRowNames - Is first column the names of the rows?
    * @param useColNames - Is the first row the column headers?

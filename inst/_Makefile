@@ -77,6 +77,7 @@ SOURCES.fusion = \
 	fusion_sdk/file/CELFileData.cpp\
 	fusion_sdk/file/CELFileWriter.cpp\
 	fusion_sdk/file/BPMAPFileData.cpp\
+	fusion_sdk/file/BPMAPFileWriter.cpp\
 	fusion_sdk/file/FileIO.cpp\
 	fusion_sdk/file/FileWriter.cpp\
 

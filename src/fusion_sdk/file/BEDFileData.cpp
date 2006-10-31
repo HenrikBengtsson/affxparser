@@ -115,9 +115,10 @@ bool BEDFileData::Read()
 	char name[MAXLINELEN/4+1];
 	IntervalEntry interval;
 	IntervalGroup group;
-	IntervalGroup *pGroup;
+	IntervalGroup *pGroup=NULL;
 	TagValuePairType param;
 	bool firstParameter=true;
+
 	while (instr.getline(line, MAXLINELEN))
 	{
 		// The browser line.
