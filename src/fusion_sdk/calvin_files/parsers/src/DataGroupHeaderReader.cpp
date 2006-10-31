@@ -1,22 +1,22 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 #include "DataGroupHeaderReader.h"
 #include "DataSetHeaderReader.h"
@@ -119,7 +119,7 @@ u_int32_t DataGroupHeaderReader::ReadHeader(std::ifstream& fileStream, DataGroup
 void DataGroupHeaderReader::ReadNextDataGroupFilePos(std::ifstream& fileStream, DataGroupHeader& dch)
 {
 	//DEBUG
-	u_int32_t z = fileStream.tellg();
+	//u_int32_t z = fileStream.tellg();
 
 	dch.SetNextGroupPos(FileInput::ReadUInt32(fileStream));
 }
@@ -130,7 +130,7 @@ void DataGroupHeaderReader::ReadNextDataGroupFilePos(std::ifstream& fileStream, 
 void DataGroupHeaderReader::ReadFirstDataSetFilePos(std::ifstream& fileStream, DataGroupHeader& dch)
 {
 	//DEBUG
-	u_int32_t z = fileStream.tellg();
+	//u_int32_t z = fileStream.tellg();
 
 	dch.SetDataSetPos(FileInput::ReadUInt32(fileStream));
 }
@@ -141,7 +141,7 @@ void DataGroupHeaderReader::ReadFirstDataSetFilePos(std::ifstream& fileStream, D
 u_int32_t DataGroupHeaderReader::ReadDataSetCnt(std::ifstream& fileStream, DataGroupHeader& dch)
 {
 	//DEBUG
-	u_int32_t z = fileStream.tellg();
+	//u_int32_t z = fileStream.tellg();
 
 	return FileInput::ReadUInt32(fileStream);
 }
@@ -151,8 +151,8 @@ u_int32_t DataGroupHeaderReader::ReadDataSetCnt(std::ifstream& fileStream, DataG
  */
 void DataGroupHeaderReader::ReadDataGroupName(std::ifstream& fileStream, DataGroupHeader& dch)
 {
-		//DEBUG
-	u_int32_t z = fileStream.tellg();
+  //DEBUG
+	//u_int32_t z = fileStream.tellg();
 
 	dch.SetName(FileInput::ReadString16(fileStream));
 }

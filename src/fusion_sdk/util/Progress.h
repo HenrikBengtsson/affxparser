@@ -34,6 +34,7 @@ public:
 	 * @param inc The number of steps performed before the progress display is updated.
 	 */
 	virtual void SetStepProperties(int level, int mx, int inc) = 0;
+  virtual ~Progress() { }
 
 	/*! Steps the progress ahead by one count.
 	 * @param level - What level of verbosity this message should be printed at.

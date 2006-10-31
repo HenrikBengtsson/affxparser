@@ -208,7 +208,8 @@ bool RowFile::nextCStringRow(std::vector<const char *> &words) {
     m_BufferSize = len+1;
      m_Buffer = new char[m_BufferSize];
   }
-  strncpy(m_Buffer, m_CurrentLine.c_str(), len);
+  //strncpy(m_Buffer, m_CurrentLine.c_str(), len);
+  memcpy(m_Buffer, m_CurrentLine.c_str(), len);
   buff = m_Buffer;
   
   /* Trim off any delimiters at beginning and end of line */
@@ -326,7 +327,7 @@ void RowFile::matrixFromFile(const char *fileName, std::vector< std::vector<doub
       Err::errAbort("RowFile::matrixFromFile() - Number of skipCols >= number of cols.");
     matrix.push_back(vector<double>());
     for(i = skipCols; i < words.size(); i++) {
-      matrix[matrix.size() -1].push_back(Convert::toFloat(words[i].c_str()));
+      matrix[matrix.size() -1].push_back(Convert::toDouble(words[i].c_str()));
     }
   }
 }

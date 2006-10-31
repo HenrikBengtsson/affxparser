@@ -1,22 +1,22 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2006 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 #ifndef _CHPQuantificationDetectionData_HEADER_
 #define _CHPQuantificationDetectionData_HEADER_
@@ -31,22 +31,7 @@ namespace affymetrix_calvin_io
 {
 
 /*! The identifier to identify a quantification/detection CHP file. */
-#define CHP_QUANTIFICATION_DETECTION_TYPE std::string("affymetrix-quantification-detection-analysis")
-
-/*! The group and data set to store the quantification/detection data. */
-#define QUANTIFICATION_DETECTION_NAME std::wstring(L"QuantificationDetection")
-
-/*! The column name for the probe set name. */
-#define QUANTIFICATION_DETECTION_PROBE_SET_NAME std::wstring(L"ProbeSetName")
-
-/*! The column name for the probe set id. */
-#define QUANTIFICATION_DETECTION_PROBE_SET_ID std::wstring(L"ProbeSetId")
-
-/*! The column name for the quantification value. */
-#define QUANTIFICATION_DETECTION_QUANTIFICATION_NAME std::wstring(L"Quantification")
-
-/*! The column name for the detection value. */
-#define QUANTIFICATION_DETECTION_DETECTION_NAME std::wstring(L"Detection")
+#define CHP_QUANTIFICATION_DETECTION_TYPE "affymetrix-quantification-detection-analysis"
 
 /*! Holds data associated with quantification/detection CHP files. */
 class CHPQuantificationDetectionData
@@ -172,6 +157,9 @@ public:
 
 	/*! Opens a group for reading. */
 	void OpenQuantificationDetectionDataSet();
+
+    /*! Returns the data set header. */
+    DataSetHeader &GetDataSetHeader();
 
 private:
 

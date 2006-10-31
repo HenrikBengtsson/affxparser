@@ -35,6 +35,9 @@
 
 #include <string>
 
+/**
+ * @brief An abstract class for handling Progress updates.
+ */
 class ProgressHandler {
 
 public:

@@ -23,8 +23,9 @@
 using namespace std;
 using namespace affxbed;
 
+#ifdef _MSC_VER
 #pragma warning(disable: 4996)
-
+#endif
 
 /*! The tab character. */
 #define TAB "\t"

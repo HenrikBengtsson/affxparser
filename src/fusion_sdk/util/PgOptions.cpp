@@ -74,21 +74,6 @@ PgOptions::PgOpt* PgOptions::mustFindPgOpt(const std::string &name) {
   return opt;
 }
 
-
-/** 
- * Return a pointer to the next character that is white space
- * or NULL if none found. 
- * @param s - cstring to find white space in.
- * @return - Pointer to next whitespace character or NULL if none
- *   found. 
- */
-const char *PgOptions::nextWhiteSpace(const char *s) {
-  while(s[0] != '\0' && !isspace(s[0])) {
-    s++;
-  }
-  return s;
-}
-
 /**
  * Print a string wrapping at max width from the current
  * position.
@@ -100,80 +85,7 @@ const char *PgOptions::nextWhiteSpace(const char *s) {
  */
 void PgOptions::printStringWidth(const char *str, int prefix,
 				 int currentPos, int maxWidth ) {
-  const char *wStart = NULL, *wEnd = NULL; /* Start and end of word pointers. */
-  int position = currentPos;
-  int nextSize = 0;
-  int i = 0;
-  wStart = str;
-
-  /* While there are still characters to be printed. */
-  while(*wStart != '\0') {
-    
-    /* Clean out any whitespace. */
-    while(isspace(*wStart) && *wStart != '\0') {
-      if(*wStart == '\n') {
-        cout.put('\n');
-	for(i = 0; i < prefix; i++) 
-	  cout.put(' ');
-        fflush(stdout);
-        position = prefix;
-      }
-      *wStart++;
-    }
-
-    if(*wStart == '\0')
-      break;
-
-    /* Find the end of current word. */
-    wEnd = wStart;
-    while(!isspace(*wEnd) && *wEnd != '\0')
-      wEnd++;
-    
-    /* Time for a newline? */
-    if((wEnd - wStart) + position >= maxWidth) {
-      cout.put('\n');
-      for(i = 0; i < prefix; i++) 
-	cout.put(' ');      
-      position = prefix;
-    }
-    
-    /* Print out the word. */
-    while(wStart < wEnd) {
-      cout.put(*wStart);
-      fflush(stdout);
-      wStart++;
-      position++;
-    }
-
-    /* Look to see where next word is. */
-    while(isspace(*wEnd)) {
-      if(*wEnd == '\n') {
-        cout.put('\n');
-	for(i = 0; i < prefix; i++) 
-	  cout.put(' ');      
-	position = prefix;
-      }
-      wEnd++;
-    }
-     
-    /* Figure out the size of the next word. */
-    wStart = nextWhiteSpace(wEnd);
-    if(wStart != NULL)
-      nextSize = wStart - wEnd;
-    else
-      nextSize = 0;
-
-    /* Print a space if we're not going to 
-       print a newline. */
-    if(wEnd != '\0' &&
-       nextSize + position < maxWidth && 
-       position != 0) {
-      cout.put(' ');
-      position++;
-    }
-
-    wStart = wEnd;
-  }
+  Util::printStringWidth(cout, str, prefix, currentPos, maxWidth);
 }
 
 /** 
@@ -289,7 +201,9 @@ PgOptions::PgOptions(const std::string &usage, PgOpt *options[]) {
 void PgOptions::checkOptType(PgOpt *opt, const char *value) {
   bool success = true;
 
-  assert(value);
+  if(value == NULL) {
+    Err::errAbort("Error: expecting a value to be associated with option: '" + ToStr(opt->longName) + "'");
+  }
   if(opt->type == INT_OPT) {
     Convert::toIntCheck(value, &success);
     if(!success) {

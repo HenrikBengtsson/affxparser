@@ -105,7 +105,7 @@ int Convert::toIntCheck(const char *num, bool *success) {
   
   // cast to int and make sure that we didn't overflow
   i = (int)l;
-  if(errno != 0 || (long)i != l || l >= INT_MAX || l <= INT_MIN) 
+  if(errno != 0 || (long)i != l)
     ok = false;
 
   // if we had a problem set to 0 for consistency.

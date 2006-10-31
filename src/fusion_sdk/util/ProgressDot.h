@@ -39,6 +39,9 @@
 //
 #include "ProgressHandler.h"
 
+/**
+ * @brief Prints dots as progress is made.
+ */
 class ProgressDot : public ProgressHandler {
 
 public:
@@ -109,7 +112,6 @@ public:
 
 private:
   std::ostream *m_Out; ///< Stream to print messages to. Can be NULL to indicate no printing.
-  int m_Verbosity;     ///< What level of messages is wanted, larger num == more msgs
   int m_Total;         ///< How many steps total are we expecting?
 };
 

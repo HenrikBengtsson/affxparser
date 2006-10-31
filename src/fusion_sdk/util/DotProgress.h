@@ -50,6 +50,7 @@ public:
 	 * @param strm Where to stream the dots
 	 */
 	DotProgress(std::ostream *strm = &std::cout);
+  ~DotProgress() { }
 
 	/*! Sets the upper limit of the range of the progress display.
 	 * @param level - level of verbosity desired.

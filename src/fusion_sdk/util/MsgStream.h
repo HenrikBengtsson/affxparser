@@ -27,13 +27,18 @@
  * @brief  File for handling messages and printing them to the stream.
  * 
  */
+
 #ifndef MSGSTREAM_H
 #define MSGSTREAM_H
 
 #include <string>
 #include <iostream>
+//
 #include "MsgHandler.h"
 
+/**
+ * @brief An output stream for messages.
+ */
 class MsgStream : public MsgHandler {
 
 public:

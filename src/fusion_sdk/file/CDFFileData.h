@@ -26,7 +26,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #pragma warning(disable: 4786) // identifier was truncated in the debug information
 #include <windows.h>
 #endif
@@ -93,7 +93,7 @@ public:
 	int GetNumProbeSets() const { return m_NumProbeSets; }
 
 	/*! Gets the number of QC probe sets.
-	 * @return The number of columns.
+	 * @return The number of QC probe sets.
 	 */
 	int GetNumQCProbeSets() const { return m_NumQCProbeSets; }
 
@@ -135,11 +135,21 @@ enum DirectionType
 	/*! No direction specified */
 	NoDirection,
 
-	/*! Sense */
+	/*! Sense
+	 * All probes in the probe set (or probe group) have the sense direction 
+	 */
 	SenseDirection,
 
-	/*! Anti sense */
-	AntiSenseDirection
+	/*! Anti sense
+	 * All probes in the probe set (or probe group) have the antisense direction
+	 */
+	AntiSenseDirection,
+
+	/* !Either
+	 * Some probes in the probe set (or probe group) have antisense direction,
+	 * others have sense direction
+	 */
+	EitherDirection
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -179,20 +189,28 @@ protected:
 public:
 	/*! Returns the list index.
 	 * @return The list index.
+	 * This is an internal index used by Affymetrix chip design.
 	 */
 	int GetListIndex() const { return m_ListIndex; }
 
 	/*! Returns the expos value.
 	 * @return The expos value.
+	 * This is the position of the probe sequence in a longer sequence.  (Note
+	 * in some arrays this value may instead correspond to the GetListIndex value).
+	 * In expression arrays the longer sequence can be the sequence from which
+	 * the probe is selected.  In genotyping arrays the longer sequence can be
+	 * the sequence containing a polymorphic SNP.  More than one probe can have
+	 * the same expos value, e.g., in arrays containing perfect match/mismatch
+	 * pairs, both probes in the pair will have the same expos value.
 	 */
 	int GetExpos() const { return m_Expos; }
 
-	/*! Returns the X coordinate.
+	/*! Returns the X coordinate of the probe in the physical array.
 	 * @return The X coordinate.
 	 */
 	int GetX() const { return m_X; }
 
-	/*! Returns the Y coordinate.
+	/*! Returns the Y coordinate of the probe in the physical array.
 	 * @return The Y coordinate.
 	 */
 	int GetY() const { return m_Y; }
@@ -241,7 +259,7 @@ protected:
 	/*! The name of the group. */
 	std::string m_Name;
 
-	/*! The number of cells per list (2 for expression and genotyping, 4 for resquencing). */
+	/*! The number of cells per list (1 or 2 for expression and genotyping, 4 for resequencing). */
 	unsigned char m_NumCellsPerList;
 
 	/*! The direction of the target that the probes are interrogating. */
@@ -273,11 +291,17 @@ protected:
 public:
 	/*! Gets the groups direction.
 	 * @return The groups direction.
+	 * See the DirectionType enumeration for details
 	 */
 	DirectionType GetDirection() const { return (DirectionType)m_Direction; }
 
 	/*! Gets the number of lists (atoms) in the group.
 	 * @return The number of lists (atoms) in the group.
+	 * In expression and genotyping arrays probes may be arranged in singletons or paired
+	 * with a mismatch probe. In resequencing arrays probes may be arranged in quartes.
+	 * Note that multiple arrangements may be present on the same
+	 * array, but not within a probe group (or probe set).
+	 * Each such singleton or pair or quartet is a "list" or "atom."
 	 */
 	int GetNumLists() const { return m_NumLists; }
 
@@ -288,16 +312,21 @@ public:
 
 	/*! Gets the number of probes per list.
 	 * @return The number of probes per list.
+	 * Always constant within a probe group or probe set.
 	 */
 	int GetNumCellsPerList() const { return (int)m_NumCellsPerList; }
 
 	/*! Gets the start list index value.
 	 * @return The start list index value.
+	 * This is the minimum value returned by GetListIndex()
+	 * This is an internal index used by Affymetrix chip design.
 	 */
 	int GetStart() const { return m_Start; }
 
 	/*! Gets the stop list index value.
 	 * @return The stop list index value.
+	 * This is the maximum value returned by GetListIndex()
+	 * This is an internal index used by Affymetrix chip design.
 	 */
 	int GetStop() const { return m_Stop; }
 
@@ -306,9 +335,10 @@ public:
 	 */
 	std::string GetName() { return m_Name; }
 
-	/*! Retrieves the probe object given an index.
-	 * @param cell_index Index to the probe of interest.
+	/*! Retrieves the probe object given a zero-based index.
+	 * @param cell_index zero-based index in the probe group to the probe of interest.
 	 * @param info The returned probe data.
+	 * Note: this has nothing to do with list index returned by GetListIndex
 	 */
 	void GetCell(int cell_index, CCDFProbeInformation & info);
 
@@ -375,21 +405,28 @@ protected:
 public:
 	/*! Gets the probe set type.
 	 * @return The probe set type.
+	 * see GeneChipProbeSetType for details
 	 */
 	GeneChipProbeSetType GetProbeSetType() const { return (GeneChipProbeSetType)m_ProbeSetType; }
 
 	/*! Gets the probe sets direction.
 	 * @return The probe sets direction.
+	 * See the DirectionType enumeration for details
 	 */
 	DirectionType GetDirection() const { return (DirectionType)m_Direction; }
 
-	/*! Gets the number of lists (atoms) in the group.
-	 * @return The number of lists (atoms) in the group.
+	/*! Gets the number of lists (atoms) in the set.
+	 * @return The number of lists (atoms) in the set.
+	 * See GetNumLists for probe group for details
 	 */
 	int GetNumLists() const { return m_NumLists; }
 
 	/*! The number of groups in the set.
 	 * @return The number of groups in the set.
+	 * In genotyping arrays it is convenient to group organize probes that interrogate
+	 * a polymorphic SNP into subsets that interrogate a particular allele and have
+	 * the same direction (i.e., sense or antisense).  Each grouping is a "probe group."
+	 * Affymetrix also uses the term "block" for a "probe group."
 	 */
 	int GetNumGroups() const { return m_NumGroups; }
 
@@ -400,11 +437,13 @@ public:
 
 	/*! Gets the number of probes per list.
 	 * @return The number of probes per list.
+	 * Always constant within a probe group or probe set.
 	 */
 	int GetNumCellsPerList() const { return (int)m_NumCellsPerList; }
 
 	/*! Gets the probe set number.
 	 * @return The probe set number.
+	 * This is an internal value used by Affymetrix chip design.
 	 */
 	int GetProbeSetNumber() const { return m_ProbeSetNumber; }
 
@@ -460,7 +499,7 @@ protected:
 
 public:
 	/*! Gets the probe set name.
-	 * @param index The index to the probe set name of interest.
+	 * @param index The zero-based index to the probe set name of interest.
 	 * @return The name of the probe set.
 	 */
 	std::string GetName(int index) const;
@@ -479,7 +518,7 @@ protected:
 	/*! The X coordinate of the probe */
 	unsigned short m_X;
 
-	/*! The Y coodrinate of the probe */
+	/*! The Y coordinate of the probe */
 	unsigned short m_Y;
 
 	/*! The probe length. This value may be 1 for non-synthesized features */
@@ -498,7 +537,7 @@ protected:
 	friend class CCDFFileData;
 
 public:
-	/*! Gets the X cooridnate of the probe.
+	/*! Gets the X coordinate of the probe.
 	 * @return The X coordinate.
 	 */
 	int GetX() const { return m_X; }
@@ -634,7 +673,7 @@ public:
 	int GetNumCells() const { return m_NumCells; }
 
 	/*! Gets the information about a single probe in the set.
-	 * @param index The index to the probe of interest.
+	 * @param index The zero-based index to the probe of interest.
 	 * @param info The information about the probe.
 	 */
 	void GetProbeInformation(int index, CCDFQCProbeInformation & info);
@@ -709,7 +748,7 @@ protected:
 	/*! A pointer to data in a memory mapped file. */
 	char  *m_lpData;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	/*! A windows handle used for memory mapping. */
 	HANDLE m_hFileMap;
 
@@ -757,7 +796,7 @@ public:
 	std::string GetError() const { return m_strError; }
 
 	/*! Gets the name of a probe set.
-	 * @param index The index to the probe set name of interest.
+	 * @param index The zero-based index to the probe set name of interest.
 	 * @return The probe set name.
 	 */
 	std::string GetProbeSetName(int index) const;
@@ -791,20 +830,20 @@ public:
 	bool IsXDACompatibleFile();
 
 	/*! Gets the probe set type for non-qc probe sets.
-	 * @param index The index to the probe set of interest.
+	 * @param index The zero-based index to the probe set of interest.
 	 * @return The type of probe set.
 	 */
 	GeneChipProbeSetType GetProbeSetType(int index) const;
 
 	/*! Gets the probe set information.
-	 * @param index The index to the probe set of interest.
+	 * @param index The zero-based index to the probe set of interest.
 	 * @param info The probe set information.
 	 * @return The probe set information.
 	 */
 	void GetProbeSetInformation(int index, CCDFProbeSetInformation & info);
 
 	/*! Gets the QC probe set information by index.
-	 * @param index The index to the QC probe set of interest.
+	 * @param index The zero-based index to the QC probe set of interest.
 	 * @param info The QC probe set information.
 	 * @return The QC probe set information.
 	 */
