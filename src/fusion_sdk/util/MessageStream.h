@@ -38,6 +38,8 @@ public:
 	/*! Constructor */
 	MessageStream() { verbosity = 0; }
 
+  virtual ~MessageStream() { }
+
 	/*! Set the level of verbosity desired. 0 == no messages
 	 * 1 == normal messages, 2,3,4, etc. == more verbose.
 	 * @param level - level of verbosity desired.

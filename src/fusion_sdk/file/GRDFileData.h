@@ -39,13 +39,16 @@ namespace affxgrd
 //////////////////////////////////////////////////////////////////////
 
 /*! The name of the parent DAT file parameter. */
-const char SZ_PARENT_DAT_PROP_NAME[] = "Parent DAT File";
+// const char SZ_PARENT_DAT_PROP_NAME[] = "Parent DAT File";
+  extern const char SZ_PARENT_DAT_PROP_NAME[];
 
 /*! The name of the scan date-time parameter. */
-const char SZ_SCAN_DATE_TIME_PROP_NAME[] = "Scan Date-Time";
+  //const char SZ_SCAN_DATE_TIME_PROP_NAME[] = "Scan Date-Time";
+  extern const char SZ_SCAN_DATE_TIME_PROP_NAME[];
 
 /*! The name of the scanner id parameter. */
-const char SZ_SCANNER_ID_PROP_NAME[] = "Scanner ID";
+// const char SZ_SCANNER_ID_PROP_NAME[] = "Scanner ID";
+  extern const char SZ_SCANNER_ID_PROP_NAME[];
 
 /*! Floating point coordinates */
 struct FCOORD {

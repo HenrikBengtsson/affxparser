@@ -1,22 +1,22 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 /**
  * @file   CalvinCHPFileBufferWriter.cpp
@@ -37,7 +37,6 @@ CHPFileBufferWriter::CHPFileBufferWriter()
 {
 	m_BufferSize = 0;
 	m_MaxBufferSize = MAX_BUFFER_SIZE;
-	m_XDACHPFormat = false;
 }
 
 CHPFileBufferWriter::~CHPFileBufferWriter()
@@ -55,7 +54,7 @@ void CHPFileBufferWriter::Cleanup()
 	m_TargetEntryBuffers.erase(m_TargetEntryBuffers.begin(), m_TargetEntryBuffers.end());
 }
 
-void CHPFileBufferWriter::Initialize(std::vector<std::string> *CHPFileNames, bool XDACHPFormat)
+void CHPFileBufferWriter::Initialize(std::vector<std::string> *CHPFileNames)
 {
 	m_CHPFileNames = CHPFileNames;
 	Cleanup();
@@ -66,7 +65,6 @@ void CHPFileBufferWriter::Initialize(std::vector<std::string> *CHPFileNames, boo
 		m_TargetEntryRowIndexes.push_back(0);
 	}	
 	m_BufferSize = 0;
-	m_XDACHPFormat = XDACHPFormat;
 }
 
 void CHPFileBufferWriter::WriteGenotypeEntry(int target, CHPGenotypeEntry &entry)
@@ -91,70 +89,14 @@ void CHPFileBufferWriter::WriteGenotypeEntry(int target, CHPGenotypeEntry &entry
 void CHPFileBufferWriter::FlushBuffer()
 {
 	if (m_BufferSize > 0) {
-		if (m_XDACHPFormat)
-		{
-			FlushBufferXDA();
-		}
-		else
-		{
-			FlushBufferCC();
-		}
-	}
-}
-
-void CHPFileBufferWriter::FlushBufferCC()
-{
-	if (m_BufferSize > 0) {
 		for (int target=0; target<m_CHPFileNames->size(); target++)
 		{
 			CalvinCHPFileUpdater updater;
 			updater.OpenCHPFile((*m_CHPFileNames)[target].c_str());
-			for (int i=0; i<m_TargetEntryBuffers[target].size(); i++)
-			{
-				GenotypeBufferEntry bufferEntry = m_TargetEntryBuffers[target][i];
-				updater.UpdateGenotypeEntry(
-					m_TargetEntryRowIndexes[target]+i, 
-					bufferEntry.call,
-					bufferEntry.confidence,
-					bufferEntry.RAS1,
-					bufferEntry.RAS2,
-					bufferEntry.aaCall,
-					bufferEntry.abCall,
-					bufferEntry.bbCall,
-					bufferEntry.noCall);
-			}
+			updater.UpdateGenotypeEntryBuffer(m_TargetEntryRowIndexes[target], m_TargetEntryBuffers[target]);
 			updater.CloseCHPFile();
 			m_TargetEntryRowIndexes[target] += m_TargetEntryBuffers[target].size();
-			m_TargetEntryBuffers[target].erase(m_TargetEntryBuffers[target].begin(), m_TargetEntryBuffers[target].end());
-		}
-	}
-	m_BufferSize = 0;
-}
-
-void CHPFileBufferWriter::FlushBufferXDA()
-{
-	if (m_BufferSize > 0) {
-		for (int target=0; target<m_CHPFileNames->size(); target++)
-		{
-			CCHPFileUpdater updater;
-			updater.OpenCHPFile((*m_CHPFileNames)[target].c_str());
-			for (int i=0; i<m_TargetEntryBuffers[target].size(); i++)
-			{
-				GenotypeBufferEntry bufferEntry = m_TargetEntryBuffers[target][i];
-				updater.UpdateGenotypeEntry(
-					m_TargetEntryRowIndexes[target]+i, 
-					bufferEntry.call,
-					bufferEntry.confidence,
-					bufferEntry.RAS1,
-					bufferEntry.RAS2,
-					bufferEntry.aaCall,
-					bufferEntry.abCall,
-					bufferEntry.bbCall,
-					bufferEntry.noCall);
-			}
-			updater.CloseCHPFile();
-			m_TargetEntryRowIndexes[target] += m_TargetEntryBuffers[target].size();
-			m_TargetEntryBuffers[target].erase(m_TargetEntryBuffers[target].begin(), m_TargetEntryBuffers[target].end());
+			m_TargetEntryBuffers[target].clear();
 		}
 	}
 	m_BufferSize = 0;

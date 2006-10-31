@@ -40,8 +40,6 @@
 #include "RegressionCheck.h"
 #include "file/CHPFileData.h"
 
-#define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
-
 /**
  * Class for testing that CHP files are the same +/- some epsilon. Also checks
  * to make sure that at least some of the headers are the same
@@ -51,15 +49,18 @@ class ChpCheck : public RegressionCheck {
 
 public:
 
-  ChpCheck(std::vector<std::string> &generated, std::vector<std::string> &gold,
-           double eps) {
+  /// @brief     Constructor
+  /// @param     generated 
+  /// @param     gold      the reference data to compare with
+  /// @param     eps       epsilon
+  /// @return    
+  ChpCheck(std::vector<std::string> &generated, std::vector<std::string> &gold, double eps) {
     if(generated.size() != gold.size()) {
       Err::errAbort("ChpCheck::ChpCheck() - generated and gold vectors must be same size.");
     }
     m_Generated = generated;
     m_Gold = gold;
     m_Eps = eps;
-
   }
 
   /** 
@@ -75,7 +76,7 @@ public:
       if(headersSame(m_Generated[i], m_Gold[i], msg) &&
          dataSame(m_Generated[i], m_Gold[i], msg)) {
       }
-      else {
+      if(!dataSame(m_Generated[i], m_Gold[i], msg)) {
         return false;
       }
     }
@@ -138,8 +139,8 @@ private:
   }
 
   bool checkFloat(float gold, float gen, double eps, bool &success, double &maxDiff) {
-    float diff = fabs(gold - gen);
-    maxDiff = MAX(diff, maxDiff);
+    double diff = fabs(gold - gen);
+    maxDiff = std::max(diff, maxDiff);
     if(diff > eps) 
       success = false;
     return success;

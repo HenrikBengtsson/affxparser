@@ -1,22 +1,22 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 #include "CHPQuantificationData.h"
 #include "DataSetHeader.h"
@@ -26,8 +26,17 @@ using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;
 using namespace affymetrix_calvin_utilities;
 
+/*! The group and data set and column name to store the quantification data. */
+const static std::wstring QUANTIFICATION_QUANTIFICATION_NAME = L"Quantification";
+
+/*! The column name for the probe set name. */
+const static std::wstring QUANTIFICATION_PROBE_SET_NAME = L"ProbeSetName";
+
+/*! The column name for the probe set id. */
+const static std::wstring QUANTIFICATION_PROBE_SET_ID = L"ProbeSetId";
+
 /*! A prefix for chip summary parameter ids. */
-static const std::wstring CHIP_SUMMARY_PARAMETER_NAME_PREFIX = L"affymetrix-chipsummary-";
+const static std::wstring CHIP_SUMMARY_PARAMETER_NAME_PREFIX = L"affymetrix-chipsummary-";
 
 CHPQuantificationData::CHPQuantificationData()
 {
@@ -52,6 +61,11 @@ CHPQuantificationData::CHPQuantificationData(const std::string& filename)
 CHPQuantificationData::~CHPQuantificationData() 
 { 
 	Clear(); 
+}
+
+DataSetHeader &CHPQuantificationData::GetDataSetHeader()
+{
+    return genericData.Header().GetDataGroup(0).GetDataSet(0);
 }
 
 void CHPQuantificationData::Clear()

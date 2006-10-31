@@ -48,6 +48,16 @@
 /*! \file affy-base-types.h This file defines types for consistency across platforms.
  */
 
+/*! Microsoft Visual Studio C++ doesn't implement std::min() and std::max()
+  due to possible conflict with min() and max() defined in windows.h. */
+#ifdef _MSC_VER   // vc++ version
+#define Max(a,b) max(a,b)
+#define Min(a,b) min(a,b)
+#else            // assume other people implement the standard
+#define Max(a,b) std::max(a,b)
+#define Min(a,b) std::min(a,b)
+#endif           // _MSC_VER
+
 /* "WIN32" should always be defined by MS C++  */
 /* It shouldnt be defined on any other platform */
 #ifndef WIN32

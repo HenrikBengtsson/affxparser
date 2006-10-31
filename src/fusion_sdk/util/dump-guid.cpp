@@ -26,13 +26,17 @@ int
 main(int argc,char* argv[])
 {
   //
-  printf("time =%10d\n",time(NULL) );
-  printf("pid  =%10d\n",getpid()   );
-  printf("host =%10d\n",gethostid());
+  printf("time =%10d\n",(int)time(NULL) );
+  printf("pid  =%10d\n",(int)getpid()   );
+  printf("host =%10d\n",(int)gethostid());
   affxutil::Guid guidmaker;
   affxutil::GuidType guid;  
 
-  for (int i=0;i<5;i++) {
+  int n = 5;
+
+  if(argc>1) { n = atoi(argv[1]); }
+
+  for (int i=0;i<n;i++) {
     guid=guidmaker.GenerateNewGuid();
     printf("%2d : %s\n",i,guid.c_str());
   }

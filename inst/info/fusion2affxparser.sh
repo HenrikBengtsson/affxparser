@@ -16,3 +16,6 @@ rm -R TestDataFiles file_formats interface_docs java \
  calvin_files/utils/test calvin_files/utils/data\
  calvin_files/writers/test calvin_files/writers/data
 cd -
+diff -rq sdk /Users/kdh/Work/bioc/affxparser/src/fusion_sdk | grep Only | grep -v svn
+
+

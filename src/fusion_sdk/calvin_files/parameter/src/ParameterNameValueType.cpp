@@ -1,27 +1,27 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 #include "ParameterNameValueType.h"
 #include "StringUtils.h"
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #include <winsock2.h>
 #else
@@ -126,7 +126,7 @@ const void* MIMEValue::GetValue(u_int32_t& size) const
  * MIME constructor.  Useful when reading in from a file. No interpretation attempted.
  */
 ParameterNameValueType::ParameterNameValueType(const std::wstring& name, const void* mimeValue, int32_t mimeValueSize, const std::wstring& mimeType)
-: Name(name), Value(mimeValue, mimeValueSize), Type(mimeType)
+  : Name(name), Type(mimeType), Value(mimeValue, mimeValueSize)
 {
 }
 
@@ -134,7 +134,7 @@ ParameterNameValueType::ParameterNameValueType(const std::wstring& name, const v
  * MIME constructor.  Useful when reading in from a file. No interpretation attempted.
  */
 ParameterNameValueType::ParameterNameValueType(const std::wstring& name, const MIMEValue& mimeValue, const std::wstring& mimeType)
-: Name(name), Value(mimeValue), Type(mimeType)
+  : Name(name), Type(mimeType), Value(mimeValue)
 {
 }
 
@@ -396,6 +396,9 @@ std::wstring ParameterNameValueType::ToString() const
 		case AsciiType:
 			result = StringUtils::ConvertMBSToWCS(GetValueAscii());
 			break;
+  default:
+    // unhandled cases are ok
+    break;
 	}
 	return result;
 }
@@ -441,6 +444,9 @@ std::wstring ParameterNameValueDefaultRequiredType::DefaultToString()
 		case AsciiType:
 			result = StringUtils::ConvertMBSToWCS(GetDefaultValueAscii());
 			break;
+  default:
+    // Unhandled case is ok.
+    break;
 	}
 	return result;
 }

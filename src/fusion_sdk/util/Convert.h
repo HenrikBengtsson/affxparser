@@ -42,6 +42,7 @@
 template <class T> 
 std::string ToStr(const T &t) {
   std::ostringstream s;
+  s.setf(std::ios_base::boolalpha);
   s << t; 
   return s.str();
 };

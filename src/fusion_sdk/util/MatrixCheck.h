@@ -28,6 +28,7 @@
 #ifndef MATRIXCHECK_H
 #define MATRIXCHECK_H
 
+#include <assert.h>
 #include <string>
 #include <stdlib.h>
 #include "Util.h"

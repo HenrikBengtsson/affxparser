@@ -92,7 +92,7 @@ public:
     return m_Param;
   }
 
-  // Functions to add and remove handlers for communcation functions.
+  /// @brief Functions to add and remove handlers for communcation functions.
   static void pushProgressHandler(ProgressHandler *handler) {
     getParam().m_ProHandler.push_back(handler);
   }

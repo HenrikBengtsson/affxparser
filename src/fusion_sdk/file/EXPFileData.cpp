@@ -18,6 +18,7 @@
 ////////////////////////////////////////////////////////////////
 
 #include "EXPFileData.h"
+#include "FileIO.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <istream>
@@ -133,13 +134,13 @@ bool CEXPFileData::Read()
 	// The first two lines are the header.
 	const int LINELENGTH = 1024;
 	char str[LINELENGTH];
-	instream.getline(str, LINELENGTH);
+    ReadNextLine(instream, str, LINELENGTH);
 	if (strncmp(str, EXP_HEADER_LINE_1, strlen(EXP_HEADER_LINE_1)) != 0)
 	{
 		Clear();
 		return false;
 	}
-	instream.getline(str, LINELENGTH);
+	ReadNextLine(instream, str, LINELENGTH);
 	if (strncmp(str, EXP_HEADER_LINE_2, strlen(EXP_HEADER_LINE_2)) != 0)
 	{
 		Clear();
@@ -152,8 +153,10 @@ bool CEXPFileData::Read()
 
 	// The remaining are the sample, fluidics and scanner sections
 	bool captureAll = false;
-	while (instream.getline(str, LINELENGTH))
+	while (!instream.eof())
 	{
+        ReadNextLine(instream, str, LINELENGTH);
+
 		// Skip blank lines.
 		if (strlen(str) == 0)
 			continue;

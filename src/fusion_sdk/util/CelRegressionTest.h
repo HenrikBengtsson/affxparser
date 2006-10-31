@@ -49,7 +49,7 @@ public:
    * @param generatedFile - File created by application being tested.
    * @param epsilon - Maximum abosolute difference from truth acceptable.
    * @param command - Command to execute.
-   * @param allowedMisMatch - How many can we get wrong before failing?
+   * @param allowedMismatch - How many can we get wrong before failing?
    */
   CelRegressionTest (const char* goldFile, const char* generatedFile,
     const double epsilon, const char* command, const int allowedMismatch) :

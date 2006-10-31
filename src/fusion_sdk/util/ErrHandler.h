@@ -44,6 +44,7 @@ public:
   /** Virtual destructor for a virtual class. */
   virtual ~ErrHandler() {}
 
+  /** Prototype for the function */
   virtual void handleError(const std::string &msg) = 0;
 };
 

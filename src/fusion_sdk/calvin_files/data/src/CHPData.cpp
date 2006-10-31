@@ -1,22 +1,22 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 #include "CHPData.h"
 #include "DataSetHeader.h"
@@ -643,9 +643,12 @@ void CHPData::SetProgId(const std::wstring& value)
 
 ParameterNameValueType CHPData::GetAlgParam(const std::wstring& tag)
 {
-	ParameterNameValueType type;
+	std::wstring name = ALGORITHM_PARAM_NAME_PREFIX_S + tag;
+	ParameterNameValueType paramType;
+    GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
+    hdr->FindNameValParam(name, paramType);
+	ParameterNameValueType type = paramType;
 	type.SetName(tag);
-	type.SetValueText(GetWStringFromGenericHdr(ALGORITHM_PARAM_NAME_PREFIX_S + tag));
 	return type;
 }
 
@@ -686,6 +689,18 @@ void CHPData::AddAlgParam(const std::wstring& name, const std::wstring& param)
 {
 	std::wstring paramName = ALGORITHM_PARAM_NAME_PREFIX_S + name;
 	SetWStringToGenericHdr(paramName, param);
+}
+
+void CHPData::AddAlgParam(const std::wstring& name, int param)
+{
+	std::wstring paramName = ALGORITHM_PARAM_NAME_PREFIX_S + name;
+	SetInt32ToGenericHdr(paramName, param);
+}
+
+void CHPData::AddAlgParam(const std::wstring& name, float param)
+{
+	std::wstring paramName = ALGORITHM_PARAM_NAME_PREFIX_S + name;
+	SetFloatToGenericHdr(paramName, param);
 }
 
 ParameterNameValueTypeVector CHPData::GetChipSums()

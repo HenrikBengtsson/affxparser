@@ -2,22 +2,21 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
+
 
 /**
  * @file   CHPInfo.h
@@ -40,8 +39,6 @@ class CHPInfo {
       m_NumCols = 0;
       m_NumProbeSets = 0;
       m_ProbeSetType = affxcdf::UnknownProbeSetType;
-      m_ProbesetNames = NULL;
-	  m_ProbesetGroups = NULL;
     }
 
     void addParam(const std::string &key, const std::string &value) {
@@ -81,8 +78,8 @@ class CHPInfo {
     std::vector<std::string> m_ParamValues;
     /// Vector of probeset names and groups as they should appear in the chp file.
     /// this memory is owned elsewhere as it is relatively large in size.
-    std::vector<std::string> *m_ProbesetNames;
-	std::vector<ProbeSetGroup *> *m_ProbesetGroups;
+    std::vector<int> m_ProbesetIds;
+    std::vector<std::string> m_ProbesetNames;
 };
 
 }

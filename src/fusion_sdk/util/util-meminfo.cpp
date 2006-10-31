@@ -22,7 +22,7 @@
 // 
 // sdk/util/util-meminfo.cpp ---
 // 
-// $Id: util-meminfo.cpp,v 1.3 2006/04/07 16:28:04 awilli Exp $
+// $Id: util-meminfo.cpp,v 1.5 2006/08/17 17:58:21 harley Exp $
 // 
 
 #include "util/Util.h"
@@ -35,11 +35,21 @@ main(int argc,char* argv[])
   uint64_t swapAvail;
   uint64_t memAvail;
 
+#ifdef __linux__
+  if (argc==2) {
+    printf("Reading linux /proc/meminfo from '%s' for testing:\n",argv[1]);
+    memInfo_linux(argv[1],free,total,swapAvail,memAvail);
+  } else {
+    Util::memInfo(free,total,swapAvail,memAvail);
+  }
+#else
   Util::memInfo(free,total,swapAvail,memAvail);
+#endif
 
 #define B_FMT "%12llu  "
+#define B_CVT(x) ((long long unsigned int)x)
   printf("meminfo: free=" B_FMT "total=" B_FMT "swapAvail=" B_FMT "memAvail=" B_FMT "\n",
-         free,total,swapAvail,memAvail);
+         B_CVT(free),B_CVT(total),B_CVT(swapAvail),B_CVT(memAvail));
   //
 #define M_FMT "%10.3fMB  "
 #define M_CVT(x) (x/(1024.0*1024))

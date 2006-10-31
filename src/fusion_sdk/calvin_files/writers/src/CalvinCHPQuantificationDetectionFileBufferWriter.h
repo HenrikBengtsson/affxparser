@@ -1,49 +1,52 @@
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 2.1 of the License,
-// or (at your option) any later version.
-//
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
-/////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+
 
 /**
- * @file   CalvinCHPQuantificationFileBufferWriter.h
+ * @file   CalvinCHPQuantificationDetectionFileBufferWriter.h
  * @author David Le
  * @date   Mon May 15 12:09:42 2006
  * 
  * @brief  Class for writing Quantifications to a buffer before writing to CHP files.
  */
 
-#ifndef _CHPQuantificationFILEBUFFERWRITER_HEADER_
-#define _CHPQuantificationFILEBUFFERWRITER_HEADER_
+#ifndef _CHPQUANTIFICATIONDETECTIONFILEBUFFERWRITER_HEADER_
+#define _CHPQUANTIFICATIONDETECTIONFILEBUFFERWRITER_HEADER_
 
 #include <string>
 #include <vector>
 
-#define MAX_BUFFER_SIZE				20971520	// 20 MB
+#define MAX_BUFFER_SIZE				5242880		// 5 MB
 
 namespace affymetrix_calvin_io
 {
-class CHPQuantificationFileBufferWriter
+class CHPQuantificationDetectionFileBufferWriter
 {
 public:
 	/*! Constructor */
-	CHPQuantificationFileBufferWriter();
+	CHPQuantificationDetectionFileBufferWriter();
 
 	/*! Destructor */
-	~CHPQuantificationFileBufferWriter();
+	~CHPQuantificationDetectionFileBufferWriter();
+
+	/*! Set maximum buffer size */
+	void SetMaxBufferSize(int MaxBufferSize) { m_MaxBufferSize = MaxBufferSize; }
 
 	/*! Cleans up memory */
 	void Cleanup();
@@ -67,15 +70,18 @@ private:
 	std::vector<std::string> *m_CHPFileNames;
 
 	// List of targets used for storing quantification entries.
-	std::vector< std::vector<float> > m_TargetQuantificationBuffers;
+	std::vector< std::vector<float> > m_TargetQuantificationDetectionBuffers;
 
 	// Buffer for storing quantification row indexes.
-	std::vector<int> m_TargetQuantificationRowIndexes;
+	std::vector<int> m_TargetQuantificationDetectionRowIndexes;
 
 	// Size of the current buffer in bytes.
 	int m_BufferSize;
+
+	// Maximum size of the buffer before it gets flushed
+	int m_MaxBufferSize;
 };
 
 }
 
-#endif // _CHPQuantificationFILEBUFFERWRITER_HEADER_
+#endif // _CHPQUANTIFICATIONDETECTIONFILEBUFFERWRITER_HEADER_

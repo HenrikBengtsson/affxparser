@@ -29,7 +29,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #ifdef HAVE_SNPRINTF // If not using visual c++'s _snprintf include snprintf.
 extern "C" {
@@ -94,11 +94,11 @@ using namespace affxcel;
 /// Size of compact cel format identifier
 #define CCEL_HEADER_LEN 8
 
-#if defined(_MSC_VER) || defined(WIN32)
-/// Line separator for _MSC_VER
+#ifndef WIN32
+/// Line separator for unix/linux
 #define LINE_SEPARATOR "\n"
 #else
-/// Line separator for unix/linux
+/// Line separator for Windows
 #define LINE_SEPARATOR "\r\n"
 #endif
 
@@ -831,9 +831,12 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
   // want MEMMAPPING (Chuck) can define this
 
   /// @todo USE_MEM_MAPPING should be set in all the makefiles?
+  // #ifndef _DONT_USE_MEM_MAPPING_
+
+  //#if defined(_USE_MEM_MAPPING_)
 #ifndef _DONT_USE_MEM_MAPPING_
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	// Memory map file on windows...
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
@@ -897,7 +900,7 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 
 #else
   // No memory mapping ...
-  //printf("OPEN: non memory mapped.\n"); //
+  // printf("OPEN: non memory mapped.\n"); //
   m_lpFileMap=NULL;
   m_File=fopen(m_FileName.c_str(),"r");
   if (m_File==NULL) {
@@ -1131,7 +1134,7 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 	instr.close();
 
 	// Memory map file
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -1356,7 +1359,7 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 		return true;
 
 	// Memory map file
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -1847,7 +1850,7 @@ void CCELFileData::Munmap()
 	m_pMeanIntensities = NULL;
 
 	// free the map
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	if (m_lpFileMap != NULL)
 	{
 		UnmapViewOfFile(m_lpFileMap);
