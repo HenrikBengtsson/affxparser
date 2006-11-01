@@ -36,7 +36,7 @@
    are returned as matrices, otherwise not.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
  \examples{
 

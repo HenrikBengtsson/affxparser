@@ -29,7 +29,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 #pragma warning(disable: 4996) // don't show deprecated warnings.
 #ifdef HAVE_SNPRINTF // If not using visual c++'s _snprintf include snprintf.
 extern "C" {
@@ -94,12 +94,12 @@ using namespace affxcel;
 /// Size of compact cel format identifier
 #define CCEL_HEADER_LEN 8
 
-#ifndef WIN32
-/// Line separator for unix/linux
-#define LINE_SEPARATOR "\n"
-#else
+#if defined(_MSC_VER) || defined(WIN32)
 /// Line separator for Windows
 #define LINE_SEPARATOR "\r\n"
+#else
+/// Line separator for unix/linux
+#define LINE_SEPARATOR "\n"
 #endif
 
 #ifndef PAGE_SIZE
@@ -836,7 +836,7 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
   //#if defined(_USE_MEM_MAPPING_)
 #ifndef _DONT_USE_MEM_MAPPING_
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	// Memory map file on windows...
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
@@ -1134,7 +1134,7 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 	instr.close();
 
 	// Memory map file
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -1359,7 +1359,7 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 		return true;
 
 	// Memory map file
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
@@ -1850,7 +1850,7 @@ void CCELFileData::Munmap()
 	m_pMeanIntensities = NULL;
 
 	// free the map
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 	if (m_lpFileMap != NULL)
 	{
 		UnmapViewOfFile(m_lpFileMap);

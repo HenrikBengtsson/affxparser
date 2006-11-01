@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.7.1 [2006-10-31]
+o Updated to Fusion 1.0.8.
+
 Version: 1.7.0 [2006-10-25]
 o BUG FIX: writeCdf() would create an invalid CDF file if there were
   no QC units.  This would in turn make readCdfUnits() etc core dump.

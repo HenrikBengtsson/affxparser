@@ -38,7 +38,7 @@
  \code{\link{applyCdfGroups}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
 \references{
  [1] Affymetrix, \emph{Understanding Genotyping Probe Set Structure}, 2005.

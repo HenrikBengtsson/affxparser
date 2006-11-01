@@ -27,11 +27,11 @@
 #   \code{"/usr/;usr/bin/;.;"}.
 # }
 #
-# \section{Windows Shortcut links}{
-#   If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
-#   are recognized and can be used to immitate links to directories
-#   elsewhere.  For more details, see @see "R.utils::filePath".
-# }
+# % \section{Windows Shortcut links}{
+# %   If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
+# %   are recognized and can be used to immitate links to directories
+# %   elsewhere.  For more details, see @see "R.utils::filePath".
+# % }
 #
 # @author
 #
@@ -74,7 +74,8 @@ findFiles <- function(pattern=NULL, paths=NULL, firstOnly=TRUE, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Prepare list of paths to be scanned
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  hasRutils <- suppressWarnings(require(R.utils2, quietly=TRUE));
+#  hasRutils <- suppressWarnings(require(R.utils, quietly=TRUE));
+  hasRutils <- FALSE;
 
   # Don't search non-existing paths
   for (kk in seq(along=paths)) {
@@ -121,6 +122,8 @@ findFiles <- function(pattern=NULL, paths=NULL, firstOnly=TRUE, ...) {
 
 ############################################################################
 # HISTORY:
+# 2006-11-01
+# o Remove usage of R.utils for now.
 # 2006-03-14
 # o Created from findCdf.R.
 ############################################################################  

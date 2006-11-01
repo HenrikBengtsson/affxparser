@@ -117,10 +117,15 @@ Some of the functions in this package search for CDF files automatically by scan
   or greater on Solaris.
 
   In the \code{info} subdirectory of the package installation,
-  information regarding changes to the Fusion SDK is stored.
+  information regarding changes to the Fusion SDK is stored, e.g.
+  \preformatted{
+    pathname <- system.file("info/README", package="affxparser"))
+    file.show(pathname)
+  }
 }  
   
 \author{
+ Henrik Bengtsson, \email{hb@stat.berkeley.edu},
  James Bullard, \email{bullard@stat.berkeley.edu} and 
  Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}.
 }

@@ -76,12 +76,12 @@ outFile <- sprintf("\%s-copy.cdf", cdfHeader$chiptype)
 convertCdf(cdfFile, outFile, overwrite=TRUE, verbose=TRUE)
 
 # Clean up
-rm(cdfFile, pathname, cdfHeader)
+rm(cdfFile, cdfHeader)
 
 } # for (zzz in 0)
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
  \seealso{
    See \code{\link{compareCdfs}}() to compare two CDF files.

@@ -1643,7 +1643,7 @@ extern "C" {
    ************************************************************************/
   SEXP R_affx_get_cdf_unit_names(SEXP fname, SEXP units, SEXP verbose) 
   {
-    FusionCDFData cdf;
+   FusionCDFData cdf;
     string str;
     int str_length; 
     char* cstr; 

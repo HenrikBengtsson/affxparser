@@ -42,7 +42,7 @@
   elsewhere.  For more details, see \code{\link[R.utils]{filePath}}.
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
 
 
