@@ -1,4 +1,4 @@
-Using Fusion SDK release 1.0.8 from Spetember 2006.
+Using Fusion SDK release 1.0.8 from September 2006.
 
 The fusion2affxparser.sh script was used to trim the SDK. 
 In addition we changed file/CELFileData.h to allow for compiling

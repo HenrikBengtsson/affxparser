@@ -39,7 +39,7 @@
   the size of the CDFs.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
  \seealso{
    \code{\link{convertCdf}}().

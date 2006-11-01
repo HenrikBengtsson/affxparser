@@ -52,10 +52,10 @@
     # Unit names
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Write to raw vector (2*10^6 units => 122Mb; should be ok for now)
-    # Since we can't create strings with '\0':s, we use '\377' (=0xFF),
-    # write to raw and then replace '\377' with '\0'. Thus, unit names with
-    # '\377' are invalid, but this should not be a real problem.
-    pads <- sapply(0:64, FUN=function(x) paste(rep("\377", x), collapse=""));
+    # Since we can't create strings with '\0':s, we use '\xFF',
+    # write to raw and then replace '\xFF' with '\0'. Thus, unit names with
+    # '\xFF' are invalid, but this should not be a real problem.
+    pads <- sapply(0:64, FUN=function(x) paste(rep("\xFF", x), collapse=""));
     unitnames <- paste(unitnames, pads[64-nchar(unitnames)], sep="");
     raw <- raw(64*length(unitnames));
     raw <- writeBin(con=raw, unitnames, size=1);

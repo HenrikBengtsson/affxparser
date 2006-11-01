@@ -28,7 +28,7 @@
 #include <string>
 #include <fstream>
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 #include <windows.h>
 #endif
 
@@ -272,7 +272,7 @@ protected:
 	int32_t LastRowMapped();
 
 	/*! Platform specific memory-mapping method */
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 
 	bool MapDataWin32(u_int32_t start, u_int32_t bytes);
 
@@ -341,7 +341,7 @@ protected:
 	 */
 	Int32Vector columnByteOffsets;
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(WIN32)
 
 	/*! Handle returned by CreateFileMapping */
 	HANDLE fileMapHandle;

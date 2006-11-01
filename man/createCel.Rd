@@ -85,7 +85,7 @@ stopifnot(identical(intensities, value))
 } # for (zzz in 0)
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
 
 

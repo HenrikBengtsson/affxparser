@@ -69,7 +69,7 @@ rm(nbrOfCells, idx, readMap, writeMap, writeMap2)
 
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
  \seealso{
    To generate an optimized write map for a CDF file, see

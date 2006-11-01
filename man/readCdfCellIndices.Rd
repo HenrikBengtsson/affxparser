@@ -64,7 +64,7 @@
    This is structure is compatible with what \code{\link{readCdfUnits}}() returns.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
   \seealso{
     \code{\link{readCdfUnits}}().
