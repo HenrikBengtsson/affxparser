@@ -33,11 +33,17 @@
  Returns a \code{\link[base]{list}} structure with only two groups.
 }
 
+\details{
+ If a unit has two strands, they are merged such that the elements
+ for the second strand are concattenated to the end of the elements
+ of first strand (This is done seperately for the two alleles).
+}
+
 \seealso{
  \code{\link{applyCdfGroups}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
 \references{
  [1] Affymetrix, \emph{Understanding Genotyping Probe Set Structure}, 2005.

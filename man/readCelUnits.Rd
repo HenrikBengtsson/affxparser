@@ -71,7 +71,7 @@
    and \code{\link{readCel}}().
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
  \examples{
 

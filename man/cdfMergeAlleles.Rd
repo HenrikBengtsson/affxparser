@@ -36,11 +36,16 @@
  and \code{reverse}, if the latter exists.
 }
 
+\details{
+ Allele A and allele B are merged into a \code{\link[base]{matrix}} where first row
+ hold the elements for allele A and the second elements for allele B.
+}
+
 \seealso{
  \code{\link{applyCdfGroups}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
 \references{
  [1] Affymetrix, \emph{Understanding Genotyping Probe Set Structure}, 2005.

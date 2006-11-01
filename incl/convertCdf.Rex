@@ -16,6 +16,6 @@ outFile <- sprintf("%s-copy.cdf", cdfHeader$chiptype)
 convertCdf(cdfFile, outFile, overwrite=TRUE, verbose=TRUE)
 
 # Clean up
-rm(cdfFile, pathname, cdfHeader)
+rm(cdfFile, cdfHeader)
 
 } # for (zzz in 0)

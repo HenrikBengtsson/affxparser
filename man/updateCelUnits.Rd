@@ -117,7 +117,7 @@ for (kk in 1:10) {
 } # for (zzz in 0)
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
  \seealso{
    Internally, \code{\link{updateCel}}() is used.

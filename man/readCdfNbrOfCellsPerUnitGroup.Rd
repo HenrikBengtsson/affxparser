@@ -108,7 +108,7 @@ print(sum(x[["4"]][3,]-x[["4"]][4,] != 0))
 rm(cdfFile, groups, nbrOfCellsPerUnit, nbrOfGroupsPerUnit, x)
 } # for (zzz in 0)
 }
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 
 
 
