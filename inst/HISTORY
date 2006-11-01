@@ -1,8 +1,15 @@
 Package: affxparser
 ===================
 
-Version: 1.7.1 [2006-10-31]
-o Updated to Fusion 1.0.8.
+Version: 1.7.1 [2006-11-01]
+o Updated to Fusion SDK v1.0.8.
+o BUG FIX: In Fusion SDK (v1.0.5) that previous version of affxparser 
+  used, a CDF file was never closed on Unix platforms (this bug was
+  not in the Windows version).  Since Fusion allocated memory for
+  the complete CDF (even if a subset is only read), this caused the 
+  memory usage to blow up, when reading the same or different CDF
+  files multiple times, because the memory was never deallocated.
+  Thanks Seth Falcon and Ken Simpson for reporting this problem.
 
 Version: 1.7.0 [2006-10-25]
 o BUG FIX: writeCdf() would create an invalid CDF file if there were
