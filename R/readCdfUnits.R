@@ -225,7 +225,7 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
         if (ngroup == 0)
           next;
 
-        pm <- !.subset2(.subset2(isPm, uu), gg);
+        pm <- .subset2(.subset2(isPm, uu), gg);
         mm <- (1:length(pm))[!pm]; # Note: which(!pm) is about 60% slower!
         for (kk in 1:ngroup) {
           group[[kk]] <- .subset(.subset2(group, kk), mm);
