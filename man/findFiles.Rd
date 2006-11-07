@@ -36,11 +36,11 @@
   \code{"/usr/;usr/bin/;.;"}.
 }
 
-\section{Windows Shortcut links}{
-  If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
-  are recognized and can be used to immitate links to directories
-  elsewhere.  For more details, see \code{\link[R.utils]{filePath}}.
-}
+% \section{Windows Shortcut links}{
+%   If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
+%   are recognized and can be used to immitate links to directories
+%   elsewhere.  For more details, see \code{\link[R.utils]{filePath}}.
+% }
 
 \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
 

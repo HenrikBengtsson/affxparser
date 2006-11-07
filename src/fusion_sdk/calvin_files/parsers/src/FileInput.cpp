@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #include <winsock2.h>
 #pragma warning(disable: 4996)
 #else

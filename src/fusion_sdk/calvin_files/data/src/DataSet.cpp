@@ -28,7 +28,6 @@ using namespace affymetrix_calvin_io;
 
 #ifndef _MSC_VER
 #include <unistd.h>
-#ifndef WIN32
 #include <sys/mman.h>
 
 #ifndef PAGE_SIZE
@@ -44,7 +43,6 @@ using namespace affymetrix_calvin_io;
 #define PAGE_TRUNC(ptr) (ptr&(PAGE_MASK))
 #endif
 #endif
-#endif
 
 /*
  * Initialize the object to use memory-mapping to access the file.
@@ -58,7 +56,7 @@ DataSet::DataSet(const std::string& fileName_, const DataSetHeader& header_, voi
 	data = 0;
 	isOpen = false;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	fileMapHandle = handle;
 #else
 	fp = 0;
@@ -82,7 +80,7 @@ DataSet::DataSet(const std::string& fileName_, const affymetrix_calvin_io::DataS
 	data = 0;
 	isOpen = false;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	fileMapHandle = 0;
 #else
 	fp = 0;
@@ -134,7 +132,7 @@ bool DataSet::Open()
  */
 bool DataSet::OpenMM()
 {
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	if (MapDataWin32(header.GetDataStartFilePos(), header.GetDataSize()) == false)
 		return false;
 #else
@@ -179,7 +177,7 @@ void DataSet::Close()
 		ClearStreamData();
 }
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 std::string GetErrorMsg()
 {
@@ -291,7 +289,7 @@ bool DataSet::MapDataPosix(u_int32_t start, u_int32_t bytes)
  */
 void DataSet::UnmapFile()
 {
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 	// Unmap the view
 	if (mappedData != 0 )
@@ -385,7 +383,7 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 	// Byte offset in data set + byte offset of data set in file
 	u_int32_t startByte = BytesPerRow()*rowStart + columnByteOffsets[col] + header.GetDataStartFilePos();
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 	if (useMemoryMapping)
 	{
