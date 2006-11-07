@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <sstream>
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // ignore deprecated functions warning
 #include <winsock2.h>
 #include <process.h>

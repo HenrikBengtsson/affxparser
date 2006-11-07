@@ -26,7 +26,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#if !defined(_MSC_VER) && !defined(WIN32)
+#ifndef _MSC_VER
 #include <sys/mman.h>
 #endif
 
@@ -75,7 +75,7 @@ CBPMAPFileData::CBPMAPFileData() :
 	m_bFileOpen(false),
 	m_bFileMapped(false)
 {
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	m_hFileMap = INVALID_HANDLE_VALUE;
 	m_hFile = INVALID_HANDLE_VALUE;
 #else
@@ -99,7 +99,7 @@ void CBPMAPFileData::Close()
 	m_NumberSequences = 0;
 	m_SequenceItems.erase(m_SequenceItems.begin(), m_SequenceItems.end());
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 	if (m_bFileOpen)
 	{
 		if (m_bFileMapped)
@@ -439,7 +439,7 @@ bool CBPMAPFileData::ReadDataSection()
 	m_bFileOpen = false;
 	m_bFileMapped = false;
 
-#if defined(_MSC_VER) || defined(WIN32)
+#ifdef _MSC_VER
 
 	// Create the file.
 	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
