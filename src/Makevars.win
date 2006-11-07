@@ -16,7 +16,8 @@ PKG_CPPFLAGS+=\
  -Ifusion_sdk/calvin_files/writers/src\
  -Ifusion_sdk/file\
  -Ifusion_sdk/portability\
- -D_USE_MEM_MAPPING_
+ -D_USE_MEM_MAPPING_\
+ -D_MSC_VER
 
 SOURCES.fusion = \
 	fusion_sdk/calvin_files/data/src/CDFData.cpp\

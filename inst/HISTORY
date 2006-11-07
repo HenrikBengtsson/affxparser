@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.7.1 [2006-11-01]
+Version: 1.7.1 [2006-11-03]
 o Updated to Fusion SDK v1.0.8.
 o BUG FIX: In Fusion SDK (v1.0.5) that previous version of affxparser 
   used, a CDF file was never closed on Unix platforms (this bug was
@@ -10,6 +10,16 @@ o BUG FIX: In Fusion SDK (v1.0.5) that previous version of affxparser
   memory usage to blow up, when reading the same or different CDF
   files multiple times, because the memory was never deallocated.
   Thanks Seth Falcon and Ken Simpson for reporting this problem.
+o Windows build change: The Windows version is building against
+  the Windows code of Fusion SDK not the POSIX code. In order to do
+  this we have had to patch the preprocessor code in several of the
+  Fusion SDK source-code files, which has to be redone manually
+  whenever Fusion is updated.  Starting with this version, we instead 
+  set the _MSC_VER flag used in the Fusion code to indicate Windows
+  (set by the Microsoft Visual C++ compiler). Since we are using
+  MINGW this flag is obviously not set. Faking _MSC_VER this way
+  leaves us only having to patch one single file in the Fusion
+  release instead of 10-20. Hopefully there are no other side effects.
 
 Version: 1.7.0 [2006-10-25]
 o BUG FIX: writeCdf() would create an invalid CDF file if there were

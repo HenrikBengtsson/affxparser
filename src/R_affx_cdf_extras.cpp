@@ -174,7 +174,7 @@ extern "C" {
     int i_verboseFlag = INTEGER(verbose)[0];
 
     /** pointer to the name of the probeset. **/
-    const char* name;
+    char* name;
     char bfr[512];
 
     FusionCDFProbeSetInformation probeset;
@@ -234,11 +234,10 @@ extern "C" {
       /* Record its name */
       str = cdf.GetProbeSetName(iset);
       str_length = str.size();
-      cstr = Calloc(str_length+1, char);
-      strncpy(cstr, str.c_str(), str_length);
-      cstr[str_length] = '\0';
-      SET_STRING_ELT(names, ii, mkChar(cstr));
-      Free(cstr);
+      name = Calloc(str_length+1, char);
+      strncpy(name, str.c_str(), str_length);
+      name[str_length] = '\0';
+      SET_STRING_ELT(names, ii, mkChar(name));
       
       /* Get the number of groups in the unit */
       int ngroups = probeset.GetNumGroups();
@@ -282,7 +281,8 @@ extern "C" {
 
       /** pop the group list and group names of the stack. **/
       UNPROTECT(1);  /* 'r_group_names' */
-    }
+      Free(name);
+    } /* for (int ii=0 ...) */
     
     /** set the names down here at the end. **/
     setAttrib(probe_sets, R_NamesSymbol, names);
