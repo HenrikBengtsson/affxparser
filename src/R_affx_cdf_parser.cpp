@@ -652,7 +652,7 @@ extern "C" {
         i_returnUnitNumber + 1;
     PROTECT(r_unit_names = NEW_CHARACTER(numUnitArguments));
     ii = 0;
-    SET_STRING_ELT(r_unit_names, ii++, mkChar("blocks"));
+    SET_STRING_ELT(r_unit_names, ii++, mkChar("groups"));
     if(i_returnUnitType)
         SET_STRING_ELT(r_unit_names, ii++, mkChar("unittype"));
     if(i_returnUnitDirection)
@@ -686,23 +686,27 @@ extern "C" {
         SET_STRING_ELT(r_block_names, ii++, mkChar("y"));
         unprotectBlockInfo++;
     }
-    if(i_returnIndices)
+    if(i_returnIndices) {
         SET_STRING_ELT(r_block_names, ii++, mkChar("indices"));
         unprotectBlockInfo++;
+    }
     if(i_returnBases) {
         SET_STRING_ELT(r_block_names, ii++, mkChar("pbase"));
         unprotectBlockInfo++;
         SET_STRING_ELT(r_block_names, ii++, mkChar("tbase"));
         unprotectBlockInfo++;
     }
-    if(i_returnAtoms)
+    if(i_returnAtoms) {
         SET_STRING_ELT(r_block_names, ii++, mkChar("atom"));
         unprotectBlockInfo++;
-    if(i_returnIndexpos)
+    }
+    if(i_returnIndexpos) {
         SET_STRING_ELT(r_block_names, ii++, mkChar("indexpos"));
         unprotectBlockInfo++;
-    if(i_returnBlockDirection)
-        SET_STRING_ELT(r_block_names, ii++, mkChar("blockdirection"));
+    }
+    if(i_returnBlockDirection) {
+        SET_STRING_ELT(r_block_names, ii++, mkChar("groupdirection"));
+    }
     if(i_returnBlockAtomNumbers){
         SET_STRING_ELT(r_block_names, ii++, mkChar("natoms"));
         SET_STRING_ELT(r_block_names, ii++, mkChar("ncellsperatom"));
