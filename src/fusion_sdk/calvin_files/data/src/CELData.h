@@ -184,7 +184,7 @@ public:
 	/*
 	 * Get the version of the algorithm used to generate the results.
 	 */
-	std::wstring CelFileData::GetAlgorithmVersion();
+	std::wstring GetAlgorithmVersion();
 
 	/*! Set the number of rows of cells on the array.
 	 *	@param value Number of rows of cells.
