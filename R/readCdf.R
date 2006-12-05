@@ -1,5 +1,5 @@
 readCdf <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE,
-                    readIndexpos=TRUE, readAtoms = TRUE,
+                    readIndexpos=TRUE, readIsPm=FALSE, readAtoms = TRUE,
                     readUnitType=TRUE, readUnitDirection=TRUE,
                     readUnitNumber = FALSE, readUnitAtomNumbers = FALSE,
                     readGroupAtomNumbers = FALSE, readGroupDirection = FALSE,
@@ -23,6 +23,7 @@ readCdf <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE,
     returnBases <- as.logical(readBases)
     returnAtoms <- as.logical(readAtoms)
     returnIndexpos <- as.logical(readIndexpos)
+    returnIsPm <- as.logical(readIsPm)
     returnBlockDirection <- as.logical(readGroupDirection)
     returnBlockAtomNumbers <- as.logical(readGroupAtomNumbers)
     cdf <- .Call("R_affx_get_cdf_file",
@@ -30,7 +31,7 @@ readCdf <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE,
                  returnUnitType, returnUnitDirection,
                  returnUnitAtomNumbers, returnUnitNumber,
                  returnXY, returnIndices,
-                 returnBases, returnAtoms, returnIndexpos,
+                 returnBases, returnAtoms, returnIndexpos, returnIsPm,
                  returnBlockDirection, returnBlockAtomNumbers,
                  PACKAGE="affxparser")
     if (stratifyBy == "nothing")

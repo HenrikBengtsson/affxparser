@@ -1,6 +1,7 @@
 #include "FusionCDFData.h"
 #include <iostream>
 #include "R_affx_constants.h"
+#include "R_affx_cdf_extras.h"
 
 using namespace std;
 using namespace affymetrix_fusion_io;
@@ -535,7 +536,6 @@ extern "C" {
   }  /* R_affx_get_cdf_file_header() */
 
 
-
   /************************************************************************
    *
    * R_affx_get_cdf_file()
@@ -552,14 +552,16 @@ extern "C" {
                              SEXP returnUnitNumber,
                              SEXP returnXY, SEXP returnIndices,
                              SEXP returnBases, SEXP returnAtoms,
-                             SEXP returnIndexpos, SEXP returnBlockDirection,
+                             SEXP returnIndexpos, SEXP returnIsPm,
+                             SEXP returnBlockDirection,
                              SEXP returnBlockAtomNumbers)
   {
     FusionCDFData cdf;
     string str;
     int str_length; 
     char* cstr; 
-    
+    char p_base, t_base;
+
     SEXP
         r_units_list = R_NilValue,
         r_units_list_names = R_NilValue,
@@ -575,7 +577,8 @@ extern "C" {
         r_pbase = R_NilValue,
         r_tbase = R_NilValue,
         r_expos = R_NilValue,
-        r_indexpos  = R_NilValue;
+        r_indexpos  = R_NilValue,
+        r_ispm = R_NilValue;
     
     /*
     ** First we read in the cdf files and get the number of units.
@@ -592,6 +595,7 @@ extern "C" {
     int i_returnUnitNumber = INTEGER(returnUnitAtomNumbers)[0];
     int i_returnXY = INTEGER(returnXY)[0];
     int i_returnIndices = INTEGER(returnIndices)[0];
+    int i_returnIsPm = INTEGER(returnIsPm)[0];
     int i_returnBases = INTEGER(returnBases)[0];
     int i_returnAtoms = INTEGER(returnAtoms)[0];
     int i_returnIndexpos = INTEGER(returnIndexpos)[0];
@@ -676,7 +680,7 @@ extern "C" {
     */
     numBlockArguments = 2 * i_returnXY + i_returnIndices +
         2 * i_returnBases + i_returnAtoms + 2 * i_returnBlockAtomNumbers + 
-        i_returnBlockDirection + i_returnIndexpos;
+        i_returnBlockDirection + i_returnIndexpos + i_returnIsPm;
     unprotectBlockInfo = 0;
     PROTECT(r_block_names = NEW_CHARACTER(numBlockArguments));
     ii = 0;
@@ -702,6 +706,10 @@ extern "C" {
     }
     if(i_returnIndexpos) {
         SET_STRING_ELT(r_block_names, ii++, mkChar("indexpos"));
+        unprotectBlockInfo++;
+    }
+    if(i_returnIsPm) {
+        SET_STRING_ELT(r_block_names, ii++, mkChar("ispm"));
         unprotectBlockInfo++;
     }
     if(i_returnBlockDirection) {
@@ -856,6 +864,8 @@ extern "C" {
             PROTECT(r_expos = NEW_INTEGER(blockNumCells));
         if(i_returnIndexpos)
             PROTECT(r_indexpos = NEW_INTEGER(blockNumCells));
+        if(i_returnIsPm)
+            PROTECT(r_ispm = NEW_LOGICAL(blockNumCells));
 
         for (int icell = 0; icell < blockNumCells; icell++) {
           block.GetCell(icell, probe);
@@ -887,6 +897,12 @@ extern "C" {
 
           if(i_returnIndexpos)
               INTEGER(r_indexpos)[icell] = probe.GetListIndex();
+
+          if(i_returnIsPm) {
+              p_base = probe.GetPBase();
+              t_base = probe.GetTBase();
+              LOGICAL(r_ispm)[icell] = R_affx_pt_base_is_pm(p_base, t_base);
+          }
         }
 
         if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -916,6 +932,9 @@ extern "C" {
 
         if(i_returnIndexpos)
             SET_VECTOR_ELT(r_block, ii++, r_indexpos);
+
+        if(i_returnIsPm)
+            SET_VECTOR_ELT(r_block, ii++, r_ispm);
 
         if(i_returnBlockDirection) {
           switch (block.GetDirection()) {
