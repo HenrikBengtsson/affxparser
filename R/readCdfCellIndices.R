@@ -189,7 +189,7 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
         if (ngroup == 0)
           next;
 
-        pm <- !.subset2(.subset2(isPm, uu), gg);
+        pm <- .subset2(.subset2(isPm, uu), gg);
         mm <- (1:length(pm))[!pm]; # Note: which(!pm) is about 60% slower!
         for (kk in 1:ngroup) {
           group[[kk]] <- .subset(.subset2(group, kk), mm);
@@ -206,6 +206,8 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
 
 ############################################################################
 # HISTORY:
+# 2006-12-10
+# o BUG FIX: Same stratifyBy="mm" bug here as in readCdfUnits().
 # 2006-07-22
 # o Making more use of .subset2().
 # 2006-05-20
