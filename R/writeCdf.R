@@ -115,8 +115,8 @@
 } # initializeCdf()
 
 
-.writeCdfUnit <- function(unit, con, unitname = NULL, positions = NULL,
-                      addName = TRUE, addPosition = TRUE) {
+.writeCdfUnit <- function(unit, con, unitname = NULL, positions =
+                      NULL, addName = TRUE, addPosition = TRUE) {
 
     ## 1. Write the name in the start of the CDF file
     if(addName) {
@@ -159,7 +159,7 @@
                             unknown = 3)
 
     unitInfo <- as.integer(c(unittype, unitdirection,
-                             unit$natoms, length(unit$blocks),
+                             unit$natoms, length(unit$groups),
                              unit$ncells, unit$unitnumber,
                              unit$ncellsperatom))
 
@@ -173,44 +173,44 @@
     writeBin(unitInfo[7],
              con = con, size = 1, endian = "little")
 
-    ## Writing each block in turn
-    # Number of bytes: (18+64)*nbrOfBlocks + 14*totalNbrOfCells bytes
-    blockDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
-    for(iblock in seq(along.with = unit$blocks)) {
-        block <- unit$blocks[[iblock]]
-        blockdirection <- blockDirections[block$blockdirection];
-        blockdirection <- switch(block$blockdirection,
+    ## Writing each group in turn
+    # Number of bytes: (18+64)*nbrOfGroups + 14*totalNbrOfCells bytes
+    groupDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
+    for(igroup in seq(along.with = unit$groups)) {
+        group <- unit$groups[[igroup]]
+        groupdirection <- groupDirections[group$groupdirection];
+        groupdirection <- switch(group$groupdirection,
                                  nodirection = 0,
                                  sense = 1,
                                  antisense = 2,
                                  unknown = 3)
-        blockInfo <- as.integer(c(block$natoms, length(block$x),
-                                  block$ncellsperatom,
-                                  blockdirection, min(block$atoms, 0)))
+        groupInfo <- as.integer(c(group$natoms, length(group$x),
+                                  group$ncellsperatom,
+                                  groupdirection, min(group$atoms, 0)))
        # Number of bytes: 2*4+2*1+2*4=18 bytes
-        writeBin(blockInfo[1:2],
+        writeBin(groupInfo[1:2],
                  con = con, size = 4, endian = "little")
-        writeBin(blockInfo[3:4],
+        writeBin(groupInfo[3:4],
                  con = con, size = 1, endian = "little")
-        writeBin(blockInfo[5:6],
+        writeBin(groupInfo[5:6],
                  con = con, size = 4, endian = "little")
 
         # Number of bytes: 64 bytes
         suppressWarnings({
-          writeChar(as.character(names(unit$blocks)[iblock]),
+          writeChar(as.character(names(unit$groups)[igroup]),
                     con = con, nchars = 64, eos = NULL) 
         })
 
         ## Writing each cell in turn
-#        cells <- matrix(as.integer(c(block$atom, block$x,
-#                                     block$y, block$indexpos)),
+#        cells <- matrix(as.integer(c(group$atom, group$x,
+#                                     group$y, group$indexpos)),
 #                        ncol = 4)
-        cells <- matrix(as.integer(c(block$indexpos, block$x,
-                                     block$y, block$atom)),
+        cells <- matrix(as.integer(c(group$indexpos, group$x,
+                                     group$y, group$atom)),
                         ncol = 4)
 
         # Number of bytes: 14*nbrOfCells bytes
-        for(icell in seq(along.with = block$x)) {
+        for(icell in seq(along.with = group$x)) {
             # Number of bytes: 1*4+2*2+1*4+1*2=14 bytes
             writeBin(cells[icell, 1],
                      con = con, size = 4, endian = "little")
@@ -218,8 +218,8 @@
                      con = con, size = 2, endian = "little")
             writeBin(cells[icell, 4],
                      con = con, size = 4, endian = "little")
-            writeChar(as.character(c(block$pbase[icell],
-                                     block$tbase[icell])),
+            writeChar(as.character(c(group$pbase[icell],
+                                     group$tbase[icell])),
                       con = con, nchars = c(1,1), eos = NULL)
         }
     }
@@ -271,7 +271,7 @@
                             antisense = 2,
                             unknown = 3)
     unitInfo <- as.integer(c(unittype, unitdirection,
-                             unit$natoms, length(unit$blocks),
+                             unit$natoms, length(unit$groups),
                              unit$ncells, unit$unitnumber,
                              unit$ncellsperatom))
     rawUnit <- raw(...)
@@ -282,46 +282,46 @@
     raw[4:19] <- writeBin(unitInfo[3:6], con = raw(),
                           size = 4, endian = "little")
     ## Unitinfo = 20 bytes
-    ## Blockinfo = 18 + 64 = 82 bytes
+    ## Groupinfo = 18 + 64 = 82 bytes
     ## Cellinfo = 14 bytes
-    ## total = 20 + 82*nblock + 14*ncells
+    ## total = 20 + 82*ngroup + 14*ncells
     offset <- 20
-    ## Writing each block in turn
-    for(iblock in seq(along.with = unit$blocks)) {
-        block <- unit$blocks[[iblock]]
-        blockdirection <- switch(block$blockdirection,
+    ## Writing each group in turn
+    for(igroup in seq(along.with = unit$groups)) {
+        group <- unit$groups[[igroup]]
+        groupdirection <- switch(group$groupdirection,
                                  nodirection = 0,
                                  sense = 1,
                                  antisense = 2,
                                  unknown = 3)
-        blockInfo <- as.integer(c(block$natoms, length(block$x),
-                                  block$ncellsperatom,
-                                  blockdirection, min(block$atoms, 0)))
-        raw[offset + c(1:8,11:18)] <- writeBin(blockInfo[c(1:2, 5:6)],
+        groupInfo <- as.integer(c(group$natoms, length(group$x),
+                                  group$ncellsperatom,
+                                  groupdirection, min(group$atoms, 0)))
+        raw[offset + c(1:8,11:18)] <- writeBin(groupInfo[c(1:2, 5:6)],
                                                con = raw(),
                                                size = 4, endian = "little")
-        raw[offset + 9:10] <- writeBin(blockInfo[3:4], con = raw(),
+        raw[offset + 9:10] <- writeBin(groupInfo[3:4], con = raw(),
                                        size = 1, endian = "little")
-        raw[offset + 19:82] <- writeChar(as.character(names(unit$blocks)
-                                                      [iblock]),
+        raw[offset + 19:82] <- writeChar(as.character(names(unit$groups)
+                                                      [igroup]),
                                          con = raw(), nchars = 64, eos = NULL)
         offset <- offset + 82
         ## Writing each cell in turn
-        cells <- matrix(as.integer(c(block$atom, block$x,
-                                     block$y, block$indexpos)),
+        cells <- matrix(as.integer(c(group$atom, group$x,
+                                     group$y, group$indexpos)),
                         ncol = 4)
 
 
         
-        for(icell in seq(along.with = block$x)) {
+        for(icell in seq(along.with = group$x)) {
             writeBin(cells[icell, 1],
                      con = con, size = 4, endian = "little")
             writeBin(cells[icell, 2:3],
                      con = con, size = 2, endian = "little")
             writeBin(cells[icell, 4],
                      con = con, size = 4, endian = "little")
-            writeChar(as.character(c(block$pbase[icell],
-                                     block$tbase[icell])),
+            writeChar(as.character(c(group$pbase[icell],
+                                     group$tbase[icell])),
                       con = con, nchars = c(1,1), eos = NULL)
         }
     }
@@ -446,11 +446,11 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite = FALSE, verbose = 
 
     if (cdfheader$nunits > 0) {
       # Start positions for units
-      # Number of bytes: 20 + (18+64)*nbrOfBlocks + 14*totalNbrOfCells bytes
+      # Number of bytes: 20 + (18+64)*nbrOfGroups + 14*totalNbrOfCells bytes
       lens <- lapply(cdf, FUN=function(unit) { 
         ncells <- .subset2(unit, "ncells");
-        nblocks <- length(.subset2(unit, "blocks"));
-        20 + 82*nblocks + 14*ncells;
+        ngroups <- length(.subset2(unit, "groups"));
+        20 + 82*ngroups + 14*ncells;
       })
       lens <- unlist(lens, use.names=FALSE);
       unitLengths <- lens;
@@ -526,6 +526,9 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite = FALSE, verbose = 
 
 ############################################################################
 # HISTORY:
+# 2006-12-18 /KS
+# o Make global replacement "block" -> "group" to maintain consistency
+#   with other code, pursuant to communication from KH.
 # 2006-10-25 /HB (+KS)
 # o BUG FIX: .initializeCdf() was writing false file offset for QC units
 #   when the number QC nunits were zero.  This would core dump readCdfNnn().
