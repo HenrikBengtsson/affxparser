@@ -10,7 +10,13 @@
 }
 
 \usage{
-  readCdf(filename, units = NULL, verbose = 0)
+ readCdf(filename, units=NULL, readXY=TRUE, readBases=TRUE, 
+         readIndexpos=TRUE, readIsPm=FALSE, readAtoms=TRUE, 
+         readUnitType=TRUE, readUnitDirection=TRUE, readUnitNumber=FALSE, 
+         readUnitAtomNumbers=FALSE, readGroupAtomNumbers=FALSE, 
+         readGroupDirection=FALSE, 
+         stratifyBy=c("nothing", "pmmm", "pm", "mm"), readIndices=FALSE, 
+         verbose=0)
 }
 
 \arguments{

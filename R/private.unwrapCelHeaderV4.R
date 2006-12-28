@@ -51,7 +51,7 @@
   header2 <- gsub(pattern, "\\2", header);
 
   bfr <- trim(bfr);                           # Example: "[12..40151]  Fetal 3"
-  pattern <- "^([^\]]*])[ ]*(.*)[ ]*";
+  pattern <- "^([^\\]]*])[ ]*(.*)[ ]*";
   pixelRange <- gsub(pattern, "\\1", bfr);
   sampleName <- gsub(pattern, "\\2", bfr);
 
@@ -264,6 +264,10 @@
 
 ############################################################################
 # HISTORY:
+# 2006-12-28
+# o R CMD check v2.5.0 devel complained about: Warning: '\]' is an 
+#   unrecognized escape in a character string. Warning: unrecognized escape
+#   removed from "^([^\]]*])[ ]*(.*)[ ]*".  Replaced with '\\]'.
 # 2006-09-10
 # o BUG FIX: Local trim() was missing in one of the private functions.
 # 2006-09-06
