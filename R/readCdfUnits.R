@@ -18,7 +18,8 @@
 #  \item{readBases}{If @TRUE, cell P and T bases are retrieved, otherwise not.}
 #  \item{readExpos}{If @TRUE, cell "expos" values are retrieved, otherwise not.}
 #  \item{readType}{If @TRUE, unit types are retrieved, otherwise not.}
-#  \item{readDirection}{If @TRUE, unit directions are retrieved, otherwise not.}
+#  \item{readDirection}{If @TRUE, unit \emph{and} group directions are
+#    retrieved, otherwise not.}
 #  \item{stratifyBy}{A @character string specifying which and how
 #    elements in group fields are returned.
 #    If \code{"nothing"}, elements are returned as is, i.e. as @vectors.
@@ -44,8 +45,13 @@
 #  @list structure with three components:
 #  \item{groups}{A @list with one component for each group 
 #   (also called block). The information on each group is a 
-#   @list with five components: \code{x}, \code{y}, 
-#   \code{pbase}, \code{tbase}, \code{expos}, and \code{indices}.}
+#   @list of up to seven components: \code{x}, \code{y}, 
+#   \code{pbase}, \code{tbase}, \code{expos}, \code{indices},
+#   and \code{direction}.
+#   All fields but the latter have the same number of values as 
+#   there are cells in the group.  The latter field has only
+#   one value indicating the direction for the whole group.
+#  }
 #  \item{type}{An @integer specifying the type of the
 #    unit, where 1 is "expression", 2 is "genotyping", 3 is "CustomSeq", 
 #    and 4 "tag".}
@@ -242,6 +248,8 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
 
 ############################################################################
 # HISTORY:
+# 2006-12-30
+# o Now 'readDirection=TRUE' also return group directions.
 # 2006-03-28
 # o Unit indices are now one-based. /HB
 # o Renamed argument 'readCells' to 'readIndices'. /HB
