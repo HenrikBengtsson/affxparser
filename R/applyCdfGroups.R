@@ -75,8 +75,8 @@ applyCdfGroups <- function(cdf, fcn, ...) {
   # Iterate over all unit group sets.
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   for (uu in seq(along=cdf)) {
-    unit <- cdf[[uu]];
-    unit$groups <- fcn(unit$groups, ...);
+    unit <- .subset2(cdf, uu);
+    unit$groups <- fcn(.subset2(unit, "groups"), ...);
     cdf[[uu]] <- unit;
   }
 
@@ -86,6 +86,8 @@ applyCdfGroups <- function(cdf, fcn, ...) {
 
 ############################################################################
 # HISTORY:
+# 2006-12-30
+# o Using .subset2() instead of [[().
 # 2006-02-23
 # o Created.
 ############################################################################  
