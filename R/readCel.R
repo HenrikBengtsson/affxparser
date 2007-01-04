@@ -46,12 +46,7 @@ readCel <- function(filename,
   
       # Argument 'readMap':
       if (!is.null(readMap)) {
-        header <- readCelHeader(filename);
-        nbrOfCells <- header$total;
-        if (length(readMap) != nbrOfCells)
-          stop("Argument 'readMap' is not a valid cell-index map.");
-        if (match(1:nbrOfCells, readMap))
-          stop("Argument 'readMap' is not a valid cell-index map.");
+        readMap <- .assertMap(readMap, nbrOfCells);
       }
   
       # Argument 'verbose':
@@ -113,6 +108,11 @@ readCel <- function(filename,
 
 ############################################################################
 # HISTORY:
+# 2007-01-04
+# o Now 'readMap' is validate using internal .assertMap(), which also 
+#   coerces it to an integer vector.
+# o BUG FIX: Using read maps for readCel() would give an error saying
+#   the read map is invalid even when it is not.
 # 2006-04-01
 # o Added argument 'reorder'.
 # 2006-03-29
@@ -122,4 +122,3 @@ readCel <- function(filename,
 # 2006-03-28
 # o Unit and cell indices are now one-based. /HB
 ############################################################################
-
