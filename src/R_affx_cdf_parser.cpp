@@ -1360,7 +1360,8 @@ extern "C" {
     PROTECT(unitNames = NEW_CHARACTER(nbrOfUnits));
 
     int nbrOfUnitElements = i_readGroups + i_readType + i_readDirection;
-    int nbrOfGroupElements = 2*i_readXY + 2*i_readBases + i_readExpos + i_readIndices;
+    int nbrOfGroupElements = 2*i_readXY + 2*i_readBases + i_readExpos 
+                                          + i_readIndices + i_readDirection;
 
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1391,6 +1392,10 @@ extern "C" {
       
       if (i_readExpos) {
         SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("expos"));
+      }
+
+      if (i_readDirection) {
+        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("direction"));
       }
     }
 
@@ -1573,6 +1578,14 @@ extern "C" {
            * Assign field values
 					 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
           fieldIdx = 0;
+
+          if (i_readDirection) {
+            PROTECT(tmp = allocVector(INTSXP, 1));
+            INTEGER(tmp)[0] = group.GetDirection();
+            UNPROTECT(1);
+            SET_VECTOR_ELT(cell_list, fieldIdx++, tmp);
+          }
+
           /** do I have to make the attribute vector everytime? **/
           if (i_readXY) {
             SET_VECTOR_ELT(cell_list, fieldIdx++, xvals);
@@ -1750,6 +1763,9 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2006-12-30
+ * o Added group directions to R_affx_get_cdf_units() too.  That is the
+ *   most important group element missing. /HB
  * 2006-08-28
  * o If a unit index is out of range, the error now show the invalid index.
  * 2006-04-02
