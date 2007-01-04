@@ -40,7 +40,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, ..., verbose=0) {
+updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, writeMap=NULL, ..., verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -62,8 +62,11 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     nbrOfIndices <- nbrOfCells;
   } else {
     # A CEL file has one-based indices
-    if (any(indices < 1 | indices > nbrOfCells))
-      stop("Argument indices is out of range [1,", nbrOfCells, "].");
+    r <- range(indices);
+    if (r[1] < 1 || r[2] > nbrOfCells) {
+      stop("Argument 'indices' is out of range [1,", nbrOfCells, "]: ",
+           "[", r[1], ",", r[2], "]");
+    }
     nbrOfIndices <- length(indices);
   }
 
@@ -119,6 +122,11 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     }
   }
 
+  # Argument 'writeMap':
+  if (!is.null(writeMap)) {
+    writeMap <- .assertMap(writeMap, nbrOfCells);
+  }
+
   # Argument 'verbose':
   if (length(verbose) != 1)
     stop("Argument 'units' must be a single integer.");
@@ -134,9 +142,18 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Reorder data such that it is written in optimal order
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  reorder <- TRUE;
   if (is.null(indices)) {
-    indices <- 1:nbrOfIndices;
-  } else {
+    # Has write map?
+    if (is.null(writeMap)) {
+      indices <- 1:nbrOfIndices;
+      reorder <- FALSE;
+    } else {
+      indices <- writeMap;
+    }
+  }
+
+  if (reorder) {
     if (verbose >= 2)
       cat("Re-ordering data for optimal write order...");
     o <- order(indices);
@@ -320,6 +337,8 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
 ############################################################################
 # HISTORY:
+# 2007-01-04
+# o Added argument 'writeMap'.
 # 2006-08-19
 # o BUG FIX: Wow wow wow.  This one was tricky to find.  If not specifying
 #   the 'rw' argument in seek() it defaults to "", which is not "read" as
