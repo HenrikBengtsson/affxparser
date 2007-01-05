@@ -1,4 +1,4 @@
-#########################################################################/**
+#########################################################################/-Rdoc TURNED OFF-**
 # @RdocFunction .assertMap
 #
 # @title "Validates a read or a write map"
@@ -25,7 +25,7 @@
 # @keyword "file"
 # @keyword "IO"
 # @keyword "internal"
-#*/#########################################################################
+#*-Rdoc TURNED OFF-/#########################################################################
 .assertMap <- function(map, nbrOfCells=length(map), ...) {
   n <- length(map);
   if (n != nbrOfCells) {

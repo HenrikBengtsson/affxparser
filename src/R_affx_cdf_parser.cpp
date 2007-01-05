@@ -1309,7 +1309,7 @@ extern "C" {
      * A special case?
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     if (i_readIndices && !i_readXY && !i_readBases && !i_readExpos && 
-                                   				!i_readType && !i_readDirection) {
+                                           !i_readType && !i_readDirection) {
       return R_affx_get_cdf_cell_indices(fname, units, verbose);
     }
 
@@ -1579,13 +1579,6 @@ extern "C" {
 					 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
           fieldIdx = 0;
 
-          if (i_readDirection) {
-            PROTECT(tmp = allocVector(INTSXP, 1));
-            INTEGER(tmp)[0] = group.GetDirection();
-            UNPROTECT(1);
-            SET_VECTOR_ELT(cell_list, fieldIdx++, tmp);
-          }
-
           /** do I have to make the attribute vector everytime? **/
           if (i_readXY) {
             SET_VECTOR_ELT(cell_list, fieldIdx++, xvals);
@@ -1603,6 +1596,13 @@ extern "C" {
           
           if (i_readExpos) {
             SET_VECTOR_ELT(cell_list, fieldIdx++, expos);
+          }
+
+          if (i_readDirection) {
+            PROTECT(tmp = allocVector(INTSXP, 1));
+            INTEGER(tmp)[0] = group.GetDirection();
+            UNPROTECT(1);
+            SET_VECTOR_ELT(cell_list, fieldIdx++, tmp);
           }
 
           /* Unprotect in reverse order, e.g. 'expos', ..., 'xvals' */
@@ -1763,6 +1763,9 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2007-01-05
+ * o BUG FIX: The new group 'direction' field was added first making all
+ *   fields getting names of other fields.
  * 2006-12-30
  * o Added group directions to R_affx_get_cdf_units() too.  That is the
  *   most important group element missing. /HB

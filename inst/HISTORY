@@ -1,7 +1,11 @@
 Package: affxparser
 ===================
 
-Version: 1.7.3 [2007-01-xx]
+Version: 1.7.3 [2007-01-05]
+o Added cdfAddPlasqTypes().
+o Now readCdfUnits(..., readDirections=TRUE) also returns group 
+  directions.
+o Now readCdf() reads all unit and group fields by default.
 o In addition to optimizing IO time, read maps can be used to 
   unrotate CEL data rotated by the dChip software. For more
   information, see help on "Cell-index maps for reading and writing".

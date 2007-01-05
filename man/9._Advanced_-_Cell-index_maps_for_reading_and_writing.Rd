@@ -20,10 +20,12 @@
    maps from Affymetrix CDF files.  These can be used to store the cell
    data in an optimal order so that when data is read it is read in
    contiguous blocks, which is faster.
-   Currently, this package does not provide methods for writing
-   Affymetrix data files such as CEL files.  However, other package
-   might do, which is why the methods here support read maps, e.g.
-   \code{\link{readCelUnits}}().
+
+   In addition to this, read maps may also be used to read CEL files that
+   have been "reshuffled" by other software.  For instance, the dChip
+   software (\url{http://www.dchip.org/}) rotates Affymetrix Exon,
+   Tiling and Mapping 500K data.  See example below how to read
+   such data "unrotated".
 
    For more details how cell indices are defined, see
    \code{\link{2. Cell coordinates and cell indices}}.
@@ -141,7 +143,31 @@
    the CEL files has to be rearranged (by the corresponding write map).
  }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \section{Reading rotated CEL files}{
+   It might be that a CEL file was rotated by another software, e.g.
+   the dChip software rotates Affymetrix Exon, Tiling and Mapping 500K
+   arrays 90 degrees clockwise, which remains rotated when exported
+   as CEL files.  To read such data in a non-rotated way, a read
+   map can be used to "unrotate" the data.  The 90-degree clockwise
+   rotation that dChip effectly uses to store such data is explained by:
+   \preformatted{
+     h <- readCdfHeader(cdfFile)
+     # (x,y) chip layout rotated 90 degrees clockwise
+     nrow <- h$cols
+     ncol <- h$rows
+     y <- (nrow-1):0
+     x <- rep(1:ncol, each=nrow)
+     writeMap <- as.vector(y*ncol + x)
+   }
+
+   Thus, to read this data "unrotated", use the following read map:
+   \preformatted{
+     readMap <- invertMap(writeMap)
+     data <- readCel(celFile, indices=1:10, readMap=readMap)
+   }
+ }
+
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 
 \keyword{documentation}

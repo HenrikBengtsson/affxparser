@@ -47,7 +47,7 @@
    A \code{\link[base]{integer}} \code{\link[base]{vector}} which is a \emph{write} map.
  }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
  \examples{
   

@@ -27,7 +27,8 @@
   \item{readBases}{If \code{\link[base:logical]{TRUE}}, cell P and T bases are retrieved, otherwise not.}
   \item{readExpos}{If \code{\link[base:logical]{TRUE}}, cell "expos" values are retrieved, otherwise not.}
   \item{readType}{If \code{\link[base:logical]{TRUE}}, unit types are retrieved, otherwise not.}
-  \item{readDirection}{If \code{\link[base:logical]{TRUE}}, unit directions are retrieved, otherwise not.}
+  \item{readDirection}{If \code{\link[base:logical]{TRUE}}, unit \emph{and} group directions are
+    retrieved, otherwise not.}
   \item{stratifyBy}{A \code{\link[base]{character}} string specifying which and how
     elements in group fields are returned.
     If \code{"nothing"}, elements are returned as is, i.e. as \code{\link[base]{vector}}s.
@@ -53,8 +54,13 @@
   \code{\link[base]{list}} structure with three components:
   \item{groups}{A \code{\link[base]{list}} with one component for each group
    (also called block). The information on each group is a
-   \code{\link[base]{list}} with five components: \code{x}, \code{y},
-   \code{pbase}, \code{tbase}, \code{expos}, and \code{indices}.}
+   \code{\link[base]{list}} of up to seven components: \code{x}, \code{y},
+   \code{pbase}, \code{tbase}, \code{expos}, \code{indices},
+   and \code{direction}.
+   All fields but the latter have the same number of values as
+   there are cells in the group.  The latter field has only
+   one value indicating the direction for the whole group.
+  }
   \item{type}{An \code{\link[base]{integer}} specifying the type of the
     unit, where 1 is "expression", 2 is "genotyping", 3 is "CustomSeq",
     and 4 "tag".}
