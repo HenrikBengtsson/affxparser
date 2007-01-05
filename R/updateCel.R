@@ -18,6 +18,7 @@
 #     where the named columns (elements) are the fields to be updated.}
 #   \item{stdvs}{A optional @numeric @vector.}
 #   \item{pixels}{A optional @numeric @vector.}
+#   \item{writeMap}{An optional write map.}
 #   \item{...}{Not used.}
 #   \item{verbose}{An @integer specifying how much verbose details are
 #     outputted.}

@@ -77,7 +77,7 @@ for (cdfFile in cdfFiles) {
   file is not specified.
 }
 
-\author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 
 

@@ -65,7 +65,7 @@
  \code{\link{applyCdfGroups}}().
 }
 
-\author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 \references{
  [1] LaFramboise T, Weir BA, Zhao X, Beroukhim R, Li C, Harrington D,

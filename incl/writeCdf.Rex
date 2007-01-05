@@ -1,7 +1,7 @@
 for (zzz in 0) {
 
 # Find any CDF file
-cdfFile <- findCdf()
+cdfFile <- findCdf("Test3")
 if (is.null(cdfFile))
   break
 

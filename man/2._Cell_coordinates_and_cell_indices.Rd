@@ -60,5 +60,5 @@
    \pkg{affy} package.
  }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 \keyword{documentation}

@@ -7,13 +7,29 @@
                           qcUnitLengths = rep(0, nqcunits),
                           unitLengths = rep(0, nunits),
                           ...) {
-    if(length(unitpositions) != nunits)
-        stop("unitpositions argument is not matching nunits")
-    if(length(qcunitpositions) != nqcunits)
-        stop("qcunitpositions argument is not matching nqcunits")
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Validate arguments
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    if(length(qcunitpositions) != nqcunits) {
+      stop("Number of elements in argument 'qcunitpositions' does not match 'nqcunits'");
+    }
+
+    if(length(unitpositions) != nunits) {
+      stop("Number of elements in argument 'unitpositions' does not match 'nunits'");
+    }
+
+    if(length(qcUnitLengths) != nqcunits) {
+      stop("Number of elements in argument 'qcUnitLengths' does not match 'nqcunits'");
+    }
+
+    if(length(unitLengths) != nunits) {
+      stop("Number of elements in argument 'qcUnitLengths' does not match 'nunits'");
+    }
+
     if(length(refseq) != 1)
-        stop("refseq argument is wrong")
-    lrefseq <- nchar(refseq)
+        stop("Argument 'refseq' should be a single character.");
+
+    lrefseq <- nchar(refseq);
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # CDF header
@@ -42,8 +58,7 @@
              con = con, size = 4, endian = "little")
     ## Refseqsequece
     if(lrefseq > 0)
-        writeChar(as.character(refseq),
-                  con = con, eos = NULL)
+      writeChar(as.character(refseq), con=con, eos=NULL);
 
     # Current offset
     offset <- 24 + lrefseq;
@@ -108,11 +123,13 @@
     offset <- 24 + lrefseq;
     bytesOfUnitNames <- 64 * nunits;
     bytesOfQcUnits <- 4 * nqcunits;
-    positions <- list(unitName = offset,
-                      qcunitFP = offset + bytesOfUnitNames,
-                      unitFP = offset + bytesOfUnitNames + bytesOfQcUnits)
+    positions <- list(
+#      unitName = offset,
+#     qcunitFP = offset + bytesOfUnitNames,
+#      unitFP = offset + bytesOfUnitNames + bytesOfQcUnits
+    )
     positions;
-} # initializeCdf()
+} # .initializeCdf()
 
 
 .writeCdfUnit <- function(unit, con, unitname = NULL, positions =

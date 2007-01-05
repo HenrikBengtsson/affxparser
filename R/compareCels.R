@@ -12,6 +12,8 @@
 # \arguments{
 #   \item{pathname}{The pathname of the first CEL file.}
 #   \item{other}{The pathname of the seconds CEL file.}
+#   \item{readMap}{An optional read map for the first CEL file.}
+#   \item{otherReadMap}{An optional read map for the second CEL file.}
 #   \item{verbose}{An @integer. The larger the more details are printed.}
 #   \item{...}{Not used.}
 # }

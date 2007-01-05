@@ -1,10 +1,14 @@
 readCdf <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE,
-                    readIndexpos=TRUE, readIsPm=FALSE, readAtoms = TRUE,
+                    readIndexpos=TRUE, readAtoms=TRUE,
                     readUnitType=TRUE, readUnitDirection=TRUE,
-                    readUnitNumber = FALSE, readUnitAtomNumbers = FALSE,
-                    readGroupAtomNumbers = FALSE, readGroupDirection = FALSE,
+                    readUnitNumber=TRUE, readUnitAtomNumbers=TRUE,
+                    readGroupAtomNumbers=TRUE, readGroupDirection=TRUE,
+                    readIndices=FALSE, readIsPm=FALSE, 
                     stratifyBy=c("nothing", "pmmm", "pm", "mm"),
-                    readIndices=FALSE, verbose=0) {
+                    verbose=0) {
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Validate arguments
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     filename <- file.path(dirname(filename), basename(filename))
     if (!file.exists(filename))
         stop("File not found: ", filename)
@@ -26,6 +30,11 @@ readCdf <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE,
     returnIsPm <- as.logical(readIsPm)
     returnBlockDirection <- as.logical(readGroupDirection)
     returnBlockAtomNumbers <- as.logical(readGroupAtomNumbers)
+
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Read the CDF structure
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     cdf <- .Call("R_affx_get_cdf_file",
                  filename, as.integer(units), as.integer(verbose),
                  returnUnitType, returnUnitDirection,
@@ -37,7 +46,10 @@ readCdf <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE,
     if (stratifyBy == "nothing")
         return(cdf);
 
-    ## Now we stratify
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Stratify by PM/MM
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     isPm <- readCdfIsPm(filename, units=units);
 
     ## Using .subset2() instead of "[["() to avoid dispatching overhead etc.

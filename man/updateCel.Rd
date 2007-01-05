@@ -12,7 +12,7 @@
 
  \title{Updates a CEL file}
 
- \usage{updateCel(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, ..., verbose=0)}
+ \usage{updateCel(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, writeMap=NULL, ..., verbose=0)}
 
  \description{
    Updates a CEL file.
@@ -27,6 +27,7 @@
      where the named columns (elements) are the fields to be updated.}
    \item{stdvs}{A optional \code{\link[base]{numeric}} \code{\link[base]{vector}}.}
    \item{pixels}{A optional \code{\link[base]{numeric}} \code{\link[base]{vector}}.}
+   \item{writeMap}{An optional write map.}
    \item{...}{Not used.}
    \item{verbose}{An \code{\link[base]{integer}} specifying how much verbose details are
      outputted.}
@@ -140,7 +141,7 @@ rm(files, cel, cel0, idxs, data, ff, fields, rotate270)
 } # for (zzz in 0)
 }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 
 
