@@ -81,7 +81,7 @@ rm(cdfFile, cdfHeader)
 } # for (zzz in 0)
 }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
  \seealso{
    See \code{\link{compareCdfs}}() to compare two CDF files.

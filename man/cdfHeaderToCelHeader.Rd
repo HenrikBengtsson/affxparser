@@ -31,7 +31,7 @@
  Returns a CDF \code{\link[base]{list}} structure.
 }
 
-\author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 
 

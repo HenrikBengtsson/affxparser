@@ -10,12 +10,14 @@
 }
 
 \usage{
- readCdf(filename, units=NULL, readXY=TRUE, readBases=TRUE, 
-         readIndexpos=TRUE, readIsPm=FALSE, readAtoms=TRUE, 
-         readUnitType=TRUE, readUnitDirection=TRUE, readUnitNumber=FALSE, 
-         readUnitAtomNumbers=FALSE, readGroupAtomNumbers=FALSE, 
-         readGroupDirection=FALSE, 
-         stratifyBy=c("nothing", "pmmm", "pm", "mm"), readIndices=FALSE, 
+ readCdf(filename, units=NULL, 
+         readXY=TRUE, readBases=TRUE, 
+         readIndexpos=TRUE, readAtoms=TRUE, 
+         readUnitType=TRUE, readUnitDirection=TRUE, 
+         readUnitNumber=TRUE, readUnitAtomNumbers=TRUE, 
+         readGroupAtomNumbers=TRUE, readGroupDirection=TRUE, 
+         readIndices=FALSE, readIsPm=FALSE, 
+         stratifyBy=c("nothing", "pmmm", "pm", "mm"), 
          verbose=0)
 }
 

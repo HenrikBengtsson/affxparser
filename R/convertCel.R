@@ -15,8 +15,14 @@
 #   \item{filename}{The pathname of the original CEL file.}
 #   \item{outFilename}{The pathname of the destination CEL file.
 #     If the same as the source file, an exception is thrown.}
+#   \item{readMap}{An optional read map for the input CEL file.}
+#   \item{writeMap}{An optional write map for the output CEL file.}
 #   \item{version}{The version of the output file format.}
 #   \item{...}{Not used.}
+#   \item{.validate}{If @TRUE, a consistency test between the generated 
+#     and the original CDF is performed.  Note that the memory overhead
+#     for this can be quite large, because two complete CDF structures 
+#     are kept in memory at the same time.}
 #   \item{verbose}{If @TRUE, extra details are written while processing.}
 # }
 # 
@@ -33,8 +39,6 @@
 #   }
 # }
 #
-# @examples "../incl/convertCel.Rex"
-#
 # @author
 #
 # \seealso{
@@ -44,7 +48,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, version="4", force=FALSE, ..., .validate=FALSE, verbose=FALSE) {
+convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, version="4", ..., .validate=FALSE, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -116,7 +120,11 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   if (.validate) {
     if (verbose)
       cat("Validating CEL file...\n");
-    compareCels(filename, outFilename, verbose=verbose);
+    otherReadMap <- NULL;
+    if (!is.null(writeMap))
+      otherReadMap <- invertMap(writeMap);
+    compareCels(filename, outFilename, readMap=readMap, 
+                                otherReadMap=otherReadMap, verbose=verbose);
     if (verbose)
       cat("Validating CEL file...done\n");
   }

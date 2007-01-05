@@ -31,7 +31,7 @@
    are unit names and the names of the logical vector are group names.
  }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 
 

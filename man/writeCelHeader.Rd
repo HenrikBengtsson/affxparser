@@ -44,7 +44,7 @@
    this DAT header that the chip type is extracted.
  }
 
- \author{Henrik Bengtsson \url{http://www.braju.com/R/}}
+ \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
 
 
