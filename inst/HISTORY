@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version: 1.7.4 [2007-01-10]
+o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits(). 
+  These are all used by writeCdf(). They also make it possible
+  to write a CDF in chunks in order to for instance convertCdf()
+  in constant memory.
+
 Version: 1.7.3 [2007-01-05]
 o Added cdfAddPlasqTypes().
 o Now readCdfUnits(..., readDirections=TRUE) also returns group 
