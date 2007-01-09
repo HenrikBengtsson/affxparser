@@ -1,426 +1,4 @@
-.initializeCdf <- function(con, nrows = 1, ncols = 1,
-                          nunits = 1, nqcunits = 0,
-                          refseq = "",
-                          unitnames = rep("", nunits),
-                          qcunitpositions = rep(1, nqcunits),
-                          unitpositions = rep(2, nunits),
-                          qcUnitLengths = rep(0, nqcunits),
-                          unitLengths = rep(0, nunits),
-                          ...) {
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Validate arguments
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if(length(qcunitpositions) != nqcunits) {
-      stop("Number of elements in argument 'qcunitpositions' does not match 'nqcunits'");
-    }
-
-    if(length(unitpositions) != nunits) {
-      stop("Number of elements in argument 'unitpositions' does not match 'nunits'");
-    }
-
-    if(length(qcUnitLengths) != nqcunits) {
-      stop("Number of elements in argument 'qcUnitLengths' does not match 'nqcunits'");
-    }
-
-    if(length(unitLengths) != nunits) {
-      stop("Number of elements in argument 'qcUnitLengths' does not match 'nunits'");
-    }
-
-    if(length(refseq) != 1)
-        stop("Argument 'refseq' should be a single character.");
-
-    lrefseq <- nchar(refseq);
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # CDF header
-    #
-    # 1 Magic number. Always set to 67.                           [integer]
-    # 2 Version number.                                           [integer]
-    # 3 The number of columns of cells on the array.       [unsigned short]
-    # 4 The number of rows of cells on the array.          [unsigned short]
-    # 5 The number of units in the array not including QC units. The term 
-    #   unit is an internal term which means probe set.           [integer]
-    # 6 The number of QC units.                                   [integer]
-    # 7 The length of the resequencing reference sequence.        [integer]
-    # 8 The resequencing reference sequence.                    [char[len]]
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    ## Magic number and version number
-    writeBin(object = as.integer(c(67, 1)),
-             con = con, size = 4, endian = "little")
-    ## Ncols, Nrows
-    writeBin(object = as.integer(c(ncols, nrows)),
-             con = con, size = 2, endian = "little")
-    ## NumberUnits, NumberQCUnits
-    writeBin(object = as.integer(c(nunits, nqcunits)),
-             con = con, size = 4, endian = "little")
-    ## Length of refseqsequence
-    writeBin(object = as.integer(lrefseq),
-             con = con, size = 4, endian = "little")
-    ## Refseqsequece
-    if(lrefseq > 0)
-      writeChar(as.character(refseq), con=con, eos=NULL);
-
-    # Current offset
-    offset <- 24 + lrefseq;
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Unit names
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Write to raw vector (2*10^6 units => 122Mb; should be ok for now)
-    # Since we can't create strings with '\0':s, we use '\xFF',
-    # write to raw and then replace '\xFF' with '\0'. Thus, unit names with
-    # '\xFF' are invalid, but this should not be a real problem.
-    pads <- sapply(0:64, FUN=function(x) paste(rep("\xFF", x), collapse=""));
-    unitnames <- paste(unitnames, pads[64-nchar(unitnames)], sep="");
-    raw <- raw(64*length(unitnames));
-    raw <- writeBin(con=raw, unitnames, size=1);
-    raw[raw == as.raw(255)] <- as.raw(0);
-    writeBin(con=con, raw);
-    rm(raw);
-#    writeChar(con=con, as.character(unitnames), nchars=rep(64, nunits), eos=NULL)
-
-    bytesOfUnitNames <- 64 * nunits;
-    offset <- offset + bytesOfUnitNames;
-
-    bytesOfQcUnits <- 4 * nqcunits;
-    offset <- offset + bytesOfQcUnits;
-
-    bytesOfUnits <- 4 * nunits;
-    offset <- offset + bytesOfUnits;
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # QC units file positions
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (nqcunits > 0) {
-      csum <- cumsum(qcUnitLengths);
-      nextOffset <- csum[nqcunits];
-      starts <- c(0, csum[-nqcunits]);
-      starts <- as.integer(offset + starts);
-      writeBin(starts, con = con, size = 4, endian = "little")
-    } else {
-      nextOffset <- 0;
-#      starts <- 0;
-#      starts <- as.integer(offset + starts);
-#      writeBin(starts, con = con, size = 4, endian = "little")
-    }
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Units file positions
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    offset <- offset + nextOffset;
-    if (nunits > 0) {
-      csum <- cumsum(unitLengths);
-      nextOffset <- csum[nunits];
-      starts <- c(0, csum[-nunits]);
-      starts <- as.integer(offset + starts);
-      writeBin(starts, con = con, size = 4, endian = "little");
-    } else {
-      nextOffset <- 0;
-    }
-
-    # Return
-    ## positions return argument
-    offset <- 24 + lrefseq;
-    bytesOfUnitNames <- 64 * nunits;
-    bytesOfQcUnits <- 4 * nqcunits;
-    positions <- list(
-#      unitName = offset,
-#     qcunitFP = offset + bytesOfUnitNames,
-#      unitFP = offset + bytesOfUnitNames + bytesOfQcUnits
-    )
-    positions;
-} # .initializeCdf()
-
-
-.writeCdfUnit <- function(unit, con, unitname = NULL, positions =
-                      NULL, addName = TRUE, addPosition = TRUE) {
-
-    ## 1. Write the name in the start of the CDF file
-    if(addName) {
-        # NOTE: It is very expensive to jump around in the file
-        # (file cache can't be optimized etc).  Typically the unit
-        # names are know from the beginning and can be written all
-        # at once instead. /HB
-        seek(con = con, where = positions$unitName,
-             origin = "start")
-        suppressWarnings({
-          writeChar(as.character(unitname), nchars = 64,
-                    con = con, eos = NULL)
-        })
-        positions$unitName <- positions$unitName + 64
-    }
-
-    ## 2. Jump to the end to start writing the unit
-    if(addPosition) {
-      seek(con = con, where = 0, origin = "end", rw = "write")
-      endPosition <- seek(con = con, where = 0, origin = "end", rw = "write")
-    }
-
-    ## 3. Write the unit
-    unitTypes <- c(expression=1, genotyping=2, tag=3, 
-                                             resequencing=4, unknown=5);
-    unittype <- unitTypes[unit$unittype];
-    unitDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
-    unitdirection <- unitDirections[unit$unitdirection];
-
-    unittype <- switch(unit$unittype,
-                       expression = 1,
-                       genotyping = 2,
-                       tag = 3,
-                       resequencing = 4,
-                       unknown = 5)
-    unitdirection <- switch(unit$unitdirection,
-                            nodirection = 0,
-                            sense = 1,
-                            antisense = 2,
-                            unknown = 3)
-
-    unitInfo <- as.integer(c(unittype, unitdirection,
-                             unit$natoms, length(unit$groups),
-                             unit$ncells, unit$unitnumber,
-                             unit$ncellsperatom))
-
-    # Number of bytes: 2+1+4*4+1=20 bytes    
-    writeBin(unitInfo[1],
-             con = con, size = 2, endian = "little")
-    writeBin(unitInfo[2],
-             con = con, size = 1, endian = "little")
-    writeBin(unitInfo[3:6],
-             con = con, size = 4, endian = "little")
-    writeBin(unitInfo[7],
-             con = con, size = 1, endian = "little")
-
-    ## Writing each group in turn
-    # Number of bytes: (18+64)*nbrOfGroups + 14*totalNbrOfCells bytes
-    groupDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
-    for(igroup in seq(along.with = unit$groups)) {
-        group <- unit$groups[[igroup]]
-        groupdirection <- groupDirections[group$groupdirection];
-        groupdirection <- switch(group$groupdirection,
-                                 nodirection = 0,
-                                 sense = 1,
-                                 antisense = 2,
-                                 unknown = 3)
-        groupInfo <- as.integer(c(group$natoms, length(group$x),
-                                  group$ncellsperatom,
-                                  groupdirection, min(group$atoms, 0)))
-       # Number of bytes: 2*4+2*1+2*4=18 bytes
-        writeBin(groupInfo[1:2],
-                 con = con, size = 4, endian = "little")
-        writeBin(groupInfo[3:4],
-                 con = con, size = 1, endian = "little")
-        writeBin(groupInfo[5:6],
-                 con = con, size = 4, endian = "little")
-
-        # Number of bytes: 64 bytes
-        suppressWarnings({
-          writeChar(as.character(names(unit$groups)[igroup]),
-                    con = con, nchars = 64, eos = NULL) 
-        })
-
-        ## Writing each cell in turn
-#        cells <- matrix(as.integer(c(group$atom, group$x,
-#                                     group$y, group$indexpos)),
-#                        ncol = 4)
-        cells <- matrix(as.integer(c(group$indexpos, group$x,
-                                     group$y, group$atom)),
-                        ncol = 4)
-
-        # Number of bytes: 14*nbrOfCells bytes
-        for(icell in seq(along.with = group$x)) {
-            # Number of bytes: 1*4+2*2+1*4+1*2=14 bytes
-            writeBin(cells[icell, 1],
-                     con = con, size = 4, endian = "little")
-            writeBin(cells[icell, 2:3],
-                     con = con, size = 2, endian = "little")
-            writeBin(cells[icell, 4],
-                     con = con, size = 4, endian = "little")
-            writeChar(as.character(c(group$pbase[icell],
-                                     group$tbase[icell])),
-                      con = con, nchars = c(1,1), eos = NULL)
-        }
-    }
-    ## 4. Go back to the start of the file and write
-    ##    where the unit starts
-    if(addPosition) {
-        # NOTE: It is very expensive to jump around in the file! 
-        # It would be good if positions can be written all at
-        # once instead, either by figuring it out from the beginning
-        # or by updating at the end. /HB
-        seek(con = con, where = positions$unitFP,
-             origin = "start", rw = "write")
-        writeBin(as.integer(endPosition),
-                 con = con, size = 4, endian = "little")
-        positions$unitFP <- positions$unitFP + 4
-    }
-
-    ## 5. Update the positions and return
-    positions;
-} # writeCdfUnit()
-
-
-.writeCdfUnit2 <- function(unit, con, unitname = NULL, positions = NULL,
-                      addName = TRUE, addPosition = TRUE) {
-    ## 1. Write the name in the start of the CDF file
-    if(addName) {
-        seek(con = con, where = positions$unitName,
-             origin = "start")
-        suppressWarnings({
-          writeChar(as.character(unitname), nchars = 64,
-                    con = con, eos = NULL)
-        })
-        positions$unitName <- positions$unitName + 64
-    }
-    ## 2. Jump to the end to start writing the unit
-    seek(con = con, where = 0, origin = "end", rw = "write")
-    endPosition <- seek(con = con, where = 0,
-                        origin = "end", rw = "write")
-    ## 3. Write the unit
-    unittype <- switch(unit$unittype,
-                       expression = 1,
-                       genotyping = 2,
-                       tag = 3,
-                       resequencing = 4,
-                       unknown = 5)
-    unitdirection <- switch(unit$unitdirection,
-                            nodirection = 0,
-                            sense = 1,
-                            antisense = 2,
-                            unknown = 3)
-    unitInfo <- as.integer(c(unittype, unitdirection,
-                             unit$natoms, length(unit$groups),
-                             unit$ncells, unit$unitnumber,
-                             unit$ncellsperatom))
-    rawUnit <- raw(...)
-    raw[1] <- writeBin(unitInfo[1], con = raw(),
-                       size = 2, endian = "little")
-    raw[c(3,20)] <- writeBin(unitInfo[c(2,7)], con = raw(),
-                             size = 1, endian = "little")
-    raw[4:19] <- writeBin(unitInfo[3:6], con = raw(),
-                          size = 4, endian = "little")
-    ## Unitinfo = 20 bytes
-    ## Groupinfo = 18 + 64 = 82 bytes
-    ## Cellinfo = 14 bytes
-    ## total = 20 + 82*ngroup + 14*ncells
-    offset <- 20
-    ## Writing each group in turn
-    for(igroup in seq(along.with = unit$groups)) {
-        group <- unit$groups[[igroup]]
-        groupdirection <- switch(group$groupdirection,
-                                 nodirection = 0,
-                                 sense = 1,
-                                 antisense = 2,
-                                 unknown = 3)
-        groupInfo <- as.integer(c(group$natoms, length(group$x),
-                                  group$ncellsperatom,
-                                  groupdirection, min(group$atoms, 0)))
-        raw[offset + c(1:8,11:18)] <- writeBin(groupInfo[c(1:2, 5:6)],
-                                               con = raw(),
-                                               size = 4, endian = "little")
-        raw[offset + 9:10] <- writeBin(groupInfo[3:4], con = raw(),
-                                       size = 1, endian = "little")
-        raw[offset + 19:82] <- writeChar(as.character(names(unit$groups)
-                                                      [igroup]),
-                                         con = raw(), nchars = 64, eos = NULL)
-        offset <- offset + 82
-        ## Writing each cell in turn
-        cells <- matrix(as.integer(c(group$atom, group$x,
-                                     group$y, group$indexpos)),
-                        ncol = 4)
-
-
-        
-        for(icell in seq(along.with = group$x)) {
-            writeBin(cells[icell, 1],
-                     con = con, size = 4, endian = "little")
-            writeBin(cells[icell, 2:3],
-                     con = con, size = 2, endian = "little")
-            writeBin(cells[icell, 4],
-                     con = con, size = 4, endian = "little")
-            writeChar(as.character(c(group$pbase[icell],
-                                     group$tbase[icell])),
-                      con = con, nchars = c(1,1), eos = NULL)
-        }
-    }
-    ## 4. Go back to the start of the file and write
-    ##    where the unit starts
-    if(addPosition) {
-        seek(con = con, where = positions$unitFP,
-             origin = "start", rw = "write")
-        writeBin(as.integer(endPosition),
-                 con = con, size = 4, endian = "little")
-        positions$unitFP <- positions$unitFP + 4
-    }
-    ## 5. Update the positions and return
-    if(!is.null(positions))
-        return(positions)
-    else
-        return(NULL)
-}
-
-
-.writeCdfQcUnit <- function(qcunit, con, positions = NULL,
-                        addPosition = TRUE) {
-    ## 1. Jump to end to write a qcunit
-    if(addPosition) {
-      seek(con = con, where = 0, origin = "end", rw = "write")
-      endPosition <- seek(con = con, where = 0,
-                        origin = "end", rw = "write")
-    }
-
-    ## 2. Actually write the qcunit
-    type <- switch(qcunit$type,
-                   unknown = 0,
-                   checkerboardNegative = 1,
-                   checkerboardPositive = 2,
-                   hybeNegative = 3,
-                   hybePositive = 4,
-                   textFeaturesNegative = 5,
-                   textFeaturesPositive = 6,
-                   centralNegative = 7,
-                   centralPositive = 8,
-                   geneExpNegative = 9,
-                   geneExpPositive = 10,
-                   cycleFidelityNegative = 11,
-                   cycleFidelityPositive = 12,
-                   centralCrossNegative = 13,
-                   centralCrossPositive = 14,
-                   crossHybeNegative = 15,
-                   crossHybePositive = 16,
-                   SpatialNormNegative = 17,
-                   SpatialNormPositive = 18)
-
-    # Write 2 + 4 bytes
-    nbrOfBytes <- 6;
-    qcunitInfo <- as.integer(c(type, qcunit$ncells))
-    writeBin(qcunitInfo[1], con = con, size = 2, endian = "little")
-    writeBin(qcunitInfo[2], con = con, size = 4, endian = "little")
-
-    # Write 2 + 4 bytes
-    ncells <- length(qcunit$x);
-    nbrOfBytes <- 7*ncells;
-    cells <- matrix(as.integer(c(qcunit$x, qcunit$y, qcunit$length,
-                                 qcunit$pm, qcunit$background)),
-                    ncol = 5)
-    for(icell in seq(along.with = qcunit$x)) {
-        writeBin(cells[icell, 1:2], con = con, size = 2, endian = "little")
-        writeBin(cells[icell, 3:5], con = con, size = 1, endian = "little")
-    }
-    ## 3. Jump top front to write the qc position
-    if(addPosition) {
-        seek(con = con, where = positions$qcunitFP,
-             origin = "start", rw = "write")
-        writeBin(as.integer(endPosition),
-                 con = con, size = 4, endian = "little")
-        positions$qcunitFP <- positions$qcunitFP + 4
-    }
-
-    positions
-} # writeCdfQcUnit()
-
-
-
-writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite = FALSE, verbose = 0) {
+writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite=FALSE, verbose=0) {
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Consistency checks
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -441,16 +19,10 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite = FALSE, verbose = 
     if(file.exists(fname) && !overwrite)
       stop("Cannot write CDF: File already exists: ", fname);
 
-    # Open output connection (and make sure it is closed afterwards)
-    cdfcon <- file(fname, open = "wb");
-    on.exit(close(cdfcon));
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Create CDF and write unit names etc
+    # Figure out number of bytes per QC unit and regular unit
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (verbose >= 1)
-      cat("  Writes CDF header and unit names...\n");
-
     if (cdfheader$nqcunits > 0) {
       # Start positions for QC units
       lens <- lapply(cdfqc, FUN=.subset2, "ncells");
@@ -475,64 +47,25 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite = FALSE, verbose = 
       unitLengths <- NULL;
     }
 
-    positions <- .initializeCdf(con = cdfcon,
-                               nunits = cdfheader$nunits,
-                               nqcunits = cdfheader$nqcunits,
-                               refseq = cdfheader$refseq,
-                               nrows = cdfheader$nrows,
-                               ncol = cdfheader$ncols,
-                               unitnames = names(cdf),
-                               qcUnitLengths = qcUnitLengths,
-                               unitLengths = unitLengths
-    );
-    if (verbose >= 1)
-      cat("  Writes CDF header and unit names...done\n");
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Write all QC units
+    # Write CDF
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (verbose >= 1) {
-        cat("  Writes QC units...\n");
-      if(verbose >= 2)
-        cat("    Units: ");
-    }
-    for(kk in seq(along.with = cdfqc)){
-      if(verbose >= 2) {
-        if (kk %% 100 == 0)
-          cat(kk, ", ", sep="");
-      }
-      positions <- .writeCdfQcUnit(qcunit = cdfqc[[kk]], addPosition=FALSE,
-                                  positions = positions,
-                                  con = cdfcon)
-    }
-    if(verbose >= 2)
-      cat("\n");
-    if (verbose >= 1)
-      cat("  Writes QC units...done\n");
+    # Open output connection
+    con <- file(fname, open = "wb");
+    on.exit(close(con));
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    # Write all units
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (verbose >= 1) {
-      cat("  Writes ", length(cdf), " units...\n", sep="");
-      if(verbose >= 2)
-        cat("    Units: ");
-    }
-    for(kk in seq(along.with = cdf)){
-      if(verbose >= 2) {
-        if (kk %% 100 == 0)
-          cat(kk, ", ", sep="");
-      }
-      positions <- .writeCdfUnit(unit = cdf[[kk]], 
-                                addName=FALSE, addPosition=FALSE,
-                                unitname = names(cdf)[kk],
-                                positions = positions,
-                                con = cdfcon)
-    }
-    if(verbose >= 2)
-      cat("\n");
-    if (verbose >= 1)
-      cat("  Writes ", length(cdf), " units...done\n", sep="");
+    # Write CDF header
+    writeCdfHeader(con=con, cdfheader, unitNames=names(cdf), 
+                      qcUnitLengths=qcUnitLengths, unitLengths=unitLengths, 
+                                                          verbose=verbose);
+
+    # Write QC units
+    writeCdfQcUnits(con=con, cdfqc, verbose=verbose);
+
+    # Write regular units
+    writeCdfUnits(con=con, cdf, verbose=verbose);
+
 
     if(verbose >= 1)
       cat("Writing CDF file...done\n");
@@ -541,8 +74,18 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite = FALSE, verbose = 
 } # writeCdf()
 
 
+
 ############################################################################
 # HISTORY:
+# 2007-01-10 /HB
+# o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().  With
+#   these it is now possible to build up the CDF in chunks.
+# o Removed obsolete arguments 'addName' and 'addPositions' and all related
+#   code.  Internal variable 'positions' is not needed anymore. 
+#   There are no more seek():s in the code.
+# o Removed obsolete .writeCdfUnit2().
+# o Now only every 1000th unit (instead of 100th) is reported. It is now
+#   also a count down.
 # 2006-12-18 /KS
 # o Make global replacement "block" -> "group" to maintain consistency
 #   with other code, pursuant to communication from KH.
