@@ -1,13 +1,53 @@
+#########################################################################/**
+# @RdocFunction writeCdfHeader
+#
+# @title "Writes a CDF header"
+#
+# @synopsis 
+# 
+# \description{
+#   @get "title".
+#   \emph{This method is not indended to be used explicitly. 
+#   To write a CDF, use @see "writeCdf" instead.}
+# }
+# 
+# \arguments{
+#   \item{con}{An open @connection to which nothing has been written.}
+#   \item{cdfHeader}{A CDF header @list structure.}
+#   \item{unitNames}{A @character @vector of all unit names.}
+#   \item{qcUnitLengths}{An @integer @vector of all the number of bytes
+#     in each of the QC units.}
+#   \item{unitLengths}{An @integer @vector of all the number of bytes
+#     in each of the (ordinary) units.}
+#   \item{verbose}{An @integer specifying how much verbose details are
+#     outputted.}
+# }
+# 
+# \value{
+#   Returns nothing.
+# }
+#
+# @author
+#
+# \seealso{
+#   This method is called by @see "writeCdf".
+#   See also @see "writeCdfQcUnits" and @see "writeCdfUnits".
+# }
+# 
+# @keyword "file"
+# @keyword "IO"
+# @keyword "internal"
+#*/#########################################################################
 writeCdfHeader <- function(con, cdfHeader, unitNames, qcUnitLengths, unitLengths, verbose=0) {
   if (verbose >= 1)
     cat("  Writes CDF header and unit names...\n");
 
   .initializeCdf(con = con,
-                 nunits = cdfHeader$nunits,
-                 nqcunits = cdfHeader$nqcunits,
-                 refseq = cdfHeader$refseq,
-                 nrows = cdfHeader$nrows,
-                 ncol = cdfHeader$ncols,
+                 nRows = cdfHeader$nrows,
+                 nCols = cdfHeader$ncols,
+                 nUnits = cdfHeader$nunits,
+                 nQcUnits = cdfHeader$nqcunits,
+                 refSeq = cdfHeader$refseq,
                  unitnames = unitNames,
                  qcUnitLengths = qcUnitLengths,
                  unitLengths = unitLengths
@@ -20,6 +60,8 @@ writeCdfHeader <- function(con, cdfHeader, unitNames, qcUnitLengths, unitLengths
 
 ############################################################################
 # HISTORY:
+# 2007-02-01 /HB
+# o Added Rdoc comments.
 # 2007-01-10 /HB
 # o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().  With
 #   these it is now possible to build up the CDF in chunks.

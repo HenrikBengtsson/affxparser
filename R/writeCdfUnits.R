@@ -1,3 +1,41 @@
+#########################################################################/**
+# @RdocFunction writeCdfUnits
+#
+# @title "Writes CDF units"
+#
+# @synopsis 
+# 
+# \description{
+#   @get "title".
+#   \emph{This method is not indended to be used explicitly. 
+#   To write a CDF, use @see "writeCdf" instead.}
+# }
+# 
+# \arguments{
+#   \item{con}{An open @connection to which a CDF header and QC units 
+#     already have been written by @see "writeCdfHeader" and 
+#     @see "writeCdfQcUnits", respectively.}
+#   \item{cdfUnits}{A @list structure of CDF units as returned by
+#     @see "readCdf" (\emph{not} @see "readCdfUnits").}
+#   \item{verbose}{An @integer specifying how much verbose details are
+#     outputted.}
+# }
+# 
+# \value{
+#   Returns nothing.
+# }
+#
+# @author
+#
+# \seealso{
+#   This method is called by @see "writeCdf".
+#   See also @see "writeCdfHeader" and @see "writeCdfQcUnits".
+# }
+# 
+# @keyword "file"
+# @keyword "IO"
+# @keyword "internal"
+#*/#########################################################################
 writeCdfUnits <- function(con, cdfUnits, verbose=0) {
   nbrOfUnits <- length(cdfUnits);
 
@@ -27,6 +65,8 @@ writeCdfUnits <- function(con, cdfUnits, verbose=0) {
 
 ############################################################################
 # HISTORY:
+# 2007-02-01 /HB
+# o Added Rdoc comments.
 # 2007-01-10 /HB
 # o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().  With
 #   these it is now possible to build up the CDF in chunks.

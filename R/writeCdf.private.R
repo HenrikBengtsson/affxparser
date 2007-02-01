@@ -1,35 +1,25 @@
-.initializeCdf <- function(con, nrows = 1, ncols = 1,
-                          nunits = 1, nqcunits = 0,
-                          refseq = "",
-                          unitnames = rep("", nunits),
-                          qcunitpositions = rep(1, nqcunits),
-                          unitpositions = rep(2, nunits),
-                          qcUnitLengths = rep(0, nqcunits),
-                          unitLengths = rep(0, nunits),
+.initializeCdf <- function(con, nRows = 1, nCols = 1,
+                          nUnits = 1, nQcUnits = 0,
+                          refSeq = "",
+                          unitnames = rep("", nUnits),
+                          qcUnitLengths = rep(0, nQcUnits),
+                          unitLengths = rep(0, nUnits),
                           ...) {
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Validate arguments
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if(length(qcunitpositions) != nqcunits) {
-      stop("Number of elements in argument 'qcunitpositions' does not match 'nqcunits'");
+    if(length(qcUnitLengths) != nQcUnits) {
+      stop("Number of elements in argument 'qcUnitLengths' does not match 'nQcUnits'");
     }
 
-    if(length(unitpositions) != nunits) {
-      stop("Number of elements in argument 'unitpositions' does not match 'nunits'");
+    if(length(unitLengths) != nUnits) {
+      stop("Number of elements in argument 'qcUnitLengths' does not match 'nUnits'");
     }
 
-    if(length(qcUnitLengths) != nqcunits) {
-      stop("Number of elements in argument 'qcUnitLengths' does not match 'nqcunits'");
-    }
+    if(length(refSeq) != 1)
+        stop("Argument 'refSeq' should be a single character.");
 
-    if(length(unitLengths) != nunits) {
-      stop("Number of elements in argument 'qcUnitLengths' does not match 'nunits'");
-    }
-
-    if(length(refseq) != 1)
-        stop("Argument 'refseq' should be a single character.");
-
-    lrefseq <- nchar(refseq);
+    lrefSeq <- nchar(refSeq);
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # CDF header
@@ -47,21 +37,21 @@
     ## Magic number and version number
     writeBin(object = as.integer(c(67, 1)),
              con = con, size = 4, endian = "little")
-    ## Ncols, Nrows
-    writeBin(object = as.integer(c(ncols, nrows)),
+    ## NCols, NRows
+    writeBin(object = as.integer(c(nCols, nRows)),
              con = con, size = 2, endian = "little")
     ## NumberUnits, NumberQCUnits
-    writeBin(object = as.integer(c(nunits, nqcunits)),
+    writeBin(object = as.integer(c(nUnits, nQcUnits)),
              con = con, size = 4, endian = "little")
-    ## Length of refseqsequence
-    writeBin(object = as.integer(lrefseq),
+    ## Length of refSeqsequence
+    writeBin(object = as.integer(lrefSeq),
              con = con, size = 4, endian = "little")
-    ## Refseqsequece
-    if(lrefseq > 0)
-      writeChar(as.character(refseq), con=con, eos=NULL);
+    ## RefSeqsequece
+    if(lrefSeq > 0)
+      writeChar(as.character(refSeq), con=con, eos=NULL);
 
     # Current offset
-    offset <- 24 + lrefseq;
+    offset <- 24 + lrefSeq;
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Unit names
@@ -77,24 +67,24 @@
     raw[raw == as.raw(255)] <- as.raw(0);
     writeBin(con=con, raw);
     rm(raw);
-#    writeChar(con=con, as.character(unitnames), nchars=rep(64, nunits), eos=NULL)
+#    writeChar(con=con, as.character(unitnames), nchars=rep(64, nUnits), eos=NULL)
 
-    bytesOfUnitNames <- 64 * nunits;
+    bytesOfUnitNames <- 64 * nUnits;
     offset <- offset + bytesOfUnitNames;
 
-    bytesOfQcUnits <- 4 * nqcunits;
+    bytesOfQcUnits <- 4 * nQcUnits;
     offset <- offset + bytesOfQcUnits;
 
-    bytesOfUnits <- 4 * nunits;
+    bytesOfUnits <- 4 * nUnits;
     offset <- offset + bytesOfUnits;
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # QC units file positions
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    if (nqcunits > 0) {
+    if (nQcUnits > 0) {
       csum <- cumsum(qcUnitLengths);
-      nextOffset <- csum[nqcunits];
-      starts <- c(0, csum[-nqcunits]);
+      nextOffset <- csum[nQcUnits];
+      starts <- c(0, csum[-nQcUnits]);
       starts <- as.integer(offset + starts);
       writeBin(starts, con = con, size = 4, endian = "little")
     } else {
@@ -108,10 +98,10 @@
     # Units file positions
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     offset <- offset + nextOffset;
-    if (nunits > 0) {
+    if (nUnits > 0) {
       csum <- cumsum(unitLengths);
-      nextOffset <- csum[nunits];
-      starts <- c(0, csum[-nunits]);
+      nextOffset <- csum[nUnits];
+      starts <- c(0, csum[-nUnits]);
       starts <- as.integer(offset + starts);
       writeBin(starts, con = con, size = 4, endian = "little");
     } else {
@@ -124,23 +114,23 @@
     ## 3. Write the unit
     unitTypes <- c(expression=1, genotyping=2, tag=3, 
                                              resequencing=4, unknown=5);
-    unittype <- unitTypes[unit$unittype];
+    unitType <- unitTypes[unit$unittype];
     unitDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
-    unitdirection <- unitDirections[unit$unitdirection];
+    unitDirection <- unitDirections[unit$unitdirection];
 
-    unittype <- switch(unit$unittype,
+    unitType <- switch(unit$unittype,
                        expression = 1,
                        genotyping = 2,
                        tag = 3,
                        resequencing = 4,
                        unknown = 5)
-    unitdirection <- switch(unit$unitdirection,
+    unitDirection <- switch(unit$unitdirection,
                             nodirection = 0,
                             sense = 1,
                             antisense = 2,
                             unknown = 3)
 
-    unitInfo <- as.integer(c(unittype, unitdirection,
+    unitInfo <- as.integer(c(unitType, unitDirection,
                              unit$natoms, length(unit$groups),
                              unit$ncells, unit$unitnumber,
                              unit$ncellsperatom))
@@ -160,15 +150,15 @@
     groupDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
     for(igroup in seq(along.with = unit$groups)) {
         group <- unit$groups[[igroup]]
-        groupdirection <- groupDirections[group$groupdirection];
-        groupdirection <- switch(group$groupdirection,
+        groupDirection <- groupDirections[group$groupdirection];
+        groupDirection <- switch(group$groupdirection,
                                  nodirection = 0,
                                  sense = 1,
                                  antisense = 2,
                                  unknown = 3)
         groupInfo <- as.integer(c(group$natoms, length(group$x),
                                   group$ncellsperatom,
-                                  groupdirection, min(group$atoms, 0)))
+                                  groupDirection, min(group$atoms, 0)))
        # Number of bytes: 2*4+2*1+2*4=18 bytes
         writeBin(groupInfo[1:2],
                  con = con, size = 4, endian = "little")
@@ -239,8 +229,8 @@
     writeBin(qcunitInfo[2], con = con, size = 4, endian = "little")
 
     # Write 2 + 4 bytes
-    ncells <- length(qcunit$x);
-    nbrOfBytes <- 7*ncells;
+    nCells <- length(qcunit$x);
+    nbrOfBytes <- 7*nCells;
     cells <- matrix(as.integer(c(qcunit$x, qcunit$y, qcunit$length,
                                  qcunit$pm, qcunit$background)),
                     ncol = 5)
@@ -253,6 +243,11 @@
 
 ############################################################################
 # HISTORY:
+# 2007-02-01 /HB
+# o Updated to camel case as much as possible to match JBs updates in the
+#   branch.
+# o Removed non-used arguments 'unitpositions' and 'qcunitpositions' from
+#   .initializeCdf().
 # 2007-01-10 /HB
 # o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().  With
 #   these it is now possible to build up the CDF in chunks.
@@ -267,13 +262,13 @@
 #   with other code, pursuant to communication from KH.
 # 2006-10-25 /HB (+KS)
 # o BUG FIX: .initializeCdf() was writing false file offset for QC units
-#   when the number QC nunits were zero.  This would core dump readCdfNnn().
+#   when the number QC nUnits were zero.  This would core dump readCdfNnn().
 # 2006-09-21 /HB
 # o BUG FIX: The 'atom' and 'indexpos' fields were swapped.
 # o Now suppressing warnings "writeChar: more characters requested..." in
 #   writeCdf().
 # 2006-09-11 /HB
-# o BUG FIX: nrows & ncols were swapped in the CDF header.
+# o BUG FIX: nRows & nCols were swapped in the CDF header.
 # 2006-09-09 /HB
 # o Updated writeCdf() has been validate with compareCdfs() on a few arrays.
 # o With the below "optimizations" writeCdf() now writes Hu6800.CDF with
