@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.7.4 [2007-01-10]
+Version: 1.7.3 [2007-02-01]
 o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits(). 
   These are all used by writeCdf(). They also make it possible
   to write a CDF in chunks in order to for instance convertCdf()
