@@ -374,17 +374,26 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   fields <- vector("list", length(cellValueFields));
   names(fields) <- cellValueFields;
 
+  # Keep a copy for groups with empty fields
+  emptyFields <- fields;
+
   # Add a dimension for the arrays, unless only one array is read
   # and the array dimension is not wanted.
   addArrayDim <- (nbrOfArrays >= 2 || !dropArrayDim);
 
   seqOfArrays <- list(1:nbrOfArrays);
   offset <- 0;
+  
   res <- lapply(cdf, FUN=function(u) {
-    lapply(u$groups, FUN=function(g) {
+    lapply(.subset2(u, "groups"), FUN=function(g) {
       # Same dimensions of all fields
       field <- .subset2(g, 1);  # Faster than g[[1]]
       ncells <- length(field);
+
+      # Empty unit group?
+      if (ncells == 0)
+        return(fields <- emptyFields);
+
       idxs <- offset + 1:ncells;
       offset <<- offset + ncells;
 
@@ -445,6 +454,9 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
 ############################################################################
 # HISTORY:
+# 2007-02-01 [KS]
+# o Now readCelUnits() can handle unit groups for which there are no probes,
+#   e.g. when stratifying on PM in a unit containing only MMs.
 # 2006-10-04 [HB]
 # o Made readCelUnits() a bit more clever if a 'cdf' structure with only
 #   cell indices is passed. Then all fields are just indices and one can
