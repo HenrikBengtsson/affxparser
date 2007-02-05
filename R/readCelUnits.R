@@ -392,7 +392,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
       # Empty unit group?
       if (ncells == 0)
-        return(fields <- emptyFields);
+        return(emptyFields);
 
       idxs <- offset + 1:ncells;
       offset <<- offset + ncells;
