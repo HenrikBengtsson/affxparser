@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.7.3 [2007-02-01]
+Version: 1.7.4 [2007-02-21]
 o Now readCelUnits() can handle unit groups for which there are 
   no probes, e.g. when stratifying on PM in a unit containing 
   only MMs. 
