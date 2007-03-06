@@ -16,6 +16,8 @@
 #   \item{filename}{The filename of the CDF file.}
 #   \item{units}{An @integer @vector of unit indices specifying which
 #      units to be read.  If @NULL, all units are read.}
+#    \item{truncateGroupNames}{A @logical variable indicating whether unit
+#      names should be stripped from the beginning of group names.}
 #    \item{verbose}{An @integer specifying the verbose level. If 0, the
 #      file is parsed quietly.  The higher numbers, the more details.}
 # }
@@ -37,7 +39,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-readCdfGroupNames <- function(filename, units=NULL, verbose=0) {
+readCdfGroupNames <- function(filename, units=NULL, truncateGroupNames=TRUE, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -56,6 +58,9 @@ readCdfGroupNames <- function(filename, units=NULL, verbose=0) {
     stop("Argument 'units' must be numeric or NULL: ", class(units)[1]);
   }
 
+  # Argument 'truncateGroupNames':
+  truncateGroupNames <- as.logical(truncateGroupNames);
+  
   # Argument 'verbose':
   if (length(verbose) != 1)
     stop("Argument 'units' must be a single integer.");
@@ -67,13 +72,16 @@ readCdfGroupNames <- function(filename, units=NULL, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Read the CDF file
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  .Call("R_affx_cdf_groupNames", filename, units, verbose,
-                                                     PACKAGE="affxparser");
+  .Call("R_affx_cdf_groupNames", filename, units,
+        truncateGroupNames, verbose,
+        PACKAGE="affxparser");
 }
 
 
 ############################################################################
 # HISTORY:
+# 2007-03-05
+# o Added argument truncateGroupNames. Also see R_affx_cdf_group_names(). /KS
 # 2006-03-28
 # o Unit indices are now one-based. /HB
 # 2006-01-12

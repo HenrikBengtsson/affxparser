@@ -12,7 +12,7 @@
 
  \title{Reads group names for a set of units (probesets) in an Affymetrix CDF file}
 
- \usage{readCdfGroupNames(filename, units=NULL, verbose=0)}
+ \usage{readCdfGroupNames(filename, units=NULL, truncateGroupNames=TRUE, verbose=0)}
 
  \description{
    Reads group names for a set of units (probesets) in an Affymetrix CDF file.
@@ -25,6 +25,8 @@
    \item{filename}{The filename of the CDF file.}
    \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which
       units to be read.  If \code{\link[base]{NULL}}, all units are read.}
+    \item{truncateGroupNames}{A \code{\link[base]{logical}} variable indicating whether unit
+      names should be stripped from the beginning of group names.}
     \item{verbose}{An \code{\link[base]{integer}} specifying the verbose level. If 0, the
       file is parsed quietly.  The higher numbers, the more details.}
  }
