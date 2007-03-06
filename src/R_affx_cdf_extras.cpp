@@ -155,7 +155,7 @@ extern "C" {
    * R_affx_cdf_groupNames()
    *
    ************************************************************************/
-  SEXP R_affx_cdf_groupNames(SEXP fname, SEXP units, SEXP verbose) 
+  SEXP R_affx_cdf_groupNames(SEXP fname, SEXP units, SEXP truncateGroupNames, SEXP verbose) 
   {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
@@ -171,6 +171,7 @@ extern "C" {
     int nsets = 0, nunits = 0;
     int iset = 0;
     char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    int i_truncateGroupNames = INTEGER(truncateGroupNames)[0];
     int i_verboseFlag = INTEGER(verbose)[0];
 
     /** pointer to the name of the probeset. **/
@@ -261,10 +262,11 @@ extern "C" {
         strncpy(cstr, str.c_str(), str_length);
         cstr[str_length] = '\0';
  
-        /* If group name starts with the unit name, strip it off. */
+        /* If group name starts with the unit name, and i_truncateGroupNames
+           is TRUE, strip it off. */
         int len = strlen(name);
         int res = strncmp(cstr, name, len);
-        if (res == 0) {
+        if (res == 0 && i_truncateGroupNames) {
           int last = strlen(cstr)-len;
           for (int kk = 0; kk < last; kk++)
             bfr[kk] = cstr[len+kk];
@@ -483,6 +485,8 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2007-03-05 
+ * o Added argument 'truncateGroupNames' to R_affx_cdf_group_names().
  * 2006-11-27
  * o Added Seth Falcon's help function R_affx_pt_base_is_pm().
  * o Made R_affx_cdf_isMm() & R_affx_cdf_isPmOrMm() deprecated, because
