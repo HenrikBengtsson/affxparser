@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version: 1.7.x [2007-03-05]
+o Added argument 'truncateGroupNames' to readCdfGroupNames()
+  which defaults to TRUE for backward compatibility.  When
+  TRUE, any prefix of group names identical to the unit name
+  will be stripped of the group names.
+
 Version: 1.7.4 [2007-02-21]
 o Now readCelUnits() can handle unit groups for which there are 
   no probes, e.g. when stratifying on PM in a unit containing 

@@ -130,6 +130,11 @@ Some of the functions in this package search for CDF files automatically by scan
  Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}.
 }
 
+\section{Acknowledgments}{
+ We would like to thanks Ken Simpson (WEHI, Melbourne) and
+ Seth Falcon (FHCRC, Seattle) for feedback and code contributions.
+}
+
 \section{License}{
   The releases of this package is licensed under LGPL version 2.1 or
   newer. This applies also to the Fusion SDK.
