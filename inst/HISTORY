@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.7.x [2007-03-05]
+Version: 1.7.5 [2007-03-08]
 o Added argument 'truncateGroupNames' to readCdfGroupNames()
   which defaults to TRUE for backward compatibility.  When
   TRUE, any prefix of group names identical to the unit name
