@@ -26,7 +26,7 @@ extern "C" {
     FusionCDFFileHeader header;
     SEXP names, dim, pmmm, pairs;
     int nRows = 0, nCols = 0;
-    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
     string str;
     int str_length; 
@@ -140,7 +140,7 @@ extern "C" {
     int nqccells = 0;
     int numCols = 0;
     int numQCUnitsInFile = 0; 
-    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
     int i_returnIndices = INTEGER(returnIndices)[0];
     int i_returnXY = INTEGER(returnXY)[0];
@@ -444,7 +444,7 @@ extern "C" {
   SEXP R_affx_get_cdf_file_header(SEXP fname)
   {
     FusionCDFData cdf;
-    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     string str;
     int str_length; 
     char* cstr; 
@@ -587,7 +587,7 @@ extern "C" {
     int numUnits = 0;
     int numCols = 0;
     int numUnitsInFile = 0; 
-    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
     int i_returnUnitType = INTEGER(returnUnitType)[0];
     int i_returnUnitDirection = INTEGER(returnUnitDirection)[0];
@@ -1054,7 +1054,7 @@ extern "C" {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Process arguments
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    char* cdfFileName   = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName   = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag   = INTEGER(verbose)[0];
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1293,7 +1293,7 @@ extern "C" {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Process arguments
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    char* cdfFileName   = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName   = CHAR(STRING_ELT(fname, 0));
     int i_readXY        = INTEGER(readXY)[0];
     int i_readBases     = INTEGER(readBases)[0];
     int i_readExpos     = INTEGER(readExpos)[0];
@@ -1689,7 +1689,7 @@ extern "C" {
     bool readAll = true; 
     int maxNbrOfUnits = 0, nbrOfUnits = 0; 
     int unitIdx = 0;
-    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
 
 

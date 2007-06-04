@@ -33,7 +33,7 @@ extern "C" {
     bool readAll = true; 
     int nsets = 0, nunits = 0;
     int iset = 0;
-    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
 
     FusionCDFProbeSetInformation probeset;
@@ -170,7 +170,7 @@ extern "C" {
     bool readAll = true; 
     int nsets = 0, nunits = 0;
     int iset = 0;
-    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_truncateGroupNames = INTEGER(truncateGroupNames)[0];
     int i_verboseFlag = INTEGER(verbose)[0];
 
@@ -352,7 +352,7 @@ extern "C" {
     bool readAll = true; 
     int nsets = 0, nunits = 0;
     int iset = 0;
-    char* cdfFileName = CHAR(STRING_ELT(fname, 0));
+    const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
