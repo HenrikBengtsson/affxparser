@@ -153,7 +153,7 @@ extern "C" {
   {
     FusionCELData cel;
 
-    char* celFileName = CHAR(STRING_ELT(fname,0));
+    const char* celFileName = CHAR(STRING_ELT(fname,0));
     cel.SetFileName(celFileName);
     // if (cel.ReadHeader() == false) {
     if (cel.Exists() == false) {
@@ -199,7 +199,7 @@ extern "C" {
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      * Process arguments
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    char* celFileName         = CHAR(STRING_ELT(fname,0));
+    const char* celFileName   = CHAR(STRING_ELT(fname,0));
     int i_readHeader          = INTEGER(readHeader)[0];
     int i_readX               = INTEGER(readX)[0];
     int i_readY               = INTEGER(readY)[0];

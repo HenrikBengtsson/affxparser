@@ -26,7 +26,7 @@ extern "C" {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          * Process arguments
          * - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        char* bpmapFileName   = CHAR(STRING_ELT(fname,0));
+        const char* bpmapFileName   = CHAR(STRING_ELT(fname,0));
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          * Opens stuff
@@ -199,7 +199,7 @@ extern "C" {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          * Process arguments
          * - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        char* bpmapFileName   = CHAR(STRING_ELT(fname,0));
+        const char* bpmapFileName   = CHAR(STRING_ELT(fname,0));
         int i_verboseFlag     = INTEGER(verbose)[0];
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -301,7 +301,7 @@ extern "C" {
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - -
          * Process arguments
          * - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-        char* bpmapFileName   = CHAR(STRING_ELT(fname,0));
+        const char* bpmapFileName   = CHAR(STRING_ELT(fname,0));
         int i_readSeqInfo     = INTEGER(readSeqInfo)[0];
         int i_readStartPos    = INTEGER(readStartPos)[0];
         int i_readCenterPos   = INTEGER(readCenterPos)[0];
@@ -578,8 +578,8 @@ extern "C" {
 
 
     SEXP R_affx_write_bpmap_file(SEXP bpname, SEXP tpname, SEXP verbose){
-        char* bpmapFileName = CHAR(STRING_ELT(bpname,0));
-        char* tpmapFileName = CHAR(STRING_ELT(tpname,0));
+        const char* bpmapFileName = CHAR(STRING_ELT(bpname,0));
+        const char* tpmapFileName = CHAR(STRING_ELT(tpname,0));
         affxbpmapwriter::CBPMAPFileWriter bpmap;
         bpmap.SetTpmapFileName(tpmapFileName);
         int i_verboseFlag = INTEGER(verbose)[0];
