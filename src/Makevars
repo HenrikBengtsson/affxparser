@@ -1,5 +1,3 @@
-all: $(SHLIB)
-
 MYCXXFLAGS=-O0
 
 %.o: %.cpp
@@ -23,7 +21,7 @@ PKG_CPPFLAGS=\
  -Ifusion_sdk/portability\
  -D_USE_MEM_MAPPING_
 
-SOURCES.fusion = \
+PKG_SOURCES = \
 	fusion_sdk/calvin_files/data/src/CDFData.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeGroupInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CDFProbeInformation.cpp\
@@ -66,13 +64,15 @@ SOURCES.fusion = \
 	fusion_sdk/file/CDFFileData.cpp\
 	fusion_sdk/file/CELFileData.cpp\
 	fusion_sdk/file/FileIO.cpp\
-	fusion_sdk/file/FileWriter.cpp
-
-SOURCES.package = \
+	fusion_sdk/file/FileWriter.cpp\
 	R_affx_cel_parser.cpp\
 	R_affx_cdf_parser.cpp\
 	R_affx_cdf_extras.cpp\
 	R_affx_bpmap_parser.cpp
 
-OBJS=$(SOURCES.fusion:.cpp=.o) $(SOURCES.package:.cpp=.o)
- 
+OBJECTS=$(PKG_SOURCES:.cpp=.o)
+
+all: myclean $(SHLIB)
+
+myclean:
+	rm -f $(OBJECTS)
