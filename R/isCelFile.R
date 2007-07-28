@@ -36,7 +36,7 @@ isCelFile <- function(filename, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Argument 'filename':
   if (!file.exists(filename)) {
-    stop("Cannot check file format. File not found: ", from);
+    stop("Cannot check file format. File not found: ", filename);
   }
 
   # Open file
@@ -78,6 +78,8 @@ isCelFile <- function(filename, ...) {
 
 ############################################################################
 # HISTORY:
+# 2006-07-27
+# o BUG FIX: The error message when the file was not found was broken.
 # 2006-07-10
 # o Created.
 ############################################################################  

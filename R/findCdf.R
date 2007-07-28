@@ -57,10 +57,22 @@
 # @keyword IO
 #**/#######################################################################
 findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ...) {
+  settings <- getOption("affxparser.settings");
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Validate arguments
+  # Customized search method?
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Argument 'paths':
+  findFcn <- settings$methods$findCdf;
+  if (!is.null(findFcn)) {
+    pattern <- paste(chipType, pattern, sep="");
+    pathnames <- findFcn(chipType=chipType, paths=paths, pattern=pattern, ...);
+    if (!is.null(pathnames))
+      return(pathnames);
+  }
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Setup search path
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(paths)) {
     paths <- paste(".", 
                    "cdf/", "data/cdf/", 
@@ -71,20 +83,29 @@ findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ..
   paths <- c(".", paths);
   paths <- unique(paths);
 
-  # Argument 'chipType':
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Setup search pattern
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (!is.null(chipType)) {
     if (regexpr("[.](c|C)(d|D)(f|F)$", chipType) !=-1)
       warning("Argument 'chipType' of findCdf() has suffix '.cdf':", chipType);
     pattern <- paste(chipType, pattern, sep="");
   }
 
-
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Search
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   findFiles(pattern=pattern, paths=paths, ...);
 } 
 
 
 ############################################################################
 # HISTORY:
+# 2007-02-12 [moved to affxparser 2007-03-28]
+# o Added option 'affxparser.settings' (for now private), allowing for an
+#   alternative search function to be set it element methods$findCdf.
+#   This is utilized by the aroma.affymetrix package to look for CDF 
+#   using a more formalized hierarchical directory structure.
 # 2006-09-21
 # o findCdf() now gives a warning *.cdf extension is given, but tries not
 #   to resolve it.

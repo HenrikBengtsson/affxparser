@@ -356,7 +356,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
         verbose && exit(verbose);
       }
 
-      eval(substitute(name[,kk] <- value, list=list(name=as.name(name))));
+      eval(substitute(name[,kk] <- value, list(name=as.name(name))));
     }
 
     rm(celTmp);
@@ -454,6 +454,8 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
 ############################################################################
 # HISTORY:
+# 2007-06-28 [HB]
+# o Removed the name of the second argument in a substitute() call.
 # 2007-02-01 [KS]
 # o Now readCelUnits() can handle unit groups for which there are no probes,
 #   e.g. when stratifying on PM in a unit containing only MMs.
