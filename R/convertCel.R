@@ -88,7 +88,8 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (verbose)
     cat("Reading CEL file...\n");
-    cel <- readCel(filename, readHeader=TRUE, readXY=TRUE, readIntensities=TRUE, readStdvs=TRUE, readPixels=TRUE, readOutliers=FALSE, readMasked=FALSE, readMap=readMap);
+  cel <- readCel(filename, readHeader=TRUE, readXY=TRUE, readIntensities=TRUE, readStdvs=TRUE, readPixels=TRUE, readOutliers=FALSE, readMasked=FALSE, readMap=readMap);
+  gc();  
   if (verbose)
     cat("Reading CEL file...done\n");
 
@@ -109,20 +110,21 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (verbose)
     cat("Updating CEL file...\n");
-  indices <- cel$y*cel$header$cols + cel$x + 1;
-  if (!is.null(readMap)) {
-    indices <- readMap[indices];
-  }
   updateCel(outFilename, intensities=cel, verbose=verbose2, writeMap=writeMap);
+  rm(cel);
+  gc();
   if (verbose)
     cat("Updating CEL file...done\n");
 
   if (.validate) {
     if (verbose)
       cat("Validating CEL file...\n");
-    otherReadMap <- NULL;
-    if (!is.null(writeMap))
+    if (is.null(writeMap)) {
+      otherReadMap <- NULL;
+    } else {
       otherReadMap <- invertMap(writeMap);
+    }
+    gc();
     compareCels(filename, outFilename, readMap=readMap, 
                                 otherReadMap=otherReadMap, verbose=verbose);
     if (verbose)
@@ -135,6 +137,9 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
 
 ############################################################################
 # HISTORY:
+# 2007-03-28
+# o Memory optimization; removing non-needed objects asap and calls gc().
+# o There was non-used variables in convertCel().
 # 2007-01-04
 # o Creates identical output according to validateCels().
 # o Added 'readMap' and 'writeMap' arguments.

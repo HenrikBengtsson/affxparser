@@ -1,11 +1,34 @@
 Package: affxparser
 ===================
 
+Version: 1.9.2 [2007-07-27]
+o Optimized writeCdfHeader() for memory.  For a CDF with 1,200,000+ units
+  just writing the unit names would consume 1-1.5GB RAM.  Now it writes
+  unit names in chunks keeping the memory overhead around 100-200MB.
+o Made convertCdf() more memory efficient.
+o BUG FIX: The error message in isCelFile() when the file was not 
+  found was broken.
+
+
+Version: 1.8.1 [2007-07-26]
+o Now affxparser install on OSX with PPC.
+
+
+Version: 1.8.0 [2007-04-24]
+o The version number was bumped up with the Bioconductor release.
+
+
+Version: 1.7.6 [2007-03-28] (never committed)
+o Modified findCdf() such that it is possible to set an alternative
+  function for how CDFs are located.
+
+
 Version: 1.7.5 [2007-03-08]
 o Added argument 'truncateGroupNames' to readCdfGroupNames()
   which defaults to TRUE for backward compatibility.  When
   TRUE, any prefix of group names identical to the unit name
   will be stripped of the group names.
+
 
 Version: 1.7.4 [2007-02-21]
 o Now readCelUnits() can handle unit groups for which there are 
@@ -15,6 +38,7 @@ o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().
   These are all used by writeCdf(). They also make it possible
   to write a CDF in chunks in order to for instance convertCdf()
   in constant memory.
+
 
 Version: 1.7.3 [2007-01-05]
 o Added cdfAddPlasqTypes().
