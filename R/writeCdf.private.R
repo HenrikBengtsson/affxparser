@@ -34,6 +34,8 @@
     # 7 The length of the resequencing reference sequence.        [integer]
     # 8 The resequencing reference sequence.                    [char[len]]
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    offset <- 0;
+
     ## Magic number and version number
     writeBin(object = as.integer(c(67, 1)),
              con = con, size = 4, endian = "little")
@@ -46,12 +48,25 @@
     ## Length of refSeqsequence
     writeBin(object = as.integer(lrefSeq),
              con = con, size = 4, endian = "little")
+    offset <- 24;
+
+    fOffset <- seek(con=con, origin="start", rw="write");
+    if (offset != fOffset) {
+      throw("File format write error (step 1): File offset is not the excepted one: ", fOffset, " != ", offset);
+    }   
+ 
     ## RefSeqsequece
     if(lrefSeq > 0)
       writeChar(as.character(refSeq), con=con, eos=NULL);
 
     # Current offset
-    offset <- 24 + lrefSeq;
+    offset <- offset + lrefSeq;
+
+    fOffset <- seek(con=con, origin="start", rw="write");
+    if (offset != fOffset) {
+      throw("File format write error (step 2): File offset is not the excepted one: ", fOffset, " != ", offset);
+    }   
+
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Unit names
@@ -61,16 +76,59 @@
     # write to raw and then replace '\xFF' with '\0'. Thus, unit names with
     # '\xFF' are invalid, but this should not be a real problem.
     pads <- sapply(0:64, FUN=function(x) paste(rep("\xFF", x), collapse=""));
-    unitnames <- paste(unitnames, pads[64-nchar(unitnames)], sep="");
-    raw <- raw(64*length(unitnames));
-    raw <- writeBin(con=raw, unitnames, size=1);
-    raw[raw == as.raw(255)] <- as.raw(0);
-    writeBin(con=con, raw);
-    rm(raw);
+
+    # Write the unit names in chunks to save memory
+    nbrOfUnits <- length(unitnames);
+    chunkSize <- 100000;
+    nbrOfChunks <- ceiling(nbrOfUnits / chunkSize);
+
+    # Allocate raw vector
+    raw <- raw(64*chunkSize);
+
+    for (kk in 1:nbrOfChunks) {
+      # Units for this chunk
+      from <- (kk-1)*chunkSize+1;
+      to <- min(from+chunkSize-1, nbrOfUnits);
+      unitnamesFF <- unitnames[from:to];
+
+      # Pad the unit names
+      unitnamesFF <- paste(unitnamesFF, pads[64-nchar(unitnamesFF)], sep="");
+
+      # Truncate last chunk?
+      if (chunkSize > length(unitnamesFF)) {
+        raw <- raw[1:(64*length(unitnamesFF))];
+      }
+
+      # Write unit names to raw vector
+      raw <- writeBin(con=raw, unitnamesFF, size=1);
+
+      rm(unitnamesFF);
+
+      # Garbage collect
+#      gc <- gc();
+#      print(gc);
+
+      # Replace all '\xFF' with '\0'.
+      idxs <- which(raw == as.raw(255));
+      raw[idxs] <- as.raw(0);
+      rm(idxs);
+
+      writeBin(con=con, raw);
+   } # for (kk in ...)
+
+   rm(raw);
+   # Garbage collect
+   gc <- gc();
+
 #    writeChar(con=con, as.character(unitnames), nchars=rep(64, nUnits), eos=NULL)
 
     bytesOfUnitNames <- 64 * nUnits;
     offset <- offset + bytesOfUnitNames;
+
+    fOffset <- seek(con=con, origin="start", rw="write");
+    if (offset != fOffset) {
+      throw("File format write error (step 3): File offset is not the excepted one: ", fOffset, " != ", offset);
+    }   
 
     bytesOfQcUnits <- 4 * nQcUnits;
     offset <- offset + bytesOfQcUnits;
@@ -243,6 +301,10 @@
 
 ############################################################################
 # HISTORY:
+# 2007-07-13 /HB
+# o While writing unit names in .initializeCdf(), quite a few copies were 
+#   created using up a lot of memory.  By removing unused objects and
+#   writing unit names in chunks memory usage is now stable and < 200MB.
 # 2007-02-01 /HB
 # o Updated to camel case as much as possible to match JBs updates in the
 #   branch.
