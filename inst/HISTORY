@@ -2,6 +2,14 @@ Package: affxparser
 ===================
 
 Version: 1.9.2 [2007-07-27]
+o This BioC devel version requires R v2.6.0 due to a change of
+  how strings are handled in C by BioC.
+o Modified findCdf() such that it is possible to set an alternative
+  function for how CDFs are located.
+
+
+Version: 1.8.2 [2007-08-01]
+None of the fixes changes the API/function of the BioC release version:
 o Optimized writeCdfHeader() for memory.  For a CDF with 1,200,000+ units
   just writing the unit names would consume 1-1.5GB RAM.  Now it writes
   unit names in chunks keeping the memory overhead around 100-200MB.
@@ -16,11 +24,6 @@ o Now affxparser install on OSX with PPC.
 
 Version: 1.8.0 [2007-04-24]
 o The version number was bumped up with the Bioconductor release.
-
-
-Version: 1.7.6 [2007-03-28] (never committed)
-o Modified findCdf() such that it is possible to set an alternative
-  function for how CDFs are located.
 
 
 Version: 1.7.5 [2007-03-08]
