@@ -1,5 +1,5 @@
 ##
-## NAMESPACE file for affxparser library.
+## NAMESPACE file for the affxparser package.
 ##
 useDynLib(affxparser)
 
