@@ -76,6 +76,19 @@ createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbo
     stop("Argument 'nsubgrids' is negative: ", nsubgrids);
   }
 
+
+  version <- .getCelHeaderVersion(header);
+  if (version == "1") {
+    if (verbose)
+      cat("Coercing CEL header to v4...\n");
+    header <- .getCelHeaderV4(header);
+    if (verbose)
+      cat("Coercing CEL header to v4...done\n");
+  } else if (version == "3") {
+    header$version <- "4";
+  } else if (version == "4") {
+  }
+
   # Check for supported versions
   if (header$version !=  "4") {
     stop("Failed create binary (XDA) CEL v4 file. Header object has a different version: ", header$version);
@@ -158,6 +171,8 @@ createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbo
 
 ############################################################################
 # HISTORY:
+# 2007-08-16
+# o Updated createCel() so it coerces the CEL header to version 4.
 # 2006-09-07
 # o Added Rdoc comments.
 # o Added a small check against the CDF file, if it exists.

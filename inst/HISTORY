@@ -1,11 +1,29 @@
 Package: affxparser
 ===================
 
+Version: 1.9.3 [2007-08-16]
+o See updated made to release v1.8.3 below.
+o The only difference between v1.9.3 and v1.8.3 is the modification
+  of findCfd() in v1.9.2.
+
+
 Version: 1.9.2 [2007-07-27]
 o This BioC devel version requires R v2.6.0 due to a change of
   how strings are handled in C by BioC.
 o Modified findCdf() such that it is possible to set an alternative
   function for how CDFs are located.
+
+
+Version: 1.8.3 [2007-08-16] (also added to devel v1.9.3)
+o Made several updated so that affxparser better supports CEL files
+  in the new Command Console (Calvin) file format:
+  - isCelFile() recognized Calvin CEL files.
+  - convertCel() can convert a Calvin CEL files into v4 CEL files.
+  - writeCelHeader() can write v4 CEL headers given Calvin CEL header.
+o Added internal/private function to read Command Console Generic (CCG)
+  files, also known as Calvin files.  Note, these functions are 
+  currently *not* utilizing the Fusion SDK library, but are instead
+  written from scratch based on the Affymetrix' file format definitions. 
 
 
 Version: 1.8.2 [2007-08-01]
