@@ -27,7 +27,6 @@
   params;
 }
 
-
 .unwrapDatHeaderString <- function(header, ...) {
   trim <- function(s) {
     s <- gsub("^ *", "", s);
@@ -51,9 +50,12 @@
   header2 <- gsub(pattern, "\\2", header);
 
   bfr <- trim(bfr);                           # Example: "[12..40151]  Fetal 3"
-  pattern <- "^([^\\]]*])[ ]*(.*)[ ]*";
+  pattern <- "^([^]]*])[ ]*(.*)[ ]*";
   pixelRange <- gsub(pattern, "\\1", bfr);
   sampleName <- gsub(pattern, "\\2", bfr);
+  if (identical(pixelRange, sampleName)) {
+    stop("Internal error: Failed to extract 'pixelRange' and 'sampleName' from DAT header.  They became identical: ", pixelRange);
+  }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Parse the DAT header
@@ -262,8 +264,12 @@
 } # .unwrapCelHeaderV4()
 
 
+
 ############################################################################
 # HISTORY:
+# 2007-08-16
+# o BUG FIX: Internal .unwrapDatHeaderString() failed to correctly extract
+#   'pixelRange' and 'sampleName' from DAT header.
 # 2006-12-28
 # o R CMD check v2.5.0 devel complained about: Warning: '\]' is an 
 #   unrecognized escape in a character string. Warning: unrecognized escape

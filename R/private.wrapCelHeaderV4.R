@@ -85,7 +85,7 @@
 
   bfr <- paste(bfr, collapse="");
   bfr;
-} # .wrapDatHeaderString()
+} # .wrapDatHeader()
 
 
 
@@ -104,6 +104,7 @@
 
   # Wrap up the 'AlgorithmParameters' header
   header$AlgorithmParameters <- .wrapTagValuePairs(header$AlgorithmParameters);
+
   # Wrap up everything else
   fmtstr <- "%s=%s";
   header <- unlist(header);
@@ -117,20 +118,24 @@
 
 .wrapCelHeaderV4 <- function(header, ...) {
   # Make sure the fields are consistent
-  header$version <- 4;
+  header$version <- as.integer(4);
   header$total <- header$cols * header$rows;
 
   # Make sure the CEL V3 header is consistent
-  header$header$Cols <- header$cols;
-  header$header$Rows <- header$rows;
+  headerV3 <- header$header; 
+
+  headerV3$Cols <- header$cols;
+  headerV3$Rows <- header$rows;
 
   # Override any algorithm and parameters in V3 header
-  header$header$Algorithm <- header$algorithm;
-  header$header$AlgorithmParameters <- header$parameters;
+  headerV3$Algorithm <- header$algorithm;
+  headerV3$AlgorithmParameters <- header$parameters;
 
+  headerV3 <- .wrapCelHeaderV3(headerV3);
+  header$header <- headerV3;
+
+  # Not needed anymore, wrap them up
   header$parameters <- .wrapTagValuePairs(header$parameters);
-
-  header$header <- .wrapCelHeaderV3(header$header);
 
   header;
 } # .wrapCelHeaderV4()
@@ -138,6 +143,8 @@
 
 ############################################################################
 # HISTORY:
+# 2007-08-16
+# o Now internal .wrapCelHeaderV4() sets the version number as an integer.
 # 2006-09-06
 # o Created.  This is used by writeCelHeaderV4().
 ############################################################################
