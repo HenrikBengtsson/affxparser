@@ -55,7 +55,7 @@
   # Read and validate the MAGIC
   magic <- readInteger(con);
   if (magic != 64) {
-    stop("Could not updated CEL file.  File format error: MAGIC == ", magic);
+    stop("Could not read CEL v4 file.  File format error: MAGIC == ", magic);
   }
 
   list(

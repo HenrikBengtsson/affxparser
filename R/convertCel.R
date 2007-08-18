@@ -99,7 +99,6 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (verbose)
     cat("Creating empty CEL file...\n");
-  cel$header$version <- 4;
   pathname <- createCel(outFilename, header=cel$header, overwrite=FALSE, verbose=verbose2);
   if (verbose)
     cat("Creating empty CEL file...done\n");
@@ -137,6 +136,9 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
 
 ############################################################################
 # HISTORY:
+# 2007-08-16
+# o Now createCel() coerces the CEL header to version 4, so writeCel()
+#   should be more generic.
 # 2007-03-28
 # o Memory optimization; removing non-needed objects asap and calls gc().
 # o There was non-used variables in convertCel().

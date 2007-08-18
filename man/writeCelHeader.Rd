@@ -3,6 +3,8 @@
 % 
 %  writeCelHeader.R
 % 
+% on Fri Aug 17 18:03:03 2007.
+% 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -12,7 +14,7 @@
 
  \title{Writes a CEL header to a connection}
 
- \usage{writeCelHeader(con, header, ...)}
+ \usage{writeCelHeader(con, header, outputVersion=c("4"), ...)}
 
  \description{
    Writes a CEL header to a connection.
@@ -22,6 +24,8 @@
    \item{con}{A \code{\link[base:connections]{connection}}.}
    \item{header}{A \code{\link[base]{list}} structure describing the CEL header, similar
      to the structure returned by \code{\link{readCelHeader}}().}
+   \item{outputFormat}{A \code{\link[base]{character}} string specifying the output format.
+     Currently only CEL version 4 (binary;XDA) are supported.}
    \item{...}{Not used.}
  }
 
@@ -30,7 +34,7 @@
  }
 
  \details{
-   Currently only CEL v4 headers are supported.
+   Currently only CEL version 4 (binary;XDA) headers can be written.
  }
 
  \section{Redundant fields}{

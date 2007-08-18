@@ -210,10 +210,11 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
     count <- 1;
     offset <- dataOffset;
+    nbrOfChunks <- ceiling(length(indices) / CHUNK.SIZE);
     while (length(indices) > 0) {
       if (verbose >= 1) {
-        cat("Number of indices left: ", length(indices), "\n");
-        cat("Updating chunk #", count, "...\n");
+        cat(sprintf("Number of indices left: %d\n", length(indices)));
+        cat(sprintf("Updating chunk #%d of %d...\n", count, nbrOfChunks));
       }
 
       # Recall: All indices are ordered!
@@ -327,7 +328,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
       rm(rawAll);
 
       if (verbose >= 1)
-        cat("Updating chunk #", count, "...done\n");
+        cat(sprintf("Updating chunk #%d of %d...done\n", count, nbrOfChunks));
       count <- count + 1;
     } # while (...)
   } # if (version ...)
