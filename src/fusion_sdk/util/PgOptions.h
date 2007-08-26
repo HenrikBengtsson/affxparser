@@ -31,6 +31,7 @@
 #define PGOPTIONS_H
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -182,7 +183,18 @@ public:
    * Print out a litte ditty about program and its usage. 
    * @param printOpts - Print out options and help for each one?
    */
-  void usage(bool printOpts = true);
+  void usage(bool printOpts = true) {
+    std::set<std::string> toHide;
+    usage(toHide, printOpts);
+  }
+
+  /** 
+   * Print out a litte ditty about program and its usage. 
+   * @param hiddenOpts - Set containing the long name of options to hide.
+   * @param printOpts - Print out options and help for each one?
+   */
+  void usage(std::set<std::string> &hiddenOpts, bool printOpts = true);
+
 
   /** 
    * Look up the boolean value of an option.
@@ -227,8 +239,9 @@ public:
    * @param usage - Message to the user printed in usage() call.
    * @param options - Array of valid options program can be called
    *                 with. 
+   * @param allowDupes - Is it ok to have duplicates of the same option?
    */
-  PgOptions(const std::string &usage, PgOpt *options[] = NULL);
+  PgOptions(const std::string &usage, PgOpt *options[] = NULL, bool allowDupes = true);
 
   /** 
    * Get the number of arguments that weren't used matched to 
@@ -267,7 +280,8 @@ private:
   std::vector<const char*> args;       
   ///< Memory to be freed.
   std::vector<PgOpt *> m_ToFree;
-
+  ///< Should duplicates of the same argument be allowed?
+  bool m_AllowDupes;
 
   /** 
    * Add the option to the map maintained by PgOption after doing some error

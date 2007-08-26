@@ -1,4 +1,5 @@
 #!/bin/bash
+echo "This script should be run from the affy directory"
 cd sdk
 rm -R TestDataFiles file_formats interface_docs java \
  libraries_and_tools parser_examples sample_data *.html *.gif \

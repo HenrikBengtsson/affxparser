@@ -24,8 +24,11 @@
 #define _CalvinCHPFileUpdater_HEADER_
 
 #include <fstream>
+#include <map>
 #include "DataSetUpdater.h"
 #include "CalvinCHPFileBufferWriter.h"
+#include "ProbeSetMultiDataData.h"
+#include "CHPMultiDataData.h"
 
 namespace affymetrix_calvin_io
 {
@@ -42,6 +45,14 @@ public:
 
 	/*! Destructor */
 	~CalvinCHPFileUpdater();
+
+	/*! Initialize the class given a "calvin" data file.
+	 * @param file The name of the file.
+	 * @exception affymetrix_calvin_exceptions::FileNotFoundException The file does not exist.
+	 * @exception affymetrix_calvin_exceptions::InvalidVersionException The file version does not match.
+	 * @exception affymetrix_calvin_exceptions::InvalidFileTypeException The file is not of the right type.
+	 */
+	void Initialize(const char *file);
 
 	/*! Open CHP signal file and initialize it.
 	 * @param fileName The name of the CHP signal file.
@@ -77,7 +88,37 @@ public:
 	 * @param row_start The start row for updating.
 	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
 	 */
-	void UpdateGenotypeEntryBuffer(int row_start, std::vector<CHPFileBufferWriter::GenotypeBufferEntry> &genotypeEntryBuffer);
+	void UpdateGenotypeEntryBuffer(int row_start, const std::vector<CHPFileBufferWriter::GenotypeBufferEntry> &genotypeEntryBuffer);
+
+	/*! Seek to appropriate file position and update genotype entry
+     * @param dataType The data type.
+	 * @param row The row index.
+	 * @param call CHP call representation.
+	 * @param confidence CHP confidence value.
+	 */
+	void UpdateMultiDataGenotypeEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry);
+
+	/*! Seek to appropriate file position and update genotype entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataGenotypeEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::ProbeSetMultiDataGenotypeData> &genotypeEntryBuffer);
+
+	/*! Seek to appropriate file position and update expression entry
+     * @param dataType The data type.
+	 * @param row The row index.
+	 * @param call CHP call representation.
+	 * @param confidence CHP confidence value.
+	 */
+	void UpdateMultiDataExpressionEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry);
+
+	/*! Seek to appropriate file position and update expression entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+	 * @param expressionBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataExpressionEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::ProbeSetMultiDataExpressionData> &expressionEntryBuffer);
 
 	/*! Close CHP signal file. */
 	void CloseCHPFile();
@@ -85,6 +126,12 @@ public:
 private:
 	// CHP signal file
 	std::ofstream *m_CHPFile;
+    
+    /*! Map of data type to index. */
+    std::map<MultiDataType, int> dataSetIndexMap;
+
+    /*! Update the metrics */
+    void UpdateMetrics(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics);
 };
 
 }

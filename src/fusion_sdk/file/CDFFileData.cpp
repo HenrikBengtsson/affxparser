@@ -61,19 +61,8 @@ CCDFFileHeader::CCDFFileHeader() :
 
 //////////////////////////////////////////////////////////////////////
 
-CCDFFileData::CCDFFileData() :
-	m_lpFileMap(NULL),
-	m_lpData(NULL),
-	m_bFileOpen(false),
-	m_bFileMapped(false)
+CCDFFileData::CCDFFileData()
 {
-#ifdef _MSC_VER
-	m_hFileMap = INVALID_HANDLE_VALUE;
-	m_hFile = INVALID_HANDLE_VALUE;
-#else
-	m_MapLen = 0;
-	m_fp = NULL;
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -106,9 +95,7 @@ CCDFProbeGroupInformation::CCDFProbeGroupInformation() :
 	m_GroupIndex(0),
 	m_NumCellsPerList(0),
 	m_Direction(0),
-	m_pCells(NULL),
-	m_bMapped(false),
-	m_lpData(NULL)
+	m_pCells(NULL)
 {
 }
 
@@ -133,44 +120,13 @@ void CCDFProbeGroupInformation::MakeShallowCopy(CCDFProbeGroupInformation &orig)
 	m_NumCellsPerList = orig.m_NumCellsPerList;
 	m_Direction = orig.m_Direction;
 	m_pCells = &orig.m_Cells;
-	m_bMapped = orig.m_bMapped;
-	m_lpData = orig.m_lpData;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-
-
 void CCDFProbeGroupInformation::GetCell(int cell_index, CCDFProbeInformation & info)
 {
-#if defined(_USE_MEM_MAPPING_)
-	if (m_bMapped == false)
-		info = (*m_pCells)[cell_index];
-	else
-	{
-		char *lpData = m_lpData + PROBE_GROUP_SIZE + (cell_index * PROBE_SIZE);
-
-		info.m_ListIndex = MmGetInt32_I((int32_t*)lpData);
-		lpData += INT32_SIZE;
-
-		info.m_X = MmGetUInt16_I((uint16_t*)lpData);
-		lpData += INT16_SIZE;
-
-		info.m_Y = MmGetUInt16_I((uint16_t*)lpData);
-		lpData += INT16_SIZE;
-
-		info.m_Expos = MmGetInt32_I((int32_t*)lpData);
-		lpData += INT32_SIZE;
-
-		info.m_PBase = MmGetInt8((int8_t *)lpData);
-		lpData += CHAR_SIZE;
-
-		info.m_TBase = MmGetInt8((int8_t *)lpData);
-
-	}
-#else
-	info = (*m_pCells)[cell_index];;
-#endif
+	info = (*m_pCells)[cell_index];
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -189,9 +145,7 @@ CCDFQCProbeInformation::CCDFQCProbeInformation() :
 CCDFQCProbeSetInformation::CCDFQCProbeSetInformation() :
 	m_NumCells(0),
 	m_QCProbeSetType(UnknownQCProbeSetType),
-	m_pCells(NULL),
-	m_bMapped(false),
-	m_lpData(NULL)
+    m_pCells(NULL)
 {
 }
 
@@ -209,38 +163,13 @@ void CCDFQCProbeSetInformation::MakeShallowCopy(CCDFQCProbeSetInformation &orig)
 	m_NumCells = orig.m_NumCells;
 	m_QCProbeSetType = orig.m_QCProbeSetType;
 	m_pCells = &orig.m_Cells;
-	m_bMapped = orig.m_bMapped;
-	m_lpData = orig.m_lpData;
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void CCDFQCProbeSetInformation::GetProbeInformation(int index, CCDFQCProbeInformation & info)
 {
-#if defined(_USE_MEM_MAPPING_)
-	if (m_bMapped == false)
-		info = (*m_pCells)[index];
-	else
-	{
-		char *lpData = m_lpData + QC_PROBE_SET_SIZE + (index * QC_PROBE_SIZE);
-
-		info.m_X = MmGetUInt16_I((uint16_t*)lpData);
-		lpData += INT16_SIZE;
-
-		info.m_Y = MmGetUInt16_I((uint16_t*)lpData);
-		lpData += INT16_SIZE;
-
-		info.m_PLen = MmGetUInt8((uint8_t *)lpData);
-		lpData += CHAR_SIZE;
-
-		info.m_PMProbe = MmGetUInt8((uint8_t *)lpData);
-		lpData += CHAR_SIZE;
-
-		info.m_Background = MmGetUInt8((uint8_t *)lpData);
-	}
-#else
 	info = (*m_pCells)[index];;
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -254,9 +183,7 @@ CCDFProbeSetInformation::CCDFProbeSetInformation() :
 	m_ProbeSetType(UnknownProbeSetType),
 	m_Direction(NoDirection),
 	m_NumCellsPerList(0),
-	m_pGroups(NULL),
-	m_bMapped(false),
-	m_lpData(NULL)
+	m_pGroups(NULL)
 {
 }
 
@@ -280,70 +207,18 @@ void CCDFProbeSetInformation::MakeShallowCopy(CCDFProbeSetInformation &orig)
 	m_Direction = orig.m_Direction;
 	m_NumCellsPerList = orig.m_NumCellsPerList;
 	m_pGroups = &orig.m_Groups;
-	m_bMapped = orig.m_bMapped;
-	m_lpData = orig.m_lpData;
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void CCDFProbeSetInformation::GetGroupInformation(int index, CCDFProbeGroupInformation & info)
 {
-#if defined(_USE_MEM_MAPPING_)
-	if (m_bMapped == false)
-		info.MakeShallowCopy((*m_pGroups)[index]);
-	else
-	{
-		char *lpData = m_lpData + PROBE_SET_SIZE;
-		for (int i=0; i<index; i++)
-		{
-			int cells = MmGetInt32_I((int32_t*)(lpData + INT32_SIZE));
-			lpData += PROBE_GROUP_SIZE;
-			lpData += (cells * PROBE_SIZE);
-		}
-
-		info.m_ProbeSetIndex = m_Index;
-		info.m_bMapped = true;
-		info.m_lpData = lpData;
-		info.m_GroupIndex = index;
-		info.m_pCells = NULL;
-
-		info.m_NumLists = MmGetInt32_I((int32_t *)lpData);
-		lpData += INT32_SIZE;
-
-		info.m_NumCells = MmGetInt32_I((int32_t *)lpData);
-		lpData += INT32_SIZE;
-
-		info.m_NumCellsPerList = MmGetUInt8((uint8_t *)lpData);
-		lpData += CHAR_SIZE;
-
-		info.m_Direction = MmGetUInt8((uint8_t *)lpData);
-		lpData += CHAR_SIZE;
-
-		info.m_Start = MmGetInt32_I((int32_t*)lpData);
-		lpData += INT32_SIZE;
-
-		info.m_Stop = MmGetInt32_I((int32_t*)lpData);
-		lpData += INT32_SIZE;
-
-		char str[MAX_PROBE_SET_NAME_LENGTH];
-		memcpy(str, lpData, MAX_PROBE_SET_NAME_LENGTH);
-		info.m_Name = str;
-
-		// Reset the start/stop
-		CCDFProbeInformation probeInfo;
-		info.GetCell(0, probeInfo);
-		info.m_Start = probeInfo.GetListIndex();
-		info.GetCell(info.m_NumCells-1, probeInfo);
-		info.m_Stop = probeInfo.GetListIndex();
-	}
-#else
-	info.MakeShallowCopy((*m_pGroups)[index]);
-#endif
+    info.MakeShallowCopy((*m_pGroups)[index]);
 }
 
 //////////////////////////////////////////////////////////////////////
 
-CCDFProbeSetNames::CCDFProbeSetNames() : m_bMapped(false), m_lpData(NULL)
+CCDFProbeSetNames::CCDFProbeSetNames()
 {
 }
 
@@ -365,18 +240,7 @@ void CCDFProbeSetNames::Clear()
 
 std::string CCDFProbeSetNames::GetName(int index) const
 {
-	if (m_bMapped == true)
-	{
-    /// @todo allocate std::string and then memcpy to it -- this is a double copy
-		char name[MAX_PROBE_SET_NAME_LENGTH + 1];
-		memcpy(name, m_lpData + index*MAX_PROBE_SET_NAME_LENGTH, MAX_PROBE_SET_NAME_LENGTH);
-		name[MAX_PROBE_SET_NAME_LENGTH] ='\0';
-		return std::string(name);
-	}
-	else
-	{
-		return m_ProbeSetNames[index];
-	}
+    return m_ProbeSetNames[index];
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -395,50 +259,29 @@ void CCDFProbeSetNames::SetName(int index, std::string name)
 
 //////////////////////////////////////////////////////////////////////
 
-std::string CCDFFileData::GetProbeSetName(int index) const
+std::string CCDFFileData::GetProbeSetName(int index)
 {
-	return m_ProbeSetNames.GetName(index);
+    if (iteratorReader.is_open() == false)
+        return m_ProbeSetNames.GetName(index);
+    else
+    {
+        int loc = (int)probeSetNamePos + (index*MAX_PROBE_SET_NAME_LENGTH);
+        iteratorReader.seekg(loc, std::ios::beg);
+        char name[MAX_PROBE_SET_NAME_LENGTH + 1];
+	    ReadFixedCString(iteratorReader, name, MAX_PROBE_SET_NAME_LENGTH);
+	    return name;
+    }
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void CCDFFileData::Close()
 {
-	//int n = (int) m_ProbeSets.size();
+    if (iteratorReader.is_open() == true)
+        iteratorReader.close();
 	m_ProbeSets.clear();
 	m_QCProbeSets.clear();
 	m_ProbeSetNames.Clear();
-
-#ifdef _MSC_VER
-	if (m_bFileOpen)
-	{
-		if (m_bFileMapped)
-		{
-			UnmapViewOfFile(m_lpFileMap);
-			m_lpFileMap = NULL;
-			CloseHandle(m_hFileMap);
-			m_hFileMap = NULL;
-			m_lpData = NULL;
-		}
-		CloseHandle(m_hFile);
-		m_hFile = INVALID_HANDLE_VALUE;
-		m_bFileOpen = false;
-	}
-#else
-	if (m_fp != NULL)
-	{
-		if (m_bFileMapped == true)
-		{
-			munmap(m_lpFileMap, m_MapLen);
-			m_MapLen = 0;
-		}
-		if (m_fp)
-			fclose(m_fp);
-		m_fp = NULL;
-	}
-#endif
-	m_ProbeSetPositions.clear();
-	m_QCProbeSetPositions.clear();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -489,7 +332,8 @@ bool CCDFFileData::Exists()
 bool CCDFFileData::ReadHeader()
 {
 	// Read the header, close if failed.
-	if (Open(true) == false)
+    readHeaderOnly = true;
+	if (Open() == false)
 	{
 		Close();
 		return false;
@@ -499,63 +343,112 @@ bool CCDFFileData::ReadHeader()
 
 //////////////////////////////////////////////////////////////////////
 
-GeneChipProbeSetType CCDFFileData::GetProbeSetType(int index) const
+GeneChipProbeSetType CCDFFileData::GetProbeSetType(int index)
 {
-#if defined(_USE_MEM_MAPPING_)
-	if (m_bFileMapped == false)
+	if (iteratorReader.is_open() == false)
 		return m_ProbeSets[index].GetProbeSetType();
 	else
-	{
-		// The type is the first item in the probe set object.
-		int offset = m_ProbeSetPositions[index];
-		unsigned short usval = MmGetUInt16_I((uint16_t *)(m_lpData + offset));
+	{        
+        // Get the probe set position from the index part of the file then seek to it.
+        int32_t pos = (int32_t) probeSetIndexPos + (index*sizeof(int32_t));
+        iteratorReader.seekg(pos, std::ios::beg);
+        ReadInt32_I(iteratorReader, pos);
+	    iteratorReader.seekg(pos, std::ios::beg);
+        uint16_t usval;
+		ReadUInt16_I(iteratorReader, usval);
 		return (GeneChipProbeSetType)(usval);
 	}
-#else
-	return m_ProbeSets[index].GetProbeSetType();
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void CCDFFileData::GetProbeSetInformation(int index, CCDFProbeSetInformation & info)
 {
-#if defined(_USE_MEM_MAPPING_)
-	if (m_bFileMapped == false)
+	if (iteratorReader.is_open() == false)
 		info.MakeShallowCopy(m_ProbeSets[index]);
 	else
 	{
-		int offset = m_ProbeSetPositions[index];
-		char *lpData = m_lpData + offset;
+        // Get the probe set position from the index part of the file then seek to it.
+        int32_t pos = (int32_t) probeSetIndexPos + (index*sizeof(int32_t));
+        iteratorReader.seekg(pos, std::ios::beg);
+        ReadInt32_I(iteratorReader, pos);
+	    iteratorReader.seekg(pos, std::ios::beg);
+
+        // Read the data
+        uint16_t usval;
+        uint8_t ucval;
+        int32_t ival;
 
 		info.m_Index = index;
-		info.m_bMapped = true;
-		info.m_lpData = lpData;
-		info.m_pGroups = NULL;
+		ReadUInt16_I(iteratorReader, usval);
+		info.m_ProbeSetType = usval;
+		ReadUInt8(iteratorReader, ucval);
+		info.m_Direction = ucval;
+		ReadInt32_I(iteratorReader, ival);
+		info.m_NumLists = ival;
+		ReadInt32_I(iteratorReader, ival);
+		info.m_NumGroups = ival;
+		ReadInt32_I(iteratorReader, ival);
+		info.m_NumCells = ival;
+		ReadInt32_I(iteratorReader, ival);
+		info.m_ProbeSetNumber = ival;
+		ReadUInt8(iteratorReader, ucval);
+		info.m_NumCellsPerList = ucval;
 
-		info.m_ProbeSetType = MmGetUInt16_I((uint16_t *)lpData);
-		lpData += INT16_SIZE;
 
-		info.m_Direction = MmGetUInt8((uint8_t *)lpData);
-		lpData += CHAR_SIZE;
+		// Read the Groups
+		CCDFProbeGroupInformation *pBlk;
+		info.m_Groups.resize(info.m_NumGroups);
+        info.m_pGroups = &info.m_Groups;
+		for (int j=0; j<info.m_NumGroups; j++)
+		{
+			pBlk = &info.m_Groups[j];
+			pBlk->m_GroupIndex = j;
 
-		info.m_NumLists = MmGetInt32_I((int32_t *)lpData);
-		lpData += INT32_SIZE;
+			// Group info
+			ReadInt32_I(iteratorReader, ival);
+			pBlk->m_NumLists = ival;
+			ReadInt32_I(iteratorReader, ival);
+			pBlk->m_NumCells = ival;
+			ReadUInt8(iteratorReader, ucval);
+			pBlk->m_NumCellsPerList = ucval;
+			ReadUInt8(iteratorReader, ucval);
+			pBlk->m_Direction = ucval;
+			ReadInt32_I(iteratorReader, ival);
+			pBlk->m_Start = ival;
+			ReadInt32_I(iteratorReader, ival);
+			pBlk->m_Stop = ival;
+			ReadFixedString(iteratorReader, pBlk->m_Name, MAX_PROBE_SET_NAME_LENGTH);
 
-		info.m_NumGroups = MmGetInt32_I((int32_t *)lpData);
-		lpData += INT32_SIZE;
+			// Read the cells
+			CCDFProbeInformation *pCell;
+			pBlk->m_Cells.resize(pBlk->m_NumCells);
+            pBlk->m_pCells = &pBlk->m_Cells;
+			for (int k=0; k<pBlk->m_NumCells; k++)
+			{
+				pCell = &pBlk->m_Cells[k];
 
-		info.m_NumCells = MmGetInt32_I((int32_t *)lpData);
-		lpData += INT32_SIZE;
+				// Cell info.
+				ReadInt32_I(iteratorReader, ival);
+				pCell->m_ListIndex = ival;
+				ReadUInt16_I(iteratorReader, usval);
+				pCell->m_X = usval;
+				ReadUInt16_I(iteratorReader, usval);
+				pCell->m_Y = usval;
+				ReadInt32_I(iteratorReader, ival);
+				pCell->m_Expos = ival;
+				ReadUInt8(iteratorReader,ucval);
+                pCell->m_PBase = ucval;
+                ReadUInt8(iteratorReader,ucval);
+                pCell->m_TBase = ucval;
 
-		info.m_ProbeSetNumber = MmGetInt32_I((int32_t *)lpData);
-		lpData += INT32_SIZE;
-
-		info.m_NumCellsPerList = MmGetUInt8((uint8_t *)lpData);
+				if (k==0)
+					pBlk->m_Start = pCell->m_ListIndex;
+				else if (k == pBlk->m_NumCells-1)
+					pBlk->m_Stop = pCell->m_ListIndex;
+			}
+		}
 	}
-#else
-	info.MakeShallowCopy(m_ProbeSets[index]);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -577,33 +470,56 @@ void CCDFFileData::GetQCProbeSetInformation(GeneChipQCProbeSetType qcType, CCDFQ
 
 void CCDFFileData::GetQCProbeSetInformation(int index, CCDFQCProbeSetInformation & info)
 {
-#if defined(_USE_MEM_MAPPING_)
-	if (m_bFileMapped == false)
+	if (iteratorReader.is_open() == false)
 		info.MakeShallowCopy(m_QCProbeSets[index]);
 	else
 	{
-		int offset = m_QCProbeSetPositions[index];
-		char *lpData = m_lpData + offset;
+        // Get the QC position from the index part of the file then seek to it.
+        int32_t pos = (int32_t)qcSetIndexPos + (index*sizeof(int32_t));
+        iteratorReader.seekg(pos, std::ios::beg);
+        ReadInt32_I(iteratorReader, pos);
+	    iteratorReader.seekg(pos, std::ios::beg);
 
-		info.m_bMapped = true;
-		info.m_lpData = lpData;
-		info.m_pCells = NULL;
+        // Read the data
+        uint16_t usval;
+        int32_t ival;
+        unsigned char ucval;
 
-		info.m_QCProbeSetType = MmGetUInt16_I((uint16_t *)lpData);
-		lpData += INT16_SIZE;
+		ReadUInt16_I(iteratorReader, usval);
+		ReadInt32_I(iteratorReader, ival);
 
-		info.m_NumCells = MmGetInt32_I((int32_t *)lpData);
+        info.m_NumCells = ival;
+		info.m_QCProbeSetType = usval;
+        info.m_Cells.resize(info.m_NumCells);
+        info.m_pCells = &info.m_Cells;
+
+		// Read the cells
+		for (int j=0; j<info.m_NumCells; j++)
+		{
+			ReadUInt16_I(iteratorReader, usval);
+			info.m_Cells[j].m_X = usval;
+
+			ReadUInt16_I(iteratorReader, usval);
+			info.m_Cells[j].m_Y = usval;
+
+			ReadUInt8(iteratorReader, ucval);
+			info.m_Cells[j].m_PLen = ucval;
+
+			ReadUInt8(iteratorReader, ucval);
+			info.m_Cells[j].m_PMProbe = ucval;
+
+			ReadUInt8(iteratorReader, ucval);
+			info.m_Cells[j].m_Background = ucval;
+		}
 	}
-#else
-	info.MakeShallowCopy(m_QCProbeSets[index]);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////
 
 bool CCDFFileData::Read()
 {
-	// Open the file
+	// Read the file
+    readHeaderOnly = false;
 	if (Open() == false)
 	{
 		Close();
@@ -614,176 +530,27 @@ bool CCDFFileData::Read()
 
 //////////////////////////////////////////////////////////////////////
 
-bool CCDFFileData::Open(bool bReadHeaderOnly)
+bool CCDFFileData::Open()
 {
 	// First close the file.
 	Close();
 
 	// Open the file.
 	if (IsXDACompatibleFile())
-	{
-#if defined(_USE_MEM_MAPPING_)
-		return ReadXDAFormatUsingMemMap(bReadHeaderOnly);
-#else
-		return ReadXDAFormat(bReadHeaderOnly);
-#endif
-	}
+		return ReadXDAFormat();
 	else
-		return ReadTextFormat(bReadHeaderOnly);
+		return ReadTextFormat();
 }
 
 //////////////////////////////////////////////////////////////////////
 
-bool CCDFFileData::ReadXDAFormatUsingMemMap(bool bReadHeaderOnly)
-{
-	// Open the file.
-	std::ifstream instr;
-	instr.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
-
-
-	// Check if open
-	if (!instr)
-	{
-		m_strError = "Unable to open the file.";
-		return false;
-	}
-
-	// Read the header.
-	if (ReadXDAHeader(instr) == false)
-		return false;
-
-
-	// Stop if just reading the header.
-	if (bReadHeaderOnly)
-		return true;
-
-
-	// Get the file position
-	int offset = instr.tellg();
-
-	// Close the file and reopen for mapping
-	instr.close();
-
-	// Initialize the bool flags.
-	m_bFileOpen = false;
-	m_bFileMapped = false;
-
-#ifdef _MSC_VER
-
-	// Create the file.
-	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
-			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-	if (m_hFile == INVALID_HANDLE_VALUE)
-	{
-		m_strError = "Unable to open the file.";
-		return false;
-	}
-	m_bFileOpen = true;
-
-
-	// Map the file.
-	m_hFileMap = CreateFileMapping(m_hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-	if (m_hFileMap != NULL)
-	{
-		m_lpFileMap = MapViewOfFile(m_hFileMap, FILE_MAP_READ, 0, 0, 0);
-		if (m_lpFileMap == NULL)
-		{
-			CloseHandle (m_hFileMap);
-			m_hFileMap = NULL;
-			CloseHandle (m_hFile);
-			m_hFile = INVALID_HANDLE_VALUE;
-			m_strError = "Unable to map view for the memory map file.";
-			Close();
-			return false;
-		}
-		else
-		{
-			m_lpData = (char *)m_lpFileMap;
-			m_bFileMapped = true;
-		}
-	}
-	else
-	{
-		m_strError = "Unable to create memory map file.";
-		CloseHandle (m_hFile);
-		m_hFile = INVALID_HANDLE_VALUE;
-		Close();
-		return false;
-	}
-
-#else
-
-	// Open the file
-	m_fp = fopen(m_FileName.c_str(), "r");
-	if (m_fp == NULL)
-	{
-		m_strError = "Failed to open the file for memory mapping.";
-		Close();
-		return false;
-	}
-	m_bFileOpen = true;
-	
-	// Get the file size
-	struct stat st;
-	m_MapLen = 0;
-	if (stat(m_FileName.c_str(), &st) == 0)
-	{
-		m_MapLen = st.st_size;
-	}
-
-	// Map the file.
-	m_lpFileMap = mmap(NULL, m_MapLen, PROT_READ, MAP_SHARED, fileno(m_fp), 0);
-    if (m_lpFileMap == MAP_FAILED)
-	{
-		m_strError = "Unable to map view for the memory map file.";
-		Close();
-		return false;
-	}
-	else
-	{
-		m_lpData = (char *)m_lpFileMap;
-		m_bFileMapped = true;
-	}
-
-#endif
-
-	// Now that the file is mapped, set the file pointers of the members
-	m_ProbeSetNames.m_bMapped = true;
-	m_ProbeSetNames.m_lpData = m_lpData + offset;
-
-
-	// Skip over the probe set names
-	offset += (MAX_PROBE_SET_NAME_LENGTH * m_Header.m_NumProbeSets);
-
-	// Read the qc probe set indicies
-	//int ival;
-	m_QCProbeSetPositions.resize(m_Header.m_NumQCProbeSets);
-	for (int iqcset=0; iqcset<m_Header.m_NumQCProbeSets; iqcset++)
-	{
-		m_QCProbeSetPositions[iqcset] = MmGetInt32_I((int32_t*)(m_lpData + offset));
-		offset += INT32_SIZE;
-	}
-
-	// Read the probe set indicies.
-	m_ProbeSetPositions.resize(m_Header.m_NumProbeSets);
-	for (int iset=0; iset<m_Header.m_NumProbeSets; iset++)
-	{
-		m_ProbeSetPositions[iset] = MmGetInt32_I((int32_t*)(m_lpData + offset));
-		offset += INT32_SIZE;
-	}
-
-	return true;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-bool CCDFFileData::ReadXDAHeader(std::ifstream &instr)
+bool CCDFFileData::ReadXDAHeader()
 {
 	// Extact the magic and version numbers.
 	int32_t ival;
-	ReadInt32_I(instr, ival);
+	ReadInt32_I(iteratorReader, ival);
 	m_Header.m_Magic = ival;
-	ReadInt32_I(instr, ival);
+	ReadInt32_I(iteratorReader, ival);
 	m_Header.m_Version = ival;
 
 	// Check the values for the right format file.
@@ -794,197 +561,54 @@ bool CCDFFileData::ReadXDAHeader(std::ifstream &instr)
 	}
 
 	// Read the remaining header.
-	//char *sval=NULL;
 	uint16_t uval;
-	ReadUInt16_I(instr, uval);
+	ReadUInt16_I(iteratorReader, uval);
 	m_Header.m_Cols = uval;
-	ReadUInt16_I(instr, uval);
+	ReadUInt16_I(iteratorReader, uval);
 	m_Header.m_Rows = uval;
-	ReadInt32_I(instr, ival);
+	ReadInt32_I(iteratorReader, ival);
 	m_Header.m_NumProbeSets = ival;
-	ReadInt32_I(instr, ival);
+	ReadInt32_I(iteratorReader, ival);
 	m_Header.m_NumQCProbeSets = ival;
-	ReadString_I(instr,m_Header.m_Reference);
-	//ReadCString(instr, sval);
-	//m_Header.m_Reference = sval;
-	//delete[] sval;
-	//sval = NULL;
-
+	ReadString_I(iteratorReader,m_Header.m_Reference);
 	return true;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-bool CCDFFileData::ReadXDAFormat(bool bReadHeaderOnly)
+bool CCDFFileData::ReadXDAFormat()
 {
 	// Open the file.
-	std::ifstream instr;
-	instr.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
+	iteratorReader.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
 
 	// Check if open
-	if (!instr)
+	if (!iteratorReader)
 	{
 		m_strError = "Unable to open the file.";
 		return false;
 	}
 
-
 	// Read the header.
-	if (ReadXDAHeader(instr) == false)
+	if (ReadXDAHeader() == false)
 		return false;
 
+	// Save the probe set name position
+	probeSetNamePos = iteratorReader.tellg();
 
-	// Stop if just reading the header.
-	if (bReadHeaderOnly)
-		return true;
+	// Skip the probe set names
+	iteratorReader.seekg(MAX_PROBE_SET_NAME_LENGTH * m_Header.m_NumProbeSets, std::ios::cur);
 
+	// Skip the indicies
+    qcSetIndexPos = iteratorReader.tellg();
+	iteratorReader.seekg(m_Header.m_NumQCProbeSets * sizeof(int32_t), std::ios::cur);
+    probeSetIndexPos = iteratorReader.tellg();
 
-
-	// Read the probe set names.
-	int i;
-	char name[MAX_PROBE_SET_NAME_LENGTH + 1];
-	m_ProbeSetNames.Resize(m_Header.m_NumProbeSets);
-	for (i=0; i<m_Header.m_NumProbeSets; i++)
-	{
-		ReadFixedCString(instr, name, MAX_PROBE_SET_NAME_LENGTH);
-		m_ProbeSetNames.SetName(i, name);
-	}
-
-
-	// Skip over the qc indicies
-	int32_t ival;
-	for (i=0; i<m_Header.m_NumQCProbeSets; i++)
-		ReadInt32_I(instr, ival);
-
-	// Skip over the probe set indicies
-	for (i=0; i<m_Header.m_NumProbeSets; i++)
-		ReadInt32_I(instr, ival);
-
-	// Read the qc ProbeSets.
-	uint16_t usval;
-	unsigned char ucval;
-	int32_t qcsize;
-	CCDFQCProbeSetInformation *pQCProbeSet;
-	m_QCProbeSets.resize(m_Header.m_NumQCProbeSets);
-	for (i=0; i<m_Header.m_NumQCProbeSets; i++)
-	{
-		pQCProbeSet = &m_QCProbeSets[i];
-
-		ReadUInt16_I(instr, usval);
-		ReadInt32_I(instr, qcsize);
-
-		pQCProbeSet->m_NumCells = qcsize;
-		pQCProbeSet->m_QCProbeSetType = usval;
-
-		// Read the cells
-		CCDFQCProbeInformation *pQCCell;
-		pQCProbeSet->m_Cells.resize(qcsize);
-		for (int j=0; j<qcsize; j++)
-		{
-			pQCCell = &pQCProbeSet->m_Cells[j];
-			ReadUInt16_I(instr, usval);
-			pQCCell->m_X = usval;
-
-			ReadUInt16_I(instr, usval);
-			pQCCell->m_Y = usval;
-
-			ReadUInt8(instr, ucval);
-			pQCCell->m_PLen = ucval;
-
-			ReadUInt8(instr, ucval);
-			pQCCell->m_PMProbe = ucval;
-
-			ReadUInt8(instr, ucval);
-			pQCCell->m_Background = ucval;
-		}
-	}
-
-
-	// Read the ProbeSets.
-	CCDFProbeSetInformation *pProbeSet;
-	m_ProbeSets.resize(m_Header.m_NumProbeSets);
-	for (i=0; i<m_Header.m_NumProbeSets; i++)
-	{
-		pProbeSet = &m_ProbeSets[i];
-		pProbeSet->m_Index = i;
-
-		// ProbeSet info
-		ReadUInt16_I(instr, usval);
-		pProbeSet->m_ProbeSetType = usval;
-		ReadUInt8(instr, ucval);
-		pProbeSet->m_Direction = ucval;
-		ReadInt32_I(instr, ival);
-		pProbeSet->m_NumLists = ival;
-		ReadInt32_I(instr, ival);
-		pProbeSet->m_NumGroups = ival;
-		ReadInt32_I(instr, ival);
-		pProbeSet->m_NumCells = ival;
-		ReadInt32_I(instr, ival);
-		pProbeSet->m_ProbeSetNumber = ival;
-		ReadUInt8(instr, ucval);
-		pProbeSet->m_NumCellsPerList = ucval;
-
-
-		// Read the Groups
-		CCDFProbeGroupInformation *pBlk;
-		pProbeSet->m_Groups.resize(pProbeSet->m_NumGroups);
-		for (int j=0; j<pProbeSet->m_NumGroups; j++)
-		{
-			pBlk = &pProbeSet->m_Groups[j];
-			pBlk->m_GroupIndex = j;
-
-			// Group info
-			ReadInt32_I(instr, ival);
-			pBlk->m_NumLists = ival;
-			ReadInt32_I(instr, ival);
-			pBlk->m_NumCells = ival;
-			ReadUInt8(instr, ucval);
-			pBlk->m_NumCellsPerList = ucval;
-			ReadUInt8(instr, ucval);
-			pBlk->m_Direction = ucval;
-			ReadInt32_I(instr, ival);
-			pBlk->m_Start = ival;
-			ReadInt32_I(instr, ival);
-			pBlk->m_Stop = ival;
-			memset(name, 0, MAX_PROBE_SET_NAME_LENGTH);
-			//ReadFixedString(instr, name, MAX_PROBE_SET_NAME_LENGTH);
-			//pBlk->m_Name = name;
-			ReadFixedString(instr, pBlk->m_Name, MAX_PROBE_SET_NAME_LENGTH);
-			// Read the cells
-			CCDFProbeInformation *pCell;
-			pBlk->m_Cells.resize(pBlk->m_NumCells);
-			for (int k=0; k<pBlk->m_NumCells; k++)
-			{
-				pCell = &pBlk->m_Cells[k];
-
-				// Cell info.
-				ReadInt32_I(instr, ival);
-				pCell->m_ListIndex = ival;
-				ReadUInt16_I(instr, usval);
-				pCell->m_X = usval;
-				ReadUInt16_I(instr, usval);
-				pCell->m_Y = usval;
-				ReadInt32_I(instr, ival);
-				pCell->m_Expos = ival;
-                                uint8_t tmp;
-				ReadUInt8(instr,tmp);
-                                pCell->m_PBase=tmp;
-				ReadUInt8(instr,tmp);
-                                pCell->m_TBase=tmp;
-
-				if (k==0)
-					pBlk->m_Start = pCell->m_ListIndex;
-				else if (k == pBlk->m_NumCells-1)
-					pBlk->m_Stop = pCell->m_ListIndex;
-			}
-		}
-	}
 	return true;
 }
 
 //////////////////////////////////////////////////////////////////////
 
-bool CCDFFileData::ReadTextFormat(bool bReadHeaderOnly)
+bool CCDFFileData::ReadTextFormat()
 {
 	// Open the file.
 	std::ifstream instr;
@@ -1050,7 +674,7 @@ bool CCDFFileData::ReadTextFormat(bool bReadHeaderOnly)
 
 
 	// Stop if just reading the header.
-	if (bReadHeaderOnly)
+	if (readHeaderOnly)
 		return true;
 
 
@@ -1154,7 +778,10 @@ NextProbeSet:
 		CONTROL_TILE,
 		STANDARD_ALTERNATE_TILE,
 		STANDARD_VARIANT_TILE,
-		UNIVERSAL_TILE
+		UNIVERSAL_TILE,
+        COPY_NUMBER_TILE,
+        GENOTYPE_CONTROL_TILE,
+        EXPRESSION_CONTROL_TILE
 	} TilingTypes;
 
 	switch (ival)
@@ -1177,6 +804,18 @@ NextProbeSet:
 		pProbeSet->m_ProbeSetType = TagProbeSetType;
 		break;
 
+    case COPY_NUMBER_TILE:
+        pProbeSet->m_ProbeSetType = CopyNumberProbeSetType;
+        break;
+
+    case GENOTYPE_CONTROL_TILE:
+        pProbeSet->m_ProbeSetType = GenotypeControlProbeSetType;
+        break;
+
+    case EXPRESSION_CONTROL_TILE:
+        pProbeSet->m_ProbeSetType = ExpressionControlProbeSetType;
+        break;
+
 	default:
 		pProbeSet->m_ProbeSetType = UnknownProbeSetType;
 		break;
@@ -1198,7 +837,10 @@ NextProbeSet:
               {
                 pProbeSet->m_NumCellsPerList = 4;
               }
-            else if (pProbeSet->m_ProbeSetType == ExpressionProbeSetType) 
+            else if (pProbeSet->m_ProbeSetType == ExpressionProbeSetType ||
+                pProbeSet->m_ProbeSetType == CopyNumberProbeSetType ||
+                pProbeSet->m_ProbeSetType == GenotypeControlProbeSetType ||
+                pProbeSet->m_ProbeSetType == ExpressionControlProbeSetType) 
               {
                 if(pProbeSet->m_NumLists != 0 && 
                    pProbeSet->m_NumCells / pProbeSet->m_NumLists < 255) 

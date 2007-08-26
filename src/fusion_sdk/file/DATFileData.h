@@ -24,7 +24,7 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#include "affy-base-types.h"
+#include "portability/affy-base-types.h"
 #ifdef sun
 #include <stdint.h>
 #endif

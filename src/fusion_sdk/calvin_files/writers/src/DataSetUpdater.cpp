@@ -56,6 +56,7 @@ void DataSetUpdater::Initialize(const char *file)
 	positions.resize(ng);
 	rowsizes.resize(ng);
 	colsizes.resize(ng);
+    dataSetNames.resize(ng);
 	for (int ig=0; ig<ng; ig++)
 	{
 		DataGroupHeader &dgHdr = data.Header().GetDataGroup(ig);
@@ -63,11 +64,13 @@ void DataSetUpdater::Initialize(const char *file)
 		positions[ig].resize(ns);
 		rowsizes[ig].resize(ns);
 		colsizes[ig].resize(ns);
+        dataSetNames[ig].resize(ns);
 		for (int is=0; is<ns; is++)
 		{
 			DataSetHeader &dsHdr = dgHdr.GetDataSet(is);
 			positions[ig][is] = dsHdr.GetDataStartFilePos();
 			rowsizes[ig][is] = dsHdr.GetRowSize();
+            dataSetNames[ig][is] = dsHdr.GetName();
 
 			int nc = dsHdr.GetColumnCnt();
 			colsizes[ig][is].resize(nc);

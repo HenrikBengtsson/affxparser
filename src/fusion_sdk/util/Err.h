@@ -111,6 +111,20 @@ class Err {
     return handler;
   }
 
+  /** 
+   * errAbort based version of assert with an error message. Try to
+   * use this method in conjunction with a const char * message
+   * (rather than constructing a string every time) when writing a
+   * check that will be called lots of times.
+   * 
+   * @param passed - Condition to be checked.
+   * @param msg - Error message if failed.
+   */  
+  inline static void check(bool passed, const char *msg) {
+    if(!passed) {
+      errAbort(msg);
+    }
+  }
 
   /** 
    * errAbort based version of assert with an error message. 
@@ -118,9 +132,10 @@ class Err {
    * @param passed - Condition to be checked.
    * @param msg - Error message if failed.
    */  
-  static void check(bool passed, const std::string &msg) {
-    if(!passed)
+  inline static void check(bool passed, const std::string &msg) {
+    if(!passed) {
       errAbort(msg);
+    }
   }
 
   /** 

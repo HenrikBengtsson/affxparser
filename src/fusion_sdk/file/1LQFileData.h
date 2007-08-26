@@ -28,7 +28,7 @@
 #include <string>
 #include <list>
 #include <fstream>
-#include "affy-base-types.h"
+#include "portability/affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 

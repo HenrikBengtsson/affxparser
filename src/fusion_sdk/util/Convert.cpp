@@ -253,7 +253,8 @@ bool Convert::toBool(const char *flag) {
   bool value = false, success = false;
   value = Convert::toBoolCheck(flag, &success);
   if(!success)
-    Err::errAbort("Could not convert '" + std::string(flag) + "' to a bool.");
+    Err::errAbort("Could not convert '" + std::string(flag) + "' to a boolean.\n"
+                  "Valid values are: 'true','false','1','0'.");
   return value;
 }
 
@@ -270,10 +271,18 @@ bool Convert::toBoolCheck(const char *flag, bool *success) {
   bool ok = true;
 
   assert(flag);
-  if(strcmp(flag, "true") == 0 || strcmp(flag, "TRUE") == 0) 
+
+  // would like to use strcasecmp, but VC++ doesnt have it
+  if ((strcmp(flag, "true") == 0) ||
+      (strcmp(flag, "TRUE") == 0) ||
+      (strcmp(flag, "1")    == 0)) {
     value = true;
-  else if(strcmp(flag, "false") == 0 || strcmp(flag, "FALSE") == 0) 
+  }
+  else if ((strcmp(flag, "false") == 0) ||
+           (strcmp(flag, "FALSE") == 0) ||
+           (strcmp(flag, "0") == 0)) {
     value = false;
+  }
   else 
     ok = false;
 

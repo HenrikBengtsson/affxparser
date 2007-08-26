@@ -96,4 +96,21 @@ typedef unsigned long long int u_int64_t;
 
 #endif
 
+//////////
+
+
+/* This is also in "affy-base-types.h"
+ * Be sure to only get it once.  (keep them in sync!)
+ * The documentation is there too.
+ */
+#ifndef _AFFY_TYPE_PUNNED_
+#define _AFFY_TYPE_PUNNED_
+
+union type_punned {
+  float v_float;
+  int v_int32;
+  unsigned int v_uint32;
+};
+#endif
+
 #endif // _AffymetrixBaseTypes_HEADER_

@@ -129,7 +129,7 @@ public:
 	* @param value The value to write to the file.
     * @param maxLn Maximum length of the string.
 	*/
-    static void FileOutput::WriteString16(std::ofstream &outstr, const std::wstring &value, int32_t maxLn);
+    static void WriteString16(std::ofstream &outstr, const std::wstring &value, int32_t maxLn);
 
 	/*! Writes a blob to a file (as is; no htonl).  It is the responsibility of the caller to ensure
 	*	the blob is in a portable form.

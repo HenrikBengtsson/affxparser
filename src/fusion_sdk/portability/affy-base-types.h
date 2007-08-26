@@ -116,7 +116,28 @@ typedef	unsigned int           uint32_t;
 
 #endif /* __MINGW32__ */
 
-
-
 #endif /* WIN32 */
+
+/* This is also in "AffymetrixBaseTypes.h" 
+ * Be sure to only get it once. (keep that def there in sync.)
+ * TODO: remove the duplicate def in "AffymetrixBaseTypes.h"
+ */
+#ifndef _AFFY_TYPE_PUNNED_
+#define _AFFY_TYPE_PUNNED_
+
+/* Use a union to allow type-punning without having to 
+ * use "-fnostrict-alias" on the entire file.
+ * See the GCC info page about -fstrict-alias for the details.
+ * We used to do "*(uint32_t)&floatvar" but that would break
+ * on some versions of gcc.
+ */
+
+union type_punned {
+  float v_float;
+  int v_int32;
+  unsigned int v_uint32;
+};
+#endif
+
+
 #endif /* affy-base-types.h */

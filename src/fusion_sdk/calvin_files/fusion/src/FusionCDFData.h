@@ -265,7 +265,7 @@ public:
 	/*! Gets the probe set type.
 	 * @return The probe set type.
 	 */
-	affxcdf::GeneChipProbeSetType GetProbeSetType() const;
+	affxcdf::GeneChipProbeSetType GetProbeSetType();
 
 	/*! Gets the probe sets direction.
 	 * @return The probe sets direction.

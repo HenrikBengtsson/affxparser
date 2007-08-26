@@ -33,7 +33,11 @@ enum CDFDataTypeIds {
 	Genotyping,		/*! A genotyping probe set. */
 	Tag,			/*! A tag (also called universal) probe set. */
 	Resequencing,	/*! A resequencing probe set. */
-	Control			/*! A control probe set. */
+	Control,		/*! A control probe set. */
+    CopyNumber,     /*! A copy number probe set. */
+    GenotypeControl,   /*! A genotype control probe set. */
+    ExpressionControl, /*! An expression control probe set. */
+
 };
 
 /*! The direction of the target sequence the probes are designed to interrogate.  */
@@ -46,7 +50,10 @@ enum DirectionType
 	ProbeSenseDirection,
 
 	/*! Anti sense */
-	ProbeAntiSenseDirection
+	ProbeAntiSenseDirection,
+
+    /*! Either */
+    ProbeEitherDirection
 };
 
 }

@@ -17,11 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-
+//
 #include "FileWriter.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -101,14 +101,17 @@ WriteInt8(OFSTREAM& outstr,int8_t val)
 void 
 WriteFloat_I(OFSTREAM& outstr,float fval)
 {
-	WriteUInt32_I(outstr,*(uint32_t *)(&fval));
+  type_punned pun;
+  pun.v_float=fval;
+	WriteUInt32_I(outstr,pun.v_uint32);
 }
 void 
 WriteFloat_N(OFSTREAM& outstr,float fval)
 {
-	WriteUInt32_N(outstr,*(uint32_t *)(&fval));
+  type_punned pun;
+  pun.v_float=fval;
+	WriteUInt32_N(outstr,pun.v_uint32);
 }
-
 
 // Customers wanted repeatablity with old
 // text files with only had a single digit after the decimal point.
@@ -175,4 +178,3 @@ WriteCharacterArray(OFSTREAM& outstr, char *c, size_t outlen)
 {
         for (uint32_t i=0; i<outlen; i++) { outstr.put(c[i]); }
 }
-

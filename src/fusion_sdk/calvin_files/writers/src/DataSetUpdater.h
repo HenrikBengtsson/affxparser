@@ -50,6 +50,9 @@ protected:
 	/*! The size of a column for all data sets in the file. */
 	std::vector<std::vector<std::vector<int> > > colsizes;
 
+    /*! The data set names. */
+    std::vector<std::vector<std::wstring> > dataSetNames; 
+
 	/*! Seek to the position of the data.
 	 * @param groupIndex The index to the data groups.
 	 * @param setIndex The index to the data sets.
@@ -71,7 +74,7 @@ public:
 	 * @exception affymetrix_calvin_exceptions::InvalidVersionException The file version does not match.
 	 * @exception affymetrix_calvin_exceptions::InvalidFileTypeException The file is not of the right type.
 	 */
-	void Initialize(const char *file);
+	virtual void Initialize(const char *file);
 
 	/*! Updates a string value in the data set
 	 * @param groupIndex The index to the data groups.

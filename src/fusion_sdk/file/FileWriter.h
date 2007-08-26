@@ -27,7 +27,7 @@
 #include <string>
 //
 #include "FileIO.h"
-#include "affy-base-types.h"
+#include "portability/affy-base-types.h"
 
 #ifndef OFSTREAM
 /*! The output stream object */
