@@ -195,6 +195,12 @@ public:
 	/*! Gets the class name. */
 	affymetrix_calvin_utilities::AffymetrixGuidType GetObjectName();
 
+    /*! Get the probe set name  (only valid for Command Console "calvin" files of expression or genotype assay)
+	 * @param index The index to the result object of interest.
+     * @return The probe set name.
+     */
+    std::string GetProbeSetName(int index);
+
 	/*! Returns the expression probe set result
 	 * @param index The index to the result object of interest.
 	 * @param result The expression result.

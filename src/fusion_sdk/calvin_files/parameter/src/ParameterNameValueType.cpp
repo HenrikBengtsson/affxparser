@@ -17,7 +17,6 @@
 //
 ////////////////////////////////////////////////////////////////
 
-
 #include "ParameterNameValueType.h"
 #include "StringUtils.h"
 
@@ -233,7 +232,9 @@ float ParameterNameValueType::GetValueFloat() const
 
 void ParameterNameValueType::SetValueFloat(float value)
 {
-	IntToValue(*(int32_t *)&value, FloatMIMEType);
+	type_punned pun;
+	pun.v_float=value;
+	IntToValue(pun.v_int32, FloatMIMEType);
 }
 
 std::wstring ParameterNameValueType::GetValueText() const
@@ -630,7 +631,9 @@ float ParameterNameValueDefaultRequiredType::GetDefaultValueFloat() const
 void ParameterNameValueDefaultRequiredType::SetDefaultValueFloat(float value)
 {
 	hasDefault = true;
-	IntToDefaultValue(*(int32_t *)&value, FloatMIMEType);
+	type_punned pun;
+	pun.v_float=value;
+	IntToDefaultValue(pun.v_int32, FloatMIMEType);
 }
 
 std::wstring ParameterNameValueDefaultRequiredType::GetDefaultValueText() const

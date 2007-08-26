@@ -1,8 +1,5 @@
 PKG_LIBS+=-lws2_32
 
-
-
-
 PKG_CPPFLAGS+=\
  -imacros R_affx_constants.h\
  -Ifusion_sdk/calvin_files/array/src\
@@ -19,6 +16,7 @@ PKG_CPPFLAGS+=\
  -Ifusion_sdk/calvin_files/writers/src\
  -Ifusion_sdk/file\
  -Ifusion_sdk/portability\
+ -Ifusion_sdk\
  -D_USE_MEM_MAPPING_\
  -D_MSC_VER
 

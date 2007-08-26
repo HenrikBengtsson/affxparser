@@ -17,13 +17,13 @@
 //
 ////////////////////////////////////////////////////////////////
 
-
-#include <string.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
-
+#include <string.h>
+//
 #include "FileIO.h"
+#include "portability/affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -132,18 +132,28 @@ ReadInt16_N(IFSTREAM& instr, int16_t& val)
   ReadUInt16_N(instr,(uint16_t&)val);
 }
 
+// When the old BPMAP files were written, the output 
+// values were mangled in this way:
+// * Start with a float value.
+// * convert it to an integer.
+// * byte-swap it
+// * write it as a float.
+// This function reverses the process to get the data.
 void
 ReadFloatFromOldBPMAP_N(IFSTREAM &instr, float &fval)
 {
-#ifndef IS_BIG_ENDIAN
-	instr.read((char *)&fval, FLOAT_SIZE);
-	fval = (float) ntohl((uint32_t)fval);
+  type_punned pun;
+
+	instr.read((char *)&pun.v_uint32,FLOAT_SIZE);
+#ifdef IS_BIG_ENDIAN
+  pun.v_uint32=affy_swap32(pun.v_uint32);
+  pun.v_uint32=(uint32_t)pun.v_float;
+  pun.v_uint32=affy_swap32(pun.v_uint32);
 #else
-	int i1=0;
-	instr.read((char *)&i1, INT32_SIZE);
- 	i1=affy_swap32(i1);
-	fval=(float)affy_swap32((uint32_t)(*(float *)&i1));
+  pun.v_uint32=(uint32_t)pun.v_float;
+  pun.v_uint32=ntohl(pun.v_uint32);
 #endif
+  fval=pun.v_uint32;
 }
 
 //==============================
@@ -353,42 +363,58 @@ MmSetUInt8(uint8_t* ptr,uint8_t val)
 {
   *ptr=val;
 }
+
 //
 float
 MmGetFloat_I(float* ptr)
 {
-  uint32_t v=itohl(*(int*)ptr);
-  return *((float*)&v);
+  type_punned pun;
+  pun.v_float=*ptr;
+  pun.v_uint32=itohl(pun.v_uint32);
+  return pun.v_float;
 }
 void
 MmSetFloat_I(float* ptr,float val)
 {
-  *(uint32_t*)ptr=htoil(*(uint32_t*)&val);
+  type_punned pun;
+  pun.v_float=val;
+  pun.v_uint32=htoil(pun.v_uint32);
+  *ptr=pun.v_float;
 }
 float
 MmGetFloat_N(float* ptr)
 {
-  uint32_t v=ntohl(*(int*)ptr);
-  return *((float*)&v);
+  type_punned pun;
+  pun.v_float=*ptr;
+  pun.v_uint32=ntohl(pun.v_uint32);
+  return pun.v_float;
 }
 void
 MmSetFloat_N(float* ptr,float val)
 {
-  *(uint32_t*)ptr=htonl(*(uint32_t*)&val);
+  type_punned pun;
+  pun.v_float=val;
+  pun.v_uint32=htonl(pun.v_uint32);
+  *ptr=pun.v_float;
 }
 
+// See the notes in 
 float
 MmGetFloatFromOldBPMAP_N(float *ptr)
 {
-	float fval;
+  float fval;
+
 #ifndef IS_BIG_ENDIAN
-	fval = (float) ntohl((uint32_t)*ptr);
+  // There isnt any punning going on here.
+  // cast, swap, cast back.
+ 	fval = (float)ntohl((uint32_t)*ptr);
 #else
-	int i1=*(int *)ptr;
- 	i1=affy_swap32(i1);
-	fval=(float)affy_swap32((uint32_t)(*(float *)&i1));
+  type_punned pun;
+  pun.v_float=*ptr;
+  pun.v_uint32=affy_swap32(pun.v_uint32);
+ 	fval=(float)affy_swap32((uint32_t)pun.v_float);
 #endif
-	return fval;
+  return fval;
 }
 
 #endif

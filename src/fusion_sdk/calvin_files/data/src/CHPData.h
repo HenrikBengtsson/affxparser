@@ -62,9 +62,6 @@ namespace affymetrix_calvin_io
 /*! The id for the prog ID. */
 #define CHP_PROGID std::wstring(L"affymetrix-progid")
 
-/*! A prefix for chip summary parameter ids. */
-#define CHP_CHIP_SUM std::wstring(L"affymetrix-chipsummary-") 
-
 /*! The id for the parent cel file. */
 #define CHP_PARENT_CELL std::wstring(L"affymetrix-parent-celfile")
 

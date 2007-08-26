@@ -34,7 +34,7 @@
 
 #include <string>
 #include <vector>
-#include "affy-base-types.h"
+#include "portability/affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 

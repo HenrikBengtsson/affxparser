@@ -31,12 +31,13 @@
 
 //////////////////////////////////////////////////////////////////////
 
+#include <fstream>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
-#include <fstream>
+//
+#include "portability/affy-base-types.h"
 #include "TagValuePair.h"
-#include "affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 

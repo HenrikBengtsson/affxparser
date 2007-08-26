@@ -35,6 +35,7 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 
 //////////////////////////////////////////////////////////////////////
 
@@ -124,7 +125,16 @@ enum GeneChipProbeSetType
 	ResequencingProbeSetType,
 
 	/*! Tag probe set */
-	TagProbeSetType
+	TagProbeSetType,
+
+    /*! Copy number probe set. */
+    CopyNumberProbeSetType,
+
+    /*! Genotype control probe set. */
+    GenotypeControlProbeSetType,
+
+    /*! Expression control probe set. */
+    ExpressionControlProbeSetType
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -271,12 +281,6 @@ protected:
 	/*! A pointer to the probes. This is used when memory mapping is used. */
 	std::vector<CCDFProbeInformation> *m_pCells;
 
-	/*! A flag indicating if memory mapping is being used. */
-	bool m_bMapped;
-
-	/*! A pointer to the memory mapped file for the group. */
-	char *m_lpData;
-
 	/*! Friend to the parent class. */
 	friend class CCDFProbeSetInformation;
 
@@ -388,12 +392,6 @@ protected:
 	/*! A pointer to the groups. This is used when memory mapping is used. */
 	std::vector<CCDFProbeGroupInformation> *m_pGroups;
 
-	/*! A flag indicating if memory mapping is being used. */
-	bool m_bMapped;
-
-	/*! A pointer to the memory mapped file for the probe set. */
-	char *m_lpData;
-
 	/*! Friend to the top level class. */
 	friend class CCDFFileData;
 
@@ -482,11 +480,6 @@ public:
 	void Clear();
 
 protected:
-	/*! Flag indicating if memory mapping is used. */
-	bool m_bMapped;
-
-	/*! Pointer to the memory mapped file. */
-	char *m_lpData;
 
 	/*! Array of probe set names, used if not memory mapping. */
 	std::vector<std::string> m_ProbeSetNames;
@@ -644,14 +637,8 @@ protected:
 	/*! The array of probes. */
 	std::vector<CCDFQCProbeInformation> m_Cells;
 
-	/*! A pointer to the probes. This is used when memory mapping is used. */
+	/*! The array of probes. */
 	std::vector<CCDFQCProbeInformation> *m_pCells;
-
-	/*! Flag indicating if memory mapping is used. */
-	bool m_bMapped;
-
-	/*! A pointer to the memory mapped file. */
-	char *m_lpData;
 
 	/*! Friend to the top level CDF class. */
 	friend class CCDFFileData;
@@ -694,6 +681,21 @@ public:
 class CCDFFileData  
 {
 protected:
+	/*! The position of the probe set names in the XDA file. */
+	std::ios::pos_type probeSetNamePos;
+
+	/*! The position of the QC probe set index array in the XDA file. */
+	std::ios::pos_type qcSetIndexPos;
+
+	/*! The position of the probe set index array in the XDA file. */
+	std::ios::pos_type probeSetIndexPos;
+
+	/*! The file stream for the probe set information iterator. */
+	std::ifstream iteratorReader;
+
+    /*! Flag to indicate that only the header part of the file is to be read. */
+    bool readHeaderOnly;
+
 	/*! The file header object. */
 	CCDFFileHeader m_Header;
 
@@ -713,66 +715,24 @@ protected:
 	std::string m_strError;
 
 	/*! Opens the file for reading.
-	 * @param bReadHeaderOnly Flag indicating if only the header should be read.
 	 * @return True if successful.
 	 */
-	bool Open(bool bReadHeaderOnly=false);
+	bool Open();
 
 	/*! Reads a text format CDF file.
-	 * @param bReadHeaderOnly Flag indicating if only the header should be read.
 	 * @return True if successful.
 	 */
-	bool ReadTextFormat(bool bReadHeaderOnly);
+	bool ReadTextFormat();
 
 	/*! Reads an XDA format CDF file.
-	 * @param bReadHeaderOnly Flag indicating if only the header should be read.
 	 * @return True if successful.
 	 */
-	bool ReadXDAFormat(bool bReadHeaderOnly);
+	bool ReadXDAFormat();
 
 	/*! Reads the header of an XDA format CDF file.
-	 * @param instr The file stream object.
 	 * @return True if successful.
 	 */
-	bool ReadXDAHeader(std::ifstream &instr);
-
-	/*! Reads an XDA format CDF file using memory mapping.
-	 * @param bReadHeaderOnly Flag indicating if only the header should be read.
-	 * @return True if successful.
-	 */
-	bool ReadXDAFormatUsingMemMap(bool bReadHeaderOnly);
-
-	/*! A pointer to the memory mapped file. */
-	void  *m_lpFileMap;
-
-	/*! A pointer to data in a memory mapped file. */
-	char  *m_lpData;
-
-#ifdef _MSC_VER
-	/*! A windows handle used for memory mapping. */
-	HANDLE m_hFileMap;
-
-	/*! A windows handle used for memory mapping. */
-	HANDLE m_hFile;
-#else
-	/*! A file pointer for memory mapping. */
-	FILE *m_fp;
-
-	/*! The size of the file. */
-	int m_MapLen;
-#endif
-
-	/*! Flag indicating if the file is open. */
-	bool m_bFileOpen;
-
-	/*! Flag indicating if the file is mapped. */
-	bool m_bFileMapped;
-
-	/*! Array of file positions for the probe set data. */
-	std::vector<int> m_ProbeSetPositions;
-
-	/*! Array of file positions for the QC probe set data. */
-	std::vector<int> m_QCProbeSetPositions;
+	bool ReadXDAHeader();
 
 public:
 	/*! Sets the name of the file.
@@ -799,7 +759,7 @@ public:
 	 * @param index The zero-based index to the probe set name of interest.
 	 * @return The probe set name.
 	 */
-	std::string GetProbeSetName(int index) const;
+	std::string GetProbeSetName(int index);
 
 	/*! Gets the chip type (probe array type) of the CDF file.
 	 * @return The chip type. This is just the name (without extension) of the CDF file.
@@ -833,7 +793,7 @@ public:
 	 * @param index The zero-based index to the probe set of interest.
 	 * @return The type of probe set.
 	 */
-	GeneChipProbeSetType GetProbeSetType(int index) const;
+	GeneChipProbeSetType GetProbeSetType(int index);
 
 	/*! Gets the probe set information.
 	 * @param index The zero-based index to the probe set of interest.

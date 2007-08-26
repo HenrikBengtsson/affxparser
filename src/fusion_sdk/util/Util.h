@@ -315,7 +315,7 @@ public:
    * @return - Pointer to next whitespace character or NULL if none
    *   found. 
    */
-  static const char *Util::nextWhiteSpace(const char *s);
+  static const char *nextWhiteSpace(const char *s);
 
   /**
    * Print a string wrapping at max width from the current

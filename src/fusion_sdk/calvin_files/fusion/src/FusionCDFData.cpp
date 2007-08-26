@@ -509,6 +509,10 @@ affxcdf::DirectionType FusionCDFProbeGroupInformation::GetDirection() const
 			return affxcdf::AntiSenseDirection;
 			break;
 
+		case ProbeEitherDirection:
+			return affxcdf::EitherDirection;
+			break;
+
 		default:
 			return affxcdf::NoDirection;
 			break;
@@ -718,7 +722,7 @@ void FusionCDFProbeSetInformation::Initialize(int index, CDFData *cdf)
 /*
  * Gets the probe set type.
  */
-affxcdf::GeneChipProbeSetType FusionCDFProbeSetInformation::GetProbeSetType() const
+affxcdf::GeneChipProbeSetType FusionCDFProbeSetInformation::GetProbeSetType()
 {
 	if (gcosSet)
 		return gcosSet->GetProbeSetType();
@@ -742,6 +746,18 @@ affxcdf::GeneChipProbeSetType FusionCDFProbeSetInformation::GetProbeSetType() co
 		case Resequencing:
 			return affxcdf::ResequencingProbeSetType;
 			break;
+
+        case CopyNumber:
+            return affxcdf::CopyNumberProbeSetType;
+            break;
+
+        case GenotypeControl:
+            return affxcdf::GenotypeControlProbeSetType;
+            break;
+
+        case ExpressionControl:
+            return affxcdf::ExpressionControlProbeSetType;
+            break;
 
 		default:
 			return affxcdf::UnknownProbeSetType;
@@ -774,6 +790,10 @@ affxcdf::DirectionType FusionCDFProbeSetInformation::GetDirection() const
 
 		case ProbeAntiSenseDirection:
 			return affxcdf::AntiSenseDirection;
+			break;
+
+		case ProbeEitherDirection:
+            return affxcdf::EitherDirection;
 			break;
 
 		default:

@@ -125,7 +125,6 @@ std::wstring FusionCHPHeader::GetAlgVersion() const
 	return adapter->GetHeader().GetAlgVersion();
 }
 
-
 void FusionCHPHeader::AlgorithmParameters(FusionTagValuePairTypeList& valuesFusion)
 { 
 	CheckAdapter();
@@ -252,6 +251,12 @@ GenericData *FusionCHPLegacyData::GetGenericData()
 {
 	CheckAdapter();
 	return adapter->GetGenericData();
+}
+
+std::string FusionCHPLegacyData::GetProbeSetName(int index)
+{
+    CheckAdapter();
+    return adapter->GetProbeSetName(index);
 }
 
 bool FusionCHPLegacyData::GetExpressionResults(int index, FusionExpressionProbeSetResults& result)

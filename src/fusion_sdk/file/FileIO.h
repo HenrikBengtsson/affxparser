@@ -27,7 +27,7 @@
 #include <fstream>
 #include <string>
 //
-#include "affy-base-types.h"
+#include "portability/affy-base-types.h"
 
 // Affy uses little-endian byte order for some of their files.
 // This requires defining a the complements to the normal functions "hton".
@@ -60,17 +60,20 @@
  * @param x The value to shuffle
  * @return The shuffled value
  */
-#define affy_swap32(x) \
-     ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) | \
-      (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24))
+inline uint32_t
+affy_swap32(uint32_t x) {
+  return ((((x) & 0xff000000) >> 24) | (((x) & 0x00ff0000) >>  8) |
+          (((x) & 0x0000ff00) <<  8) | (((x) & 0x000000ff) << 24));
+}
 
 /*! Shuffle operator for 16 bit values
  * @param x The value to shuffle
  * @return The shuffled value
  */
-#define affy_swap16(x) \
-     ((((x) >> 8) & 0xff) | (((x) & 0xff) << 8))
-
+inline uint16_t
+affy_swap16(uint16_t x) {
+  return ((((x) >> 8) & 0xff) | (((x) & 0xff) << 8));
+}
 
 // Do we need to define our "to little-endian" operators?
 #ifdef IS_BIG_ENDIAN
@@ -252,6 +255,7 @@ void ReadCharacterArray(IFSTREAM& instr, char* str, uint32_t len);
 void ReadNextLine(IFSTREAM& instr,char* line,int len);
 
 /*! This function is for older BPMAP file with incorrectly written float's
+ *  The floats were written as ints
  * @param instr The input file stream.
  * @param fval The returned float
  */

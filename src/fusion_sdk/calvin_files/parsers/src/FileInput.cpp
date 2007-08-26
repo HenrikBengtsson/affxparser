@@ -116,10 +116,9 @@ u_int32_t FileInput::ReadUInt32(std::ifstream &instr)
  */
 float FileInput::ReadFloat(std::ifstream &instr)
 {
-	float fval;
-	int32_t ival = ReadInt32(instr);
-	memcpy(&fval, &ival, sizeof(ival));
-	return fval;
+	type_punned pun;
+	pun.v_uint32=ReadInt32(instr);
+	return pun.v_float;
 }
 
 /*

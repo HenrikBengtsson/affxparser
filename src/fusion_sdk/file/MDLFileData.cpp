@@ -38,6 +38,8 @@ using namespace affxmdl;
 
 static void SwapToLittleEndian(MDLData &data)
 {
+        // This is a double (64bit) 
+        // The high and low words need to be flipped.
 	float *f = (float *)&data.Affinity;
 	f[0] = MmGetFloat_I(&f[0]);
 	f[1] = MmGetFloat_I(&f[1]);

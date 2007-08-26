@@ -89,13 +89,11 @@ void PgOptions::printStringWidth(const char *str, int prefix,
 }
 
 /** 
- * Print out a litte ditty about program and its usage. Try to 
- * do some formatting on the options so that they look clean
- * neat and uniform.
- * @param msg - Message for user.
+ * Print out a litte ditty about program and its usage. 
+ * @param hiddenOpts - Set containing the long name of options to hide.
  * @param printOpts - Print out options and help for each one?
  */
-void PgOptions::usage(bool printOpts) {
+void PgOptions::usage(std::set<std::string> &hiddenOpts, bool printOpts) {
   PgOpt *opt = NULL;
   unsigned int maxLength = 0;
   unsigned int currentLength = 0;
@@ -109,6 +107,9 @@ void PgOptions::usage(bool printOpts) {
     /* find the length of the longest option name. */
     for(i = 0; optSpec[i] != NULL; i++) {
       opt = optSpec[i];
+      // check to see if we're hiding this option.
+      if(hiddenOpts.find(opt->longName) != hiddenOpts.end()) 
+        continue;
       // extraChars contains a padded space for options without a short flag, 
       // subtract it off if there is a character.
       unsigned int length = strlen(opt->longName) + extraChars;
@@ -122,6 +123,9 @@ void PgOptions::usage(bool printOpts) {
     /* Loop through and print out the help. */
     for(i = 0; optSpec[i] != NULL; i++) {
       opt = optSpec[i];
+      // check to see if we're hiding this option.
+      if(hiddenOpts.find(opt->longName) != hiddenOpts.end()) 
+        continue;
       if(strlen(opt->shortName) > 0)
 	cout <<  "   -" << opt->shortName << ", --" << opt->longName << " ";
       /* Treat the longName as the shortName if the shortName is null. */
@@ -177,8 +181,10 @@ void PgOptions::addOnePgOpt(PgOpt *option) {
  * @param usage - Message to the user printed in usage() call.
  * @param options - Array of valid options program can be called
  *                 with. 
+ * @param allowDupes - Is it ok to have duplicates of the same option?
  */
-PgOptions::PgOptions(const std::string &usage, PgOpt *options[]) {
+PgOptions::PgOptions(const std::string &usage, PgOpt *options[], bool allowDupes) {
+  m_AllowDupes = allowDupes;
   usageMsg = usage;
   int optIx = 0;
   optSpec = options;
@@ -243,6 +249,9 @@ void PgOptions::matchOption(const char *name, const char * const argv[], int *ar
     Err::errAbort("Don't recognize option: '" + string(name) + "'");
   /* Have we already seen this option? if so put it at the end of the list. */
   if(opt->value != NULL) {
+    if(!m_AllowDupes) {
+      Err::errAbort("Error - Option: " + ToStr(s) + " has already been specified with value: '" + ToStr(opt->value) + "'.");
+    }
     PgOpt *p = new PgOpt, *tail = opt;
     /* Copy parent data. */
     p->shortName = opt->shortName;

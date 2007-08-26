@@ -154,7 +154,7 @@ public:
 	void UseMemoryMapping(bool value) { useMemoryMapping = value; }
 
 	/*! Set the data loading policy for DataSets and DataGroups created by GenericData.
-	 *	This is considered on a hint to DataSet.  Default value is false.
+	 *	This is considered a hint to DataSet.  Default value is false.
 	 *	@param value If value is true, DataSets created subsequently will attempt to read the entire DataSet data into a memory buffer.
 	 */
 	void LoadEntireDataSetHint(bool value) { loadEntireDataSetHint = value; }

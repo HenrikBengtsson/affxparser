@@ -62,13 +62,19 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute name for the algorithm name. */
 #define ALGORITHM_NAME_PARAM_NAME L"affymetrix-algorithm-name"
 
+/*! A prefix for chip summary parameter ids. */
+#define CHIP_SUMMARY_PARAMETER_NAME_PREFIX L"affymetrix-chipsummary-"
+
+/*! A prefix for chip summary parameter ids. */
+#define CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S std::wstring(CHIP_SUMMARY_PARAMETER_NAME_PREFIX)
+
 /*! Defines the static attribute prefix for algorithm parameter names */
 #define ALGORITHM_PARAM_NAME_PREFIX L"affymetrix-algorithm-param-"
 
 /*! Defines the static attribute prefix (as a wstring) for algorithm parameter names */
 #define ALGORITHM_PARAM_NAME_PREFIX_S std::wstring(ALGORITHM_PARAM_NAME_PREFIX)
 
-	/*! Defines the static attribute name for the DATHeader */
+/*! Defines the static attribute name for the DATHeader */
 #define DAT_HEADER_PARAM_NAME L"affymetrix-dat-header"
 
 /*! Defines the static attribute name for the partial DATHeader */
