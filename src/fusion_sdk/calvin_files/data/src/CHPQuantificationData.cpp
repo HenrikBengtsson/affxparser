@@ -35,9 +35,6 @@ const static std::wstring QUANTIFICATION_PROBE_SET_NAME = L"ProbeSetName";
 /*! The column name for the probe set id. */
 const static std::wstring QUANTIFICATION_PROBE_SET_ID = L"ProbeSetId";
 
-/*! A prefix for chip summary parameter ids. */
-const static std::wstring CHIP_SUMMARY_PARAMETER_NAME_PREFIX = L"affymetrix-chipsummary-";
-
 CHPQuantificationData::CHPQuantificationData()
 {
     maxProbeSetName = -1;
@@ -234,10 +231,10 @@ ParameterNameValueTypeList CHPQuantificationData::GetSummaryParams()
 	while(begin != end)
 	{
 		std::wstring key = begin->GetName();
-		if(key.compare(0, CHIP_SUMMARY_PARAMETER_NAME_PREFIX.size(),CHIP_SUMMARY_PARAMETER_NAME_PREFIX) == 0)
+		if(key.compare(0, CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S.size(),CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S) == 0)
 		{
 			param = *begin;
-			key.erase(0, CHIP_SUMMARY_PARAMETER_NAME_PREFIX.size());
+			key.erase(0, CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S.size());
 			param.SetName(key);
 			nvt.push_back(param);
 		}
@@ -253,7 +250,7 @@ void CHPQuantificationData::AddSummaryParams(const ParameterNameValueTypeList& p
 	for (ParameterNameValueTypeList::const_iterator it=params.begin(); it != params.end(); it++)
 	{
 		param = *it;
-		param.SetName(CHIP_SUMMARY_PARAMETER_NAME_PREFIX + param.GetName());
+		param.SetName(CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S + param.GetName());
 		hdr->AddNameValParam(param);
 	}
 }

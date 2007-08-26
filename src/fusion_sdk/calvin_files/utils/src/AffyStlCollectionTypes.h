@@ -21,9 +21,10 @@
 #ifndef _AffyStlCollectionTypes_HEADER_
 #define _AffyStlCollectionTypes_HEADER_
 
-#include "AffymetrixBaseTypes.h"
-#include <vector>
 #include <list>
+#include <vector>
+//
+#include "AffymetrixBaseTypes.h"
 
 /*! 8 bit signed */
 typedef std::vector<int8_t> Int8Vector;

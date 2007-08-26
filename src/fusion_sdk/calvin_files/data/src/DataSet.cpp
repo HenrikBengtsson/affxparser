@@ -780,5 +780,5 @@ int32_t DataSet::GetDataRaw(int32_t col, int32_t startRow, int32_t count, std::w
 
 int32_t DataSet::LastRowMapped()
 {
-	return (mapStart+mapLen)/BytesPerRow() - 1;
+	return (mapLen+(mapStart-header.GetDataStartFilePos()))/BytesPerRow() - 1;
 }

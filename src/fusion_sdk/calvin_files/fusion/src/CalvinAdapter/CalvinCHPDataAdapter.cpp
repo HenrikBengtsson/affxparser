@@ -514,3 +514,22 @@ GenericData *CalvinCHPDataAdapter::GetGenericData()
 	return &calvinChp.GetGenericData();
 }
 
+/*
+ * Get the probe set name
+ */
+std::string CalvinCHPDataAdapter::GetProbeSetName(int index)
+{
+    if (calvinChp.GetAssayType() == CHP_EXPRESSION_ASSAY_TYPE)
+  	{
+	    CHPExpressionEntry entry;
+	    calvinChp.GetEntry(index, entry);
+        return entry.GetProbeSetName();
+    }
+    else if (calvinChp.GetAssayType() == CHP_GENOTYPING_ASSAY_TYPE)
+    {
+        CHPGenotypeEntry entry;
+	    calvinChp.GetEntry(index, entry);
+        return entry.GetProbeSetName();
+    }
+    return "";
+}

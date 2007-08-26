@@ -135,7 +135,7 @@ std::wstring StringUtils::ConvertMBSToWCS(const std::string& source)
  */
 std::wstring StringUtils::ToString(int value, int digits, wchar_t fill)
 {
-#if !defined(__MINGW32__) && (defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCXX_USE_WCHAR_T) || defined(_MSC_VER))
+#if defined(_GLIBCPP_USE_WCHAR_T) || defined(_GLIBCXX_USE_WCHAR_T) || defined(_MSC_VER)
 	std::wostringstream str;
 	str << std::setw(digits) << std::setfill(fill) << value;
 	return str.str();

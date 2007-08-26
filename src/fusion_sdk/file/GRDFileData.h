@@ -26,7 +26,7 @@
 #include <windows.h>
 #endif
 
-#include "affy-base-types.h"
+#include "portability/affy-base-types.h"
 #include <map>
 #include <string>
 #include <vector>

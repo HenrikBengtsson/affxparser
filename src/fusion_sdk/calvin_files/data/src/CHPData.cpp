@@ -654,7 +654,7 @@ ParameterNameValueType CHPData::GetAlgParam(const std::wstring& tag)
 
 ParameterNameValueType CHPData::GetChipSum(const std::wstring& tag)
 {
-	std::wstring name = CHP_CHIP_SUM + tag;
+	std::wstring name = CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S + tag;
 	ParameterNameValueType paramType;
 	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
 	hdr->FindNameValParam(name, paramType);
@@ -713,10 +713,10 @@ ParameterNameValueTypeVector CHPData::GetChipSums()
 	while(begin != end)
 	{
 		std::wstring key = begin->GetName();
-		if(key.compare(0, CHP_CHIP_SUM.size(),CHP_CHIP_SUM) == 0)
+		if(key.compare(0, CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S.size(),CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S) == 0)
 		{
 			param = *begin;
-			key.erase(0, CHP_CHIP_SUM.size());
+			key.erase(0, CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S.size());
 			param.SetName(key);
 			nvt.push_back(param);
 		}
@@ -727,19 +727,19 @@ ParameterNameValueTypeVector CHPData::GetChipSums()
 
 void CHPData::AddChipSum(const std::wstring& name, const std::wstring& param)
 {
-	std::wstring paramName = CHP_CHIP_SUM + name;
+	std::wstring paramName = CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S + name;
 	SetWStringToGenericHdr(paramName, param);
 }
 
 void CHPData::AddChipSum(const std::wstring& name, float param)
 {
-	std::wstring paramName = CHP_CHIP_SUM + name;
+	std::wstring paramName = CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S + name;
 	SetFloatToGenericHdr(paramName, param);
 }
 
 void CHPData::AddChipSum(const std::wstring& name, int32_t param)
 {
-	std::wstring paramName = CHP_CHIP_SUM + name;
+	std::wstring paramName = CHIP_SUMMARY_PARAMETER_NAME_PREFIX_S + name;
 	SetInt32ToGenericHdr(paramName, param);
 }
 

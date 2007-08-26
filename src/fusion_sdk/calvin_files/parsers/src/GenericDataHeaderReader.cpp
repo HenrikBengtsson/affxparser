@@ -57,10 +57,12 @@ void GenericDataHeaderReader::Read(GenericDataHeader& gdh)
 	{
 		const void* mimeValue = 0;
 		std::wstring name = FileInput::ReadString16(fileStream);
-		int32_t mimeSize = FileInput::ReadBlob(fileStream, mimeValue);
+		int32_t mimeSize = FileInput::ReadBlob(fileStream,mimeValue);
 		std::wstring type = FileInput::ReadString16(fileStream);
-		ParameterNameValueType nvt(name, mimeValue, mimeSize, type);
-		delete[] mimeValue;
+		ParameterNameValueType nvt(name,(void*)mimeValue, mimeSize, type);
+                // deleting a "const void*" generates a warning under gcc.
+                // cast to a "char*" to quiet it.
+		delete[] (char*)mimeValue;
 		gdh.AddNameValParam(nvt);
 	}
 

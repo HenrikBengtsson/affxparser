@@ -17,10 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
-
-#include "FileOutput.h"
+//
 #include <stdio.h>
 #include <stdlib.h>
+//
+#include "FileOutput.h"
 
 #ifdef _MSC_VER
 #include <winsock2.h>
@@ -90,7 +91,9 @@ void FileOutput::WriteUInt32(std::ofstream &outstr, u_int32_t value)
  */
 void FileOutput::WriteFloat(std::ofstream &outstr, float value)
 {
-	WriteInt32(outstr, *(int32_t *)&value);
+	type_punned pun;
+	pun.v_float=value;
+	WriteInt32(outstr,pun.v_int32);
 }
 
 /*

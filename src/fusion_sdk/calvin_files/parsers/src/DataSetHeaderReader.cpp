@@ -152,13 +152,13 @@ void DataSetHeaderReader::ReadParameters(std::ifstream& fileStream, DataSetHeade
 	u_int32_t params = FileInput::ReadUInt32(fileStream);
 	for (u_int32_t iparam = 0; iparam < params; ++iparam)
 	{
-		// deleting 'const void*' is undefined
-    const void* mimeValue = 0;
+		const void* mimeValue = 0;
 		std::wstring paramName = FileInput::ReadString16(fileStream);
 		int32_t mimeSize = FileInput::ReadBlob(fileStream, mimeValue);
 		std::wstring paramType = FileInput::ReadString16(fileStream);
-		ParameterNameValueType nvt(paramName, mimeValue, mimeSize, paramType);
-		delete[] mimeValue;
+		ParameterNameValueType nvt(paramName, (void*)mimeValue, mimeSize, paramType);
+		// deleting 'const void*' is undefined, cast it to a char*
+		delete[] (char*)mimeValue;
 		dsh.AddNameValParam(nvt);
 	}
 }

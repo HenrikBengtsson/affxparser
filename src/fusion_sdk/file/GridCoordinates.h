@@ -22,7 +22,7 @@
 
 /*! \file GridCoordinates.h Defines structures to hold the coordinates of a grid. */
 
-#include "affy-base-types.h"
+#include "portability/affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 

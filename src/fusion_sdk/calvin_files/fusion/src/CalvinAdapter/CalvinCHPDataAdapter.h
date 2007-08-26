@@ -177,6 +177,12 @@ public:
 	 */
 	virtual bool CanReadFile();
 
+    /*! Get the probe set name  (only valid for Command Console "calvin" files)
+	 * @param index The index to the result object of interest.
+     * @return The probe set name.
+     */
+    virtual std::string GetProbeSetName(int index);
+
 	/*! \brief Returns the expression probe set result
 	 *	\param index Index to the result object of interest.
 	 *	\param result Expression result.

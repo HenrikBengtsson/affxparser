@@ -52,7 +52,7 @@
 #include <sys/user.h>
 ///  Structure alignment requirement for g++
 ///  @remark Structure alignment for Mac OS X is included in #pragma
-#define STRUCT_ALIGNMENT __attribute__ ((packed))
+#define STRUCT_ALIGNMENT
 
 #else // UNIX 
 #include <stdio.h>
@@ -65,13 +65,16 @@
 #endif
 
 // uint32_t and friends
-#include "affy-base-types.h"
+#include "portability/affy-base-types.h"
 
 namespace affxcel
 {
 
 #ifdef _MSC_VER 
 #pragma pack(push, 1)
+#endif
+#ifdef __APPLE__
+#pragma options align=packed
 #endif
 ///////////////////////////////////////////////////////////////////////////////
 ///  typedef as CELFileEntryType
@@ -98,11 +101,16 @@ typedef struct _CELFileTranscriptomeEntryType
 	///  Standard deviation intensity
 	unsigned short Stdv /* \cond */ STRUCT_ALIGNMENT /*! \endcond */ ;
 	///  Number of pixels
-	unsigned char Pixels /* \cond */ STRUCT_ALIGNMENT /*! \endcond */ ;
+  // The STRUCT_ALIGNMENT isnt needed for gcc.
+  // and if used it generates a warning.
+	unsigned char Pixels; /* \cond */ /* STRUCT_ALIGNMENT */ /*! \endcond */ ;
 } CELFileTranscriptomeEntryType;
 
 #ifdef _MSC_VER
 #pragma pack(pop)
+#endif
+#ifdef __APPLE__
+#pragma options align=reset
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
