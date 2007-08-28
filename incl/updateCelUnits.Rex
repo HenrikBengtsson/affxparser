@@ -1,26 +1,26 @@
-for (zzz in 0) {
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+############################################################## 
 
-# CEL file to use in this demostration
-pathname <- "tmp.cel"
-if (!file.exists(pathname)) {
-  # Scan current directory for a CEL file
-  file <- findFiles(pattern="[.](c|C)(e|E)(l|L)$")
-  if (is.null(file))
-    break
+# Search for some available Calvin CEL files
+path <- system.file("rawData", package="AffymetrixDataTestFiles")
+files <- findFiles(pattern="[.](cel|CEL)$", path=path, recursive=TRUE, firstOnly=FALSE)
+files <- grep("FusionSDK_Test3", files, value=TRUE)
+files <- grep("Calvin", files, value=TRUE)
+file <- files[1]
 
-  # Work on a copy of the CEL file
-  cat("Copying CEL file: ", file, "\n", sep="");
-  if (!file.copy(file, pathname))
-    stop("Failed to copy CEL file: ", file);
-  rm(file)
-}
+# Convert to an XDA CEL file
+pathname <- file.path(tempdir(), basename(file))
+if (file.exists(pathname))
+  file.remove(pathname)
+convertCel(file, pathname)
+
+
 
 
 # Check for the CDF file
 hdr <- readCelHeader(pathname)
 cdfFile <- findCdf(hdr$chiptype)
-if (is.null(cdfFile))
-  break
 
 hdr <- readCdfHeader(cdfFile)
 nbrOfUnits <- hdr$nunits
@@ -60,4 +60,6 @@ for (kk in 1:10) {
   cat(". done\n")
 }
 
-} # for (zzz in 0)
+##############################################################
+}                                                     # STOP #
+##############################################################

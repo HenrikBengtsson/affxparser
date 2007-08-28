@@ -50,13 +50,12 @@
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
  \examples{
-  
-for (zzz in 0) {
+   ##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
 # Find any CDF file
 cdfFile <- findCdf()
-if (is.null(cdfFile))
-  break;
 
 # Create a cell-index map (for writing)
 writeMap <- readCdfUnitsWriteMap(cdfFile)
@@ -86,10 +85,16 @@ hist(largeMoves, nclass=101, main="", xlab="moves >25 bytes")
 layout(1)
 rm(cdfFile, readMap, writeMap, moves, smallMoves, largeMoves, main)
 
-} # for (zzz in 0)
+##############################################################
+}                                                     # STOP #
+##############################################################
 
 
-  
+
+   ##############################################################
+if (require("AffymetrixTestDataFiles")) {            # START #
+##############################################################
+
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Function to read Affymetrix probeset annotations
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,8 +138,7 @@ readAffymetrixProbesetAnnotation <- function(pathname, ...) {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-for (zzz in 0) {
-
+for (zz in 1) {
 # Chip to be remapped
 chipType <- "Mapping50K_Xba240"
 
@@ -167,7 +171,10 @@ readMap <- invertMap(writeMap)
 # Clean up
 rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, readMap, writeMap)
 
-} # for (zzz in 0)
+} # for (zz in 1)
+##############################################################
+}                                                     # STOP #
+##############################################################
 
  }
 

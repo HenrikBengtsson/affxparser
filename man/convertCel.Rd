@@ -48,6 +48,31 @@
    }
  }
 
+ \examples{
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
+
+# Search for some available Calvin CEL files
+path <- system.file("rawData", package="AffymetrixDataTestFiles")
+files <- findFiles(pattern="[.](cel|CEL)$", path=path, recursive=TRUE, firstOnly=FALSE)
+files <- grep("FusionSDK_Test3", files, value=TRUE)
+files <- grep("Calvin", files, value=TRUE)
+file <- files[1]
+
+
+outFile <- file.path(tempdir(), gsub("[.]CEL$", ",XBA.CEL", basename(file)))
+if (file.exists(outFile))
+  file.remove(outFile)
+convertCel(file, outFile, .validate=TRUE)
+
+
+##############################################################
+}                                                     # STOP #
+##############################################################
+
+}
+
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
  \seealso{

@@ -1,6 +1,27 @@
 Package: affxparser
 ===================
 
+Version: 1.9.5 [2007-08-28xx]
+o Added argument 'recursive=TRUE' to findCdf().  Note, the current 
+  working directory is always scanned first, but never recursively
+  (unless explicitly added to the search path). This is to avoid
+  endless scans in case the search path has not been set.
+o findFiles() now do a breath-first search in lexicographic order.
+o Removed default search paths cdf/ and data/cdf/.  We do not want
+  to enforce a standard path.
+o Now the examples (as well as test scripts) utilize data available
+  in the new Bioconductor AffymetrixDataTestFiles package.  This
+  means that R CMD check now runs much more tests, which is good.
+o CLEAN UP: Removed many of the old testscripts/ scripts.  They
+  are now under tests/.
+o BUG FIX: If the destination file already existed, convertCel() would
+  correctly detect that, but would give the name of the source file.
+
+
+Version: 1.9.4 [2007-08-25]
+o Updated to Fusion SDK v1.0.9.
+
+
 Version: 1.9.3 [2007-08-16]
 o See updated made to release v1.8.3 below.
 o The only difference between v1.9.3 and v1.8.3 is the modification

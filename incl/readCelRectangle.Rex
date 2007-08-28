@@ -1,5 +1,6 @@
-
-for (zzz in 0) {
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
 rotate270 <- function(x, ...) { 
   x <- t(x)
@@ -8,23 +9,25 @@ rotate270 <- function(x, ...) {
   x[,nc:1,drop=FALSE]
 }
 
-# Scan current directory for CEL files
-files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-files <- files[!file.info(files)$isdir]
-if (length(files) == 0)
-  break
 
-celFile <- files[1];
+# Search for some available CEL files
+path <- system.file("rawData", package="AffymetrixDataTestFiles")
+file <- findFiles(pattern="[.](cel|CEL)$", path=path, recursive=TRUE)
+
 
 # Read CEL intensities in the upper left corner
-cel <- readCelRectangle(celFile, xrange=c(0,250), yrange=c(0,250))
+cel <- readCelRectangle(file, xrange=c(0,250), yrange=c(0,250))
 z <- rotate270(cel$intensities)
 sub <- paste("Chip type:", cel$header$chiptype)
-image(z, col=gray.colors(256), axes=FALSE, main=celFile, sub=sub)
+image(z, col=gray.colors(256), axes=FALSE, main=basename(file), sub=sub)
 text(x=0, y=1, labels="(0,0)", adj=c(0,-0.7), cex=0.8, xpd=TRUE)
 text(x=1, y=0, labels="(250,250)", adj=c(1,1.2), cex=0.8, xpd=TRUE)
 
 # Clean up
-rm(rotate270, files, celFile, cel, z, sub)
+rm(rotate270, files, file, cel, z, sub)
 
-} # for (zzz in 0)
+
+##############################################################
+}                                                     # STOP #
+##############################################################
+

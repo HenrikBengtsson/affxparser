@@ -16,11 +16,13 @@
  Finds one or several files in multiple directories.
 }
 
-\usage{findFiles(pattern=NULL, paths=NULL, firstOnly=TRUE, ...)}
+\usage{findFiles(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE, ...)}
 
 \arguments{
  \item{pattern}{A regular expression file name pattern to match.}
  \item{paths}{A \code{\link[base]{character}} \code{\link[base]{vector}} of paths to be searched.}
+ \item{recursive}{If \code{\link[base:logical]{TRUE}}, the directory structure is searched
+   breath-first, in lexicographic order.}
  \item{firstOnly}{If \code{\link[base:logical]{TRUE}}, the method returns as soon as a matching
    file is found, otherwise not.}
  \item{...}{Arguments passed to \code{\link[base]{list.files}}().}
@@ -36,11 +38,11 @@
   \code{"/usr/;usr/bin/;.;"}.
 }
 
-% \section{Windows Shortcut links}{
-%   If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
-%   are recognized and can be used to immitate links to directories
-%   elsewhere.  For more details, see \code{\link[R.utils]{filePath}}.
-% }
+\section{Windows Shortcut links}{
+  If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
+  are recognized and can be used to immitate links to directories
+  elsewhere.  For more details, see \code{\link[R.utils]{filePath}}.
+}
 
 \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 

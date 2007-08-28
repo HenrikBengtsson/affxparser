@@ -39,7 +39,7 @@
  \examples{
 # Simulate a read map for a chip with 2.6 million cells
 nbrOfCells <- 2600000
-readMap <- sample(nbrOfCells)
+readMap <- sample(1:nbrOfCells, size=nbrOfCells)
 
 # Get the corresponding write map
 writeMap <- invertMap(readMap)
@@ -49,7 +49,7 @@ stopifnot(identical(invertMap(writeMap), readMap))
 
 # Another example illustrating that the write map is the
 # inverse of the read map
-idx <- sample(nbrOfCells, size=1000)
+idx <- sample(1:nbrOfCells, size=1000)
 stopifnot(identical(writeMap[readMap[idx]], idx))
 
 # invertMap() is much faster than order()
