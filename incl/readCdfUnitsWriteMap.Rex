@@ -1,10 +1,9 @@
-
-for (zzz in 0) {
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
 # Find any CDF file
 cdfFile <- findCdf()
-if (is.null(cdfFile))
-  break;
 
 # Create a cell-index map (for writing)
 writeMap <- readCdfUnitsWriteMap(cdfFile)
@@ -34,4 +33,7 @@ hist(largeMoves, nclass=101, main="", xlab="moves >25 bytes")
 layout(1)
 rm(cdfFile, readMap, writeMap, moves, smallMoves, largeMoves, main)
 
-} # for (zzz in 0)
+##############################################################
+}                                                     # STOP #
+##############################################################
+

@@ -39,6 +39,8 @@
 #   }
 # }
 #
+# @examples "../incl/convertCel.Rex"
+#
 # @author
 #
 # \seealso{
@@ -66,7 +68,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
     stop("Cannot convert CEL file. Destination is identical the the source pathname: ", filename);
   }
   if (file.exists(outFilename)) {
-    stop("Cannot convert CEL file. Destination file already exists: ", filename);
+    stop("Cannot convert CEL file. Destination file already exists: ", outFilename);
   }
 
   # Argument 'version':
@@ -136,6 +138,9 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
 
 ############################################################################
 # HISTORY:
+# 2007-08-28
+# o BUG FIX: If the destination file already existed, convertCel() would
+#   correctly detect that, but would give the name of the source file.
 # 2007-08-16
 # o Now createCel() coerces the CEL header to version 4, so writeCel()
 #   should be more generic.

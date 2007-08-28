@@ -1,15 +1,18 @@
-for (zzz in 0) {
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+############################################################## 
 
-# Find any CDF file
+# Find a CDF file
 cdfFile <- findCdf("Test3")
-if (is.null(cdfFile))
-  break
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Create an identical CDF structure
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 cdfHeader <- readCdfHeader(cdfFile)
 pathname <- sprintf("%s-copy.cdf", cdfHeader$chiptype)
+if (file.exists(pathname))
+  file.remove(pathname)
 
 # Reading all data takes a minute or two...
 cdfUnits <- readCdf(cdfFile)
@@ -39,4 +42,7 @@ stopifnot(identical(value, value2))
 # Clean up
 rm(cdfFile, pathname, cdfHeader, cdfUnits, cdfQcUnits, value, value2);
 
-} # for (zzz in 0)
+##############################################################
+}                                                     # STOP #
+##############################################################
+

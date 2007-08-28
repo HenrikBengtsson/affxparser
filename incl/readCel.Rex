@@ -1,11 +1,14 @@
-for (zzz in 0) {  # Only so that 'break' can be used
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
-# Scan current directory for CEL files
-files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-if (length(files) == 0)
-  break;
-
+# Search for some available Calvin CEL files
+path <- system.file("rawData", package="AffymetrixDataTestFiles")
+files <- findFiles(pattern="[.](cel|CEL)$", path=path, recursive=TRUE, firstOnly=FALSE)
+files <- grep("FusionSDK_Test3", files, value=TRUE)
+files <- grep("Calvin", files, value=TRUE)
 file <- files[1]
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Read a subset of cells
@@ -15,8 +18,9 @@ cel <- readCel(file, indices=indices, readOutliers=TRUE)
 str(cel)
 
 
-
 # Clean up
 rm(files, file, cel)
 
-} # for (zzz in 0)
+##############################################################
+}                                                     # STOP #
+##############################################################

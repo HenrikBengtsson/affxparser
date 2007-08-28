@@ -12,6 +12,8 @@
 # \arguments{
 #  \item{pattern}{A regular expression file name pattern to match.}
 #  \item{paths}{A @character @vector of paths to be searched.}
+#  \item{recursive}{If @TRUE, the directory structure is searched 
+#    breath-first, in lexicographic order.}
 #  \item{firstOnly}{If @TRUE, the method returns as soon as a matching
 #    file is found, otherwise not.}
 #  \item{...}{Arguments passed to @see "base::list.files".}
@@ -27,11 +29,11 @@
 #   \code{"/usr/;usr/bin/;.;"}.
 # }
 #
-# % \section{Windows Shortcut links}{
-# %   If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
-# %   are recognized and can be used to immitate links to directories
-# %   elsewhere.  For more details, see @see "R.utils::filePath".
-# % }
+# \section{Windows Shortcut links}{
+#   If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
+#   are recognized and can be used to immitate links to directories
+#   elsewhere.  For more details, see @see "R.utils::filePath".
+# }
 #
 # @author
 #
@@ -39,7 +41,7 @@
 # @keyword IO
 # @keyword internal
 #**/#######################################################################
-findFiles <- function(pattern=NULL, paths=NULL, firstOnly=TRUE, ...) {
+findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,8 +66,12 @@ findFiles <- function(pattern=NULL, paths=NULL, firstOnly=TRUE, ...) {
   if (is.null(paths))
     paths <- ".";
 
-  # Argument 'chipType':
-  pattern <- as.character(pattern);
+  # Argument 'pattern':
+  if (!is.null(pattern))
+    pattern <- as.character(pattern);
+
+  # Argument 'recursive':
+  recursive <- as.logical(recursive);
 
   # Argument 'firstOnly':
   firstOnly <- as.logical(firstOnly);
@@ -74,8 +80,10 @@ findFiles <- function(pattern=NULL, paths=NULL, firstOnly=TRUE, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Prepare list of paths to be scanned
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-#  hasRutils <- suppressWarnings(require(R.utils, quietly=TRUE));
-  hasRutils <- FALSE;
+  hasRutils <- suppressWarnings(require(R.utils, quietly=TRUE));
+
+  # Don't search the same path twice
+  paths <- unique(paths);
 
   # Don't search non-existing paths
   for (kk in seq(along=paths)) {
@@ -103,27 +111,94 @@ findFiles <- function(pattern=NULL, paths=NULL, firstOnly=TRUE, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   pathnames <- c();
   for (path in paths) {
-    files <- list.files(path, pattern=pattern, all.files=TRUE, 
-                                                      full.names=TRUE, ...);
+    files <- list.files(path, all.files=TRUE, full.names=TRUE);
+
+    # Exclude listings that are neither files nor directories
     files <- gsub("^[.][/\\]", "", files);
-    for (file in files) {
-      # Keep only files
-      if (!file.info(file)$isdir) {
-        if (firstOnly)
-          return(file);
-        pathnames <- c(pathnames, file);
+    files <- files[nchar(files) > 0];
+    if (length(files) > 0) {
+      excl <- (basename(files) %in% c(".", "..", "/", "\\"));
+      files <- files[!excl];
+    }
+
+    # Nothing to do?
+    if (length(files) == 0)
+      next;
+
+    # Expand Windows shortcut links?
+    if (hasRutils) {
+      files <- sapply(files, FUN=filePath, expandLinks="any", USE.NAMES=FALSE);
+    }
+ 
+    # Keep only existing directories
+    ok <- sapply(files, FUN=function(file) {
+      (file.exists(path) && !is.na(file.info(file)$isdir));
+    }, USE.NAMES=FALSE)
+    files <- files[ok];
+
+    # Nothing to do?
+    if (length(files) == 0)
+      next;
+
+    # First search the files, then the directories
+    isDir <- sapply(files, FUN=function(file) {
+      file.info(file)$isdir;
+    }, USE.NAMES=FALSE);
+
+    # In case some files are non-accessible, exclude them
+    ok <- (!is.na(isDir));
+    files <- files[ok];
+    isDir <- isDir[ok];
+
+    # Nothing to do?
+    if (length(files) == 0)
+      next;
+
+    # Directories and files in lexicographic order
+    dirs <- files[isDir];
+    files <- files[!isDir];
+
+    # Keep only files that match the filename pattern
+    if (!is.null(pattern))
+      files <- grep(pattern, files, value=TRUE);
+
+    if (length(files) > 0) {
+      files <- sort(files);
+      if (firstOnly)
+        return(files[1]);
+
+      # Store results
+      pathnames <- c(pathnames, files);
+    }
+
+    # Search directories recursively?
+    if (recursive) {
+      if (length(dirs) == 0)
+        next;
+
+      for (dir in sort(dirs)) {
+        files <- findFiles(pattern=pattern, paths=dir, recursive=recursive,
+                                                 firstOnly=firstOnly, ...);
+        if (length(files) > 0 && firstOnly)
+          return(files[1]);
+
+        pathnames <- c(pathnames, files);
       }
     }
-  }
+  } # for (path ...)
 
   pathnames;
-} 
+} # findFiles()
 
 
 ############################################################################
 # HISTORY:
+# 2007-08-27
+# o Now findFiles(..., recursive=TRUE) does a breath-first search in
+#   lexicographic order.
+# o Now findFiles() don't search replicated directories.
 # 2006-11-01
-# o Remove usage of R.utils for now.
+# o Removed usage of R.utils for now.
 # 2006-03-14
 # o Created from findCdf.R.
 ############################################################################  

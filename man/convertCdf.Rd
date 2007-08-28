@@ -58,27 +58,26 @@
  }
 
  \examples{
-for (zzz in 0) {
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
-# Find the small 'Test3' CDF file
-cdfFile <- findCdf("Test3")
-# Find any CDF file
-if (is.null(cdfFile))
-  cdfFile <- findCdf()
-if (is.null(cdfFile))
-  break
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Create an identical CDF structure
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-cdfHeader <- readCdfHeader(cdfFile)
-outFile <- sprintf("\%s-copy.cdf", cdfHeader$chiptype)
-convertCdf(cdfFile, outFile, overwrite=TRUE, verbose=TRUE)
+chipType <- "Test3"
+cdfFiles <- findCdf(chipType, firstOnly=FALSE)
+cdfFiles <- list(
+  ASCII=grep("ASCII", cdfFiles, value=TRUE),
+  XDA=grep("XDA", cdfFiles, value=TRUE)
+)
 
-# Clean up
-rm(cdfFile, cdfHeader)
+outFile <- file.path(tempdir(), sprintf("\%s.cdf", chipType))
+convertCdf(cdfFiles$ASCII, outFile, verbose=TRUE)
 
-} # for (zzz in 0)
+##############################################################
+}                                                     # STOP #
+##############################################################
+
+
 }
 
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}

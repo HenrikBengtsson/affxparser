@@ -74,14 +74,21 @@
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 
  \examples{
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
-for (zzz in 0) {
+# Search for some available CEL files
+path <- system.file("rawData", package="AffymetrixDataTestFiles")
+files <- findFiles(pattern="[.](cel|CEL)$", path=path, recursive=TRUE, firstOnly=FALSE)
+files <- grep("FusionSDK_Test3", files, value=TRUE)
+files <- grep("Calvin", files, value=TRUE)
 
-# Scan current directory for CEL files
-files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-files <- files[!file.info(files)$isdir]
-if (length(files) == 0)
-  break
+# Fake more CEL files if not enough
+files <- rep(files, length.out=5)
+
+
+print(files);
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Benchmarking reading cells in order or not.
@@ -91,8 +98,6 @@ if (length(files) == 0)
 units <- 56:256
 nunits <- length(units);
 
-# Make sure enough files are read to measure the speed up
-files <- rep(files, length.out=5)
 nfiles <- length(files);
 
 t1 <- system.time({
@@ -113,7 +118,10 @@ rm(cel); gc()
 # Clean up
 rm(files, t1, t2)
 
-} # for (zzz in 0)
+
+##############################################################
+}                                                     # STOP #
+##############################################################
 }
 
  \seealso{

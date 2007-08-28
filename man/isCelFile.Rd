@@ -25,6 +25,8 @@
 
 \value{
  Returns \code{\link[base:logical]{TRUE}} if a CEL file, otherwise \code{\link[base:logical]{FALSE}}.
+ ASCII (v3), binary (v4;XDA), and binary (CCG v1;Calvin) CEL files
+ are recognized.
  If file does not exist, an exception is thrown.
 }
 

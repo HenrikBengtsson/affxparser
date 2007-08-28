@@ -1,3 +1,6 @@
+##############################################################
+if (require("AffymetrixTestDataFiles")) {            # START #
+##############################################################
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Function to read Affymetrix probeset annotations
@@ -42,8 +45,7 @@ readAffymetrixProbesetAnnotation <- function(pathname, ...) {
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-for (zzz in 0) {
-
+for (zz in 1) { 
 # Chip to be remapped
 chipType <- "Mapping50K_Xba240"
 
@@ -76,4 +78,7 @@ readMap <- invertMap(writeMap)
 # Clean up
 rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, readMap, writeMap)
 
-} # for (zzz in 0)
+} # for (zz in 1)
+##############################################################
+}                                                     # STOP #
+##############################################################
