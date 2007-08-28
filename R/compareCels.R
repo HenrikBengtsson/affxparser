@@ -104,8 +104,6 @@ compareCels <- function(pathname, other, readMap=NULL, otherReadMap=NULL, verbos
   for (ff in c("intensities", "stdvs", "pixels")) {
     v1 <- cel1[[ff]];
     v2 <- cel2[[ff]];
-str(v1)
-str(v2)
     if (!identical(all.equal(v1, v2), TRUE)) {
       throw("Validation of new CEL file failed. Field differ: ", ff);
     }

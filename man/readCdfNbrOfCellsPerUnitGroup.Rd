@@ -32,39 +32,41 @@
  }
 
  \examples{
-for (zzz in 0) {
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
-cdfFile <- findCdf("Mapping50K_Xba240")
-if (is.null(cdfFile))
-  break
+cdfFile <- findCdf("Mapping10K_Xba131")
 
 groups <- readCdfNbrOfCellsPerUnitGroup(cdfFile)
 
 # Number of units read
 print(length(groups))
-#   59015
+##   11564
 
 # Details on two units
 print(groups[56:57])
-# $`SNP_A-1650338`
-#  C  G  C  G
-#  8  8 12 12
-#
-# $`SNP_A-1716667`
-#  A  G  A  G
-# 10 10 10 10
+## $`SNP_A-1516438`
+## SNP_A-1516438C SNP_A-1516438T SNP_A-1516438C SNP_A-1516438T
+##             10             10             10             10
+##
+## $`SNP_A-1508602`
+## SNP_A-1508602A SNP_A-1508602G SNP_A-1508602A SNP_A-1508602G
+##             10             10             10             10
+
 
 # Number of groups with different number of cells
 print(table(unlist(groups)))
-#      6     8    10    12    14    16    60
-#  16348 59462 84344 59462 16348    20     4
+##    10    60
+## 46240     4
 
 
 # Number of cells per unit
 nbrOfCellsPerUnit <- unlist(lapply(groups, FUN=sum))
 print(table(nbrOfCellsPerUnit))
-#   16    40    60
-#   20 58991     4
+nbrOfCellsPerUnit
+##    40    60
+## 11560     4
 
 
 # Number of groups per unit
@@ -72,17 +74,18 @@ nbrOfGroupsPerUnit <- unlist(lapply(groups, FUN=length))
 
 # Details on a few units
 print(nbrOfGroupsPerUnit[20:30])
-# AFFX-barcodeP AFFX-barcodeQ AFFX-barcodeR AFFX-barcodeS AFFX-barcodeT
-#             1             1             1             1             1
-#   AFFX-601964   AFFX-656757   AFFX-721431   AFFX-737848  AFFX-1329481
-#             4             4             4             4             4
-#  AFFX-1375402
-#             4
+## SNP_A-1512666 SNP_A-1512740 SNP_A-1512132 SNP_A-1516082 SNP_A-1511962
+##             4             4             4             4             4
+## SNP_A-1515637 SNP_A-1515878 SNP_A-1518789 SNP_A-1518296 SNP_A-1519701
+##             4             4             4             4             4
+## SNP_A-1511743
+##             4
 
 # Number of units for each unique number of groups
 print(table(nbrOfGroupsPerUnit))
-#   1     4
-#  24 58991
+## nbrOfGroupsPerUnit
+##     1     4
+##     4 11560
 
 x <- list()
 for (size in unique(nbrOfGroupsPerUnit)) {
@@ -104,9 +107,9 @@ print(sum(x[["4"]][1,]-x[["4"]][2,] != 0))
 print(sum(x[["4"]][3,]-x[["4"]][4,] != 0))
 # 0
 
-# Clean up
-rm(cdfFile, groups, nbrOfCellsPerUnit, nbrOfGroupsPerUnit, x)
-} # for (zzz in 0)
+##############################################################
+}                                                     # STOP #
+##############################################################
 }
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 

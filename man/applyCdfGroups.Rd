@@ -61,28 +61,18 @@
 }
 
 \examples{
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
-for (zzz in 0) {
-
-# Find the CDF file for the Mapping 100K Xba array
-chipType <- "Mapping50K_Xba240";
-cdfFile <- findCdf(chipType)
-if (is.null(cdfFile))
-  break;
-
-# Probeset SNP_A-1658298 (dbSNP rs7034018) has equal number of
-# sense and anti-sense probes, but for the latter group the
-# SNP "interrogating" probe pair has been excluded in
-# Affymetrix' probe selection process when designing the
-# Mapping 100K Xba array.
+cdfFile <- findCdf("Mapping10K_Xba131")
 
 # Identify the unit index from the unit name
-probeset <- "SNP_A-1658298"
-unit <- which(readCdfUnitNames(cdfFile) == probeset)
-rm(probeset)
+unitName <- "SNP_A-1509436"
+unit <- which(readCdfUnitNames(cdfFile) == unitName)
 
 # Read the CDF file
-cdf0 <- readCdfUnits(cdfFile, units=unit, stratifyBy="pmmm")
+cdf0 <- readCdfUnits(cdfFile, units=unit, stratifyBy="pmmm", readType=FALSE, readDirection=FALSE)
 cat("Default CDF structure:\n")
 print(cdf0)
 
@@ -119,12 +109,6 @@ cdf <- applyCdfGroups(cdf, cdfMergeStrands)
 cat("Joined CDF structure:\n")
 print(cdf)
 
-# Then, read the CEL file using this new structure
-# celFile <- "NA06985_Hind_B5_3005533.CEL"
-# cel <- readCelUnits(celFile, cdf=cdf)
-# cat("Joined CEL intensities:\n")
-# print(cel)
-
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Rearrange values of group fields into quartets.  This
@@ -136,15 +120,25 @@ print(cdf)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Get the x and y cell locations
+# Get the x and y cell locations (note, zero-based)
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 x <- unlist(applyCdfGroups(cdf, cdfGetFields, "x"), use.names=FALSE)
 y <- unlist(applyCdfGroups(cdf, cdfGetFields, "y"), use.names=FALSE)
 
-# Clean up
-rm(chipType, cdfFile, unit, cdf0, cdf, x, y)
-} # for (zzz in 0)
-rm(zzz)
+# Validate
+ncol <- readCdfHeader(cdfFile)$cols
+cells <- as.integer(y*ncol+x+1)
+cells <- sort(cells)
+
+cells0 <- readCdfCellIndices(cdfFile, units=unit)
+cells0 <- unlist(cells0, use.names=FALSE)
+cells0 <- sort(cells0)
+
+stopifnot(identical(cells0, cells))
+
+##############################################################
+}                                                     # STOP #
+##############################################################
 
 }
 

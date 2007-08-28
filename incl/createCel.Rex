@@ -1,12 +1,11 @@
-for (zzz in 0) {  # Only so that 'break' can be used
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
-# Scan current directory for CEL files
-outFile <- "zzz.CEL"
-files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-files <- setdiff(files, outFile)
-if (length(files) == 0)
-  break
-
+# Search for first available ASCII CEL file
+path <- system.file("rawData", package="AffymetrixDataTestFiles")
+files <- findFiles(pattern="[.](cel|CEL)$", path=path, recursive=TRUE, firstOnly=FALSE)
+files <- grep("ASCII", files, value=TRUE)
 file <- files[1]
 
 
@@ -14,12 +13,15 @@ file <- files[1]
 # Read the CEL header
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hdr <- readCelHeader(file)
-if (hdr$version != 4)
-  break
+stopifnot(hdr$version == 3)
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Create a CEL v4 file of the same chip type
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+outFile <- file.path(tempdir(), "zzz.CEL")
+if (file.exists(outFile))
+  file.remove(outFile)
 createCel(outFile, hdr, overwrite=TRUE)
 str(readCelHeader(outFile))
 
@@ -30,6 +32,7 @@ updateCel(outFile, indices=indices, intensities=intensities)
 value <- readCel(outFile, indices=indices)$intensities
 stopifnot(identical(intensities, value))
 
-# Clean up
-#rm(files, file, hdr, hdr2)
-} # for (zzz in 0)
+
+##############################################################
+}                                                     # STOP #
+##############################################################

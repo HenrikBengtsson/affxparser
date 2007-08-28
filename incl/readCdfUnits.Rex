@@ -1,10 +1,9 @@
-
-for (zzz in 0) {
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
 # Find any CDF file
 cdfFile <- findCdf()
-if (is.null(cdfFile))
-  break
 
 # Read all units in a CDF file [~20s => 0.34ms/unit]
 cdf0 <- readCdfUnits(cdfFile, readXY=FALSE, readExpos=FALSE)
@@ -23,8 +22,7 @@ cdf2 <- readCdfUnits(cdfFile, units=units2, readXY=FALSE, readExpos=FALSE)
 
 stopifnot(identical(cdf1, cdf2))
 
+##############################################################
+}                                                     # STOP #
+##############################################################
 
-# Clean up
-rm(cdfFile, units1, cdf1, names, units2, cdf2)
-
-} # for (zzz in 0)

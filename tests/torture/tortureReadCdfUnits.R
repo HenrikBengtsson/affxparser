@@ -3,8 +3,10 @@
 #  readCdfHeader()
 #  readCdfUnits()
 #############################################################################
-library(affxparser);
+library("affxparser");
+library("AffymetrixDataTestFiles");
 
+set.seed(1);
 logMemory <- exists("memory.size", mode="function");
 memSizeRange <- NA;
 
@@ -12,7 +14,7 @@ memSizeRange <- NA;
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Search for a CDF file
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-cdfFile <- findCdf();
+cdfFile <- findCdf("Mapping10K_Xba131");
 if (is.null(cdfFile))
   stop("No CDF file found");
 
@@ -22,13 +24,17 @@ cat("Found CDF file: ", cdfFile, "\n", sep="")
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Start torturing
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-maxNbrOfUnits <- readCdfHeader(cdfFile)$probesets;
-for (kk in 1:10000) {
-  cat(sprintf("Round %d:\n", kk));
+settings <- getOption("affxparser.settings");
+tortureCount <- settings$tests$torture;
+if (is.null(tortureCount))
+  tortureCount <- 25
+for (kk in 1:tortureCount) {
+  cat(sprintf("Round %d of %d:\n", kk, tortureCount));
 
   # Sample units to read
+  maxNbrOfUnits <- readCdfHeader(cdfFile)$probesets;
   nbrOfUnits <- as.integer(runif(n=1, min=0, max=maxNbrOfUnits-0.5));
-  nbrOfUnits <- as.integer(nbrOfUnits / 4);
+  nbrOfUnits <- as.integer(nbrOfUnits / 4 + 1);
   units <- sample(maxNbrOfUnits, size=nbrOfUnits);
   cat(sprintf("Reading %d random units (in [%d,%d]) in random order.\n", 
                                    nbrOfUnits, min(units), max(units)));

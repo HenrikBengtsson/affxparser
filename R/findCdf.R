@@ -14,6 +14,7 @@
 #  \item{paths}{A @character @vector of paths to be searched.  
 #    The current directory is always searched at the beginning.
 #    If @NULL, default paths are searched.  For more details, see below.}
+#  \item{recursive}{If @TRUE, directories are searched recursively.}
 #  \item{pattern}{A regular expression file name pattern to match.}
 #  \item{...}{Additional arguments passed to @see "findFiles".}
 # }
@@ -23,13 +24,13 @@
 # }
 #
 # \details{
-#   Note, the current directory is always searched at the beginning.
+#   Note, the current directory is always searched first, but never
+#   recursively (unless it is added to the search path explicitly).
 #   This provides an easy way to override other files in the search path.
+#
 #   If \code{paths} is @NULL, then a set of default paths are searched.
-#   The default search path is consituted of:
+#   The default search path consitutes:
 #   \enumerate{
-#    \item \code{"."}
-#    \item \code{"cdf/;data/cdf/"}
 #    \item \code{getOption("AFFX_CDF_PATH")}
 #    \item \code{Sys.getenv("AFFX_CDF_PATH")}
 #   }
@@ -56,7 +57,7 @@
 # @keyword file
 # @keyword IO
 #**/#######################################################################
-findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ...) {
+findCdf <- function(chipType=NULL, paths=NULL, recursive=TRUE, pattern="[.](c|C)(d|D)(f|F)$", ...) {
   settings <- getOption("affxparser.settings");
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,28 +65,25 @@ findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ..
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   findFcn <- settings$methods$findCdf;
   if (!is.null(findFcn)) {
-    pattern <- paste(chipType, pattern, sep="");
-    pathnames <- findFcn(chipType=chipType, paths=paths, pattern=pattern, ...);
-    if (!is.null(pathnames))
-      return(pathnames);
+    if (!is.list(findFcn))
+      findFcn <- list(findFcn);
+    for (fcn in findFcn) {
+      # Pass arguments as is
+      pathnames <- fcn(chipType=chipType, paths=paths, 
+                                recursive=recursive, pattern=pattern, ...);
+      if (!is.null(pathnames))
+        return(pathnames);
+    }
   }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Setup search path
+  # Setup search path and pattern
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(paths)) {
-    paths <- paste(".", 
-                   "cdf/", "data/cdf/", 
-                   getOption("AFFX_CDF_PATH"), 
-                   Sys.getenv("AFFX_CDF_PATH"),
-             sep=";", collapse=";");
+    paths <- c(getOption("AFFX_CDF_PATH"), Sys.getenv("AFFX_CDF_PATH"));
   }
-  paths <- c(".", paths);
-  paths <- unique(paths);
+  paths <- unlist(strsplit(paths, split=";"), use.names=FALSE);
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Setup search pattern
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (!is.null(chipType)) {
     if (regexpr("[.](c|C)(d|D)(f|F)$", chipType) !=-1)
       warning("Argument 'chipType' of findCdf() has suffix '.cdf':", chipType);
@@ -95,12 +93,23 @@ findCdf <- function(chipType=NULL, paths=NULL, pattern="[.](c|C)(d|D)(f|F)$", ..
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Search
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  findFiles(pattern=pattern, paths=paths, ...);
+  # 1. First, search the current directory
+  pathnames <- findFiles(pattern=pattern, paths=".", recursive=FALSE, ...);
+  if (!is.null(pathnames))
+    return(pathnames);
+
+  # 2. Then, scan all of the search path
+  findFiles(pattern=pattern, paths=paths, recursive=recursive, ...);
 } 
 
 
 ############################################################################
 # HISTORY:
+# 2007-08-27
+# o The current path is never scanned recursively (unless explicitly 
+#   specified in the search path). This is to avoid endless scans in case
+#   the search path has not been set.
+# o Added argument 'recursive=TRUE' to findCdf().
 # 2007-02-12 [moved to affxparser 2007-03-28]
 # o Added option 'affxparser.settings' (for now private), allowing for an
 #   alternative search function to be set it element methods$findCdf.

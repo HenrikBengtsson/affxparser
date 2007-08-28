@@ -3,8 +3,6 @@
 % 
 %  readCcgHeader.R
 % 
-% on Fri Aug 17 17:41:41 2007.
-% 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

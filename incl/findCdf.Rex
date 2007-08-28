@@ -1,6 +1,9 @@
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
 # Find a specific CDF file
-cdfFile <- findCdf("Mapping50K_Xba240")
+cdfFile <- findCdf("Mapping10K_Xba131")
 print(cdfFile)
 
 # Find the first CDF file (no matter what it is)
@@ -14,3 +17,8 @@ for (cdfFile in cdfFiles) {
   hdr <- readCdfHeader(cdfFile)
   str(hdr)
 }
+
+##############################################################
+}                                                     # STOP #
+##############################################################
+

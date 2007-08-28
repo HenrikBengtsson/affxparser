@@ -6,46 +6,46 @@
 # and indirectly:
 #  readCdfCellIndices() and readCel()
 #############################################################################
-library(affxparser);
-library(R.utils);  # filePath()
+library("affxparser");
+library("AffymetrixDataTestFiles");
+library("R.utils");  # filePath()
 
+set.seed(1);
 logMemory <- exists("memory.size", mode="function");
 memSizeRange <- NA;
 
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Search for CEL files
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-for (path in c(".", "cel", "cel/Xba/", "cel/Hind")) {
-  path <- filePath(path, expandLinks="any");
-  celFiles <- list.files(path=path, pattern="[.](c|C)(e|E)(l|L)$", 
-                                                           full.names=TRUE);
-  nbrOfFiles <- length(celFiles);
-  if (nbrOfFiles > 0)
-    break;
-}
+# Search for some available Calvin CEL files
+path <- system.file("rawData", package="AffymetrixDataTestFiles")
+files <- findFiles(pattern="[.](cel|CEL)$", path=path, recursive=TRUE, firstOnly=FALSE)
+files <- grep("FusionSDK_Test3", files, value=TRUE)
+files <- grep("Calvin", files, value=TRUE)
+celFiles <- files
+nbrOfFiles <- length(celFiles);
 if (nbrOfFiles == 0)
   stop("No CEL files found");
-
 cat(sprintf("Found %d CEL file(s)\n", nbrOfFiles));
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Start torturing
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-for (kk in 1:10000) {
-  cat(sprintf("Round %d:\n", kk));
+settings <- getOption("affxparser.settings");
+tortureCount <- settings$tests$torture;
+if (is.null(tortureCount))
+  tortureCount <- 25
+for (kk in 1:tortureCount) {
+  cat(sprintf("Round %d of %d:\n", kk, tortureCount));
 
   # Sample a CEL file
   celFile <- celFiles[sample(nbrOfFiles, size=1)];
-  chipType <- readCelHeader(celFile)$chipType;
+  chipType <- readCelHeader(celFile)$chiptype;
   cdfFile <- findCdf(chipType);
   maxNbrOfUnits <- readCdfHeader(cdfFile)$probesets;
 
   # Sample units to read
   nbrOfUnits <- as.integer(runif(n=1, min=0, max=maxNbrOfUnits-0.5));
-  nbrOfUnits <- as.integer(nbrOfUnits / 4);
-  nbrOfUnits <- 6695;
+  nbrOfUnits <- as.integer(nbrOfUnits / 4 + 1);
   units <- sample(1:maxNbrOfUnits, size=nbrOfUnits);
   cat(sprintf("Reading %d random units (in [%d,%d]) in random order.\n", 
                                    nbrOfUnits, min(units), max(units)));

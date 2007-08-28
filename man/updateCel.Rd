@@ -44,19 +44,23 @@
  }
 
  \examples{
+##############################################################
+if (require("AffymetrixDataTestFiles")) {            # START #
+##############################################################
 
-for (zzz in 0) {  # Only so that 'break' can be used
+# Search for some available Calvin CEL files
+path <- system.file("rawData", package="AffymetrixDataTestFiles")
+files <- findFiles(pattern="[.](cel|CEL)$", path=path, recursive=TRUE, firstOnly=FALSE)
+files <- grep("FusionSDK_HG-U133A", files, value=TRUE)
+files <- grep("Calvin", files, value=TRUE)
+file <- files[1]
 
-# Scan current directory for CEL files
-files <- list.files(pattern="[.](c|C)(e|E)(l|L)$")
-if (length(files) == 0)
-  break
-
-# Create tempory copy of the CEL file
-filename <- file.path(tempdir(), sprintf("\%s.tmp.cel", files[1]))
+# Convert to an XDA CEL file
+filename <- file.path(tempdir(), basename(file))
 if (file.exists(filename))
   file.remove(filename)
-file.copy(from=files[1], to=filename)
+convertCel(file, filename)
+
 
 fields <- c("intensities", "stdvs", "pixels")
 
@@ -138,7 +142,11 @@ text(x=1, y=0, labels="(350,350)", adj=c(1,1.2), cex=0.8, xpd=TRUE)
 file.remove(filename)
 rm(files, cel, cel0, idxs, data, ff, fields, rotate270)
 
-} # for (zzz in 0)
+
+##############################################################
+}                                                     # STOP #
+##############################################################
+
 }
 
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}

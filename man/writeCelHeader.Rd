@@ -3,8 +3,6 @@
 % 
 %  writeCelHeader.R
 % 
-% on Fri Aug 17 18:03:03 2007.
-% 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
