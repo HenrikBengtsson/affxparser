@@ -159,8 +159,10 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
     files <- files[!isDir];
 
     # Keep only files that match the filename pattern
-    if (!is.null(pattern))
-      files <- grep(pattern, files, value=TRUE);
+    if (!is.null(pattern)) {
+      keep <- grep(pattern, basename(files));
+      files <- files[keep];
+    }
 
     if (length(files) > 0) {
       files <- sort(files);
@@ -193,6 +195,9 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 
 ############################################################################
 # HISTORY:
+# 2007-08-30
+# o BUG FIX: The recent update was not grep():ing correctly; forgot to
+#   extract the basename().
 # 2007-08-27
 # o Now findFiles(..., recursive=TRUE) does a breath-first search in
 #   lexicographic order.

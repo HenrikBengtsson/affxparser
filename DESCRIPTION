@@ -1,6 +1,6 @@
 Package: affxparser
 Version: 1.9.4
-Date: 2007-08-28
+Date: 2007-08-30
 Title: Affymetrix File Parsing SDK
 Author: Henrik Bengtsson, James Bullard, Kasper Daniel Hansen
 Maintainer: Kasper Daniel Hansen <khansen@stat.berkeley.edu>
