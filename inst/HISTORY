@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.9.5 [2007-08-28xx]
+Version: 1.9.5 [2007-08-20xx]
 o Added argument 'recursive=TRUE' to findCdf().  Note, the current 
   working directory is always scanned first, but never recursively
   (unless explicitly added to the search path). This is to avoid
