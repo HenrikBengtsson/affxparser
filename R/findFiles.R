@@ -126,21 +126,24 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
       next;
 
     # Expand Windows shortcut links?
+    files0 <- files;
     if (hasRutils) {
+      # Remember these
       files <- sapply(files, FUN=filePath, expandLinks="any", USE.NAMES=FALSE);
     }
  
-    # Keep only existing directories
+    # Keep only existing files and directories
     ok <- sapply(files, FUN=function(file) {
       (file.exists(path) && !is.na(file.info(file)$isdir));
-    }, USE.NAMES=FALSE)
+    }, USE.NAMES=FALSE);
     files <- files[ok];
+    files0 <- files0[ok];
 
     # Nothing to do?
     if (length(files) == 0)
       next;
 
-    # First search the files, then the directories
+    # First search the files, then the directories, so...
     isDir <- sapply(files, FUN=function(file) {
       file.info(file)$isdir;
     }, USE.NAMES=FALSE);
@@ -148,6 +151,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
     # In case some files are non-accessible, exclude them
     ok <- (!is.na(isDir));
     files <- files[ok];
+    files0 <- files0[ok];
     isDir <- isDir[ok];
 
     # Nothing to do?
@@ -157,10 +161,12 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
     # Directories and files in lexicographic order
     dirs <- files[isDir];
     files <- files[!isDir];
+    files0 <- files0[!isDir];
 
     # Keep only files that match the filename pattern
+    # of the non-expanded filename.
     if (!is.null(pattern)) {
-      keep <- grep(pattern, basename(files));
+      keep <- grep(pattern, basename(files0));
       files <- files[keep];
     }
 
@@ -196,6 +202,10 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 ############################################################################
 # HISTORY:
 # 2007-08-30
+# o BUG FIX: Pattern matching was done on expanded filenames, whereas they
+#   should really be done on the non-expanded ones.  This, only applies to
+#   Windows shortcuts, but it is not the destination file that is of 
+#   interest, but the name of the shortcut file.
 # o BUG FIX: The recent update was not grep():ing correctly; forgot to
 #   extract the basename().
 # 2007-08-27
