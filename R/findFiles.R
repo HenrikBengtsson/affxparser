@@ -97,7 +97,11 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
       path <- filePath(path, expandLinks="any");
 
     # Does the path exist and is it a directory
-    if (!file.exists(path) || !file.info(path)$isdir)
+    # Note, isdir is TRUE for directories, FALSE for files,
+    # *and* NA for non-existing files, e.g. items found by
+    # list.files() but are broken Unix links.
+    isDirectory <- identical(file.info(path)$isdir, TRUE);
+    if (!file.exists(path) || !isDirectory)
       path <- NA;
 
     paths[kk] <- path;
@@ -144,7 +148,11 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
       next;
 
     # First search the files, then the directories, so...
+    # Note, isdir is TRUE for directories, FALSE for files,
+    # *and* NA for non-existing files, e.g. items found by
+    # list.files() but are broken Unix links.
     isDir <- sapply(files, FUN=function(file) {
+      identical(file.info(file)$isdir, TRUE);
       file.info(file)$isdir;
     }, USE.NAMES=FALSE);
 
@@ -201,6 +209,8 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 
 ############################################################################
 # HISTORY:
+# 2007-09-17
+# o ROBUSTNESS: Now findFiles() are robust against broken Unix links.
 # 2007-08-30
 # o BUG FIX: Pattern matching was done on expanded filenames, whereas they
 #   should really be done on the non-expanded ones.  This, only applies to
