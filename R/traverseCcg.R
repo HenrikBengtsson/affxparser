@@ -75,7 +75,20 @@
     hdr <- c(hdr, sprintf("swapXY=%d\n", 0));
     parent <- .findCcgParent(dataHeader, 
                          dataTypeId="affymetrix-calvin-scan-acquisition");
+
+    # Infer DAT header
     datHeader <- parent$parameters[["affymetrix-dat-header"]];
+    if (is.null(datHeader)) {
+      value <- parent$parameters[["affymetrix-partial-dat-header"]];
+      pos <- regexpr(":CLS=", value);
+      if (pos != -1) {
+        value <- substring(value, pos+1);
+        datHeader <- sprintf("[%d..%d]  %s:%s", 0, 65535, "dummy", value);
+      }
+    }
+    if (is.null(datHeader)) {
+      throw("Failed to locate a valid DAT header in the AGCC file header.");
+    }
     hdr <- c(hdr, sprintf("DatHeader=%s\n", datHeader));
 
     hdr <- c(hdr, sprintf("Algorithm=%s\n", params[["affymetrix-algorithm-name"]]));
@@ -135,6 +148,10 @@
 
 ############################################################################
 # HISTORY:
+# 2007-10-12
+# o Now .getCelHeaderV3() tries to infer the DAT header from parent 
+#   parameters 'affymetrix-partial-dat-header' if 'affymetrix-dat-header' 
+#   is not available.  If neither is found, an informative error is thrown.
 # 2007-08-16
 # o Added .getCelHeaderV4(). Verified to work with CEL v1 & v4 headers.
 # o Added .getCelHeaderV3(). Verified to work with CEL v1, v3 & v4 headers.
