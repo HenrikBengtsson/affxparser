@@ -20,9 +20,7 @@
 #   \item{version}{The version of the output file format.}
 #   \item{...}{Not used.}
 #   \item{.validate}{If @TRUE, a consistency test between the generated 
-#     and the original CDF is performed.  Note that the memory overhead
-#     for this can be quite large, because two complete CDF structures 
-#     are kept in memory at the same time.}
+#     and the original CEL is performed.}
 #   \item{verbose}{If @TRUE, extra details are written while processing.}
 # }
 # 
@@ -101,7 +99,11 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (verbose)
     cat("Creating empty CEL file...\n");
-  pathname <- createCel(outFilename, header=cel$header, overwrite=FALSE, verbose=verbose2);
+  suppressWarnings({
+    # createCel() will generate a warning if the CDF file could not be
+    # located, but that is all right.
+    pathname <- createCel(outFilename, header=cel$header, overwrite=FALSE, verbose=verbose2);
+  });
   if (verbose)
     cat("Creating empty CEL file...done\n");
 
@@ -138,6 +140,9 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
 
 ############################################################################
 # HISTORY:
+# 2007-09-12
+# o Help page was refering to the "CDF" and not the "CEL" files.
+# o Now convertCel() will not give a warning if the CDF file is not found.
 # 2007-08-28
 # o BUG FIX: If the destination file already existed, convertCel() would
 #   correctly detect that, but would give the name of the source file.

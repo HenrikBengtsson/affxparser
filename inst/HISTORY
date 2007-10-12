@@ -1,6 +1,17 @@
 Package: affxparser
 ===================
 
+Version: 1.9.x [2007-10-12]
+o BUG FIX: For some Calvin CEL files the CEL header does not contain
+  "parent parameter" 'affymetrix-dat-header' but only parameter
+  'affymetrix-partial-dat-header'. In that case convertCel() would
+  throw an error about 'sprintf("DatHeader=%s\n", datHeader)'.  Now
+  a "fake" DAT header is created from the partial one.  If neither is
+  found, a slightly more informative exception is thrown.
+o CLEAN UP: convertCel() will no longer generate a warning if the
+  corresponding CDF file was not found.
+
+
 Version: 1.9.5 [2007-09-16]
 o Added argument 'recursive=TRUE' to findCdf().  Note, the current 
   working directory is always scanned first, but never recursively
