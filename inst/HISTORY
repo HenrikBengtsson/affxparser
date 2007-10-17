@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.11.x [2007-10-12]
+Version: 1.11.1 [2007-10-12]
 o BUG FIX: For some Calvin CEL files the CEL header does not contain
   "parent parameter" 'affymetrix-dat-header' but only parameter
   'affymetrix-partial-dat-header'. In that case convertCel() would
