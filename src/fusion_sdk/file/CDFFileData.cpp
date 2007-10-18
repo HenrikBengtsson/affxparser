@@ -669,7 +669,11 @@ bool CCDFFileData::ReadTextFormat()
 		subStr=strchr(str,'=')+1;
 		m_Header.m_NumQCProbeSets = atoi(subStr);
 
-		//JHB changed to 300000 from 65000
+		/** 
+		    JHB changed to 300000 from 65000 (should be enough to 
+		    allocate on the stack.), otherwise could use heap mem
+		    however this is not failing on my system.
+		**/
 		char strref[400000];
 		ReadNextLine(instr, strref, 400000);	// The reference string.
 		subStr = strchr(strref,'=') + 1;
