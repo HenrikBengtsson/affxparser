@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <assert.h>
+#include <iostream.h>
 //
 #include "affy-base-types.h"
 #include "CDFFileData.h"
@@ -554,7 +555,8 @@ bool CCDFFileData::ReadXDAHeader()
 	m_Header.m_Version = ival;
 
 	// Check the values for the right format file.
-	if (m_Header.m_Magic != CDF_FILE_MAGIC_NUMBER || m_Header.m_Version > CDF_FILE_VERSION_NUMBER)
+	if (m_Header.m_Magic != CDF_FILE_MAGIC_NUMBER || 
+	    m_Header.m_Version > CDF_FILE_VERSION_NUMBER)
 	{
 		m_strError = "The file does not appear to be the correct format.";
 		return false;
@@ -666,9 +668,11 @@ bool CCDFFileData::ReadTextFormat()
 		ReadNextLine(instr, str, MAXLINELENGTH); // #qc ProbeSets
 		subStr=strchr(str,'=')+1;
 		m_Header.m_NumQCProbeSets = atoi(subStr);
-		char strref[65000];
-		ReadNextLine(instr, strref, 65000);	// The reference string.
-		subStr=strchr(strref,'=')+1;
+
+		//JHB changed to 300000 from 65000
+		char strref[400000];
+		ReadNextLine(instr, strref, 400000);	// The reference string.
+		subStr = strchr(strref,'=') + 1;
 		m_Header.m_Reference = subStr;
 	}
 
@@ -676,8 +680,6 @@ bool CCDFFileData::ReadTextFormat()
 	// Stop if just reading the header.
 	if (readHeaderOnly)
 		return true;
-
-
 
 	// Allocate for the probe set names.
 	m_ProbeSetNames.Resize(m_Header.m_NumProbeSets);
@@ -734,7 +736,7 @@ bool CCDFFileData::ReadTextFormat()
 
 
 	// Skip until the ProbeSet section is found
-NextProbeSet:
+ NextProbeSet:
 	while (1)
 	{
 		ReadNextLine(instr, str, MAXLINELENGTH);
