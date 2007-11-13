@@ -13,7 +13,7 @@
     }
 
     if(length(unitLengths) != nUnits) {
-      stop("Number of elements in argument 'qcUnitLengths' does not match 'nUnits'");
+      stop("Number of elements in argument 'unitLengths' does not match 'nUnits'");
     }
 
     if(length(refSeq) != 1)
@@ -28,7 +28,7 @@
     # 2 Version number.                                           [integer]
     # 3 The number of columns of cells on the array.       [unsigned short]
     # 4 The number of rows of cells on the array.          [unsigned short]
-    # 5 The number of units in the array not including QC units. The term 
+    # 5 The number of units in the array not including QC units. The term
     #   unit is an internal term which means probe set.           [integer]
     # 6 The number of QC units.                                   [integer]
     # 7 The length of the resequencing reference sequence.        [integer]
@@ -53,8 +53,8 @@
     fOffset <- seek(con=con, origin="start", rw="write");
     if (offset != fOffset) {
       throw("File format write error (step 1): File offset is not the excepted one: ", fOffset, " != ", offset);
-    }   
- 
+    }
+
     ## RefSeqsequece
     if(lrefSeq > 0)
       writeChar(as.character(refSeq), con=con, eos=NULL);
@@ -65,7 +65,7 @@
     fOffset <- seek(con=con, origin="start", rw="write");
     if (offset != fOffset) {
       throw("File format write error (step 2): File offset is not the excepted one: ", fOffset, " != ", offset);
-    }   
+    }
 
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -128,7 +128,7 @@
     fOffset <- seek(con=con, origin="start", rw="write");
     if (offset != fOffset) {
       throw("File format write error (step 3): File offset is not the excepted one: ", fOffset, " != ", offset);
-    }   
+    }
 
     bytesOfQcUnits <- 4 * nQcUnits;
     offset <- offset + bytesOfQcUnits;
@@ -170,7 +170,7 @@
 
 .writeCdfUnit <- function(unit, con, unitname=NULL) {
     ## 3. Write the unit
-    unitTypes <- c(expression=1, genotyping=2, tag=3, 
+    unitTypes <- c(expression=1, genotyping=2, tag=3,
                                              resequencing=4, unknown=5);
     unitType <- unitTypes[unit$unittype];
     unitDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
@@ -193,7 +193,7 @@
                              unit$ncells, unit$unitnumber,
                              unit$ncellsperatom))
 
-    # Number of bytes: 2+1+4*4+1=20 bytes    
+    # Number of bytes: 2+1+4*4+1=20 bytes
     writeBin(unitInfo[1],
              con = con, size = 2, endian = "little")
     writeBin(unitInfo[2],
@@ -228,7 +228,7 @@
         # Number of bytes: 64 bytes
         suppressWarnings({
           writeChar(as.character(names(unit$groups)[igroup]),
-                    con = con, nchars = 64, eos = NULL) 
+                    con = con, nchars = 64, eos = NULL)
         })
 
         ## Writing each cell in turn
@@ -302,7 +302,7 @@
 ############################################################################
 # HISTORY:
 # 2007-07-13 /HB
-# o While writing unit names in .initializeCdf(), quite a few copies were 
+# o While writing unit names in .initializeCdf(), quite a few copies were
 #   created using up a lot of memory.  By removing unused objects and
 #   writing unit names in chunks memory usage is now stable and < 200MB.
 # 2007-02-01 /HB
@@ -314,7 +314,7 @@
 # o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().  With
 #   these it is now possible to build up the CDF in chunks.
 # o Removed obsolete arguments 'addName' and 'addPositions' and all related
-#   code.  Internal variable 'positions' is not needed anymore. 
+#   code.  Internal variable 'positions' is not needed anymore.
 #   There are no more seek():s in the code.
 # o Removed obsolete .writeCdfUnit2().
 # o Now only every 1000th unit (instead of 100th) is reported. It is now
