@@ -8,7 +8,6 @@ readCel <- function(filename,
                     readOutliers = TRUE,
                     readMasked = TRUE, 
                     readMap = NULL, 
-                    reorder = TRUE,
                     verbose = 0,
                     .checkArgs = TRUE) {
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,6 +69,7 @@ readCel <- function(filename,
       reorder <- FALSE;
     } else {
       indices <- readMap[indices];
+      reorder <- TRUE;
     }
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,6 +108,8 @@ readCel <- function(filename,
 
 ############################################################################
 # HISTORY:
+# 2007-12-01
+# o Removed argument 'reorder' from readCel().
 # 2007-01-04
 # o Now 'readMap' is validate using internal .assertMap(), which also 
 #   coerces it to an integer vector.

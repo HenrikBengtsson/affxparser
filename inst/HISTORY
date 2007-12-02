@@ -1,10 +1,20 @@
 Package: affxparser
 ===================
 
+Version: 1.11.3 [2007-12-01]
+o Removed argument 'reorder' from readCel() and  readCelUnits()
+  since its name was misleading (the returned value was identical 
+  regardless of 'reorder', but the reading speed was faster when
+  'reorder' was TRUE, which is how it is now hardwired).
+
+
 Version: 1.11.2 [2007-11-06]
-o BUG FIX: in bpmap2tpmap
+o BUG FIX: in bpmap2tpmap().
+o TYPO FIX: One of the error messages for the internal .initializeCdf()
+  was misleading.
 o CLEAN UP: created a Makefile in /inst/info for comparing Fusion SDK
   with affxparser
+
 
 Version: 1.11.1 [2007-10-12]
 o BUG FIX: For some Calvin CEL files the CEL header does not contain
