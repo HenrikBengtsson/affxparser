@@ -31,9 +31,6 @@
 #     @functions.  If @NULL, no transformation is performed.
 #     Intensities read are passed through the corresponding transform
 #     function before being returned.}
-#   \item{reorder}{If @TRUE, cell indices are read in order to speed up the
-#     reading.  If @FALSE, cells are read in the order as given.  For
-#     more details, see help on the same argument in @see "readCel".}
 #   \item{readMap}{A @vector remapping cell indices to file indices.  
 #     If @NULL, no mapping is used.}
 #   \item{verbose}{Either a @logical, a @numeric, or a @see "R.utils::Verbose"
@@ -80,7 +77,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/######################################################################### 
-readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, reorder=TRUE, readMap=NULL, verbose=FALSE) {
+readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, readMap=NULL, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -275,6 +272,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   # 2b. Order cell indices for optimal speed when reading, i.e. minimal
   #     jumping around in the file.
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  reorder <- TRUE;  # Hardwired from now on.
   if (reorder) {
     verbose && enter(verbose, "Reordering cell indices to optimize speed");
     # About 10-15 times faster than using order()!
@@ -308,7 +306,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
     filename <- filenames[kk];
 
     verbose && enter(verbose, "Reading CEL data for array #", kk);
-    celTmp <- readCel(filename, indices=indices, readHeader=FALSE, readOutliers=FALSE, readMasked=FALSE, ..., readMap=NULL, reorder=FALSE, verbose=cVerbose, .checkArgs=FALSE);
+    celTmp <- readCel(filename, indices=indices, readHeader=FALSE, readOutliers=FALSE, readMasked=FALSE, ..., readMap=NULL, verbose=cVerbose, .checkArgs=FALSE);
     verbose && exit(verbose);
 
     if (kk == 1) {
@@ -454,6 +452,9 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
 ############################################################################
 # HISTORY:
+# 2007-12-01 [HB]
+# o Removed argument 'reorder' from readCelUnits(). Reordering is now always
+#   done.
 # 2007-06-28 [HB]
 # o Removed the name of the second argument in a substitute() call.
 # 2007-02-01 [KS]

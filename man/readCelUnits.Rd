@@ -12,7 +12,7 @@
 
  \title{Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files}
 
- \usage{readCelUnits(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, reorder=TRUE, readMap=NULL, verbose=FALSE)}
+ \usage{readCelUnits(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, readMap=NULL, verbose=FALSE)}
 
  \description{
    Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files by using the unit and group definitions in the
@@ -40,9 +40,6 @@
      \code{\link[base]{function}}s.  If \code{\link[base]{NULL}}, no transformation is performed.
      Intensities read are passed through the corresponding transform
      function before being returned.}
-   \item{reorder}{If \code{\link[base:logical]{TRUE}}, cell indices are read in order to speed up the
-     reading.  If \code{\link[base:logical]{FALSE}}, cells are read in the order as given.  For
-     more details, see help on the same argument in \code{\link{readCel}}().}
    \item{readMap}{A \code{\link[base]{vector}} remapping cell indices to file indices.
      If \code{\link[base]{NULL}}, no mapping is used.}
    \item{verbose}{Either a \code{\link[base]{logical}}, a \code{\link[base]{numeric}}, or a \code{\link[R.utils]{Verbose}}
@@ -90,33 +87,8 @@ files <- rep(files, length.out=5)
 
 print(files);
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Benchmarking reading cells in order or not.
-#
-# The difference will be large the more files that are read.
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-units <- 56:256
-nunits <- length(units);
-
-nfiles <- length(files);
-
-t1 <- system.time({
-  cel <- readCelUnits(files, units=units, reorder=TRUE)
-})[3]
-cat(sprintf("Time   [ordered]: \%6.2fs = \%.2fms/(unit & array) [1.00x]\n",
-                                          t1, 1000*t1/nunits/nfiles))
-rm(cel); gc()
-
-t2 <- system.time({
-  cel <- readCelUnits(files, units=units, reorder=FALSE)
-})[3]
-cat(sprintf("Time [unordered]: \%6.2fs = \%.2fms/(unit & array) [\%.2fx]\n",
-                                   t2, 1000*t2/nunits/nfiles, t2/t1))
-rm(cel); gc()
-
-
 # Clean up
-rm(files, t1, t2)
+rm(files)
 
 
 ##############################################################
