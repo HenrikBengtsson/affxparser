@@ -670,7 +670,7 @@ bool CCDFFileData::ReadTextFormat()
 		m_Header.m_NumQCProbeSets = atoi(subStr);
 
 		/** 
-		    JHB changed to 300000 from 65000 (should be enough to 
+		    JHB changed to 400000 from 65000 (should be enough to 
 		    allocate on the stack.), otherwise could use heap mem
 		    however this is not failing on my system.
 		**/

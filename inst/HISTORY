@@ -9,9 +9,17 @@ o Removed argument 'reorder' from readCel() and  readCelUnits()
 
 
 Version: 1.11.2 [2007-11-06]
-o BUG FIX: in bpmap2tpmap().
-o TYPO FIX: One of the error messages for the internal .initializeCdf()
-  was misleading.
+o BUG FIX: Reading a CDF that has a 'refseq' header field longer 
+  than 65,000 symbols would crash R, e.g. when reading certain CDFs
+  for resequencing chip types.  An buffer size internal of Fusion SDK
+  was increased from 65,000 to 400,000 bytes.  Thanks Wenyi Wang for
+  reporting this.
+o BUG FIX: Argument 'verbose' of tpmap2bpmap() was not coerced to
+  integer before passed to the native code.
+o TYPO FIX: The internal .initializeCdf(), used when creating new CDFs,
+  had an error message refering to an invalid 'qcUnitLengths' when
+  it was supposed to be 'unitLengths'.  Thanks Elizabeth Purdom for
+  reporting this.
 o CLEAN UP: created a Makefile in /inst/info for comparing Fusion SDK
   with affxparser
 
