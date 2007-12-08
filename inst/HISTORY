@@ -11,7 +11,7 @@ o Removed argument 'reorder' from readCel() and  readCelUnits()
 Version: 1.11.2 [2007-11-06]
 o BUG FIX: Reading a CDF that has a 'refseq' header field longer 
   than 65,000 symbols would crash R, e.g. when reading certain CDFs
-  for resequencing chip types.  An buffer size internal of Fusion SDK
+  for resequencing chip types.  A buffer size internal of Fusion SDK
   was increased from 65,000 to 400,000 bytes.  Thanks Wenyi Wang for
   reporting this.
 o BUG FIX: Argument 'verbose' of tpmap2bpmap() was not coerced to
