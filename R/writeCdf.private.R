@@ -301,6 +301,9 @@
 
 ############################################################################
 # HISTORY:
+# 2007-11-13 /KH
+# o BUG FIX: The rrror message in internal .initializeCdf() would mention
+#   'qcUnitLengths' when it was meant to say 'unitLengths'.
 # 2007-07-13 /HB
 # o While writing unit names in .initializeCdf(), quite a few copies were
 #   created using up a lot of memory.  By removing unused objects and
