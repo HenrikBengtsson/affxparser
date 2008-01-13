@@ -96,6 +96,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
     hasFilter <- TRUE;
   }
 
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Open file
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -198,6 +199,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
     names <- character(dataGroupHeader$nbrOfDataSets);
     for (kk in seq(along=dss)) { 
       ds <- .readCcgDataSet(con, fileOffset=offset); 
+
       offset <- ds$nextDataSetStart; 
       dss[[kk]] <- ds;
       names[kk] <- ds$name;
@@ -208,7 +210,6 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       header = dataGroupHeader,
       dataSets = dss
     );
-
     dataGroups <- c(dataGroups, list(dataGroup));
   } # while (nextDataGroupStart != 0)
   names(dataGroups) <- unlist(lapply(dataGroups, FUN=function(dg) {
@@ -238,8 +239,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       return("");
     bfr <- readBin(con, what=raw(), n=2*nchars);
     bfr <- bfr[seq(from=2, to=length(bfr), by=2)];
-    bfr <- as.integer(bfr);
-    bfr <- intToChar(bfr);
+    bfr <- rawToChar(bfr, multiple=TRUE);
     bfr <- paste(bfr, collapse="");
     bfr;
   }
@@ -300,14 +300,13 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   # 4 	INT
   # 5 	UINT
   # 6 	FLOAT
-  # 7 	DOUBLE
-  # 8 	STRING
-  # 9 	WSTRING
+  # 7 	STRING
+  # 8 	WSTRING
   whats <- c("integer", "integer", "integer", "integer", "integer", 
-            "integer", "double", "double", "character", "character");
-  names(whats) <- c("BYTE", "UBYTE", "SHORT", "USHORT", "INT", "UINT", "FLOAT", "DOUBLE", "STRING", "WSTRING");
-  signeds <- c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE, TRUE);
-  sizes <- c(1, 1, 2, 2, 4, 4, 4, 8, 1, 2);
+            "integer", "double", "character", "character");
+  names(whats) <- c("BYTE", "UBYTE", "SHORT", "USHORT", "INT", "UINT", "FLOAT", "STRING", "WSTRING");
+  signeds <- c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE);
+  sizes <- c(1, 1, 2, 2, 4, 4, 4, 1, 2);
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
@@ -337,8 +336,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       return("");
     bfr <- readBin(con, what=raw(), n=2*nchars);
     bfr <- bfr[seq(from=2, to=length(bfr), by=2)];
-    bfr <- as.integer(bfr);
-    bfr <- intToChar(bfr);
+    bfr <- rawToChar(bfr, multiple=TRUE);
     bfr <- paste(bfr, collapse="");
     bfr;
   }
@@ -352,7 +350,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
   readWVT <- function(con, ...) {
     name <- readWString(con);
-    param <- readRaw(con);
+    raw <- readRaw(con);
     type <- readWString(con);
 
     # Update data types
@@ -364,7 +362,11 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
     # * text/x-calvin-unsigned-integer-32
     # * text/x-calvin-float
     # * text/plain
+
     n <- length(raw);
+
+#    cat(sprintf("Reading n=%d records of type '%s' named '%s'.\n", n, type, name));
+
     value <- switch(type, 
       "text/ascii" = {
         rawToChar(raw);
@@ -387,23 +389,23 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       },
 
       "text/x-calvin-integer-16" = {
-        readBin(raw, what=integer(0), endian="big", size=2, signed=TRUE, n=n/2);
+        readBin(raw, what=integer(0), endian="big", size=2, signed=TRUE, n=n);
       },
 
       "text/x-calvin-unsigned-integer-16" = {
-        readBin(raw, what=integer(0), endian="big", size=2, signed=FALSE, n=n/2);
+        readBin(raw, what=integer(0), endian="big", size=2, signed=FALSE, n=n);
       },
 
       "text/x-calvin-integer-32" = {
-        readBin(raw, what=integer(0), endian="big", size=4, signed=TRUE, n=n/4);
+        readBin(raw, what=integer(0), endian="big", size=4, signed=TRUE, n=n);
       },
 
       "text/x-calvin-unsigned-integer-32" = {
-        readBin(raw, what=integer(0), endian="big", size=4, signed=FALSE, n=n/4);
+        readBin(raw, what=integer(0), endian="big", size=4, signed=FALSE, n=n);
       },
 
       "text/x-calvin-float" = {
-        readBin(raw, what=double(0), endian="big", size=4, n=n/4);
+        readBin(raw, what=double(0), endian="big", size=4, n=n);
       },
 
       {
@@ -459,7 +461,6 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
     nextDataSetStart=readUInt(con),
     name=readWString(con)
   )
-
   # Reading parameters
   nbrOfParams <- readInt(con);
   params <- vector("list", nbrOfParams);
@@ -492,6 +493,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
     attr(what, "size") <- size;
     colWhats[[cc]] <- what;
   }
+  names(colWhats) <- names;
   bytesPerRow <- as.integer(bytesPerRow);
 
   nbrOfRows <- readUInt(con);
@@ -511,23 +513,59 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
     size <- attr(what, "size");
 
     if (what == "character") {
-      rawCol <- matrix(raw[1:4,], nrow=nbrOfRows, ncol=4);
-      nchars <- readInt(con=rawCol, n=nbrOfRows);
-      nchars <- nchars[1];
-      ccs <- colsOffset + 4 + seq(from=2, to=2*nchars, by=2);
-      value <- intToChar(as.integer(raw[ccs,]));
+      value <- matrix(raw[1:4,], nrow=nbrOfRows, ncol=4);
+      raw <- raw[-c(1:4),,drop=FALSE];
+
+      # Get the number of characters per string (all equal)
+##      nchars <- readInt(con=value, n=nbrOfRows);
+##      nchars <- nchars[1];
+      nchars <- readInt(con=value, n=1);
+      rm(value);
+      gc <- gc();
+
+      ccs <- 1:(size-4);
+      value <- raw[ccs,];
+      raw <- raw[-ccs,,drop=FALSE];
+      gc <- gc();
+      value <- rawToChar(value, multiple=TRUE);
       dim(value) <- c(nchars, nbrOfRows);
-      value <- apply(value, MARGIN=2, paste, collapse="");
+      gc <- gc();
+
+      # Build strings using vectorization (not apply()!)
+      strs <- NULL;
+      for (pp in seq(length=nrow(value))) {
+        valuePP <- value[1,,drop=FALSE];
+        value <- value[-1,,drop=FALSE];
+#        gc <- gc();
+        if (pp == 1) {
+          strs <- valuePP;
+        } else {
+          strs <- paste(strs, valuePP, sep="");
+        }
+        rm(valuePP);
+      }
+      value <- strs;
+      rm(strs);
     } else {
-      ccs <- colsOffset + 1:size;
-      rawCol <- matrix(raw[ccs,], nrow=bytesPerRow, ncol=nbrOfRows, byrow=FALSE);
-      value <- readBin(con=rawCol, what=what, size=size, signed=signed, endian="big", n=nbrOfRows);
+      ccs <- 1:size;
+      value <- raw[ccs,,drop=FALSE];
+      raw <- raw[-ccs,,drop=FALSE];
+      gc <- gc();
+      value <- readBin(con=value, what=what, size=size, signed=signed, endian="big", n=nbrOfRows);
     }
+
+    # Garbage collect
+    gc <- gc();
+
     table[[cc]] <- value;
     colsOffset <- colsOffset + size;
   }
-  table <- as.data.frame(table);
-  colnames(table) <- names;
+
+  # Turn into a data frame
+  attr(table, "row.names") <- .set_row_names(length(table[[1]]));
+  attr(table, "names") <- names;
+  class(table) <- "data.frame";
+
   dataSet$table <- table;
 
   dataSet;
@@ -536,6 +574,15 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
 ############################################################################
 # HISTORY:
+# 2008-01-13
+# o Removed dependency on intToChar() in R.utils.
+# o BUG FIX/UPDATE: The file format was updated between April 2006 and
+#   November 2007.  More specifically, the so called "Value Types" were
+#   changed/corrected.  Before values 7:9 were 'DOUBLE', 'STRING', and
+#   'WSTRING'.  Now 7:8 are 'STRING' and 'WSTRING' and there is no longer
+#   a 'DOUBLE'.
+#   This was detected while trying to read a CNCHP file outputted by the
+#   new Affymetrix Genotyping Console 2.0.  We can now read these files.
 # 2007-08-16
 # o Now it is only readCcg() and readCcgHeader() that are public.  The
 #   other readCcgNnn() functions are renamed to .readCcgNnn().
