@@ -61,16 +61,16 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 
 
   # Checks if a package is loaded or not (should be in the 'base' package)
-  isLoaded <- function(package, version=NULL, ...) {
+  isPackageLoaded <- function(package, version=NULL, ...) {
     s <- search();
     if (is.null(version)) {
       s <- sub("_[0-9.-]*", "", s);
     } else {
       package <- manglePackageName(package, version);
     }
-    pattern <- sprintf("^package:%s$", package);
-    (length(grep(pattern, s)) > 0);
-  } # isLoaded()
+    pattern <- sprintf("package:%s", package);
+    (pattern %in% s);
+  } # isPackageLoaded()
 
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,7 +95,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Prepare list of paths to be scanned
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  hasRutilsLoaded <- isLoaded("R.utils");
+  hasRutilsLoaded <- isPackageLoaded("R.utils");
   ## hasRutils <- suppressWarnings(require(R.utils, quietly=TRUE));
 
   # Don't search the same path twice
@@ -226,7 +226,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 ############################################################################
 # HISTORY:
 # 2008-02-21 [HB]
-# o Added an internal generic isLoaded() function.
+# o Added an internal generic isPackageLoaded() function.
 # 2008-02-20 [KH]
 # o Replaced require("R.utils") with a "isLoaded()" feature.
 # 2008-02-14
