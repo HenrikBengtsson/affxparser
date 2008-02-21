@@ -12,7 +12,7 @@
 # \arguments{
 #  \item{pattern}{A regular expression file name pattern to match.}
 #  \item{paths}{A @character @vector of paths to be searched.}
-#  \item{recursive}{If @TRUE, the directory structure is searched 
+#  \item{recursive}{If @TRUE, the directory structure is searched
 #    breath-first, in lexicographic order.}
 #  \item{firstOnly}{If @TRUE, the method returns as soon as a matching
 #    file is found, otherwise not.}
@@ -25,12 +25,12 @@
 #
 # \section{Paths}{
 #   The \code{paths} argument may also contain paths specified as
-#   semi-colon (\code{";"}) separated paths, e.g. 
+#   semi-colon (\code{";"}) separated paths, e.g.
 #   \code{"/usr/;usr/bin/;.;"}.
 # }
 #
 # \section{Windows Shortcut links}{
-#   If package \pkg{R.utils} is available, Windows Shortcut links (*.lnk)
+#   If package \pkg{R.utils} is available and loaded , Windows Shortcut links (*.lnk)
 #   are recognized and can be used to immitate links to directories
 #   elsewhere.  For more details, see @see "R.utils::filePath".
 # }
@@ -80,7 +80,8 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Prepare list of paths to be scanned
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  hasRutils <- suppressWarnings(require(R.utils, quietly=TRUE));
+  hasRutilsLoaded "R.utils:package" %in% sub("_[0-9.-]*", "", search())
+  ## hasRutils <- suppressWarnings(require(R.utils, quietly=TRUE));
 
   # Don't search the same path twice
   paths <- unique(paths);
@@ -93,7 +94,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
     path <- gsub("^[.][/\\]", "", path);
 
     # Follow Windows shortcut links?
-    if (hasRutils)
+    if (hasRutilsLoaded)
       path <- filePath(path, expandLinks="any");
 
     # Does the path exist and is it a directory
@@ -131,11 +132,11 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 
     # Expand Windows shortcut links?
     files0 <- files;
-    if (hasRutils) {
+    if (hasRutilsLoaded) {
       # Remember these
       files <- sapply(files, FUN=filePath, expandLinks="any", USE.NAMES=FALSE);
     }
- 
+
     # Keep only existing files and directories
     ok <- sapply(files, FUN=function(file) {
       (file.exists(path) && !is.na(file.info(file)$isdir));
@@ -214,7 +215,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 # 2007-08-30
 # o BUG FIX: Pattern matching was done on expanded filenames, whereas they
 #   should really be done on the non-expanded ones.  This, only applies to
-#   Windows shortcuts, but it is not the destination file that is of 
+#   Windows shortcuts, but it is not the destination file that is of
 #   interest, but the name of the shortcut file.
 # o BUG FIX: The recent update was not grep():ing correctly; forgot to
 #   extract the basename().
@@ -226,4 +227,4 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 # o Removed usage of R.utils for now.
 # 2006-03-14
 # o Created from findCdf.R.
-############################################################################  
+############################################################################
