@@ -16,6 +16,8 @@
 #    breath-first, in lexicographic order.}
 #  \item{firstOnly}{If @TRUE, the method returns as soon as a matching
 #    file is found, otherwise not.}
+#  \item{allFiles}{If @FALSE, files and directories starting with
+#    a period will be skipped, otherwise not.}
 #  \item{...}{Arguments passed to @see "base::list.files".}
 # }
 #
@@ -41,7 +43,7 @@
 # @keyword IO
 # @keyword internal
 #**/#######################################################################
-findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE, ...) {
+findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE, allFiles=TRUE, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,9 +57,22 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
     if (length(paths) == 0)
       return(NULL);
     paths;
-  }
+  } # splitPaths()
 
 
+  # Checks if a package is loaded or not (should be in the 'base' package)
+  isLoaded <- function(package, version=NULL, ...) {
+    s <- search();
+    if (is.null(version)) {
+      s <- sub("_[0-9.-]*", "", s);
+    } else {
+      package <- manglePackageName(package, version);
+    }
+    pattern <- sprintf("^package:%s$", package);
+    (length(grep(pattern, s)) > 0);
+  } # isLoaded()
+
+  
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,7 +95,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Prepare list of paths to be scanned
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  hasRutilsLoaded <- "R.utils:package" %in% sub("_[0-9.-]*", "", search())
+  hasRutilsLoaded <- isLoaded("R.utils");
   ## hasRutils <- suppressWarnings(require(R.utils, quietly=TRUE));
 
   # Don't search the same path twice
@@ -116,7 +131,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   pathnames <- c();
   for (path in paths) {
-    files <- list.files(path, all.files=TRUE, full.names=TRUE);
+    files <- list.files(path, all.files=allFiles, full.names=TRUE);
 
     # Exclude listings that are neither files nor directories
     files <- gsub("^[.][/\\]", "", files);
@@ -210,6 +225,12 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 
 ############################################################################
 # HISTORY:
+# 2008-02-21 [HB]
+# o Added an internal generic isLoaded() function.
+# 2008-02-20 [KH]
+# o Replaced require("R.utils") with a "isLoaded()" feature.
+# 2008-02-14
+# o Added argument 'allFiles=TRUE' to findFiles().
 # 2007-09-17
 # o ROBUSTNESS: Now findFiles() are robust against broken Unix links.
 # 2007-08-30
