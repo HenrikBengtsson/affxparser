@@ -80,7 +80,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Prepare list of paths to be scanned
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  hasRutilsLoaded "R.utils:package" %in% sub("_[0-9.-]*", "", search())
+  hasRutilsLoaded <- "R.utils:package" %in% sub("_[0-9.-]*", "", search())
   ## hasRutils <- suppressWarnings(require(R.utils, quietly=TRUE));
 
   # Don't search the same path twice
