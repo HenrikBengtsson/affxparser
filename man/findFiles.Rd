@@ -3,6 +3,8 @@
 % 
 %  findFiles.R
 % 
+% on Thu Feb 21 14:05:38 2008.
+% 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -16,7 +18,7 @@
  Finds one or several files in multiple directories.
 }
 
-\usage{findFiles(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE, ...)}
+\usage{findFiles(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE, allFiles=TRUE, ...)}
 
 \arguments{
  \item{pattern}{A regular expression file name pattern to match.}
@@ -25,6 +27,8 @@
    breath-first, in lexicographic order.}
  \item{firstOnly}{If \code{\link[base:logical]{TRUE}}, the method returns as soon as a matching
    file is found, otherwise not.}
+ \item{allFiles}{If \code{\link[base:logical]{FALSE}}, files and directories starting with
+   a period will be skipped, otherwise not.}
  \item{...}{Arguments passed to \code{\link[base]{list.files}}().}
 }
 
@@ -39,7 +43,7 @@
 }
 
 \section{Windows Shortcut links}{
-  If package \pkg{R.utils} is available and loaded, Windows Shortcut links (*.lnk)
+  If package \pkg{R.utils} is available and loaded , Windows Shortcut links (*.lnk)
   are recognized and can be used to immitate links to directories
   elsewhere.  For more details, see \code{\link[R.utils]{filePath}}.
 }
