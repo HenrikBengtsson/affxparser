@@ -1,7 +1,9 @@
 Package: affxparser
 ===================
 
-Version: 1.11.5 [2008-02-21x]
+Version: 1.11.5 [2008-02-29]
+o Updated cdfMergeStrands() to merge any even number of groups,
+  not only units with two or four group pairs.
 o BUG FIX: The code in findFiles() for testing if R.utils is loaded 
   or not was not correct making it fail to detect R.utils.
 
