@@ -15,7 +15,9 @@ PKG_CPPFLAGS+=\
  -Ifusion_sdk/calvin_files/utils/src\
  -Ifusion_sdk/calvin_files/writers/src\
  -Ifusion_sdk/file\
+ -Ifusion_sdk/file/TsvFile\
  -Ifusion_sdk/portability\
+ -Ifusion_sdk/util\
  -Ifusion_sdk\
  -D_USE_MEM_MAPPING_\
  -D_MSC_VER
@@ -64,10 +66,17 @@ PKG_SOURCES = \
 	fusion_sdk/file/CELFileData.cpp\
 	fusion_sdk/file/FileIO.cpp\
 	fusion_sdk/file/FileWriter.cpp\
+	fusion_sdk/file/TsvFile/TsvFile.cpp\
+	fusion_sdk/util/MsgStream.cpp\
+	fusion_sdk/util/Util.cpp\
+	fusion_sdk/util/RowFile.cpp\
+	fusion_sdk/util/TableFile.cpp\
+	fusion_sdk/util/Convert.cpp\
 	R_affx_cel_parser.cpp\
 	R_affx_cdf_parser.cpp\
 	R_affx_cdf_extras.cpp\
-	R_affx_bpmap_parser.cpp
+	R_affx_bpmap_parser.cpp\
+	R_affx_clf_pgf_parser.cpp
 
 OBJECTS=$(PKG_SOURCES:.cpp=.o)
 
