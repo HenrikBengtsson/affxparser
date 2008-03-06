@@ -1,6 +1,18 @@
 Package: affxparser
 ===================
 
+Version: 1.11.? [2008-03-06]
+o BUG FIX: Regular expression pattern 'a-Z' is illegal on (at least) 
+  some locale, e.g. 'C' (where 'A-z' works). The only way to specify 
+  the ASCII alphabet is to list all characters explicitly, which we now
+  do in all methods of the package.  See the r-devel thread 
+  "invalid regular expression '[a-Z]'" on 2008-03-05 for details.
+
+
+Version: 1.11.6 [2008-03-04]
+o Added trial versions of readClf() and readPgf().
+
+ 
 Version: 1.11.5 [2008-02-29]
 o Updated cdfMergeStrands() to merge any even number of groups,
   not only units with two or four group pairs.
