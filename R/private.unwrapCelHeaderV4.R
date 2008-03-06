@@ -126,7 +126,8 @@
   scannerInfo <- trim(scannerInfo);
   bfr <- gsub(pattern, "\\2", bfr);
 
-  pattern <- "^([a-zA-Z0-9]*)[ ]*([a-zA-Z0-9]*)[ ]*";
+# Not locale safe: pattern <- "^([a-zA-Z0-9]*)[ ]*([a-zA-Z0-9]*)[ ]*";
+  pattern <- "^([abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0-9]*)[ ]*([abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0-9]*)[ ]*";
   header$scanner <- list(
       id = gsub(pattern, "\\1", scannerInfo),
     type = gsub(pattern, "\\2", scannerInfo)
