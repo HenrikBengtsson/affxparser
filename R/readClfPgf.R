@@ -20,10 +20,10 @@ readPgf <- function(file, readBody=TRUE) {
     ## probeset -> atom
     astarts <- pgf[["probesetStartAtom"]][probesetIdx]
     aends <- pgf[["probesetStartAtom"]][probesetIdx+1]
-    aends[is.na(aends)] <- length(pgf[["atomId"]])
+    aends[is.na(aends)] <- length(pgf[["atomId"]]) + 1
     ## atom -> probe
     pstarts <- pgf[["atomStartProbe"]][astarts]
-    pends <- pgf[["atomStartProbe"]][aends ] - 1
-    pends[is.na(aends)] <- length(pgf[["probeId"]])
-    mapply(seq, pstarts, pends, SIMPLIFY=FALSE)
+    pends <- pgf[["atomStartProbe"]][aends] - 1
+    pends[is.na(pends)] <- length(pgf[["probeId"]])
+    mapply(":", pstarts, pends, SIMPLIFY=FALSE)
 }
