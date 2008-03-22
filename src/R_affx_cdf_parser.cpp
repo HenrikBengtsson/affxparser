@@ -1250,7 +1250,9 @@ extern "C" {
    * plan is to remove the latter.
    *
    ************************************************************************/
-  SEXP R_affx_get_cdf_units(SEXP fname, SEXP units, SEXP readXY, SEXP readBases, SEXP readExpos, SEXP readType, SEXP readDirection, SEXP readIndices, SEXP verbose)
+  SEXP R_affx_get_cdf_units(SEXP fname, SEXP units, SEXP readXY, SEXP readBases, 
+                            SEXP readExpos, SEXP readType, SEXP readDirection, 
+                            SEXP readIndices, SEXP verbose)
   {
     FusionCDFData cdf;
     string str;
@@ -1576,7 +1578,7 @@ extern "C" {
 
           /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
            * Assign field values
-					 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+           * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
           fieldIdx = 0;
 
           /** do I have to make the attribute vector everytime? **/
