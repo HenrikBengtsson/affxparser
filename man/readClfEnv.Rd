@@ -1,5 +1,5 @@
-\name{readClf}
-\alias{readClf}
+\name{readClfEnv}
+\alias{readClfEnv}
 \title{Parsing a CLF file using Affymetrix Fusion SDK}
 \description{
  This function parses a CLF file using the Affymetrix Fusion SDK. CLF
@@ -7,7 +7,7 @@
  x- and y- coordinates.
 }
 \usage{
-readClf(file, readBody = TRUE)
+readClfEnv(file, readBody = TRUE)
 }
 \arguments{
   \item{file}{\code{character(1)} providing a path to the CLF file to be

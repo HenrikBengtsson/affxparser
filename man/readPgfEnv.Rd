@@ -1,5 +1,5 @@
-\name{readPgf}
-\alias{readPgf}
+\name{readPgfEnv}
+\alias{readPgfEnv}
 \title{Parsing a PGF file using Affymetrix Fusion SDK}
 \description{
   This function parses a PGF file using the Affymetrix Fusion SDK. PGF
@@ -7,7 +7,7 @@
   type (e.g., pm, mm) of the probe and probeset.
 }
 \usage{
-readPgf(file, readBody = TRUE)
+readPgfEnv(file, readBody = TRUE, indices = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,7 +16,9 @@ readPgf(file, readBody = TRUE)
   \item{readBody}{\code{logical(1)} indicating whether the entire file should
     be parsed (\code{TRUE}) or only the file header information describing
     the chips to which the file is releavant.}
-}
+    \item{indices}{\code{integer(n)} vector of positive integers
+	indicating which probesets to read.}
+    }
 \value{
   An environment. The \code{header} element is always present; the
   remainder are present when \code{readBody=TRUE}.
