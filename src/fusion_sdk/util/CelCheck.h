@@ -1,0 +1,179 @@
+////////////////////////////////////////////////////////////////
+//
+// Copyright (C) 2005 Affymetrix, Inc.
+//
+// This program is free software; you can redistribute it and/or modify 
+// it under the terms of the GNU General Public License (version 2) as 
+// published by the Free Software Foundation.
+// 
+// This program is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+// General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License 
+// along with this program;if not, write to the 
+// 
+// Free Software Foundation, Inc., 
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+//
+////////////////////////////////////////////////////////////////
+/**
+ * @file   CelCheck.h
+ * @author Alan Williams
+ * @date   Tue July 11 18:03:02 2007
+ * 
+ * @brief  Class for doing a check of two CEL files after regression run.
+ */
+
+#ifndef CELCHECK_H
+#define CELCHECK_H
+
+#include <string>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <math.h>
+#include <algorithm>
+#include <vector>
+#include <set>
+#include <map>
+#include "Util.h"
+#include "Verbose.h"
+#include "RegressionCheck.h"
+#include "FusionCELData.h"
+#include "StringUtils.h"
+
+using namespace std;
+using namespace affymetrix_fusion_io;
+
+/**
+ * Class for testing that CEL files are the same +/- some epsilon. Also checks
+ * to make sure that at least some of the headers are the same
+ * (times/dates/versions change so not checked).
+ */
+class CelCheck : public RegressionCheck {
+
+public:
+
+  /**
+   * @brief     Constructor
+   * @param     generated 
+   * @param     gold      the reference data to compare with
+   * @param     eps       epsilon
+   * @param     prefix
+   * @param     diffAllowed
+   * @return    
+   */
+  CelCheck(std::vector<std::string> &generated,
+           std::vector<std::string> &gold, 
+           double eps, 
+           const std::string &prefix="affymetrix-", 
+           int diffAllowed=0) {
+    m_Generated = generated;
+    m_Gold = gold;
+    m_Eps = eps;
+    m_Prefix = prefix;
+    m_DiffAllowed = diffAllowed;
+  }
+
+  /** 
+   * Check to make sure that two files are the same +/- some epsilon. 
+   * @param msg - Fills in an error message if test fails, empty string otherwise.
+   * @return - Returns true if files are close enough, false otherwise.
+   */
+  bool check(std::string &msg) {
+    bool success = true;
+    if(m_Generated.size() != m_Gold.size()) {
+      return checkMsg(false, "CelCheck::check() - generated and gold vectors must be same size.",msg);
+    }
+    for(unsigned int i = 0; i < m_Generated.size(); i++) {
+        try {
+            m_Generated[i] = Util::getPathName(m_Generated[i].c_str());
+            m_Gold[i] = Util::getPathName(m_Gold[i].c_str());
+            if(!headersSame(m_Generated[i], m_Gold[i], msg))
+                success = false;
+            if(!dataSame(m_Generated[i], m_Gold[i], msg)) {
+                success = false;
+            }
+        } // end try
+        catch(Except &e) {
+            success &= checkMsg(false, "Error: " + ToStr(e.what()),msg);
+        }
+        catch(affymetrix_calvin_exceptions::CalvinException &ce) {
+            success &= checkMsg(false, "Error: AGCC library exception: " + 
+                            StringUtils::ConvertWCSToMBS(ce.Description()),msg);
+        }
+        catch(const std::exception &e) {
+            success &= checkMsg(false, "Error: standard exception: " + ToStr(e.what()),msg);
+        }
+        catch(...) {
+            success &= checkMsg(false, "Error: Uncaught Exception.",msg);
+        }
+    }
+    return success;
+  }
+
+private:
+  
+  static void fillInToIgnore(std::set<std::string> &ignoreMap, const std::string &prefix) {
+    ignoreMap.clear();
+    ignoreMap.insert("analysis-guid");
+  }
+
+  bool headersSame(const std::string &generated, const std::string &gold, std::string &msgs) {
+    ///@todo implement cel header check once we have new regression data
+    return true;
+  }
+
+  bool dataSame(const std::string &generated, const std::string &gold, std::string &msgs) {
+    bool success = true;
+    double maxDiff = -1;
+    int numDiff = 0;
+    FusionCELData generatedCel, goldCel;
+
+    goldCel.SetFileName (gold.c_str());
+    if (! goldCel.Read()) {
+      msgs += "Can't read cel file: " + ToStr(gold);
+      return false;
+    }
+    generatedCel.SetFileName (generated.c_str());
+    if (! generatedCel.Read()) {
+      msgs += "Can't read cel file: " + ToStr(generated);
+      return false;
+    }
+    const int numCells = goldCel.GetNumCells();
+    for (int celIx = 0; celIx < numCells; celIx++) {
+      bool localSuccess = true;
+      checkFloat(goldCel.GetIntensity(celIx), generatedCel.GetIntensity(celIx), m_Eps, localSuccess, maxDiff);
+      if(!success) {
+        numDiff++;
+      }
+      success &= localSuccess;
+    }
+
+    if(maxDiff > m_Eps) {
+      Verbose::out(1, "Max diff: " + ToStr(maxDiff) + " is greater than expected (" + ToStr(m_Eps) + ")");
+      Verbose::out(1, ToStr(numDiff) + " of " + ToStr(numCells) + " (" + 
+                   ToStr(100.0 * numDiff/numCells) + "%) were different.");
+    }
+    if(!success && m_DiffAllowed >= numDiff) 
+        success = true;
+    if(!success) {
+      msgs += "Error: " + generated + " is different from " + gold + ". ";
+      
+    }
+    std::string res = "different";
+    if(success) 
+        res = "same";
+    Verbose::out(1, generated + ToStr(" chip is ") + res + " max diff is: " + ToStr(maxDiff));
+    return success;
+  }
+      
+  std::vector<std::string> m_Generated;
+  std::vector<std::string> m_Gold;
+  double m_Eps;
+  std::string m_Prefix;
+  int m_DiffAllowed;
+};
+
+#endif /* CELCHECK_H */
