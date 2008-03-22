@@ -21,11 +21,11 @@ new_int_elt(const char* symbol, int length, SEXP rho)
 }
   
 SEXP
-new_char_elt(const char* symobl, int length, SEXP rho)
+new_char_elt(const char* symbol, int length, SEXP rho)
 {
   SEXP tmp;
   PROTECT(tmp = NEW_CHARACTER(length));
-  defineVar(install(symobl), tmp, rho);
+  defineVar(install(symbol), tmp, rho);
   UNPROTECT(1);
   return tmp;
 }
@@ -91,79 +91,91 @@ R_affx_get_body(ClfFile* clf, SEXP rho)
 }
 
 void
-R_affx_get_body(PgfFile* pgf, SEXP rho)
+R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
 {
-  // Count
-  int nProbesets = 0, nAtoms = 0, nProbes = 0;
-  while (pgf->next_probeset() == TSV_OK) {
-    ++nProbesets;
-    while (pgf->next_atom() == TSV_OK) {
-      ++nAtoms;
-      while (pgf->next_probe() == TSV_OK) {
-        ++nProbes;
-      }
-    }
-  }
-  pgf->rewind();
-    
-  // Read
-  SEXP probeset_type, probeset_name, // atom_type, 
-    probe_type, probe_sequence;
-  int *probeset_id, *probeset_start_atom, 
-    *atom_id, *atom_exon_position, *atom_start_probe,
-    *probe_id, *probe_gc_count, *probe_length, 
-    *probe_interrogation_position;
+    // Count
+    int nProbesets = 0, nAtoms = 0, nProbes = 0, i = 0;
 
-  // probeset
-  probeset_id = new_int_elt("probesetId", nProbesets, rho);
-  probeset_type = new_char_elt("probesetType", nProbesets, rho);
-  probeset_name = new_char_elt("probesetName", nProbesets, rho);
-  probeset_start_atom = new_int_elt("probesetStartAtom", nProbesets, rho);
-  // atom
-  atom_id = new_int_elt("atomId", nAtoms, rho);
-  // FIXME: where's atom_type? in docs but not .h or .cpp
-  //   atom_type = new_char_elt("atomType", nAtoms, rho);
-  atom_exon_position = new_int_elt("atomExonPosition", nAtoms, rho);
-  atom_start_probe = new_int_elt("atomStartProbe", nAtoms, rho);
-  // probe
-  probe_id = new_int_elt("probeId", nProbes, rho);
-  probe_type = new_char_elt("probeType", nProbes, rho);
-  probe_gc_count = new_int_elt("probeGcCount", nProbes, rho);
-  probe_length = new_int_elt("probeLength", nProbes, rho);
-  probe_interrogation_position = 
-    new_int_elt("probeInterrogationPosition", nProbes, rho);
-  probe_sequence = new_char_elt("probeSequence", nProbes, rho);
-    
-  nProbesets = nAtoms = nProbes = 0;
-
-  while(pgf->next_probeset() == TSV_OK) {
-    probeset_id[nProbesets] = pgf->probeset_id;
-    SET_STRING_ELT(probeset_type, nProbesets, 
-                   mkChar(pgf->probeset_type.c_str()));
-    SET_STRING_ELT(probeset_name, nProbesets, 
-                   mkChar(pgf->probeset_name.c_str()));
-    probeset_start_atom[nProbesets] = 1 + nAtoms;
-    ++nProbesets;
-    while (pgf->next_atom() == TSV_OK) {
-      atom_id[nAtoms] = pgf->atom_id;
-      // FIXME: where's atom_type? in docs but not header
-      atom_exon_position[nAtoms] = pgf->exon_position;
-      atom_start_probe[nAtoms] = 1 + nProbes;
-      ++nAtoms;
-      while (pgf->next_probe() == TSV_OK) {
-        probe_id[nProbes] = pgf->probe_id;
-        SET_STRING_ELT(probe_type, nProbes, 
-                       mkChar(pgf->probe_type.c_str()));
-        probe_gc_count[nProbes] = pgf->gc_count;
-        probe_length[nProbes] = pgf->probe_length;
-        probe_interrogation_position[nProbes] = 
-          pgf->interrogation_position;
-        SET_STRING_ELT(probe_sequence, nProbes,
-                       mkChar(pgf->probe_sequence.c_str()));
-        ++nProbes;
-      }
+    while (pgf->next_probeset() == TSV_OK) {
+        if (nProbesets >= LENGTH(indices)) {
+            break;
+        }
+        
+        if (indices == R_NilValue || (INTEGER(indices)[nProbesets] - 1) == i++) {
+            ++nProbesets;
+            while (pgf->next_atom() == TSV_OK) {
+                ++nAtoms;
+                while (pgf->next_probe() == TSV_OK) {
+                    ++nProbes;
+                }
+            }
+        }
     }
-  }
+    pgf->rewind();
+    
+    // Read
+    SEXP probeset_type, probeset_name, // atom_type, 
+        probe_type, probe_sequence;
+    int *probeset_id, *probeset_start_atom, 
+        *atom_id, *atom_exon_position, *atom_start_probe,
+        *probe_id, *probe_gc_count, *probe_length, 
+        *probe_interrogation_position;
+    
+    // probeset
+    probeset_id = new_int_elt("probesetId", nProbesets, rho);
+    probeset_type = new_char_elt("probesetType", nProbesets, rho);
+    probeset_name = new_char_elt("probesetName", nProbesets, rho);
+    probeset_start_atom = new_int_elt("probesetStartAtom", nProbesets, rho);
+    // atom
+    atom_id = new_int_elt("atomId", nAtoms, rho);
+    // FIXME: where's atom_type? in docs but not .h or .cpp
+    //   atom_type = new_char_elt("atomType", nAtoms, rho);
+    atom_exon_position = new_int_elt("atomExonPosition", nAtoms, rho);
+    atom_start_probe = new_int_elt("atomStartProbe", nAtoms, rho);
+    // probe
+    probe_id = new_int_elt("probeId", nProbes, rho);
+    probe_type = new_char_elt("probeType", nProbes, rho);
+    probe_gc_count = new_int_elt("probeGcCount", nProbes, rho);
+    probe_length = new_int_elt("probeLength", nProbes, rho);
+    probe_interrogation_position = 
+        new_int_elt("probeInterrogationPosition", nProbes, rho);
+    probe_sequence = new_char_elt("probeSequence", nProbes, rho);
+    
+    nProbesets = nAtoms = nProbes = i = 0;
+    while(pgf->next_probeset() == TSV_OK) {
+        if (nProbesets >= LENGTH(indices)) {
+            break;
+        }
+
+        if (indices == R_NilValue || (INTEGER(indices)[nProbesets] - 1) == i++) {
+            probeset_id[nProbesets] = pgf->probeset_id;
+            SET_STRING_ELT(probeset_type, nProbesets, 
+                           mkChar(pgf->probeset_type.c_str()));
+            SET_STRING_ELT(probeset_name, nProbesets, 
+                           mkChar(pgf->probeset_name.c_str()));
+            probeset_start_atom[nProbesets] = 1 + nAtoms;
+            ++nProbesets;
+            while (pgf->next_atom() == TSV_OK) {
+                atom_id[nAtoms] = pgf->atom_id;
+                // FIXME: where's atom_type? in docs but not header
+                atom_exon_position[nAtoms] = pgf->exon_position;
+                atom_start_probe[nAtoms] = 1 + nProbes;
+                ++nAtoms;
+                while (pgf->next_probe() == TSV_OK) {
+                    probe_id[nProbes] = pgf->probe_id;
+                    SET_STRING_ELT(probe_type, nProbes, 
+                                   mkChar(pgf->probe_type.c_str()));
+                    probe_gc_count[nProbes] = pgf->gc_count;
+                    probe_length[nProbes] = pgf->probe_length;
+                    probe_interrogation_position[nProbes] = 
+                        pgf->interrogation_position;
+                    SET_STRING_ELT(probe_sequence, nProbes,
+                                   mkChar(pgf->probe_sequence.c_str()));
+                    ++nProbes;
+                }
+            }
+        }
+    }
 }
 
 extern "C" {
@@ -198,7 +210,7 @@ extern "C" {
       defineVar(install("header"), tmp, rho);
       UNPROTECT(1);
       if (LOGICAL(readBody)[0] == TRUE) {
-        R_affx_get_body(clf, rho);
+          R_affx_get_body(clf, rho);
       }
       delete Err::popHandler();
     } catch (Except ex) {
@@ -214,7 +226,7 @@ extern "C" {
   }
 
   SEXP 
-  R_affx_get_pgf_file(SEXP fname, SEXP readBody, SEXP rho)
+  R_affx_get_pgf_file(SEXP fname, SEXP readBody, SEXP rho, SEXP indices)
   {
     if (IS_CHARACTER(fname) == FALSE || LENGTH(fname) != 1)
       Rf_error("argument '%s' should be '%s'", "fname",
@@ -240,7 +252,7 @@ extern "C" {
       defineVar(install("header"), tmp, rho);
       UNPROTECT(1);
       if (LOGICAL(readBody)[0] == TRUE) {
-        R_affx_get_body(pgf, rho);
+          R_affx_get_body(pgf, rho, indices);
       }
       pgf->close();
       delete Err::popHandler();
