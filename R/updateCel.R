@@ -130,10 +130,10 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 
   # Argument 'verbose':
   if (length(verbose) != 1)
-    stop("Argument 'units' must be a single integer.");
+    stop("Argument 'verbose' must be a single integer.");
   verbose <- as.integer(verbose);
   if (!is.finite(verbose))
-    stop("Argument 'units' must be an integer: ", verbose);
+    stop("Argument 'verbose' must be an integer: ", verbose);
 
   # Nothing to do?
   if (nbrOfIndices == 0) {
