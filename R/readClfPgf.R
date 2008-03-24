@@ -27,6 +27,10 @@ readPgfEnv <- function(file, readBody = TRUE, indices = NULL) {
     if (!file.exists(file))
         stop("pgf file '", file, "' does not exist")
     env <- new.env(parent=emptyenv())
+
+    if (!all(sort(indices) == indices))
+      stop("indices must be sorted.")
+    
     .Call("R_affx_get_pgf_file", file, readBody, env, indices,
           PACKAGE = "affxparser")
 }

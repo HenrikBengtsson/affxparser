@@ -1,5 +1,5 @@
-\name{readPgfEnv}
-\alias{readPgfEnv}
+\name{readPgf}
+\alias{readPgf}
 \title{Parsing a PGF file using Affymetrix Fusion SDK}
 \description{
   This function parses a PGF file using the Affymetrix Fusion SDK. PGF
@@ -7,21 +7,17 @@
   type (e.g., pm, mm) of the probe and probeset.
 }
 \usage{
-readPgfEnv(file, readBody = TRUE, indices = NULL)
+readPgf(file, indices = NULL)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{file}{\code{character(1)} providing a path to the PGF file to be
     input.}
-  \item{readBody}{\code{logical(1)} indicating whether the entire file should
-    be parsed (\code{TRUE}) or only the file header information describing
-    the chips to which the file is releavant.}
-    \item{indices}{\code{integer(n)} vector of positive integers
-      indicating which probesets to read. These integers must be
-      sorted (increasing) and unique.}
-    }
+  \item{indices}{\code{integer(n)} a vector of indices of the probesets to
+    be read.}
+}
 \value{
-  An environment. The \code{header} element is always present; the
+  An list. The \code{header} element is always present; the
   remainder are present when \code{readBody=TRUE}.
 
   The elements present when \code{readBody=TRUE} describe probe sets,
@@ -35,7 +31,7 @@ readPgfEnv(file, readBody = TRUE, indices = NULL)
   \code{atomStartProbe} as the index.
 
   The PGF file format includes optional elements; these elements are
-  always present in the environment, but with appropriate default values.
+  always present in the list, but with appropriate default values.
 
   \item{header}{A list with information about the PGF file. The list
     contains elements described in the PGF file format document
