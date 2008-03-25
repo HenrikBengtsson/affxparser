@@ -99,7 +99,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, unitFields=NULL,
 
 
 
-readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, verbose=0) {
+readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, cells=NULL, fields=NULL, drop=TRUE, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -142,7 +142,7 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
                          "indexPos", "atom");
     fields <- c(knownUnitFields, knownGroupFields, knownCellFields);
   }
-
+  
   # Argument 'verbose':
   if (length(verbose) != 1)
     stop("Argument 'verbose' must be a single integer.");
@@ -154,22 +154,25 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Prepare the arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  readFields <- c(fields, "cell");  # Need to read one cell field!
+  readFields <- unique(readFields);
+  
   # Unit fields
-  readUnitType <- ("unitType" %in% fields);
-  readUnitDirection <- ("unitDirection" %in% fields);
-  readUnitNumber <- ("unitNumber" %in% fields);
-  readUnitAtomNumbers <- ("unitAtomNumbers" %in% fields);
+  readUnitType <- ("unitType" %in% readFields);
+  readUnitDirection <- ("unitDirection" %in% readFields);
+  readUnitNumber <- ("unitNumber" %in% readFields);
+  readUnitAtomNumbers <- ("unitAtomNumbers" %in% readFields);
 
   # Group fields
-  readGroupAtomNumbers <- ("groupAtomNumbers" %in% fields);
-  readGroupDirection <- ("groupDirection" %in% fields);
+  readGroupAtomNumbers <- ("groupAtomNumbers" %in% readFields);
+  readGroupDirection <- ("groupDirection" %in% readFields);
 
   # Cell fields
-  readXY <- any(c("x", "y") %in% fields);
-  readIndices <- ("cell" %in% fields);
-  readBases <- any(c("tbase", "pbase") %in% fields);
-  readIndexpos <- ("indexPos" %in% fields);
-  readAtoms <- ("atom" %in% fields);
+  readXY <- any(c("x", "y") %in% readFields);
+  readIndices <- ("cell" %in% readFields);
+  readBases <- any(c("tbase", "pbase") %in% readFields);
+  readIndexpos <- ("indexPos" %in% readFields);
+  readAtoms <- ("atom" %in% readFields);
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -180,6 +183,7 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Flatten CDF list structure unit by unit
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  groupIdxs <- groups;
   for (uu in seq(along=cdf)) {
     unit <- cdf[[uu]];
     unitName <- names(cdf)[uu];
@@ -200,12 +204,22 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
     unitData <- list(unit=uu, unitName=unitName);
     unitData <- c(unitData, unit);
 
-    # Flatten (group, cell) data
-    for (gg in seq(along=groups)) {
-      group <- groups[[gg]];
-      groupName <- names(groups)[gg];
+    # Extract groups of interest?
+    if (is.null(groupIdxs)) {
+      ggs <- seq(along=groups);
+    } else {
+      keep <- which(seq(along=groups) %in% groupIdxs);
+      groups <- groups[keep];
+      ggs <- groupIdxs;
+    }
 
-      groupData <- list(group=gg, groupName=groupName);
+    # Flatten (group, cell) data
+    groupNames <- names(groups);
+    for (gg in seq(along=ggs)) {
+      group <- groups[gg];
+      groupName <- groupNames[gg];
+
+      groupData <- list(group=ggs[gg], groupName=groupName);
 
       # Extract group fields
       keys <- c("groupdirection", "natoms", "ncellsperatom", "ncells");
@@ -224,6 +238,11 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
 
       # Extract cell fields
       cellData <- as.data.frame(group, stringsAsFactors=FALSE);
+
+      # Extract cells of interest?
+      if (!is.null(cells)) {
+        cellData <- cellData[seq(length=nrow(cellData)) %in% cells,,drop=FALSE];
+      }
 
       # Expand group fields
       nbrOfCells <- nrow(cellData);
@@ -291,9 +310,16 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
   names <- sub("indexpos", "indexPos", names); 
   names(df) <- names;
 
+  # Extract fields of interest
+  df <- df[fields];
+
   # Make it a valid data frame
-  attr(df, "row.names") <- .set_row_names(nbrOfCells);
-  attr(df, "class") <- "data.frame";
+  if (drop && length(df) == 1) {
+    df <- df[[1]];
+  } else {
+    attr(df, "row.names") <- .set_row_names(nbrOfCells);
+    attr(df, "class") <- "data.frame";
+  }
 
   df;
 } # readCdfDataFrame0()
