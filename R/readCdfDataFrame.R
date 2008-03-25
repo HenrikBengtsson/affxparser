@@ -129,10 +129,19 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
   }
 
   # Argument 'fields':
-  knownUnitFields <- c("unit", "unitName", "unitDirection", "nbrOfUnitAtoms", "unitSize", "unitNumber", "unitType", "nbrOfGroups", "mutationType");
-  knownGroupFields <- c("group", "groupName", "nbrOfGroupAtoms", "groupSize", "firstAtom", "lastAtom", "groupDirection");
-  knownCellFields <- c("cell", "x", "y", "probeSequence", "feat", "qual", "expos", "pos", "cbase", "pbase", "tbase", "atom", "index");
+##   knownUnitFields <- c("unit", "unitName", "unitDirection", "nbrOfUnitAtoms", "unitSize", "unitNumber", "unitType", "nbrOfGroups", "mutationType");
+##   knownGroupFields <- c("group", "groupName", "nbrOfGroupAtoms", "groupSize", "firstAtom", "lastAtom", "groupDirection");
+##   knownCellFields <- c("cell", "x", "y", "probeSequence", "feat", "qual", "expos", "pos", "cbase", "pbase", "tbase", "atom", "index");
 
+  if (is.null(fields)) {
+    knownUnitFields <- c("unit", "unitName", "unitType", 
+                         "unitDirection", "unitAtomNumbers");
+    knownGroupFields <- c("group", "groupName", "groupDirection",
+                          "groupAtomNumbers");
+    knownCellFields <- c("cell", "x", "y", "pbase", "tbase", 
+                         "indexPos", "atom");
+    fields <- c(knownUnitFields, knownGroupFields, knownCellFields);
+  }
 
   # Argument 'verbose':
   if (length(verbose) != 1)
@@ -160,14 +169,13 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
   readIndices <- ("cell" %in% fields);
   readBases <- any(c("tbase", "pbase") %in% fields);
   readIndexpos <- ("indexPos" %in% fields);
-  readAtoms <- ("atoms" %in% fields);
+  readAtoms <- ("atom" %in% fields);
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Query the CDF
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   cdf <- readCdf(filename, units=units, readXY=readXY, readBases=readBases, readIndexpos=readIndexpos, readAtoms=readAtoms, readUnitType=readUnitType, readUnitDirection=readUnitDirection, readUnitNumber=readUnitNumber, readUnitAtomNumbers=readUnitAtomNumbers, readGroupAtomNumbers=readGroupAtomNumbers, readGroupDirection=readGroupDirection, readIndices=readIndices, verbose=verbose);
-
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Flatten CDF list structure unit by unit
@@ -177,6 +185,20 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
     unitName <- names(cdf)[uu];
 
     groups <- unit[["groups"]];
+    unit[["groups"]] <- NULL;
+
+    # Translate unit names
+    names <- names(unit);
+    names <- sub("unitdirection", "unitDirection", names); 
+    names <- sub("unittype", "unitType", names); 
+    names <- sub("ncellsperatom", "unitNbrOfCellsPerAtom", names); 
+    names <- sub("ncells", "unitNbrOfCells", names); 
+    names <- sub("natoms", "unitNbrOfAtoms", names); 
+    names <- sub("unitnumber", "unitNumber", names); 
+    names(unit) <- names;
+
+    unitData <- list(unit=uu, unitName=unitName);
+    unitData <- c(unitData, unit);
 
     # Flatten (group, cell) data
     for (gg in seq(along=groups)) {
@@ -186,9 +208,19 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
       groupData <- list(group=gg, groupName=groupName);
 
       # Extract group fields
-      keys <- c("groupdirection");
+      keys <- c("groupdirection", "natoms", "ncellsperatom", "ncells");
       groupData <- c(groupData, group[keys]);
+
       group[keys] <- NULL;
+
+      # Translate unit names
+      names <- names(groupData);
+      names <- sub("groupdirection", "groupDirection", names); 
+      names <- sub("natoms", "groupNbrOfAtoms", names); 
+      names <- sub("ncellsperatom", "groupNbrOfCellsPerAtom", names); 
+      names <- sub("ncells", "groupNbrOfCells", names); 
+      names(groupData) <- names;
+
 
       # Extract cell fields
       cellData <- as.data.frame(group, stringsAsFactors=FALSE);
@@ -215,11 +247,6 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
     }
     rm(groups);
 
-    unit[["groups"]] <- NULL;
-
-    unitData <- list(unit=uu, unitName=unitName);
-    unitData <- c(unitData, unit);
-
     nbrOfCells <- nrow(stackedGroups);
     for (key in names(unitData)) {
       unitData[[key]] <- rep(unitData[[key]], times=nbrOfCells);
@@ -235,12 +262,38 @@ readCdfDataFrame0 <- function(filename, units=NULL, groups=NULL, fields=NULL, ve
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Flatten the remaining list structure
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  df <- cdf[[1]];
-  cdf <- cdf[-1];
+  # Allocate "data frame" of right size
+  unitSizes <- sapply(cdf, FUN=nrow);
+  nbrOfCells <- sum(unitSizes);
+  dataTypes <- sapply(cdf[[1]], FUN=storage.mode);
+  df <- vector("list", length(dataTypes));
+  names(df) <- names(dataTypes);
+  for (key in names(df)) {
+    df[[key]] <- vector(dataTypes[[key]], length=nbrOfCells);
+  }
+
+  # Copy values from the CDF list structure
+  offset <- 0;
   while (length(cdf) > 0) {
-    df <- rbind(df, cdf[[1]]);
+    data <- cdf[[1]];
+    nrow <- nrow(data);
+    idxs <- offset + 1:nrow;
+    for (key in names(df)) {
+      df[[key]][idxs] <- data[[key]];
+    }
+    offset <- offset + nrow;
     cdf <- cdf[-1];
   }
+
+  # Translate cell names
+  names <- names(df);
+  names <- sub("indices", "cell", names); 
+  names <- sub("indexpos", "indexPos", names); 
+  names(df) <- names;
+
+  # Make it a valid data frame
+  attr(df, "row.names") <- .set_row_names(nbrOfCells);
+  attr(df, "class") <- "data.frame";
 
   df;
 } # readCdfDataFrame0()
