@@ -12,9 +12,10 @@ stopifnot(identical(sort(unique(df$unit)), units))
 
 fields <- c("unit", "unitName", "unitType")
 fields <- c(fields, "group", "groupName")
-fields <- c(fields, "x", "y", "cell")
+fields <- c(fields, "x", "y", "cell", "pbase", "tbase")
 df <- readCdfDataFrame(cdfFile, units=units, fields=fields)
 stopifnot(identical(sort(unique(df$unit)), units))
+
 
 ##############################################################
 }                                                     # STOP #
