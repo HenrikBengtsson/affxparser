@@ -125,7 +125,6 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
     readGroupAtomNumbers=readGroupAtomNumbers, 
     readGroupDirection=readGroupDirection, readIndices=readIndices, 
     verbose=verbose-1);
-str(cdf[1]);
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Flatten CDF list structure unit by unit
