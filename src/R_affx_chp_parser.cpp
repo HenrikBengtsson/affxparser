@@ -3,6 +3,7 @@
 #include "FusionCHPQuantificationData.h"
 #include "FusionCHPQuantificationDetectionData.h"
 #include "FusionCHPDataAdapterInterface.h"
+#include "FusionCHPTilingData.h" 
 #include "StringUtils.h"
 #include "ParameterNameValueType.h"
 #include <string>
@@ -10,6 +11,7 @@
 using namespace std;
 using namespace affymetrix_calvin_utilities;
 using namespace affymetrix_calvin_data;
+using namespace affymetrix_calvin_io;
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_parameter;
 
@@ -354,6 +356,22 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
   UNPROTECT(2);
   return(lst);
 }
+
+SEXP
+R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
+{
+  SEXP lst, nms;
+  int lstIdx = 0, lstNbr = 3;
+
+  PROTECT(lst = NEW_LIST(lstNbr));
+  PROTECT(nms = NEW_CHARACTER(lstNbr));
+  
+  lstIdx = R_affx_AddList(chp->GetAlgParams(), lst, nms, lstIdx,
+			   "AlgorithmParameters");
+  SET_NAMES(lst, nms);
+  UNPROTECT(2);
+  return(lst);
+}
 	       
 SEXP
 R_affx_ReadCHP(FusionCHPQuantificationData *chp, bool isBrief)
@@ -454,6 +472,16 @@ extern "C" {
 	delete qdChp;
       }
     }
+
+    if (processed==false) {
+      FusionCHPTilingData *tChp = FusionCHPTilingData::FromBase(chp);
+      if(tChp != NULL) {
+        processed = true;
+        PROTECT(result = R_affx_ReadCHP(tChp, isBrief));
+        ++protectionCount;
+        delete tChp;
+      }
+     }
 
     if (processed==false) {
       Rf_warning("unable to read CHP file '%s'", chpFileName);
