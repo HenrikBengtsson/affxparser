@@ -8,6 +8,7 @@
 #include "ParameterNameValueType.h"
 #include <string>
 
+
 using namespace std;
 using namespace affymetrix_calvin_utilities;
 using namespace affymetrix_calvin_data;
@@ -47,6 +48,19 @@ R_affx_AddCHPMeta(AffymetrixGuidType fileId,
   return lstIdx+4;
 }
 
+int
+R_affx_AddCHPTileMeta(AffymetrixGuidType fileId, 
+		  wstring algName, wstring algVersion, 
+		  SEXP lst, SEXP nms, int lstIdx)
+{
+  SET_NAMED_ELT(lst, lstIdx, mkString(fileId.c_str()), nms, "FileId");
+  SET_NAMED_ELT(lst, lstIdx+1, mkString(wcs_to_cstr(algName)),
+		nms, "AlgorithmName"); 
+  SET_NAMED_ELT(lst, lstIdx+2, mkString(wcs_to_cstr(algVersion)),
+		nms, "AlgorithmVersion");
+  return lstIdx+3;
+}
+
 SEXP 
 R_affx_GetList(FusionTagValuePairTypeList& params)
 {
@@ -71,14 +85,16 @@ SEXP
 R_affx_GetList(ParameterNameValueTypeList params)
 // R_affx_ParamaterNameValueTypeList(ParameterNameValueTypeList params)
 {
-  SEXP pLst, pNms, pVal;
+  SEXP pLst, pNms, pVal, pName;
   int pIdx=0, pNbr = params.size();
   PROTECT(pLst = NEW_LIST(pNbr));
   PROTECT(pNms = NEW_CHARACTER(pNbr));
-      
+  
+  /* no idea why one must use mkString to hold pName and not a char*
+     but the former works and the latter does not */    
   for(ParameterNameValueTypeList::iterator param=params.begin();
       param != params.end(); ++pIdx, ++param) {
-    const char *pName = wcs_to_cstr(param->GetName());
+    PROTECT(pName = mkString(wcs_to_cstr(param->GetName())));
     switch(param->GetParameterType()) 
       {
       case ParameterNameValueType::Int8Type:
@@ -110,8 +126,9 @@ R_affx_GetList(ParameterNameValueTypeList params)
 	Rf_warning("unhandled type for parameter '%s'", pName);
 	PROTECT(pVal = ScalarString(R_NaString));
       }
-    SET_NAMED_ELT(pLst, pIdx, pVal, pNms, pName);
-    UNPROTECT(1);
+    SET_NAMED_ELT(pLst, pIdx, pVal, pNms, CHAR(STRING_ELT(pName,0)));
+    //Rf_PrintValue(pName);
+    UNPROTECT(2);
   }
   SET_NAMES(pLst, pNms);
   UNPROTECT(2);
@@ -361,13 +378,24 @@ SEXP
 R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
 {
   SEXP lst, nms;
-  int lstIdx = 0, lstNbr = 3;
+  int lstIdx = 0, lstNbr = 6, numSeq=0;
 
   PROTECT(lst = NEW_LIST(lstNbr));
   PROTECT(nms = NEW_CHARACTER(lstNbr));
-  
+
+  lstIdx = R_affx_AddCHPTileMeta(chp->FileId(), chp->GetAlgName(),
+			     chp->GetAlgVersion(),
+			     lst, nms, lstIdx);  
   lstIdx = R_affx_AddList(chp->GetAlgParams(), lst, nms, lstIdx,
 			   "AlgorithmParameters");
+
+  TilingSequenceData seq;
+  CHPTilingEntry e;
+
+  chp->OpenTilingSequenceDataSet(0);
+  seq = chp->GetTilingSequenceData();
+
+
   SET_NAMES(lst, nms);
   UNPROTECT(2);
   return(lst);
