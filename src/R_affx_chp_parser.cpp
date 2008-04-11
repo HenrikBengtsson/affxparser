@@ -4,6 +4,7 @@
 #include "FusionCHPQuantificationDetectionData.h"
 #include "FusionCHPDataAdapterInterface.h"
 #include "FusionCHPTilingData.h" 
+#include "CHPReseqEntry.h"
 #include "StringUtils.h"
 #include "ParameterNameValueType.h"
 #include <string>
@@ -127,7 +128,7 @@ R_affx_GetList(ParameterNameValueTypeList params)
 	PROTECT(pVal = ScalarString(R_NaString));
       }
     SET_NAMED_ELT(pLst, pIdx, pVal, pNms, CHAR(STRING_ELT(pName,0)));
-    //Rf_PrintValue(pName);
+
     UNPROTECT(2);
   }
   SET_NAMES(pLst, pNms);
@@ -155,7 +156,73 @@ R_affx_AddList(ParameterNameValueTypeList list,
   SET_NAMED_ELT(lst, lstIdx, paramList, nms, eltName);
   UNPROTECT(1);
   return lstIdx+1;
-}	       
+}
+
+SEXP
+R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
+{
+  SEXP call, score, rval, nms, fcall, freason, fposition, fnms, force;
+  int ct, i;
+  char *s, *sc, *sr;
+  FusionResequencingResults  frResults;
+  
+  chp->GetReseqResults(frResults);
+
+  ct = frResults.GetCalledBasesSize();
+  s = (char *) R_alloc((long) (ct) + 1L, sizeof(char));
+  for(i=0; i<ct; i++) 
+    s[i] = (char) frResults.GetCalledBase(i);
+  s[ct] = '\0';
+
+  PROTECT( call = mkString(s) );
+
+  //scores
+  ct = frResults.GetScoresSize();
+  PROTECT(score = NEW_NUMERIC(ct));
+  for(i=0; i<ct; i++) 
+    REAL(score)[i] = frResults.GetScore(i);
+
+  //force calls: call, position, reason
+  ct = frResults.GetForceCallsSize();
+  if( ct > 0 ) {
+    PROTECT(force = NEW_LIST(3));
+    PROTECT(fposition = NEW_INTEGER(ct));
+    sc = (char *) R_alloc((long) (ct) + 1L, sizeof(char));
+    sr = (char *) R_alloc((long) (ct) + 1L, sizeof(char));
+    FusionForceCallType ffct;
+    for(i=0; i<ct; i++) {
+      ffct = frResults.GetForceCall(i);
+      INTEGER(fposition)[i] = ffct.GetPosition();
+      sc[i] = (char) ffct.GetCall();
+      sr[i] = (char) ffct.GetReason();
+    }
+    sc[ct] = sr[ct] = '\0';
+    PROTECT(fcall = mkString(sc));
+    PROTECT(freason = mkString(sr));
+    SET_ELEMENT(force, 0, fposition);
+    SET_ELEMENT(force, 1, fcall);
+    SET_ELEMENT(force, 2, freason);
+    PROTECT(fnms = NEW_CHARACTER(3));
+    SET_STRING_ELT(fnms, 0, mkChar("position"));
+    SET_STRING_ELT(fnms, 1, mkChar("call"));
+    SET_STRING_ELT(fnms, 2, mkChar("reason"));
+    SET_NAMES(force, fnms);
+  }  else
+    force = R_NilValue;
+
+  PROTECT(rval = NEW_LIST(2));
+  SET_ELEMENT(rval, 0, call);
+  SET_ELEMENT(rval, 1, force);
+
+  PROTECT(nms = NEW_CHARACTER(2));
+  SET_STRING_ELT(nms, 0, mkChar("call"));
+  SET_STRING_ELT(nms, 1, mkChar("force"));
+
+  SET_NAMES(rval, nms);
+
+  UNPROTECT(9);
+  return rval;
+}
 
 SEXP
 R_affx_GetCHPExpressionResults(FusionCHPLegacyData *chp)
@@ -268,13 +335,14 @@ R_affx_GetCHPEntries(FusionCHPQuantificationData *qData)
 SEXP
 R_affx_GetCHPEntries(FusionCHPQuantificationDetectionData *qData)
 {
-  // FIXME: 'id' attribute?
-  SEXP qVec, pValueVec, qNm;
+
+  SEXP qVec, pValueVec, qNm, qID;
   int qNbr = qData->GetEntryCount();
 
   PROTECT(qVec = NEW_NUMERIC(qNbr));
   PROTECT(pValueVec = NEW_NUMERIC(qNbr));
   PROTECT(qNm = NEW_CHARACTER(qNbr));
+  PROTECT(qID = NEW_INTEGER(qNbr));
     
   double *q = NUMERIC_POINTER(qVec);;
   double *pValue = NUMERIC_POINTER(pValueVec);
@@ -283,19 +351,22 @@ R_affx_GetCHPEntries(FusionCHPQuantificationDetectionData *qData)
     qData->GetQuantificationDetectionEntry(qIdx, psData);
     q[qIdx] = psData.quantification;
     pValue[qIdx] = psData.pvalue;
+    INTEGER(qID)[qIdx] = psData.id;
     SET_STRING_ELT(qNm, qIdx, mkChar(psData.name.c_str()));
-  }    
+  }
     
   SEXP result;
-  PROTECT(result = NEW_LIST(3));
+  PROTECT(result = NEW_LIST(4));
   SET_ELEMENT(result, 0, qNm);
   SET_ELEMENT(result, 1, qVec);
   SET_ELEMENT(result, 2, pValueVec);
+  SET_ELEMENT(result, 3, qID);
   SEXP nms;
-  PROTECT(nms = NEW_CHARACTER(3));
+  PROTECT(nms = NEW_CHARACTER(4));
   SET_STRING_ELT(nms, 0, mkChar("ProbeSetName"));
   SET_STRING_ELT(nms, 1, mkChar("QuantificationValue"));
   SET_STRING_ELT(nms, 2, mkChar("PValue"));
+  SET_STRING_ELT(nms, 3, mkChar("ID"));
   SET_NAMES(result, nms);
 
   UNPROTECT(5);
@@ -355,8 +426,10 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
       case FusionExpression:
 	PROTECT(quantEntries = R_affx_GetCHPExpressionResults(chp));
 	break;
-      case FusionGenotyping:
       case FusionResequencing:
+	PROTECT(quantEntries = R_affx_GetCHPReseqResults(chp));
+	break;
+      case FusionGenotyping:
       case FusionUniversal:
       case FusionUnknown:
       default:
@@ -446,9 +519,6 @@ R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
   lstIdx++;
   UNPROTECT(1);
 
-  Rf_PrintValue(lst);
-  Rf_PrintValue(nms);
-
   PROTECT(seqList = NEW_LIST(numSeq));
   for(i=0; i<numSeq; i++) {
     chp->OpenTilingSequenceDataSet(i);
@@ -464,32 +534,37 @@ R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
     UNPROTECT(2);
   }
 
-  Rf_PrintValue(seqList);
-
   SET_NAMED_ELT(lst, lstIdx, seqList, nms, "Sequences");
   lstIdx++;
   SET_NAMES(lst, nms);
   UNPROTECT(3);
 
-  Rf_PrintValue(lst);
   return(lst);
 }
 
 SEXP
 R_affx_ReadCHP(FusionCHPQuantificationData *chp, bool isBrief)
 {
-  SEXP lst, nms;
-  int lstIdx = 0, lstNbr = 7;
+  SEXP lst, nms, nQ;
+  int lstIdx = 0, lstNbr = 8, qNbr;
   PROTECT(lst = NEW_LIST(lstNbr));
   PROTECT(nms = NEW_CHARACTER(lstNbr));
 
   lstIdx = R_affx_AddCHPMeta(chp->FileId(), chp->GetAlgName(),
 			     chp->GetAlgVersion(), chp->GetArrayType(),
 			     lst, nms, lstIdx);
-  lstIdx = R_affx_AddList(chp->GetAlgParams(), lst, nms, lstIdx,
+  SET_NAMED_ELT(lst, lstIdx, R_affx_GetList(chp->GetAlgParams()), nms,
 			  "AlgorithmParameters");
-  lstIdx = R_affx_AddList(chp->GetSummaryParams(), lst, nms, lstIdx,
+  lstIdx++;
+  SET_NAMED_ELT(lst, lstIdx, R_affx_GetList(chp->GetSummaryParams()), nms, 
 			  "SummaryParameters");
+  lstIdx++;
+  qNbr = chp->GetEntryCount();
+  PROTECT(nQ = NEW_INTEGER(1));
+  INTEGER(nQ)[0] = qNbr;
+  SET_NAMED_ELT(lst, lstIdx, nQ, nms, "NumQuantificationEntries");
+  lstIdx++;
+
   lstIdx = R_affx_AddCHPEntries(chp, lst, nms, lstIdx, isBrief);
 
   SET_NAMES(lst, nms);
