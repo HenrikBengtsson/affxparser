@@ -428,7 +428,7 @@ SEXP
 R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
 {
   SEXP lst, nms, seqList, seqi, seqiNms, tmp;
-  int lstIdx = 0, lstNbr = 7, numSeq=0, i;
+  int lstIdx = 0, lstNbr = 5, numSeq=0, i;
 
   PROTECT(lst = NEW_LIST(lstNbr));
   PROTECT(nms = NEW_CHARACTER(lstNbr));
@@ -436,14 +436,18 @@ R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
   lstIdx = R_affx_AddCHPTileMeta(chp->FileId(), chp->GetAlgName(),
 			     chp->GetAlgVersion(),
 			     lst, nms, lstIdx);  
-  SET_NAMED_ELT(lst, lstIdx++, R_affx_GetList(chp->GetAlgParams()), nms,
+  SET_NAMED_ELT(lst, lstIdx, R_affx_GetList(chp->GetAlgParams()), nms,
 					    "AlgorithmParameters");
 
   numSeq = chp->GetNumberSequences();
   PROTECT(tmp = NEW_INTEGER(1));
   INTEGER(tmp)[0] = numSeq;
-  SET_NAMED_ELT(lst, lstIdx++, tmp, nms, "NumberofSequences");
+  SET_NAMED_ELT(lst, lstIdx, tmp, nms, "NumberofSequences");
+  lstIdx++;
   UNPROTECT(1);
+
+  Rf_PrintValue(lst);
+  Rf_PrintValue(nms);
 
   PROTECT(seqList = NEW_LIST(numSeq));
   for(i=0; i<numSeq; i++) {
@@ -460,10 +464,14 @@ R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
     UNPROTECT(2);
   }
 
-  SET_NAMED_ELT(lst, lstIdx++, seqList, nms, "Sequences");
+  Rf_PrintValue(seqList);
 
+  SET_NAMED_ELT(lst, lstIdx, seqList, nms, "Sequences");
+  lstIdx++;
   SET_NAMES(lst, nms);
   UNPROTECT(3);
+
+  Rf_PrintValue(lst);
   return(lst);
 }
 
