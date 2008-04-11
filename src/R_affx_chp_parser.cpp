@@ -374,11 +374,61 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
   return(lst);
 }
 
+SEXP R_affx_ReadTilingDataSeqHeader(TilingSequenceData seq)
+{
+  SEXP rval, header, hnames;
+  int numParams;
+  
+  //read in the header/params
+  numParams = seq.parameters.size();
+  PROTECT(header = NEW_LIST(4));
+  PROTECT(hnames = NEW_CHARACTER(4));
+  SET_NAMED_ELT(header, 0, mkString(wcs_to_cstr(seq.name)), hnames, "name");
+  SET_NAMED_ELT(header, 1, mkString(wcs_to_cstr(seq.groupName)), hnames,
+		"groupName"); 
+  SET_NAMED_ELT(header, 2, mkString(wcs_to_cstr(seq.version)), hnames,
+		"version");
+  SET_NAMED_ELT(header, 3,
+		R_affx_GetList(seq.parameters),
+		hnames, "parameters");
+  SET_NAMES(header, hnames);
+  UNPROTECT(2);
+  return header;
+}
+
+SEXP R_affx_ReadTilingDataSeqEntries(FusionCHPTilingData *chp, int Entry) 
+{
+  int eCount, i;
+  SEXP rval, position, value, nms;
+  CHPTilingEntry e;
+
+  eCount = chp->GetTilingSequenceEntryCount(Entry);
+  PROTECT(position = NEW_INTEGER(eCount));
+  PROTECT(value = NEW_NUMERIC(eCount));
+ 
+  for(i=0; i<eCount; i++) {
+    chp->GetTilingSequenceEntry(i, e);
+    INTEGER(position)[i] = e.position;
+    REAL(value)[i] =e.value;
+  }
+
+  PROTECT(rval = NEW_LIST(2));
+  SET_ELEMENT(rval, 0, position);
+  SET_ELEMENT(rval, 1, value);
+
+  PROTECT(nms = NEW_CHARACTER(2));
+  SET_ELEMENT(nms, 0, mkChar("position"));
+  SET_ELEMENT(nms, 1, mkChar("value"));
+  SET_NAMES(rval, nms);
+  UNPROTECT(4);
+  return rval;
+}
+
 SEXP
 R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
 {
-  SEXP lst, nms;
-  int lstIdx = 0, lstNbr = 6, numSeq=0;
+  SEXP lst, nms, seqList, seqi, seqiNms, tmp;
+  int lstIdx = 0, lstNbr = 7, numSeq=0, i;
 
   PROTECT(lst = NEW_LIST(lstNbr));
   PROTECT(nms = NEW_CHARACTER(lstNbr));
@@ -386,21 +436,37 @@ R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
   lstIdx = R_affx_AddCHPTileMeta(chp->FileId(), chp->GetAlgName(),
 			     chp->GetAlgVersion(),
 			     lst, nms, lstIdx);  
-  lstIdx = R_affx_AddList(chp->GetAlgParams(), lst, nms, lstIdx,
-			   "AlgorithmParameters");
+  SET_NAMED_ELT(lst, lstIdx++, R_affx_GetList(chp->GetAlgParams()), nms,
+					    "AlgorithmParameters");
 
-  TilingSequenceData seq;
-  CHPTilingEntry e;
+  numSeq = chp->GetNumberSequences();
+  PROTECT(tmp = NEW_INTEGER(1));
+  INTEGER(tmp)[0] = numSeq;
+  SET_NAMED_ELT(lst, lstIdx++, tmp, nms, "NumberofSequences");
+  UNPROTECT(1);
 
-  chp->OpenTilingSequenceDataSet(0);
-  seq = chp->GetTilingSequenceData();
+  PROTECT(seqList = NEW_LIST(numSeq));
+  for(i=0; i<numSeq; i++) {
+    chp->OpenTilingSequenceDataSet(i);
+    PROTECT(seqi = NEW_LIST(2));
+    SET_ELEMENT(seqi, 0,
+		R_affx_ReadTilingDataSeqHeader(chp->GetTilingSequenceData())); 
+    SET_ELEMENT(seqi, 1, R_affx_ReadTilingDataSeqEntries(chp, i));
+    PROTECT(seqiNms = NEW_CHARACTER(2));
+    SET_ELEMENT(seqiNms, 0, mkChar("seq"));
+    SET_ELEMENT(seqiNms, 1, mkChar("entries"));
+    SET_NAMES(seqi, seqiNms);
+    SET_ELEMENT(seqList, i, seqi);
+    UNPROTECT(2);
+  }
 
+  SET_NAMED_ELT(lst, lstIdx++, seqList, nms, "Sequences");
 
   SET_NAMES(lst, nms);
-  UNPROTECT(2);
+  UNPROTECT(3);
   return(lst);
 }
-	       
+
 SEXP
 R_affx_ReadCHP(FusionCHPQuantificationData *chp, bool isBrief)
 {
