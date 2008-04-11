@@ -161,8 +161,9 @@ R_affx_AddList(ParameterNameValueTypeList list,
 SEXP
 R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
 {
-  SEXP call, score, rval, nms, fcall, freason, fposition, fnms, force;
-  int ct, i;
+  SEXP call, score, rval, nms, fcall, freason, fposition, fnms, force,
+    orig, onames, ocall;
+  int ct, i, nprotect=0;
   char *s, *sc, *sr;
   FusionResequencingResults  frResults;
   
@@ -175,10 +176,13 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
   s[ct] = '\0';
 
   PROTECT( call = mkString(s) );
+  nprotect++;
 
   //scores
   ct = frResults.GetScoresSize();
   PROTECT(score = NEW_NUMERIC(ct));
+  nprotect++;
+
   for(i=0; i<ct; i++) 
     REAL(score)[i] = frResults.GetScore(i);
 
@@ -187,6 +191,7 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
   if( ct > 0 ) {
     PROTECT(force = NEW_LIST(3));
     PROTECT(fposition = NEW_INTEGER(ct));
+    nprotect+=2;
     sc = (char *) R_alloc((long) (ct) + 1L, sizeof(char));
     sr = (char *) R_alloc((long) (ct) + 1L, sizeof(char));
     FusionForceCallType ffct;
@@ -199,10 +204,12 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
     sc[ct] = sr[ct] = '\0';
     PROTECT(fcall = mkString(sc));
     PROTECT(freason = mkString(sr));
+    nprotect+=2;
     SET_ELEMENT(force, 0, fposition);
     SET_ELEMENT(force, 1, fcall);
     SET_ELEMENT(force, 2, freason);
     PROTECT(fnms = NEW_CHARACTER(3));
+    nprotect++;
     SET_STRING_ELT(fnms, 0, mkChar("position"));
     SET_STRING_ELT(fnms, 1, mkChar("call"));
     SET_STRING_ELT(fnms, 2, mkChar("reason"));
@@ -210,20 +217,148 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
   }  else
     force = R_NilValue;
 
-  PROTECT(rval = NEW_LIST(2));
+  ct = frResults.GetOrigCallsSize();
+  if( ct > 0 ) {
+    PROTECT(fposition = NEW_INTEGER(ct));
+    nprotect++;
+    sc = (char *) R_alloc((long) (ct) + 1L, sizeof(char));
+    FusionBaseCallType fbct;
+    for(i=0; i<ct; i++) {
+      fbct = frResults.GetOrigCall(i);
+      INTEGER(fposition)[i] = fbct.GetPosition();
+      sc[i] = (char) fbct.GetCall();
+    }
+    sc[ct] = '\0';
+    PROTECT(ocall = mkString(sc));
+    PROTECT(orig = NEW_LIST(2));
+    nprotect+=2;
+    SET_ELEMENT(orig, 0, ocall);
+    SET_ELEMENT(orig, 1, fposition);
+    PROTECT(onames = NEW_CHARACTER(2));
+    nprotect++;
+    SET_STRING_ELT(onames, 0, mkChar("call"));
+    SET_STRING_ELT(onames, 1, mkChar("position"));
+    SET_NAMES(orig, onames);
+  } else orig = R_NilValue;
+
+  PROTECT(rval = NEW_LIST(3));
+  nprotect++;
   SET_ELEMENT(rval, 0, call);
   SET_ELEMENT(rval, 1, force);
+  SET_ELEMENT(rval, 2, orig);
 
-  PROTECT(nms = NEW_CHARACTER(2));
+  PROTECT(nms = NEW_CHARACTER(3));
+  nprotect++;
   SET_STRING_ELT(nms, 0, mkChar("call"));
   SET_STRING_ELT(nms, 1, mkChar("force"));
+  SET_STRING_ELT(nms, 2, mkChar("orig"));
 
   SET_NAMES(rval, nms);
 
-  UNPROTECT(9);
+  UNPROTECT(nprotect);
   return rval;
 }
 
+SEXP
+R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
+{
+  SEXP rval, ras1, ras2, aa, ab, bb, nocall, call, conf, callstr, alg;
+  int qNbr = chp->GetHeader().GetNumProbeSets(), i, nprotect=0, nelt;
+  bool bWholeGenome = false, bDynamicModel = false;
+
+  PROTECT(call = NEW_INTEGER(qNbr));
+  PROTECT(conf = NEW_NUMERIC(qNbr));
+  PROTECT(callstr = NEW_CHARACTER(qNbr));
+  nprotect = 3;
+
+  //FIXME: I did not think AlgName could be "", it is, so we are stuck
+  //with that
+  PROTECT(alg = mkString(wcs_to_cstr(chp->GetHeader().GetAlgName())));
+  nprotect++;
+
+  if(chp->GetHeader().GetAlgName() == L"WholeGenome") {
+    bWholeGenome = true;
+    PROTECT(ras1 = NEW_NUMERIC(qNbr));
+    PROTECT(ras2 = NEW_NUMERIC(qNbr));
+    nprotect+=2;
+    Rf_PrintValue(mkString("dudey"));
+  }
+  else if(chp->GetHeader().GetAlgName() == L"DynamicModel") {
+    bDynamicModel = true;
+    PROTECT(aa = NEW_NUMERIC(qNbr));
+    PROTECT(ab = NEW_NUMERIC(qNbr));
+    PROTECT(bb = NEW_NUMERIC(qNbr));
+    PROTECT(nocall = NEW_NUMERIC(qNbr));
+    nprotect+=4;
+    Rf_PrintValue(mkString("howdy"));
+  }
+
+
+  FusionGenotypeProbeSetResults f;
+  for(i=0; i<qNbr; i++) {
+    chp->GetGenotypingResults(i, f);
+    INTEGER(call)[i] = f.GetAlleleCall();
+    SET_STRING_ELT(callstr, i, mkChar(f.GetAlleleCallString().c_str()));
+    REAL(conf)[i] = f.GetConfidence();
+    if( bWholeGenome ) {
+      REAL(ras1)[i] =  f.GetRAS1();
+      REAL(ras2)[i] =  f.GetRAS2();
+    }
+    if( bDynamicModel ) {
+      REAL(aa)[i] = f.GetPValueAA();
+      REAL(ab)[i] = f.GetPValueAB();
+      REAL(bb)[i] = f.GetPValueBB();
+      REAL(nocall)[i] = f.GetPValueNoCall();
+    }
+  }
+
+
+  if( bWholeGenome ) nelt = 6; 
+  else if(bDynamicModel) nelt = 8;
+  else nelt = 4;
+
+  PROTECT(rval = NEW_LIST(nelt));
+  nprotect++;
+  SET_ELEMENT(rval, 0, call);
+  SET_ELEMENT(rval, 1, conf);
+  SET_ELEMENT(rval, 2, callstr);
+  if( bWholeGenome ) {
+    SET_ELEMENT(rval, 3, mkString("WholeGenome"));
+    SET_ELEMENT(rval, 4, ras1);
+    SET_ELEMENT(rval, 5, ras1);
+  } else if( bDynamicModel ) {
+    SET_ELEMENT(rval, 3, mkString("DynamicModel"));
+    SET_ELEMENT(rval, 4, aa);
+    SET_ELEMENT(rval, 5, ab);
+    SET_ELEMENT(rval, 6, bb);
+    SET_ELEMENT(rval, 7, nocall);
+  } else {
+    SET_ELEMENT(rval, 3, mkString("None"));
+  }
+
+  SEXP nms;
+  PROTECT(nms = NEW_CHARACTER(nelt));
+  nprotect++;
+  SET_STRING_ELT(nms, 0, mkChar("Call"));
+  SET_STRING_ELT(nms, 1, mkChar("Confidence"));
+  SET_STRING_ELT(nms, 2, mkChar("AlleleString"));
+  SET_STRING_ELT(nms, 3, mkChar("AlgName"));
+  if( bWholeGenome ) {
+    SET_STRING_ELT(nms, 4, mkChar("RAS1"));
+    SET_STRING_ELT(nms, 5, mkChar("RAS2"));
+  }
+  else if (bDynamicModel) {
+    SET_STRING_ELT(nms, 4, mkChar("PvalueAA"));
+    SET_STRING_ELT(nms, 5, mkChar("PvalueAB"));
+    SET_STRING_ELT(nms, 6, mkChar("PvalueBB"));
+    SET_STRING_ELT(nms, 7, mkChar("PvalueNoCall"));
+  }
+  SET_NAMES(rval, nms);
+  
+  UNPROTECT(nprotect);
+  return rval;
+}
+  
 SEXP
 R_affx_GetCHPExpressionResults(FusionCHPLegacyData *chp)
 {
@@ -430,6 +565,8 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
 	PROTECT(quantEntries = R_affx_GetCHPReseqResults(chp));
 	break;
       case FusionGenotyping:
+	PROTECT(quantEntries = R_affx_GetCHPGenotypingResults(chp));
+	break;
       case FusionUniversal:
       case FusionUnknown:
       default:
