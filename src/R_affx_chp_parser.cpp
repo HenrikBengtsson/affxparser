@@ -1,5 +1,6 @@
 #include "FusionCHPData.h"
 #include "FusionCHPLegacyData.h"
+ #include "FusionCHPMultiDataData.h"
 #include "FusionCHPQuantificationData.h"
 #include "FusionCHPQuantificationDetectionData.h"
 #include "FusionCHPDataAdapterInterface.h"
@@ -259,6 +260,14 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
   return rval;
 }
 
+//FIXME: cannot find any coherent description of these arrays
+SEXP
+R_affx_GetCHPUniversalResults(FusionCHPLegacyData *chp)
+{
+  SEXP rval, ras1, ras2, aa, ab, bb, nocall, call, conf, callstr, alg;
+
+
+}
 SEXP
 R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
 {
@@ -568,6 +577,9 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
 	PROTECT(quantEntries = R_affx_GetCHPGenotypingResults(chp));
 	break;
       case FusionUniversal:
+	// need to find out what is in them :-(
+	//	PROTECT(quantEntries = R_affx_GetCHPUniversalResults(chp));
+	//break;
       case FusionUnknown:
       default:
 	Rf_warning("unhandled quantification entry index '%d'", 
@@ -638,7 +650,7 @@ SEXP
 R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
 {
   SEXP lst, nms, seqList, seqi, seqiNms, tmp;
-  int lstIdx = 0, lstNbr = 5, numSeq=0, i;
+  int lstIdx = 0, lstNbr = 6, numSeq=0, i;
 
   PROTECT(lst = NEW_LIST(lstNbr));
   PROTECT(nms = NEW_CHARACTER(lstNbr));
@@ -648,6 +660,7 @@ R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
 			     lst, nms, lstIdx);  
   SET_NAMED_ELT(lst, lstIdx, R_affx_GetList(chp->GetAlgParams()), nms,
 					    "AlgorithmParameters");
+  lstIdx++;
 
   numSeq = chp->GetNumberSequences();
   PROTECT(tmp = NEW_INTEGER(1));
@@ -706,6 +719,94 @@ R_affx_ReadCHP(FusionCHPQuantificationData *chp, bool isBrief)
 
   SET_NAMES(lst, nms);
   UNPROTECT(2);
+  return(lst);
+}
+
+/* the enumerated data types for a MultiData object
+
+ExpressionMultiDataType 	
+ExpressionControlMultiDataType 	
+GenotypeMultiDataType 	
+GenotypeControlMultiDataType 	
+CopyNumberMultiDataType 	
+CytoMultiDataType 
+  */
+
+SEXP 
+R_affx_ReadCHP(FusionCHPMultiDataData *chp, bool isBrief)
+{
+  SEXP lst, nms, cts, conf, call, probenames, genodata, gnms;
+  int lstIdx = 0, lstNbr, nExpr, nExprC, nGeno, nGenoC, nCopy,
+    nCyto, nprotect = 0, i, nDataTypes;
+
+  PROTECT(cts = NEW_INTEGER(4)); //FIXME: change if enum changes
+  nprotect++;
+  INTEGER(cts)[0] = nExpr = chp->GetEntryCount(ExpressionMultiDataType);
+  INTEGER(cts)[1] = nExprC = chp->GetEntryCount(ExpressionControlMultiDataType);
+  INTEGER(cts)[2] = nGeno = chp->GetEntryCount(GenotypeMultiDataType);
+  INTEGER(cts)[3] = nGenoC = chp->GetEntryCount(GenotypeControlMultiDataType);
+
+  PROTECT(nms = NEW_CHARACTER(4));
+  SET_STRING_ELT(nms, 0, mkChar("Expression"));
+  SET_STRING_ELT(nms, 1, mkChar("ExpressionControl"));
+  SET_STRING_ELT(nms, 2, mkChar("Genotype"));
+  SET_STRING_ELT(nms, 3, mkChar("GenotypeControl"));
+  SET_NAMES(cts, nms);
+  UNPROTECT(1);
+
+  /*  for now ignore the next two, as affxparser seems to be using an
+  old version of some files
+      INTEGER(cts)[4] = nCopy = chp->GetEntryCount(CopyNumberMultiDataType);
+      INTEGER(cts)[5] = nCyto = chp->GetEntryCount(CytoMultiDataType);
+  */
+
+  nDataTypes = 0;
+  if(nExpr > 0) nDataTypes++;
+  if(nExprC > 0) nDataTypes++;
+  if(nGeno > 0) nDataTypes++;
+  if(nGenoC > 0) nDataTypes++;
+
+  lstNbr = nDataTypes + 6;
+  PROTECT(lst = NEW_LIST(lstNbr));
+  PROTECT(nms = NEW_CHARACTER(lstNbr));
+  nprotect+=2;
+ 
+  lstIdx = R_affx_AddCHPMeta(chp->FileId(), chp->GetAlgName(),
+			     chp->GetAlgVersion(), chp->GetArrayType(),
+			     lst, nms, lstIdx);
+  SET_NAMED_ELT(lst, lstIdx, R_affx_GetList(chp->GetAlgParams()), nms,
+		"AlgorithmParameters");
+  lstIdx++;
+  SET_NAMED_ELT(lst, lstIdx, R_affx_GetList(chp->GetSummaryParams()),
+			     nms, "SummaryParameters");
+  lstIdx++;
+
+  SET_NAMED_ELT(lst, lstIdx, cts, nms, "MultiDataTypeCounts");
+  lstIdx++;
+
+  if(nGeno > 0) {
+    PROTECT(conf = NEW_NUMERIC(nGeno));
+    PROTECT(call = NEW_INTEGER(nGeno)); //should be char vector
+    PROTECT(probenames = NEW_CHARACTER(nGeno));
+    for (i = 0; i < nGeno; i++) {
+      INTEGER(call)[i] = chp->GetGenoCall(GenotypeMultiDataType, i);
+      REAL(conf)[i] = chp->GetGenoConfidence(GenotypeMultiDataType, i);
+      SET_STRING_ELT(probenames, i,
+		     mkChar(chp->GetProbeSetName(GenotypeMultiDataType,
+						 i).c_str())); 
+    }
+    PROTECT(genodata = NEW_LIST(3));
+    PROTECT(gnms = NEW_CHARACTER(3));
+    SET_NAMED_ELT(genodata, 0, call, gnms, "Call");
+    SET_NAMED_ELT(genodata, 1, conf, gnms, "Confidence");
+    SET_NAMED_ELT(genodata, 2, probenames, gnms, "ProbeNames");
+    SET_NAMES(genodata, gnms);
+    SET_NAMED_ELT(lst, lstIdx, genodata, nms, "Genotype");
+    UNPROTECT(5);
+  }
+
+  SET_NAMES(lst, nms);
+  UNPROTECT(nprotect);
   return(lst);
 }
 
@@ -796,6 +897,16 @@ extern "C" {
         delete tChp;
       }
      }
+
+    if (processed==false) {
+      FusionCHPMultiDataData *mChp = FusionCHPMultiDataData::FromBase(chp);
+      if(mChp != NULL) {
+	processed = true;
+	PROTECT(result = R_affx_ReadCHP(mChp, isBrief));
+	++protectionCount;
+	delete mChp;
+      }
+    }
 
     if (processed==false) {
       Rf_warning("unable to read CHP file '%s'", chpFileName);
