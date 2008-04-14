@@ -31,6 +31,7 @@
 
 #include <string>
 #include <vector>
+#include "../portability/affy-base-types.h"
 #include "CHPFileData.h"
 
 #define MAX_BUFFER_SIZE				5242880		// 5 MB
@@ -42,7 +43,7 @@ class CCHPFileBufferWriter
 	class GenotypeBufferEntry
 	{
 	public:
-		u_int8_t call;
+		uint8_t call;
 		float confidence;
 		float RAS1;
 		float RAS2;

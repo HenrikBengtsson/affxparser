@@ -613,7 +613,7 @@ std::wstring CelFileData::GetMasterFileName()
  */
 void CelFileData::SetLibraryPackageName(const std::wstring& value)
 {
-	SetWStringToGenericHdr(LIBRARY_PACKAGE_PARAM_NAME, value);
+	SetWStringToGenericHdr(LIBRARY_PACKAGE_PARAM_NAME, value, ARRAY_TYPE_MAX_LEN);
 }
 
 /*

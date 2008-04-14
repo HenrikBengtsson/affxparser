@@ -51,7 +51,7 @@ readCel(filename,
   If \code{readIndices=NULL}, cell values for all cells are returned,
   Only cell values specified by argument \code{readIndices} are returned.
 
-  This value returns a names list with compontents described below:
+  This value returns a named list with compontents described below:
   \itemize{
    \item{\code{header}}{The header of the CEL file. Equivalent to the 
       output from \code{readCelHeader}, see the documentation for that
@@ -75,7 +75,7 @@ readCel(filename,
       \code{outliers=integer(0)}; the last case happens when 
       \code{readOutliers=TRUE} but there are no outliers.}
  
-   \item{outliers}{An \code{integer} vector of indices specifying which
+   \item{masked}{An \code{integer} vector of indices specifying which
       of the queried cells that are flagged as masked.
       Note that there is a difference between \code{masked=NULL} and
       \code{masked=integer(0)}; the last case happens when 

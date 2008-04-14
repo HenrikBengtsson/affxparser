@@ -30,6 +30,9 @@
 #define REGRESSIONCHECK_H
 
 #include <string>
+#include "Verbose.h"
+#include "util/Util.h"
+#include "portability/affy-base-types.h"
 
 /**
  * Abstract base class (i.e. interface) for checks to be run during a regression
@@ -38,7 +41,13 @@
 class RegressionCheck {
 
 public:
-  
+ 
+  /** Constructor */
+  RegressionCheck() {
+    m_MaxErrorsReport = 30;
+    m_CurrentErrorsReported = 0;
+  }
+
   /** Virtual destructor for virtual class. */
   virtual ~RegressionCheck() {}
 
@@ -48,6 +57,84 @@ public:
    * @return - true if passed, false otherwise.
    */
   virtual bool check(std::string &msg) = 0;
+
+protected:
+  /** 
+   * Utility function to see if a condition is true and if not to add
+   * the message to our summary of messages.
+   * @param condition - boolean to be tested.
+   * @param msg - informative message for this condition (if fails)
+   * @param summary - ongoing collection of messages.
+   * @return - condition test results.
+   */
+  bool checkMsg(bool condition, const std::string &msg, std::string &summary) {
+    if(!condition) {
+      summary += msg;
+      reportError(msg);
+    }
+    return condition;
+  }
+
+  /** 
+   * Utility function to accumulate error messages
+   * @param err - error message
+   * @return - void
+   */
+  void reportError(const std::string &err) {
+    if(m_CurrentErrorsReported++ < m_MaxErrorsReport) {
+      Verbose::out(1, "Error encountered: " + err);
+      if(m_CurrentErrorsReported >= m_MaxErrorsReport) {
+        Verbose::out(1, "Maximum number of errors reported.");
+      }
+    }
+  }
+
+  /** 
+   * Utility function to set the max number of allowed errors
+   * @param max - maximum number of errors to report
+   * @return - void
+   */
+  void setMaxError(int max) {
+    m_MaxErrorsReport = max;
+  }
+
+  /** 
+   * Are two floats within epsilon (small value) of eachother?
+   * 
+   * @param gold - correct value.
+   * @param gen - value to be tested.
+   * @param eps - epsilon, small number they can be different but still equivalent.
+   * @param success - boolean set to false if floats not equivalent.
+   * @param maxDiff - Maximum difference seen so far.
+   * @return - true if floats equivalent, false otherwise.
+   */
+  void checkFloat(float gold, float gen, double eps, bool &success, double &maxDiff, bool log = false) {
+
+      if(!Util::isFinite(gold) || !Util::isFinite(gen)) {
+        // Allow for case where both inf to not be an error
+        if(gold == gen)
+            return;
+        success = false;
+        if(log)
+            reportError("Non-finite floats. gold: '" + ToStr(gold) + "' test: '" + ToStr(gen) + "'");
+        return;
+      }
+      
+      double diff = fabs(gold - gen);
+      maxDiff = Max(diff, maxDiff);
+      if(diff > eps) {
+        success = false;
+        if(log)
+            reportError("Different floats. gold: '" + ToStr(gold) + "' test: '" + ToStr(gen) + "'");
+        return;
+      }
+  }
+  
+private:
+
+  int m_MaxErrorsReport;        /// The maximum number of errors to report
+  int m_CurrentErrorsReported;  /// The current number of reported errors
+
 };
 
 

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -36,7 +36,7 @@ namespace affymetrix_calvin_io
 #define CHP_MULTI_DATA_TYPE "affymetrix-multi-data-type-analysis"
 
 /*! An enumerant to store the types of data stored in the file. */
-typedef enum MultiDataType { ExpressionMultiDataType, ExpressionControlMultiDataType, GenotypeMultiDataType, GenotypeControlMultiDataType };
+typedef enum MultiDataType { ExpressionMultiDataType, ExpressionControlMultiDataType, GenotypeMultiDataType, GenotypeControlMultiDataType, CopyNumberMultiDataType, CytoMultiDataType };
 
 /*! The data set name. */
 const static std::wstring MultiDataDataSetNames[] = 
@@ -44,7 +44,9 @@ const static std::wstring MultiDataDataSetNames[] =
     L"Expression",
     L"ExpressionControl",
     L"Genotype",
-    L"GenotypeControl"
+    L"GenotypeControl",
+    L"CopyNumber",
+    L"Cyto"
 };
 
 /*! The data types. */
@@ -53,7 +55,9 @@ const static MultiDataType MultiDataDataTypes[] =
     ExpressionMultiDataType,
     ExpressionControlMultiDataType,
     GenotypeMultiDataType,
-    GenotypeControlMultiDataType
+    GenotypeControlMultiDataType,
+    CopyNumberMultiDataType,
+    CytoMultiDataType
 };
 
 /*! Holds data set information. */
@@ -212,6 +216,20 @@ public:
 	/*! Gets the probe set data.
      * @param dataType The data type
 	 * @param index The row index.
+	 * @param entry The copy number results.
+	 */
+	void GetCopyNumberEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry);
+
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The cyto results.
+	 */
+    void GetCytoEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry);
+
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
 	 * @param entry The expression results.
 	 */
 	void GetExpressionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry);
@@ -284,6 +302,20 @@ private:
 	 * @param entry The genotype results.
 	 */
 	void GetGenericGenotypeEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry);
+
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The copy number results.
+	 */
+	void GetGenericCopyNumberEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry);
+
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The cyto region results.
+	 */
+	void GetGenericCytoRegionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry);
 
 	/*! Gets the probe set data.
      * @param dataType The data type

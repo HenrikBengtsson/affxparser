@@ -3,17 +3,17 @@
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License 
+// it under the terms of the GNU Lesser General Public License
 // (version 2.1) as published by the Free Software Foundation.
-// 
+//
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
 
@@ -28,8 +28,8 @@
 #include <stdlib.h>
 #include <string>
 //
+#include "util/Convert.h"
 #include "util/Err.h"
-#include "util/Util.h"
 #include "util/Verbose.h"
 //
 #include "file/TsvFile/TsvFile.h"
@@ -37,6 +37,12 @@
 //
 using namespace std;
 using namespace affx;
+
+// macros for TSV_ERR_AT stringification.
+#define TSV_STRINGIFY(str) #str
+#define TSV_TOSTR(sym)   TSV_STRINGIFY(sym)
+// used to report where the error occured.
+#define TSV_ERR_AT(msg) ToStr((__FILE__ ":" TSV_TOSTR(__LINE__) ": " msg))
 
 #ifdef TSV_USE_RDBUF
 #define M_GETC()    (m_rdbuf->sbumpc())
@@ -59,19 +65,19 @@ using namespace affx;
 /// Hex code for LF char
 #define TSV_CHAR_LF      (0x0a)
 /// Hex code for CR char
-#define TSV_CHAR_CR      (0x0d)   
+#define TSV_CHAR_CR      (0x0d)
 /// Hex code for comment char
-#define TSV_CHAR_COMMENT (0x23)   
+#define TSV_CHAR_COMMENT (0x23)
 /// Hex code for SPACE char
-#define TSV_CHAR_SPACE   (0x20)   
+#define TSV_CHAR_SPACE   (0x20)
 /// Comment string
-#define TSV_STRING_COMMENT  "#"   
+#define TSV_STRING_COMMENT  "#"
 /// Meta string
-#define TSV_STRING_META     "#%"  
+#define TSV_STRING_META     "#%"
 
 /// Unix End-of-line
-#define TSV_EOL_UNIX   "\n"  
-/// Windows End-of-line    
+#define TSV_EOL_UNIX   "\n"
+/// Windows End-of-line
 #define TSV_EOL_WIN    "\r\n"
 
 // be nice to less fortunate users...
@@ -95,27 +101,6 @@ affx::ltrim(std::string& str)
   } else {
     str.erase(0,pos);
   }
-  /*
-  string::iterator s_begin=str.begin();
-  string::iterator s_end=str.end();
-  string::iterator s_ptr=s_begin;
-
-  if (s_begin==s_end) {
-    return;
-  }
-  
-  while (s_ptr!=s_end) {
-    unsigned char c=*s_ptr;
-    if ((c==' ')||(c=='\t')) {
-      s_ptr++;
-    } else {
-      break;
-    }
-  }
-  if (s_ptr!=s_begin) {
-    str.erase(s_begin,s_ptr);
-  }
-  */
 }
 
 /// @brief     Trim whitespace from the right of a string
@@ -129,26 +114,6 @@ affx::rtrim(std::string& str)
   } else {
     str.erase(pos+1);
   }
-  /*
-  string::iterator s_begin=str.begin();
-  string::iterator s_end=str.end();
-  string::iterator s_ptr=s_end;
-
-  if (s_begin==s_end) {
-    return;
-  }
-
-  while (s_begin<=s_ptr) {
-    s_ptr--;
-    unsigned char c=*s_ptr;
-    if (!((c==' ')||(c=='\t'))) {
-      break;
-    }
-  }
-  if (s_ptr+1!=s_end) {
-    str.erase(s_ptr+1,s_end);
-  }
-  */
 }
 
 /// @brief     Trim whitespace from both sides of a string
@@ -213,8 +178,6 @@ affx::splitstr(std::string str,char c,std::vector<std::string>& vec)
 /// @brief     Convert the escaped char to the char which it represents
 /// @param     c         the escaped char
 /// @return    the converted char
-//unsigned char
-//affx::unescapechar(unsigned char c)
 int
 affx::unescapechar(int c)
 {
@@ -339,35 +302,6 @@ affx::TsvFileField::get(std::string& val)
 {
   TSV_NULL_RETURN("");
 
-  /*
-    So this only works when the strings share storage.
-    This doesnt happen under windows.  Most users who
-    expect repeated strings convert them to enums right
-    away anyways.
-    
-    // Promote data sharing by looking in the vector
-  if (m_interncache_size>0) {
-    std::vector<std::string>::iterator pos;
-    pos=lower_bound(m_interncache_vec.begin(),m_interncache_vec.end(),m_buffer);
-    if (pos!=m_interncache_vec.end()) {
-      if (*pos==m_buffer) {
-        // do the assignment from the cache.
-        val=*pos;
-        return TSV_OK;
-      }
-    }
-    // insert a copy of our buffer into the cache
-    std::string str_cache;
-    str_cache.append(m_buffer.begin(),m_buffer.end());
-    m_interncache_vec.insert(pos,str_cache);
-    // randomly evict strings to keep the size down...
-    while ((int)m_interncache_vec.size()>m_interncache_size) {
-      m_interncache_vec.erase(m_interncache_vec.begin()+(rand()%m_interncache_vec.size()));
-    }
-    val=str_cache;
-    return TSV_OK;
-  }
-  */
   // Avoid data sharing by clearing then appending the contents.
   val.erase();
   val.append(m_buffer.begin(),m_buffer.end());
@@ -387,15 +321,18 @@ affx::TsvFileField::get(int& val)
     return m_value_int_rv;
   }
   //
-  const char* m_ptr_start=m_buffer.c_str();
-  char* m_ptr_end=NULL;
+  const char* ptr_start=m_buffer.c_str();
+  char* ptr_end=NULL;
 
-  // do the conversion
-  m_value_int=strtol(m_ptr_start,&m_ptr_end,10);
-  if ((*m_ptr_end)!=0) {
+  // do the conversion (Force base 10)
+  m_value_int=strtol(ptr_start,&ptr_end,10);
+  // If m_ptr_end is not NULL then there was an invalid character.
+  // If m_ptr_end == m_ptr_start then it was the null string. ("")
+  if ((*ptr_end!=0)||(ptr_end==ptr_start)) {
     m_value_int=-1; // fill in with something off the end
     m_value_int_rv=TSV_ERR_CONVERSION; // signal an error
-  } else {
+  }
+  else {
     m_value_int_rv=TSV_OK;
   }
 
@@ -422,7 +359,8 @@ affx::TsvFileField::get(double& val)
 
   // do the conversion
   m_value_double=strtod(ptr_start,&ptr_end);
-  if ((*ptr_end)!=0) {
+  // same checks as strtol
+  if ((*ptr_end!=0)||(ptr_end==ptr_start)) {
     m_value_double=-1.0; // bad value
     m_value_double_rv=TSV_ERR_CONVERSION; // signal an error
   } else {
@@ -524,7 +462,7 @@ affx::TsvFileField::get(uint64_t& val)
 /// @param     val       the new string value
 /// @return    tsv_return_t
 int
-affx::TsvFileField::set(std::string val)
+affx::TsvFileField::set(const std::string& val)
 {
   return setBuffer(val);
 }
@@ -592,39 +530,48 @@ affx::TsvFileField::linkedvars_clear()
 }
 /// @brief     Assign each linked var a value.
 void
-affx::TsvFileField::linkedvars_assign()
+affx::TsvFileField::linkedvars_assign(affx::TsvFile* tsvfile)
 {
   // Assign to the linked vars
   size_t lvar_vec_size=m_linkedvar_vec.size();
+  int rv=TSV_OK;
 
   for (size_t vi=0;vi<lvar_vec_size;vi++) {
     TsvFileBinding* var=m_linkedvar_vec[vi];
     if (var!=NULL) {
       // These are sorted by frequency of use.
       if (var->m_ptr_int!=NULL) {
-        get(*var->m_ptr_int);
-        continue;
+        rv=get(*var->m_ptr_int);
       }
-      if (var->m_ptr_string!=NULL) {
-        get(*var->m_ptr_string);
-        continue;
+      else if (var->m_ptr_string!=NULL) {
+        rv=get(*var->m_ptr_string);
       }
-      if (var->m_ptr_double!=NULL) {
-        get(*var->m_ptr_double);
-        continue;
+      else if (var->m_ptr_float!=NULL) {
+        rv=get(*var->m_ptr_float);
       }
-      if (var->m_ptr_uint!=NULL) {
-        get(*var->m_ptr_uint);
-        continue;
+      else if (var->m_ptr_double!=NULL) {
+        rv=get(*var->m_ptr_double);
       }
-      if (var->m_ptr_ulonglong!=NULL) {
-        get(*var->m_ptr_ulonglong);
-        continue;
+      else if (var->m_ptr_uint!=NULL) {
+        rv=get(*var->m_ptr_uint);
+      }
+      else if (var->m_ptr_ulonglong!=NULL) {
+        rv=get(*var->m_ptr_ulonglong);
+      }
+      else {
+        Err::errAbort(TSV_ERR_AT("Internal error: Binding does not have a pointer!"));
+      }
+      //
+      if ((rv!=TSV_OK)&&(var->m_flags&TSV_BIND_REQUIRED)) {
+        // We say "data line" to make it clear we arent counting header lines.
+        Err::errAbort(TSV_ERR_AT("Conversion of required field failed!")
+                      +"(on data line "+ToStr(tsvfile->lineNumber()+1)+")");
       }
     }
   }
 }
 
+/* Unused -- code which wants this generally uses <std::map>
 int
 affx::TsvFileField::setInternCacheSize(int size)
 {
@@ -643,6 +590,7 @@ affx::TsvFileField::setInternCacheSize(int size)
   //
   return old_size;
 }
+*/
 
 ////////////////////
 
@@ -685,7 +633,8 @@ affx::TsvFileIndex::clear()
 void
 affx::TsvFileIndex::data_add(TsvFileField* field,linenum_t line)
 {
-  assert(field!=NULL);
+  //assert(field!=NULL);
+  Err::check(field!=NULL,TSV_ERR_AT("data_add: field is null."));
   if (m_kind==TSV_INDEX_STRING) {
     // WARNING: field->m_buffer is reused and will be overwritten.
     // So we need to force a fresh copy to be made by modifying the string.
@@ -767,7 +716,7 @@ affx::TsvFileIndex::results_append_tmpl(std::vector<linenum_t>& results,
     r_start=mmap.upper_bound(val);
     r_end=mmap.end();
   } else {
-    assert(0);
+    Err::errAbort(TSV_ERR_AT("Invalid operation in results_append."));
     return TSV_ERR_UNKNOWN;
   }
 
@@ -937,7 +886,7 @@ affx::TsvFile::TsvFile(std::string filename)
 /// @brief  Dont allow a TsvFile to be copied.
 affx::TsvFile::TsvFile(const affx::TsvFile& that)
 {
-	Err::errAbort("Copy of TsvFile not allowed.");
+	Err::errAbort(TSV_ERR_AT("Copy of TsvFile not allowed."));
 }
 
 // or an assigment.
@@ -1028,7 +977,6 @@ affx::TsvFile::clear()
   m_fileName.clear();
   // close the file
   close();
-  //  m_fileStream.close();
 }
 
 /// @brief Clear the bindings of columns to variables.
@@ -1355,7 +1303,7 @@ affx::TsvFile::headerKeyLegal(std::string key)
 /// @param     val       string value
 /// @remarks   sort order defaults to "0"
 int
-affx::TsvFile::addHeader(std::string key,std::string val)
+affx::TsvFile::addHeader(const std::string& key,const std::string& val)
 {
   // should a copy be done here?
   // might that be the source of the windows problems?
@@ -1368,7 +1316,7 @@ affx::TsvFile::addHeader(std::string key,std::string val)
 /// @param     order     the sort order
 /// @return    tsv_error_t
 int
-affx::TsvFile::addHeader(std::string key,std::string val,int order)
+affx::TsvFile::addHeader(const std::string& key,const std::string& val,int order)
 {
   int rv;
   if ((rv=headerKeyLegal(key))!=TSV_OK) {
@@ -1382,7 +1330,21 @@ affx::TsvFile::addHeader(std::string key,std::string val,int order)
 /// @param     val       value to set
 /// @return
 int
-affx::TsvFile::addHeader(std::string key,int val)
+affx::TsvFile::addHeader(const std::string& key,int val)
+{
+  // cast to a string and add it.
+  std::ostringstream stream;
+  stream << val;
+  addHeader(key,stream.str());
+  return TSV_OK;
+}
+
+/// @brief     Add a int value as a header
+/// @param     key       name of header
+/// @param     val       double value to set
+/// @return
+int
+affx::TsvFile::addHeader(const std::string& key,double val)
 {
   // cast to a string and add it.
   std::ostringstream stream;
@@ -1416,7 +1378,7 @@ affx::TsvFile::addHeaderComment(std::string comment)
 /// @param     val       string val
 /// @return    tsv_error_t
 int
-affx::TsvFile::addHeader_nocheck(std::string key,std::string val)
+affx::TsvFile::addHeader_nocheck(const std::string& key,const std::string& val)
 {
   return addHeader_nocheck(key,val,(int)m_headers_vec.size());
 }
@@ -1427,7 +1389,7 @@ affx::TsvFile::addHeader_nocheck(std::string key,std::string val)
 /// @param     order     sort order
 /// @return    TSV_OK
 int
-affx::TsvFile::addHeader_nocheck(std::string key,std::string val,int order)
+affx::TsvFile::addHeader_nocheck(const std::string& key,const std::string& val,int order)
 {
   TsvFileHeaderLine* hdrptr=new TsvFileHeaderLine(key,val,order);
   //
@@ -1504,7 +1466,7 @@ affx::TsvFile::headerCount()
 /// @param     val       string to bind the value to
 /// @return    tsv_return_t
 int
-affx::TsvFile::getHeader(std::string key,std::string& val)
+affx::TsvFile::getHeader(const std::string& key,std::string& val)
 {
   m_headers_iter=m_headers_bykey.find(key);
   if (m_headers_iter==m_headers_bykey.end()) {
@@ -1519,7 +1481,7 @@ affx::TsvFile::getHeader(std::string key,std::string& val)
 /// @param     val       integer value to be modfied.
 /// @return    tsv_error_t
 int
-affx::TsvFile::getHeader(std::string key,int& val)
+affx::TsvFile::getHeader(const std::string& key,int& val)
 {
   std::string tmp_str;
   int tmp_val;
@@ -1529,6 +1491,30 @@ affx::TsvFile::getHeader(std::string key,int& val)
   if (getHeader(key,tmp_str)==TSV_OK) {
     str_in=tmp_str.c_str();
     tmp_val=strtol(str_in,&str_out,0);
+    if (str_in==str_out) {
+      return TSV_ERR_FORMAT;
+    }
+    val=tmp_val;
+    return TSV_OK;
+  }
+  return TSV_ERR_NOTFOUND;
+}
+
+/// @brief     Get the integer value of a header
+/// @param     key       key to get
+/// @param     val       integer value to be modfied.
+/// @return    tsv_error_t
+int
+affx::TsvFile::getHeader(const std::string& key,double& val)
+{
+  std::string tmp_str;
+  double tmp_val;
+  const char* str_in;
+  char* str_out;
+
+  if (getHeader(key,tmp_str)==TSV_OK) {
+    str_in=tmp_str.c_str();
+    tmp_val=strtod(str_in,&str_out);
     if (str_in==str_out) {
       return TSV_ERR_FORMAT;
     }
@@ -1779,7 +1765,7 @@ affx::TsvFile::defineColumn(int clvl,int cidx,std::string cname)
 /// @param     cname     column name
 /// @return    level or less than zero on error
 int
-affx::TsvFile::cname2cidx(int clvl,std::string cname)
+affx::TsvFile::cname2cidx(int clvl,const std::string& cname)
 {
   if ((clvl<0)||(clvl>=(int)m_column_map.size())) {
     return (TSV_ERR_NOTFOUND); // the error codes are negative values
@@ -1791,6 +1777,52 @@ affx::TsvFile::cname2cidx(int clvl,std::string cname)
   }
   return ((*i).second);
 }
+
+#define CNAME_FIND(name) { int rv; rv=cname2cidx(clvl,name); if (rv>=0) { return rv; } }
+
+/// @brief     Find a column index by one of its names.
+/// @param     clvl      level
+/// @param     alias1    first alias to try
+/// @param     alias2    second alias to try
+/// @return
+int
+affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& alias2)
+{
+  CNAME_FIND(alias1);
+  CNAME_FIND(alias2);
+  return TSV_ERR_NOTFOUND;
+}
+/// @brief     Find a column index by one of its names.
+/// @param     clvl      level
+/// @param     alias1    first alias to try
+/// @param     alias2    second alias to try
+/// @param     alias3    third alias to try
+/// @return
+int
+affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& alias2,const std::string& alias3)
+{
+  CNAME_FIND(alias1);
+  CNAME_FIND(alias2);
+  CNAME_FIND(alias3);
+  return TSV_ERR_NOTFOUND;
+}
+/// @brief     Find a column index by one of its names.
+/// @param     clvl      level
+/// @param     alias1    first  alias to try
+/// @param     alias2    second alias to try
+/// @param     alias3    third  alias to try
+/// @param     alias4    fourth alias to try
+/// @return
+int
+affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& alias2,const std::string& alias3,const std::string& alias4)
+{
+  CNAME_FIND(alias1);
+  CNAME_FIND(alias2);
+  CNAME_FIND(alias3);
+  CNAME_FIND(alias4);
+  return TSV_ERR_NOTFOUND;
+}
+
 
 /// @brief     Covert a column index to a column index
 /// @param     clvl      level
@@ -1856,7 +1888,7 @@ affx::TsvFile::setPrecision(int clvl,int cidx,int places)
 }
 
 int
-affx::TsvFile::setPrecision(int clvl,std::string cname,int places)
+affx::TsvFile::setPrecision(int clvl,const std::string& cname,int places)
 {
   return setPrecision(clvl,cname2cidx(clvl,cname),places);
 }
@@ -1871,27 +1903,32 @@ affx::TsvFile::open(std::string fname)
 {
   int rv;
 
-  // close an open stream
-  if (m_fileStream.is_open()) {
-    m_fileStream.close();
-  }
+  close();
   // remeber the name
   m_fileName=fname;
   //
   if (m_fileName.empty()) {
-    /// @todo thow an exception
-    assert(0);
+    // @todo thow an exception
+    //assert(0);
+    Err::errAbort(TSV_ERR_AT("Cant open an empty filename.")+" (filename='"+fname+"')");
   }
 
   // clear before opening -- errors are sticky.
   m_fileStream.clear();
+  // hello?!?
   m_fileStream.open(m_fileName.c_str(),std::fstream::in|std::fstream::binary);
+  // Check an error opening the file.
   if(!m_fileStream.is_open() || !m_fileStream.good()) {
-    if (m_optAbortOnError)
-      Err::errAbort("Could not open file: " + m_fileName + " to read.");
-	else
+    if (m_optAbortOnError) {
+      Err::errAbort(TSV_ERR_AT("open: ")+"Could not open file: '" + m_fileName + "' to read.");
+    }
+    else {
       return (TSV_ERR_FILEIO);
+    }
   }
+
+  // now throw an exception if something really bad happens.
+  m_fileStream.exceptions(ios_base::badbit|ios_base::failbit);
 
 #ifdef TSV_USE_RDBUF
   // This appears to be faster than calling ".get()"
@@ -1920,7 +1957,7 @@ affx::TsvFile::open(std::string fname)
   }
 
   // redudant with above?
-  linkvars_maybe(); 
+  linkvars_maybe();
 
   return TSV_OK;
 }
@@ -1938,9 +1975,9 @@ affx::TsvFile::openTable(std::string fname)
   return open(fname);
 }
 
-/// @brief     
-/// @param     fname     
-/// @return    
+/// @brief
+/// @param     fname
+/// @return
 int
 affx::TsvFile::openCsv(std::string fname)
 {
@@ -1960,8 +1997,10 @@ affx::TsvFile::openCsv(std::string fname)
 int
 affx::TsvFile::close()
 {
-  //m_fileName="";
-  Util::carefulClose(m_fileStream);
+  // close an open stream
+  if (m_fileStream.is_open()) {
+    m_fileStream.close();
+  }
   return TSV_OK;
 }
 
@@ -1987,8 +2026,9 @@ affx::TsvFile::f_advance_tabs()
     else if (c==TSV_CHAR_COMMENT) {
       //m_fileStream.putback((char)c);
       if(tabcnt > 0) {
-        Err::errAbort("Error - file: " + m_fileName + " at line: " + ToStr(m_lineNum) + 
-                      ". Not allowed to have comment characters except on first character of line.");
+        Err::errAbort("Error file: '" + m_fileName + "' " +
+                      "at line: " + ToStr(m_lineNum) + ": " +
+                      "Not allowed to have comment characters except on first character of line.");
       }
       M_UNGETC(c);
       return TSV_LINE_COMMENT;
@@ -2014,7 +2054,7 @@ affx::TsvFile::f_advance_tabs()
   if ((c==TSV_CHAR_CR)||(c==TSV_CHAR_LF)||(c==EOF)) {
     return (TSV_LINE_BLANK);
   }
-  
+
   if ((c==TSV_CHAR_SPACE)||(c==TSV_CHAR_TAB)) {
     std::fstream::pos_type skipstart;
     int spaceCnt = -1;
@@ -2029,7 +2069,7 @@ affx::TsvFile::f_advance_tabs()
     if (c==TSV_CHAR_COMMENT) {
       //m_fileStream.putback(c);
       if(spaceCnt > 0) {
-        Err::errAbort("Error - file: " + m_fileName + " at line: " + ToStr(m_lineNum) + 
+        Err::errAbort("Error - file: " + m_fileName + " at line: " + ToStr(m_lineNum) +
                       ". Not allowed to have comment characters except on first character of line.");
       }
       M_UNGETC(c);
@@ -2208,7 +2248,7 @@ affx::TsvFile::f_read_columns(int line_clvl)
     unsigned int cidx_size=m_column_map[line_clvl].size();
     for (unsigned int cidx=0;cidx<cidx_size;cidx++) {
       f_read_column(&m_column_map[line_clvl][cidx]);
-      m_column_map[line_clvl][cidx].linkedvars_assign();
+      m_column_map[line_clvl][cidx].linkedvars_assign(this);
       //printf("C:'%s'\n",m_column_map[line_clvl][cidx].buffer.c_str());
     }
   }
@@ -2284,7 +2324,6 @@ affx::TsvFile::linkvar_column(int clvl,int cidx,TsvFileBinding* var)
   // found the column, copy over info
   col->linkedvar_push(var);
   var->islinked=true;
-  //col->setInternCacheSize(var->m_interncache_size);
 }
 
 /// @brief     Link a binding var to a column
@@ -2317,7 +2356,7 @@ affx::TsvFile::linkvar_link(TsvFileBinding* var)
   if ((var->m_flags&TSV_BIND_REQUIRED)!=0) {
     m_linkvars_errors++;
     if (m_optAbortOnError) {
-      Err::errAbort("Error: Didn't find required column: '"+ToStr(var->m_bindto_cname)+
+      Err::errAbort("Didn't find required column: '"+ToStr(var->m_bindto_cname)+
                     "' in file: '"+m_fileName+"'.");
     }
     return;
@@ -2427,7 +2466,7 @@ affx::TsvFile::bind(int clvl,int cidx,Xtype* ptr,tsv_bindopt_t flags,int internc
   return TSV_OK; \
 } \
 int \
-affx::TsvFile::bind(int clvl,std::string cname,Xtype* ptr,tsv_bindopt_t flags,int interncache_size) \
+affx::TsvFile::bind(int clvl,const std::string& cname,Xtype* ptr,tsv_bindopt_t flags,int interncache_size) \
 { \
   TsvFileBinding* var=linkvar_alloc(); \
   var->m_bindto_type=TSV_BINDTO_CNAME; \
@@ -2449,6 +2488,9 @@ TSV_DEFUN_BIND(double,m_ptr_double);
 TSV_DEFUN_BIND(float,m_ptr_float);
 TSV_DEFUN_BIND(unsigned int,m_ptr_uint);
 TSV_DEFUN_BIND(uint64_t,m_ptr_ulonglong);
+
+// dont need this any more.
+#undef TSV_DEFUN_BIND
 
 //////////
 
@@ -2526,12 +2568,6 @@ affx::TsvFile::nextLevel(int seek_clvl)
     else if (c == EOF) {
       return TSV_ERR_EOF;
     }
-
-//     // some sort of error/eof
-//     //if (m_fileStream.eof()) {
-//     if (M_PEEK()==EOF) {
-//       return TSV_ERR_EOF;
-//     }
 
     // what level is this line at?
     m_lineLvl=f_advance_tabs();
@@ -2632,6 +2668,8 @@ affx::TsvFile::get(int clvl,int cidx,uint64_t& val)
   TSV_GET_VALUE_CIDX();
 }
 
+#undef TSV_GET_VALUE_CIDX
+
 /// Handy code to get the value of a column
 #define TSV_GET_VALUE_CNAME() \
   TsvFileField* col=clvlcidx2colptr(clvl,cname); \
@@ -2705,6 +2743,9 @@ affx::TsvFile::get(int clvl,std::string cname,uint64_t& val)
   TSV_GET_VALUE_CNAME();
 }
 
+// cleanup
+#undef TSV_GET_VALUE_CNAME
+
 //////////
 
 /// Handy code to get the value of a column
@@ -2766,6 +2807,9 @@ affx::TsvFile::set(int clvl,std::string cidx,uint64_t val)
   TSV_SET_VALUE();
 }
 
+// dont need it any more.
+#undef TSV_SET_VALUE
+
 //////////
 
 /// @brief     Is the field set?
@@ -2786,7 +2830,7 @@ affx::TsvFile::isNull(int clvl,int cidx)
 /// @param     cname     The column index (0-based) of the field
 /// @return    false if set, otherwise true
 bool
-affx::TsvFile::isNull(int clvl,std::string cname)
+affx::TsvFile::isNull(int clvl,const std::string& cname)
 {
   TsvFileField* col=clvlcidx2colptr(clvl,cname);
   if (col==NULL) {
@@ -3351,7 +3395,7 @@ affx::TsvFile::writeFieldSep(int cnt)
 /// @param     str
 /// @return    tsv_return_t
 int
-affx::TsvFile::write_str(std::string& str)
+affx::TsvFile::write_str(const std::string& str)
 {
   if (m_optDoQuote==true) {
     m_fileStream<<m_optQuoteChar<<str<<m_optQuoteChar;
@@ -3430,7 +3474,7 @@ affx::TsvFile::writeHeaders()
 /// @param     filename
 /// @return    tsv_return_t
 int
-affx::TsvFile::writeOpen(std::string filename)
+affx::TsvFile::writeOpen(const std::string& filename)
 {
   // finish off the old stream
   close();
@@ -3439,6 +3483,9 @@ affx::TsvFile::writeOpen(std::string filename)
   // start
   m_fileName=filename;
   m_fileStream.open(m_fileName.c_str(),std::ios::out|std::ios::binary);
+  // throw if something really bad happens.
+  m_fileStream.exceptions(ios_base::badbit|ios_base::failbit);
+  //
   if ((!m_fileStream.is_open())||(!m_fileStream.good())) {
     if (m_optAbortOnError)
 	  Err::errAbort("Couldn't open file: " + filename + " to write.");
@@ -3452,7 +3499,7 @@ affx::TsvFile::writeOpen(std::string filename)
 /// @param     filename
 /// @return
 int
-affx::TsvFile::writeTsv_v1(std::string filename)
+affx::TsvFile::writeTsv_v1(const std::string& filename)
 {
   // this file format only supports one level.
   if (getLevelCount()!=1) {
@@ -3482,7 +3529,7 @@ affx::TsvFile::writeTsv_v1(std::string filename)
 /// @param     filename
 /// @return
 int
-affx::TsvFile::writeCsv(std::string filename)
+affx::TsvFile::writeCsv(const std::string& filename)
 {
   // this file format only supports one level.
   if (getLevelCount()!=1) {
@@ -3515,7 +3562,7 @@ affx::TsvFile::writeCsv(std::string filename)
 ///            If you want to define your own format, you can cobble it up from:
 ///            writeOpen, setting the options, and the writeHeaders().
 int
-affx::TsvFile::writeTsv(std::string filename)
+affx::TsvFile::writeTsv(const std::string& filename)
 {
   int rv;
   if ((rv=writeOpen(filename))!=TSV_OK) {

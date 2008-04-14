@@ -435,8 +435,8 @@ bool FusionCELData::IsOutlier(int index)
  */
 void FusionCELData::Close()
 {
-	CheckAdapter();
-	adapter->Close();
+    if (adapter != NULL)
+        adapter->Close();
 }
 
 /*
@@ -472,8 +472,17 @@ bool FusionCELData::Exists()
  */
 bool FusionCELData::ReadHeader()
 {
-	CreateAdapter();
-	return adapter->ReadHeader();
+    if (Exists() == false)
+        return false;
+    try
+    {
+        CreateAdapter();
+        return adapter->ReadHeader();
+    }
+    catch (...)
+    {
+        return false;
+    }
 }
 
 /*
@@ -481,8 +490,17 @@ bool FusionCELData::ReadHeader()
  */
 bool FusionCELData::Read(bool bIncludeMaskAndOutliers)
 {
-	CreateAdapter();
-	return adapter->Read(bIncludeMaskAndOutliers);
+    if (Exists() == false)
+        return false;
+    try
+    {
+    	CreateAdapter();
+	    return adapter->Read(bIncludeMaskAndOutliers);
+    }
+    catch (...)
+    {
+        return false;
+    }
 }
 
 /*
@@ -491,8 +509,17 @@ bool FusionCELData::Read(bool bIncludeMaskAndOutliers)
 bool FusionCELData::ReadEx(const char *filename_, int state)
 {
 	filename = filename_;
-	CreateAdapter();
-	return adapter->ReadEx(filename_, state);
+    if (Exists() == false)
+        return false;
+    try
+    {
+        CreateAdapter();
+	    return adapter->ReadEx(filename_, state);
+    }
+    catch (...)
+    {
+        return false;
+    }
 }
 
 /*

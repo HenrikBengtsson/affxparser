@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -66,6 +66,31 @@ void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int 
     int dsIndex = dataSetIndexMap[dataType];
 	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.call);
 	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.confidence);
+}
+
+/*
+ * Update the value for the given row.
+ */
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataCopyNumberData &entry, const vector<ColumnInfo> &metricColumns)
+{
+    int dsIndex = dataSetIndexMap[dataType];
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.chr);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.position);
+    UpdateMetrics(dsIndex, row, 3, entry.metrics, metricColumns);
+}
+
+/*
+ * Update the value for the given row.
+ */
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataCytoRegionData &entry, const vector<ColumnInfo> &metricColumns)
+{
+    int dsIndex = dataSetIndexMap[dataType];
+    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.chr);
+    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.startPosition);
+    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.stopPosition);
+    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 4, entry.call);
+    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 5, entry.confidenceScore);
+    UpdateMetrics(dsIndex, row, 6, entry.metrics, metricColumns);
 }
 
 /*

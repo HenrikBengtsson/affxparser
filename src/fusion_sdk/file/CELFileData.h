@@ -22,6 +22,7 @@
 
 #include <map>
 #include <string>
+//
 #include "TagValuePair.h"
 #include "GridCoordinates.h"
 
@@ -50,6 +51,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/user.h>
+
 ///  Structure alignment requirement for g++
 ///  @remark Structure alignment for Mac OS X is included in #pragma
 #define STRUCT_ALIGNMENT

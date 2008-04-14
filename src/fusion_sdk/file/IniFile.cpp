@@ -123,10 +123,10 @@ std::vector<std::string> CIniFile::GetSectionNames(std::string FileName)
 }
 
 // Returns all key contents of a specific section
-vector<CIniFile::Record> CIniFile::GetSection(string SectionName, string FileName)
+std::vector<CIniFile::Record> CIniFile::GetSection(std::string SectionName, std::string FileName)
 {
 	vector<Record> data;									// Holds the return data
-	vector<Record> content;									// Holds the current record													// Holds the current record
+	vector<Record> content;									// Holds the current record
 
 	if (Load(FileName, content))							// Make sure the file is loaded
 	{
@@ -142,10 +142,12 @@ vector<CIniFile::Record> CIniFile::GetSection(string SectionName, string FileNam
 }
 
 // Returns the contents of a specific key within a given section
-std::vector<CIniFile::Record> CIniFile::GetRecord(std::string KeyName, std::string SectionName, std::string FileName)
+std::vector<CIniFile::Record> CIniFile::GetRecord(std::string KeyName, 
+                                                  std::string SectionName,
+                                                  std::string FileName)
 {
 	vector<Record> data;									// Holds the return data
-	vector<Record> content;									// Holds the current record													// Holds the current record
+	vector<Record> content;									// Holds the current record
 
 	if (Load(FileName, content))							// Make sure the file is loaded
 	{
@@ -161,7 +163,7 @@ std::vector<CIniFile::Record> CIniFile::GetRecord(std::string KeyName, std::stri
 }
 
 // Returns the value of a specific key within a given section
-string CIniFile::GetValue(string KeyName, string SectionName, string FileName)
+std::string CIniFile::GetValue(std::string KeyName, std::string SectionName, std::string FileName)
 {
 	vector<Record> content = GetRecord(KeyName,SectionName, FileName);	// Get the Record
 

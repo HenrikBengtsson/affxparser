@@ -17,13 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
+//
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//
-#include "FileIO.h"
-#include "portability/affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -35,6 +33,10 @@
 #include <netinet/in.h>
 #include <inttypes.h>
 #endif
+
+// Include winsock2.h before these
+#include "FileIO.h"
+#include "portability/affy-base-types.h"
 
 // Some machines (sparc) dont support unaligned memory access
 // The mmaped files are chock full of unaligned accesses.
@@ -145,7 +147,7 @@ ReadFloatFromOldBPMAP_N(IFSTREAM &instr, float &fval)
   type_punned pun;
 
 	instr.read((char *)&pun.v_uint32,FLOAT_SIZE);
-#ifdef IS_BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
   pun.v_uint32=affy_swap32(pun.v_uint32);
   pun.v_uint32=(uint32_t)pun.v_float;
   pun.v_uint32=affy_swap32(pun.v_uint32);
@@ -404,7 +406,7 @@ MmGetFloatFromOldBPMAP_N(float *ptr)
 {
   float fval;
 
-#ifndef IS_BIG_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
   // There isnt any punning going on here.
   // cast, swap, cast back.
  	fval = (float)ntohl((uint32_t)*ptr);
@@ -537,11 +539,12 @@ float
 MmGetFloatFromOldBPMAP_N(float *ptr)
 {
 	float fval;
-#ifndef IS_BIG_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN
 	fval = (float) ntohl((uint32_t)MmGetFloat_I(ptr));
 #else
 	int i1=*(int *)ptr;
  	i1=affy_swap32(i1);
+  /// @todo this should be type punned. - jhg
 	fval=(float)affy_swap32((uint32_t)(*(float *)&i1)); // cast to float, then deref
 #endif
 	return fval;

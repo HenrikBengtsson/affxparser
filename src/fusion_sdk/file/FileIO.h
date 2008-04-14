@@ -36,26 +36,6 @@
 // the writer functions in FileWriter.h.  The general format of the
 // function names is: {Read,Write}{UInt,Int,Float}{8,16,32}{N,I}
 
-// What kind of machine?
-//   (The tests are written out like this as I was told "||" 
-//    causes problems on windows.)
-// touch foobarbaz.c ; gcc -E -dD foobarbaz.c
-// check for these archs
-#ifdef __sparc__ 
-#define IS_BIG_ENDIAN 1
-#endif
-#ifdef __PPC__ // on linux
-#define IS_BIG_ENDIAN 1
-#endif
-#ifdef __POWERPC__ // on darwin
-#define IS_BIG_ENDIAN 1
-#endif
-#ifdef __BIG_ENDIAN__ // we are being told
-#undef  IS_BIG_ENDIAN // avoid the warning
-#define IS_BIG_ENDIAN 1
-#endif
-
-
 /*! Shuffle operator for 32 bit values
  * @param x The value to shuffle
  * @return The shuffled value
@@ -76,7 +56,7 @@ affy_swap16(uint16_t x) {
 }
 
 // Do we need to define our "to little-endian" operators?
-#ifdef IS_BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 
 /*! Changes the 32 bit bit data to little endian order */
 #define htoil(x) affy_swap32(x)

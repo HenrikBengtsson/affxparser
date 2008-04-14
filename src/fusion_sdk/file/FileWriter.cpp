@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 //
-#include "FileWriter.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -33,6 +32,9 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #endif
+
+// Need to include winsock2.h first, then this
+#include "FileWriter.h"
 
 using namespace std;
 

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -30,6 +30,7 @@
 #include <vector>
 #include <map>
 #include "ProbeSetMultiDataData.h"
+#include <assert.h>
 
 #define MAX_BUFFER_SIZE				5242880		// 5 MB
 
@@ -53,8 +54,9 @@ public:
 	/*! Initialize the buffer writer
 	 * @param CHPFileNames Reference to a list of CHP file names.
      * @param dataTypes The data types.
+     * @param maxProbeSetNameLength The maximum probe set name length
 	 */
-    void Initialize(std::vector<std::string> *CHPFileNames, std::vector<MultiDataType> &dataTypes);
+    void Initialize(std::vector<std::string> *CHPFileNames, std::vector<MultiDataType> &dataTypes, std::map<MultiDataType, int> &maxProbeSetNameLength);
 
 	/*! Write a genotype entry to buffer. If the buffer is full, flush it.
      * @param dataType The data type.
@@ -62,6 +64,20 @@ public:
 	 * @param entry Value for the genotype entry.
 	 */
 	void WriteMultiDataGenotypeEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry);
+
+	/*! Write a copy number entry to buffer. If the buffer is full, flush it.
+     * @param dataType The data type.
+	 * @param target Target for the entry.
+	 * @param entry Value for the copy number entry.
+	 */
+	void WriteMultiDataCopyNumberEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry);
+
+	/*! Write a cyto region entry to buffer. If the buffer is full, flush it.
+     * @param dataType The data type.
+	 * @param target Target for the entry.
+	 * @param entry Value for the copy number entry.
+	 */
+	void WriteMultiDataCytoRegionEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry);
 
 	/*! Write an expression entry to buffer. If the buffer is full, flush it.
      * @param dataType The data type.
@@ -74,44 +90,56 @@ public:
 	void FlushBuffer();
 
 private:
-    /*! Get the size of the metrics. */
-    int GetMetricBufferSize(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics);
-
     /*! Map of data type to data set index. */
     std::map<MultiDataType, int> dataSetIndexMap;
 
-	// Pointer to list of CHP file names.
+	/*! Pointer to list of CHP file names. */
 	std::vector<std::string> *m_CHPFileNames;
 
-	// List of targets used for storing entries.
-	std::vector< std::vector<affymetrix_calvin_data::ProbeSetMultiDataGenotypeData> > m_TargetMultiDataGenotypeBuffers;
+	/*! List of targets used for storing entries. */
+	std::vector< std::vector<char *> > m_TargetMultiDataGenotypeBuffers;
 
-	// List of targets used for storing entries.
-	std::vector< std::vector<affymetrix_calvin_data::ProbeSetMultiDataGenotypeData> > m_TargetMultiDataGenotypeControlBuffers;
+	/*! List of targets used for storing entries. */
+	std::vector< std::vector<char *> > m_TargetMultiDataCopyNumberBuffers;
 
-	// List of targets used for storing entries.
-	std::vector< std::vector<affymetrix_calvin_data::ProbeSetMultiDataExpressionData> > m_TargetMultiDataExpressionBuffers;
+	/*! List of targets used for storing entries. */
+	std::vector< std::vector<char *> > m_TargetMultiDataCytoRegionBuffers;
 
-	// List of targets used for storing entries.
-	std::vector< std::vector<affymetrix_calvin_data::ProbeSetMultiDataExpressionData> > m_TargetMultiDataExpressionControlBuffers;
+	/*! List of targets used for storing entries. */
+    std::vector< std::vector<char *> > m_TargetMultiDataExpressionBuffers;
 
-	// Buffer for storing row indexes.
+	/*! Buffer for storing row indexes. */
 	std::vector<int> m_TargetMultiDataGenotypeRowIndexes;
 
-	// Buffer for storing row indexes.
-	std::vector<int> m_TargetMultiDataGenotypeControlRowIndexes;
+	/*! Buffer for storing row indexes. */
+	std::vector<int> m_TargetMultiDataCopyNumberRowIndexes;
 
-	// Buffer for storing row indexes.
+	/*! Buffer for storing row indexes. */
+	std::vector<int> m_TargetMultiDataCytoRegionRowIndexes;
+
+	/*! Buffer for storing row indexes. */
 	std::vector<int> m_TargetMultiDataExpressionRowIndexes;
 
-	// Buffer for storing row indexes.
-	std::vector<int> m_TargetMultiDataExpressionControlRowIndexes;
-
-	// Size of the current buffer in bytes.
+	/*! Size of the current buffer in bytes. */
 	int m_BufferSize;
 
-	// Maximum size of the buffer before it gets flushed
+	/*! Maximum size of the buffer before it gets flushed */
 	int m_MaxBufferSize;
+
+    /*! The maximum probe set name length */
+    std::map<MultiDataType, int> m_maxProbeSetNameLength;
+
+    /*! The buffer size of a genotype entry */
+    int genoBufferSize;
+
+    /*! The buffer size of a genotype entry */
+    int exprBufferSize;
+
+    /*! The buffer size of a genotype entry */
+    int cnBufferSize;
+
+    /*! The buffer size of a cyto entry */
+    int cyBufferSize;
 };
 
 }

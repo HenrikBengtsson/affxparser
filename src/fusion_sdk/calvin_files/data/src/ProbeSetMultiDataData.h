@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -24,13 +24,28 @@
 /*! \file ProbeSetMultiDataData.h This file provides types to hold MultiData results.
  */
 
-#include <vector>
+//
+#include <sstream>
 #include <string>
+#include <vector>
+//
 #include "AffymetrixBaseTypes.h"
 #include "ParameterNameValueType.h"
 
 namespace affymetrix_calvin_data
 {
+
+/*! The AA call */
+#define SNP_AA_CALL 6
+
+/*! The BB call */
+#define SNP_BB_CALL 7
+
+/*! The AB call */
+#define SNP_AB_CALL 8
+
+/*! The no call allele call */
+#define SNP_NO_CALL 11
 
 /*! Stores data for a genotype result of a probe set. */
 typedef struct _ProbeSetMultiDataGenotypeData
@@ -49,6 +64,76 @@ typedef struct _ProbeSetMultiDataGenotypeData
 
 } ProbeSetMultiDataGenotypeData;
 
+/*! A value to represent the X chromosome. */
+#define X_CHR 24
+
+/*! A value to represent the Y chromosome. */
+#define Y_CHR 25
+
+/*! A value to represent the MT chromosome. */
+#define MT_CHR 26
+
+/*! A value to represent the no chromosome. */
+#define NO_CHR 255
+
+/*! Stores data for a copy number result of a probe set. */
+typedef struct _ProbeSetMultiDataCopyNumberData
+{
+	/*! The name of the probe set. */
+	std::string name;
+
+    /*! The chromosome value. */
+    u_int8_t chr;
+
+	/*! The physical position. */
+	u_int32_t position;
+
+	/*! Other metrics associated with the result. */
+	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
+
+} ProbeSetMultiDataCopyNumberData;
+
+/*! A no call for the cyto result. */
+#define CYTO_NO_CALL 0
+
+/*! An absent call for the cyto result. */
+#define CYTO_ABSENT_CALL 1
+
+/*! A present call for the cyto result. */
+#define CYTO_PRESENT_CALL 2
+
+/*! A gain call for the cyto result. */
+#define CYTO_LOSS_CALL 2
+
+/*! A gain call for the cyto result. */
+#define CYTO_GAIN_CALL 3
+
+/*! Stores data for a cyto results. */
+typedef struct _ProbeSetMultiDataCytoRegionData
+{
+	/*! The name of the region. */
+	std::string name;
+
+    /*! The chromosome value. */
+    u_int8_t chr;
+
+	/*! The physical start position. */
+	u_int32_t startPosition;
+
+	/*! The physical stop position. */
+	u_int32_t stopPosition;
+
+	/*! The call for the region. */
+	u_int8_t call;
+
+	/*! The confidence score. */
+	float confidenceScore;
+
+	/*! Other metrics associated with the result. */
+	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
+
+} ProbeSetMultiDataCytoRegionData;
+
 /*! Stores data for an expression result of a probe set. */
 typedef struct _ProbeSetMultiDataExpressionData
 {
@@ -63,7 +148,43 @@ typedef struct _ProbeSetMultiDataExpressionData
 
 } ProbeSetMultiDataExpressionData;
 
+/*! Convert a string representation of a chromosome to a numeric representation.
+ * @param chr The chromosome value.
+ * @return A numeric representation of the chromosome value.
+ */
+u_int8_t ChromosomeFromString(const std::string& chr);
+
+/*! Convert a numeric representation of a chromosome to a string representation.
+ * @param chr The chromosome value.
+ * @return A string representation of the chromosome value.
+ */
+std::string ChromosomeToString(u_int8_t chr);
+
+/*! Convert a string representation of a cyto call to a numeric representation.
+ * @param call The call value.
+ * @return A numeric representation of the call value.
+ */
+u_int8_t CytoCallFromString(const std::string &call);
+
+/*! Convert a numeric representation of a call to a string representation.
+ * @param call The call value.
+ * @return A string representation of the call value.
+ */
+std::string CytoCallToString(u_int8_t call);
+
+/*! Convert a string representation of a genotype call to a numeric representation.
+ * @param call The call value.
+ * @return A numeric representation of the call value.
+ */
+u_int8_t GenotypeCallFromString(const std::string &call);
+
+/*! Convert a numeric representation of a genotype call to a string representation.
+ * @param call The call value.
+ * @return A string representation of the call value.
+ */
+std::string GenotypeCallToString(u_int8_t call);
+
+
 }
 
 #endif
-

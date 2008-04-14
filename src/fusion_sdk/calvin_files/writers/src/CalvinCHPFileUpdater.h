@@ -105,6 +105,30 @@ public:
 	 */
 	void UpdateMultiDataGenotypeEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::ProbeSetMultiDataGenotypeData> &genotypeEntryBuffer);
 
+	/*! Seek to appropriate file position and update genotype entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataGenotypeEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &genotypeEntryBuffer);
+
+	/*! Seek to appropriate file position and update copy number entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param copyNumberEntryBuffer The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataCopyNumberEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &copyNumberEntryBuffer);
+
+	/*! Seek to appropriate file position and update cyto entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param cytoEntryBuffer The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataCytoRegionEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &cytoEntryBuffer);
+
 	/*! Seek to appropriate file position and update expression entry
      * @param dataType The data type.
 	 * @param row The row index.
@@ -119,6 +143,14 @@ public:
 	 * @param expressionBufferEntry The vector contain all buffered entries to be updated.
 	 */
 	void UpdateMultiDataExpressionEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::ProbeSetMultiDataExpressionData> &expressionEntryBuffer);
+
+	/*! Seek to appropriate file position and update expression entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param expressionBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataExpressionEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &expressionEntryBuffer);
 
 	/*! Close CHP signal file. */
 	void CloseCHPFile();

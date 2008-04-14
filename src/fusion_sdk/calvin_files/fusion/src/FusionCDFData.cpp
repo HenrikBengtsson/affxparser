@@ -985,9 +985,43 @@ std::string FusionCDFData::GetChipType() const
 	if (index == -1)
 		index = (int) fileName.rfind('/');
 	std::string chiptype = fileName.c_str() + index + 1;
-	index = (int) chiptype.find('.');
-	chiptype.resize(index);
+	chiptype.resize(chiptype.length()-4);
 	return chiptype;
+}
+
+/*
+ * Get the chip type (probe array type) of the CDF file.
+ * This is the name of the file without extension. We
+ * also include all substrings create by removing
+ * characters to the right of each '.'
+ */
+std::vector<std::string> FusionCDFData::GetChipTypes() const
+{
+    std::vector<std::string> chiptypes;
+    std::string chiptype;
+
+	int index = (int) fileName.rfind('\\');
+	if (index == -1)
+		index = (int) fileName.rfind('/');
+	chiptype = fileName.c_str() + index + 1;
+	chiptype.resize(chiptype.length()-4);
+
+    // The full file name (minus .cdf extension) is the default (1st) 
+    // chip type. This matches what GetChipType() returns.
+    // ie: foo.bar.v1.r2.cdf -> foo.bar.v1.r2
+    chiptypes.push_back(chiptype);
+
+    //We then add all substrings starting at zero and ending at '.'
+    // ie: foo.bar.v1.r2.cdf -> foo.bar.v1, foo.bar, foo
+    std::string::size_type pos = chiptype.rfind(".",chiptype.size()-1);
+    while (pos != std::string::npos){
+        if(pos>0)
+            chiptypes.push_back(chiptype.substr(0,pos));
+        pos = chiptype.rfind(".",pos-1);
+    }
+
+    //ie: foo.bar.v1.r2, foo.bar.v1, foo.bar, foo
+	return chiptypes;
 }
 
 /*

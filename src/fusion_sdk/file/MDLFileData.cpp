@@ -38,12 +38,13 @@ using namespace affxmdl;
 
 static void SwapToLittleEndian(MDLData &data)
 {
-        // This is a double (64bit) 
-        // The high and low words need to be flipped.
+  // @todo: This breaks type punning.
+  // This is a double (64bit) 
+  // The high and low words need to be flipped.
 	float *f = (float *)&data.Affinity;
 	f[0] = MmGetFloat_I(&f[0]);
 	f[1] = MmGetFloat_I(&f[1]);
-#ifdef IS_BIG_ENDIAN
+#if BYTE_ORDER == BIG_ENDIAN
 	float temp = f[0];
 	f[0] = f[1];
 	f[1] = temp;
@@ -109,6 +110,7 @@ CMDLProbeData::CMDLProbeData() :
 	m_fRelativeBkg(0.0f),
 	m_fSaturation(0.0f),
 	m_fOffset(0.0f),
+  m_nIndex(0),
 	m_bMapped(false),
 	m_lpData(NULL)
 {
@@ -145,7 +147,7 @@ CMDLFileData::CMDLFileData
 		for (int32_t i=0; i<nProbes; i++)
 			m_ProbeData[i] = probeData;
 	}
-
+  
 #if defined(_USE_MEM_MAPPING_) && defined(_MSC_VER)
 	m_bFileOpen = false;
 	m_lpFileMap = NULL;
@@ -505,7 +507,7 @@ bool CMDLFileData::ReadFileUsingMemMap(bool bReadHeaderOnly)
 
 /////////////////////////////////////////////////////////////////
 
-bool CMDLFileData::ReadFileHeader(ifstream &instr)
+bool CMDLFileData::ReadFileHeader(std::ifstream &instr)
 {
 	// Read Header
 	char strHeader[MDLHEADERSIZE];
@@ -662,4 +664,3 @@ bool CMDLFileData::PrintMDLToTextFile(const char* sFile, int32_t nProbes)
 }
 
 /////////////////////////////////////////////////////////////////
-

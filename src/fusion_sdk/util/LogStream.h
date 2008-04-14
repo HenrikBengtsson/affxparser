@@ -32,8 +32,8 @@
 
 #include <iostream>
 #include <string>
-#include <time.h>
 #include "MsgHandler.h"
+#include "util/Util.h"
 
 /**
  * @brief Log messages with timestamps.
@@ -48,25 +48,6 @@ public:
   }
 
   /** 
-   * Get a timestamp string.
-   * @return - pointer to statically allocated buffer with time.
-   */
-  char *getTimeStamp() {
-    char *timeStr = NULL;
-    struct tm *tp;
-    time_t t = time(NULL);
-    tp = localtime(&t);
-    timeStr = asctime(tp); // timestamp prefix for log entries
-    if(timeStr == NULL) {
-      timeStr = "unknown";
-    }
-    else {
-      timeStr[strlen(timeStr)-1] = '\0'; // knock off trailing '\n'
-    }
-    return timeStr;
-  }
-
-  /** 
    * A message to be processed by the stream.
    * 
    * @param level - What level of verbosity is associated with this message, higher number == more verbosity.
@@ -74,10 +55,10 @@ public:
    * @param delimiter - Should a delimiter be emitted as well?
    */
   void message(int level, const std::string &log, bool delimiter = true) {
-    char *timeStr = getTimeStamp();
+    std::string timeStr = Util::getTimeStamp();
     if(level <= m_Verbosity && m_Out != NULL) {
       if(!m_Out->good()) {
-        Err::errAbort("LogStream::message() - Error: problem writing to stream.");
+        Err::errAbort("LogStream::message() - problem writing to stream.");
       }
       if(log != "") 
         (*m_Out) << timeStr << " - ";
@@ -111,7 +92,7 @@ public:
    */
   void progressBegin(int verbosity, const std::string &msg, int total) {
     m_Total = total;
-    char *timeStr = getTimeStamp();
+    std::string timeStr = Util::getTimeStamp();
     // flush any C io before doing our IO
     fflush(NULL); 
     if(verbosity <= m_Verbosity && m_Out != NULL) {

@@ -138,6 +138,15 @@ public:
 	* @param size The size of the blob.
 	*/
 	static void WriteBlob(std::ofstream &outstr, const void* value, int32_t size);
+
+	/*! Writes a blob to a file with reserved space(as is; no htonl).  It is the responsibility of the caller to ensure
+	*	the blob is in a portable form.
+	* @param outstr The output file stream.
+	* @param value A pointer to the blob.
+	* @param data_size The size of the blob.
+	* @param reserved_size The size of the reserved space (total size including the blob size).
+	*/
+	static void WriteBlob(std::ofstream &outstr, const void* value, int32_t data_size, int32_t reserved_size);
 };
 
 }

@@ -3,218 +3,28 @@
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License 
+// it under the terms of the GNU Lesser General Public License
 // (version 2.1) as published by the Free Software Foundation.
-// 
+//
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
 
 /**
-/// @file   TsvFile.h
-/// @brief  Headers for the TsvFile classes.
-*/
+ * \file   TsvFile.h
+ * \brief  Headers for the TsvFile classes.
+ *         Read \link file-format-tsv the TsvFile format \endlink for an overview.
+ */
 
-// Read TsvFile-README.dox for an overview.
-
-/**
-\page file-format-tsv File Format: TSV (NON-OFFICIAL-RELEASE)
-
-<center><b>DRAFT</b></center>
-
-TSV files are simple tab separated line oriented text files. 
-
-\section specs Specs & Features
-
-- A TSV file may contain headers, one per line, in the format "#%key=value"
-  - no leading whitespace is allowed on the line
-  - key's may be listed more than once with different values
-- A TSV file may contain comment lines in the format "##..."
-  - no leading whitespace is allowed
-- A TSV file must contain a line with column names (column header line)
-- Column labels are case sensitive
-- All the headers must appear before the column header line, tab separated
-- The TSV file must contain zero or more lines of data, tab separated
-- A TSV file may have DOS, *NIX, or MAC line endings
-- WE NEED TO SAY SOMETHING ABOUT HOW ESCAPING OF CHARACTERS IS HANDLED
-- WE NEED TO SAY SOMETHING ABOUT HOW QUOTING IS HANDLED
-- WE NEED TO SAY SOMETHING ABOUT HOW BLANK LINES ARE HANDLED
-- WE NEED TO SAY SOMETHING ABOUT WHAT CHARACTERS ARE ALLOWED WHERE
-
-A varient of TSV files, v2, allowing for nested relationships is also supported. 
-The presence of special headers indicates a v2 TSV file. For v2 TSV files
-we have the addition features/specs:
-
-- At a minimum, a header line for the top level must be provided which
-  indicates the column names
-
-\code
-#%header0=col1-label	col2-label	col3-label
-\endcode
-
-- There is no separate column header line, the column header info
-  is fully contained in the respective header
-
-Multiple levels can be indicated with multiple header lines where the
-trailing numerical digit indicates the level (top level is 0). So 
-for example, a PGF file (which is a valid TSV file) has 3 levels:
-
-\code
-#%header0=probeset_id	type
-#%header1=	atom_id
-#%header2=		probe_id	type	gc_count	probe_length	interrogation_position	probe_sequence
-2590411	main
-	1
-		5402769	pm:st	12	25	13	CGAAGTTGTTCATTTCCCCGAAGAC
-\endcode
-
-\section implementation Parsing and Writing
-
-The official C++ parser used by affy can be found in APT under
-sdk/file/TsvFile/TsvFile.{h,cpp}. When possible, parsing and 
-writing of TSV files should be done using this code. 
-
-It should be noted that this Parser, with the default settings,
-will allow users to provide either a TSV or a CSV file.
-
-See <a href="./TsvFile.html">TsvFile Design Notes</a> for
-more implementation details.
-
-\section notes Notes
-
-The use of TSV files by the application usually imposes an expectation
-that certain columns (as enumerated in the column header line) be 
-present in the TSV file. For example, a cel list file for use in
-apt-probeset-summarize with the --cel-files option assumes that the
-TSV file has a "cel_files" column. No assumptions should be made about
-the column order and there may be other columns present which the
-software can ignore. 
-
-\section example1 Example 1
-
-As mentioned earlier, one example of a TSV file is the file
-provided to apt-probeset-summarize using the --cel-files
-option. This file must have a "cel_files" column.
-
-\code
-#%date=Tue Sep 26 11:54:09 PDT 2006
-# These cel files are from the latin square study
-pool	cel_files	scanner
-1	sp1_a.cel	gcos1
-1	sp1_b.cel	gcos2
-1	sp1_c.cel	gcos3
-2	sp2_a.cel	gcos1
-2	sp2_b.cel	gcos2
-2	sp2_c.cel	gcos3
-\endcode
-
-Now the same file, but with the tabs explicitly enumerated:
-
-\code
-#%date=Tue Sep 26 11:54:09 PDT 2006
-# These cel files are from the latin square study
-pool<tab>cel_files<tab>scanner
-1<tab>sp1_a.cel<tab>gcos1
-1<tab>sp1_b.cel<tab>gcos2
-1<tab>sp1_c.cel<tab>gcos3
-2<tab>sp2_a.cel<tab>gcos1
-2<tab>sp2_b.cel<tab>gcos2
-2<tab>sp2_c.cel<tab>gcos3
-\endcode
-
-\section related Related Pages
-
-- <a href="./TsvFile.html">TsvFile Design Notes</a>
-- <a href="./file-format-tsv.html">TSV File Format</a>
-
-\section derived Derived Formats
-
-- <a href="./file-format-clf.html">CLF File Format</a>
-- <a href="./file-format-pgf.html">PGF File Format</a>
-
-*/
-
-/**
-\page file-format-csv File Format: CSV (NON-OFFICIAL-RELEASE)
-
-<center><b>DRAFT</b></center>
-
-CSV files are simple comma separated line oriented text files. 
-
-\section specs Specs & Features
-
-- A CSV file may contain headers, one per line, in the format "#%key=value"
-  - no leading whitespace is allowed on the line
-  - key's may be listed more than once with different values
-- A CSV file may contain comment lines in the format "##..."
-  - no leading whitespace is allowed
-- A CSV file must contain a line with column names (column header line)
-- Column labels are case sensitive
-- All the headers must appear before the column header line, comma separated
-- The CSV file must contain zero or more lines of data, comma separated
-- A CSV file may have DOS, *NIX, or MAC line endings
-- WE NEED TO SAY SOMETHING ABOUT HOW ESCAPING OF CHARACTERS IS HANDLED
-- WE NEED TO SAY SOMETHING ABOUT HOW QUOTING IS HANDLED
-- WE NEED TO SAY SOMETHING ABOUT HOW BLANK LINES ARE HANDLED
-- WE NEED TO SAY SOMETHING ABOUT WHAT CHARACTERS ARE ALLOWED WHERE
-
-\section implementation Parsing and Writing
-
-The official C++ parser used by affy can be found in APT under
-sdk/file/TsvFile/TsvFile.{h,cpp}. When possible, parsing and 
-writing of CSV files should be done using this code. 
-
-It should be noted that this Parser, with the default settings,
-will allow users to provide either a CSV or a TSV file.
-
-See <a href="./TsvFile.html">TsvFile Design Notes</a> for
-more implementation details.
-
-\section notes Notes
-
-The use of CSV files by the application usually imposes an expectation
-that certain columns (as enumerated in the column header line) be 
-present in the CSV file. For example, a cel list file for use in
-apt-probeset-summarize with the --cel-files option assumes that the
-CSV file has a "cel_files" column. No assumptions should be made about
-the column order and there may be other columns present which the
-software can ignore. 
-
-\section example1 Example 1
-
-The NetAffx annotation files are provided in CSV format. Below is
-a toy example of a NetAffx annotation file in CSV format.
-
-\code
-#%create_date=Tue Jun 27 11:09:50 2006 PDT
-#%lib-set-name=HuEx-1_0-st
-#%lib-set-version=v2
-#%genome-species=Homo sapiens
-#%genome-version=hg17
-#%netaffx-annotation-date=2006-Jan
-#%netaffx-annotation-csv-version=1.7
-#%netaffx-annotation-url-mrna=www.affymetrix.com/analysis/netaffx/exon/rna.affx?pk=
-## probeset_id refers to the transcript cluster id, not the exon level probe set, and is required for ExACT software compatibility.
-"transcript_cluster_id","probeset_id","seqname","strand","start","stop","total_probes","gene_assignment","mrna_assignment","swissprot","unigene","GO_biological_process","GO_cellular_component","GO_molecular_function","pathway","protein_domains","protein_families"
-"7385707","7385707","chrX","-","144735330","144750034","8","---","---","---","---","---","---","---","---","---","---"
-\endcode
-
-\section related Related Pages
-
-- <a href="./TsvFile.html">TsvFile Design Notes</a>
-- <a href="./file-format-tsv.html">TSV File Format</a>
-
-*/
-
-#ifndef _TSV_FILE_H
-#define _TSV_FILE_H
+#ifndef _TSVFILE_H_
+#define _TSVFILE_H_
 
 //
 #include <fstream>
@@ -233,20 +43,7 @@ a toy example of a NetAffx annotation file in CSV format.
 /// Access the rdbuf of the fstream directly.
 #define TSV_USE_RDBUF 1
 
-// ostia: fstream -O2 -ggdb
-// real    1m43.776s
-// user    0m37.475s
-// sys     1m5.833s
-
-// ostia: rdbuf -O2 -ggdb
-// real    1m41.268s
-// user    0m26.609s
-// sys     1m7.651s
-
-// ostia: rdbuf -O2
-// real    1m36.234s
-// user    0m26.962s
-// sys     1m8.375s
+//////////
 
 namespace affx {
   class TsvFile;
@@ -291,7 +88,7 @@ namespace affx {
     TSV_FIND_LAST            = -33, ///< Found the last matching value
     TSV_LASTVALUE            = -99  ///< end of errors
   };
-  
+
   /// Flags supplied to when finding matches
   enum tsv_op_t {
     TSV_OP_LT     = 0x01,
@@ -322,7 +119,7 @@ namespace affx {
     TSV_FORMAT_TABLE = 0x03,
     TSV_FORMAT_BAD   = 0xff
   };
-  /// Requirements for binding. 
+  /// Requirements for binding.
   enum tsv_bindopt_t {
     TSV_BIND_OPTIONAL = 0x01, /// bind if present
     TSV_BIND_WARNING  = 0x02, /// warn if not bound
@@ -344,10 +141,8 @@ namespace affx {
   void dequote(std::string& str);
   int  splitstr(std::string str,char c,std::vector<std::string>& vec);
   int unescapechar(int c);
-#ifndef SWIG
-  // dont expose this to swig
+  //
   bool header_ptr_less(const affx::TsvFileHeaderLine* a,const affx::TsvFileHeaderLine* b);
-#endif
 };
 
 //////////
@@ -365,7 +160,7 @@ public:
   int            m_bindto_cidx;   ///< The index of the bound column
   std::string    m_bindto_cname;  ///< The name of the bound column
   tsv_bindopt_t  m_flags;         ///< What options are flagged?
-  
+
   int            m_interncache_size; ///< How many strings should be interned (reuse the storage)
   bool islinked;                  ///< Is this linked to a column?
 
@@ -448,33 +243,33 @@ public:
   //
   int setBuffer(std::string str);
   int setPrecision(int places);
-  int setInternCacheSize(int size);
+  //int setInternCacheSize(int size);
 
   // get the value of the column
-  int get(std::string& val);
-  int get(int&         val);
-  int get(double&      val);
-  int get(float&       val);
+  int get(std::string&  val);
+  int get(int&          val);
+  int get(double&       val);
+  int get(float&        val);
   int get(unsigned int& val);
-  int get(uint64_t   & val);
+  int get(uint64_t&     val);
   //
-  int set(std::string val); ///< set the val
-  int set(int         val); ///< set the val
-  int set(double      val); ///< set the val
-  int set(unsigned int val); ///< set the val
-  int set(uint64_t    val); ///< set the val
+  int set(const std::string& val); ///< set the val
+  int set(int           val); ///< set the val
+  int set(double        val); ///< set the val
+  int set(unsigned int  val); ///< set the val
+  int set(uint64_t      val); ///< set the val
 #ifndef SWIG
-  int set(float       val); ///< set the val
+  int set(float         val); ///< set the val
 #endif
   ///
   void linkedvar_push(affx::TsvFileBinding* var);
   void linkedvars_clear();
-  void linkedvars_assign();
+  void linkedvars_assign(affx::TsvFile* tsvfile);
 };
 
 //////////
 
-///@brief TsvFileIndex maps values to line positions
+/// \brief TsvFileIndex maps values to line positions
 class affx::TsvFileIndex {
 public:
   /// Maybe we should inherit
@@ -487,7 +282,7 @@ public:
   int  m_flags;  ///< flags for the index (unused)
   bool m_done;   ///< has the index been populated?
 
-  ///@todo Change this to something denser
+  /// \todo Change this to something denser
   std::multimap<std::string,linenum_t> m_index_str2line;    ///< map ofstring value to lines
   std::multimap<int        ,linenum_t> m_index_int2line;    ///< map of int values to lines
   std::multimap<double     ,linenum_t> m_index_double2line; ///< map of double values to lines
@@ -520,13 +315,13 @@ private:
 
 //////////
 
-/// This is a Key value pair with sorting information.
+/// This is a key-value pair with sort order.
 class affx::TsvFileHeaderLine {
 public:
   std::string m_key;
   std::string m_value;
-  int m_order;     ///< order in which this header should be generated.
-  /// normally equal to the line number)
+  int m_order;     ///< order in which this header should be put.
+                   /// normally equal to the line number)
 
   TsvFileHeaderLine();
   TsvFileHeaderLine(std::string key,std::string value,int order);
@@ -539,9 +334,9 @@ public:
 
 #endif
 
-/// @brief The tab seperated value file class
-/// See the Docs in @link TsvFile TsvFile-README.dox @endlink
-/// and @link tsv-example.cpp tsv-example.cpp @endlink .
+/// \brief A class for reading and writing Tab Seperated Value (TSV) files.
+///        See \link file-format-tsv the TsvFile format document \endlink
+///        and the example program \link tsv-example.cpp tsv-example.cpp \endlink .
 class affx::TsvFile {
   //
   typedef TsvFileHeaderLine header_t;
@@ -634,12 +429,17 @@ public:
   TsvFile();
   TsvFile(std::string fname);
   ~TsvFile();
+
   // Dont use the implicit copy or assigment...
   TsvFile(const TsvFile& that);
+
+#ifndef SWIG
   TsvFile& operator=(const TsvFile& that) {
-	Err::errAbort("TsvFile: Assigment of TsvFile not allowed.");
-	return *this;
-};
+    Err::errAbort("TsvFile: Assigment of TsvFile not allowed.");
+    return *this;
+  };
+#endif
+
   //
   int setError(int err);
   int getError();
@@ -653,12 +453,12 @@ public:
   int line_level();
 
   int setFilename(std::string filename);
-  /// @brief Get the filename of the TsvFile
+  /// \brief Get the filename of the TsvFile
   std::string getFileName() { return m_fileName; }
   int getLevelCount();
   int getColumnCount(int clvl);
 
-  /// @brief Opens a file -- attempts to guess some defaults
+  /// \brief Opens a file -- attempts to guess some defaults
   int open(std::string filename);
   /// Open a Csv file
   int openCsv(std::string filename);
@@ -678,6 +478,7 @@ public:
   void default_options();
   /// Check if file is opened
   int isFileOpen() { return (m_fileStream.is_open()? TSV_OK : TSV_ERR_FILEIO); }
+  int is_open() { return m_fileStream.is_open(); }
 
   //
   int f_getline(std::string& line);
@@ -700,12 +501,12 @@ public:
   int defineFile(std::string definition);
   int defineFileParse(std::string definition);
   //
-  int writeOpen(std::string filename);
-  int writeCsv(std::string filename);
-  int writeTsv(std::string filename);
-  int writeTsv_v1(std::string filename);
+  int writeOpen(const std::string& filename);
+  int writeCsv(const std::string& filename);
+  int writeTsv(const std::string& filename);
+  int writeTsv_v1(const std::string& filename);
   //
-  int write_str(std::string& str);
+  int write_str(const std::string& str);
   //
   void writeHeaders();
   void writeKeyValHeaders();
@@ -714,23 +515,26 @@ public:
   void writeFieldSep(int cnt);
   int writeLevel(int clvl);
 
-  /// @todo should check for duplicate indexes and not make them
+  /// \todo should check for duplicate indexes and not make them
   int defineIndex(int clvl,std::string cname,int kind,int flags);
   int defineIndex(int clvl,int cidx         ,int kind,int flags);
 
   //
-  int  getHeader(std::string key,std::string& val);
-  int  getHeader(std::string key,int& val);
+  int  getHeader(const std::string& key,std::string& val);
+  int  getHeader(const std::string& key,int& val);
+  int  getHeader(const std::string& key,double& val);
 
-  /// @todo maybe add a flag to "addHeader" to skip checking?
-  int  addHeader(std::string key,std::string val,int order);
-  int  addHeader(std::string key,std::string val);
-  int  addHeader(std::string key,int val);
+  /// \todo maybe add a flag to "addHeader" to skip checking?
+  int  addHeader(const std::string& key,const std::string& val,int order);
+  int  addHeader(const std::string& key,const std::string& val);
+
+  int  addHeader(const std::string& key,int val);
+  int  addHeader(const std::string& key,double val);
   int  addHeadersFrom(affx::TsvFile& f_tsv,int flags);
   int  addHeadersFrom(affx::TsvFile& f_tsv,std::string prefix,int flags);
   int  addHeadersFrom(affx::TsvFile& f_tsv,std::string prefix,std::vector<std::string>& key_vec);
-  int  addHeader_nocheck(std::string key,std::string val,int order);
-  int  addHeader_nocheck(std::string key,std::string val);
+  int  addHeader_nocheck(const std::string& key,const std::string& val,int order);
+  int  addHeader_nocheck(const std::string& key,const std::string& val);
   int  headerKeyLegal(std::string key);
   int  headersCount();
   void headersBegin();
@@ -746,15 +550,20 @@ public:
 
   //
   int  cname2cidx(int clvl,int cidx);
-  int  cname2cidx(int clvl,std::string cname);
+  int  cname2cidx(int clvl,const std::string& cname);
+  // find the first column name which matches.
+  int  cname2cidx(int clvl,const std::string& alias1,const std::string& alias2);
+  int  cname2cidx(int clvl,const std::string& alias1,const std::string& alias2,const std::string& alias3);
+  int  cname2cidx(int clvl,const std::string& alias1,const std::string& alias2,const std::string& alias3,const std::string& alias4);
+
 #ifndef SWIG
   TsvFileField* clvlcidx2colptr(int clvl,int cidx);
-  TsvFileField* clvlcidx2colptr(int clvl,std::string cname);
+  TsvFileField* clvlcidx2colptr(int clvl,const std::string cname);
 #endif
-  ///  @todo rename this nicer...
+  ///  \todo rename this nicer...
   int  cidx2cname(int clvl,int cidx,std::string& cname);
 
-  int setPrecision(int clvl,std::string cname,int places);
+  int setPrecision(int clvl,const std::string& cname,int places);
   int setPrecision(int clvl,int cidx,int places);
 
   //
@@ -771,25 +580,25 @@ public:
 #ifndef SWIG
   //
   void unbindAll();
-  int bind(int clvl,std::string name ,std::string*  ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,int cidx         ,std::string*  ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,std::string name ,int*          ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,int cidx         ,int*          ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,std::string name ,double*       ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,int cidx         ,double*       ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,std::string name ,float*        ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,int cidx         ,float*        ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,std::string name ,unsigned int* ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,int cidx         ,unsigned int* ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,std::string name ,uint64_t*     ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
-  int bind(int clvl,int cidx         ,uint64_t*     ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,const std::string& name ,std::string*  ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,int cidx                ,std::string*  ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,const std::string& name ,int*          ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,int cidx                ,int*          ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,const std::string& name ,double*       ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,int cidx                ,double*       ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,const std::string& name ,float*        ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,int cidx                ,float*        ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,const std::string& name ,unsigned int* ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,int cidx                ,unsigned int* ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,const std::string& name ,uint64_t*     ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
+  int bind(int clvl,int cidx                ,uint64_t*     ptr,tsv_bindopt_t flags=TSV_BIND_OPTIONAL,int interncache_size=TSV_INTERNSIZE_UNSET);
 #endif
   //
   void printBindingErrors();
 
   //
-  void setInternCacheSize(int clvl,int cidx,int size);
-  void setInternCacheSize(int clvl,std::string cname,int size);
+  //void setInternCacheSize(int clvl,int cidx,int size);
+  //void setInternCacheSize(int clvl,std::string cname,int size);
 
   // movement commands.
   unsigned int lineNumber();
@@ -797,12 +606,12 @@ public:
   int nextLine();
   int nextLevel(int clvl);
   int rewind();
-  int seekLine(unsigned int line);
-  int gotoLine(unsigned int line);
+  int seekLine(linenum_t line);
+  int gotoLine(linenum_t line);
 
   //
   bool isNull(int clvl,int cidx);
-  bool isNull(int clvl,std::string cname);
+  bool isNull(int clvl,const std::string& cname);
 
   // Get a value given a clvl and cidx
   int get(int clvl,int cidx,std::string& val);
@@ -820,15 +629,21 @@ public:
   int get(int clvl,std::string cname,uint64_t&    val);
   //
   int set(int clvl,int cidx,std::string  val);
+  //#ifndef SWIG
   int set(int clvl,int cidx,int          val);
   int set(int clvl,int cidx,double       val);
+#ifndef SWIG
   int set(int clvl,int cidx,unsigned int val);
+#endif
   int set(int clvl,int cidx,uint64_t     val);
+  //#endif
   //
   int set(int clvl,std::string cname,std::string val);
   int set(int clvl,std::string cname,int         val);
   int set(int clvl,std::string cname,double      val);
+#ifndef SWIG
   int set(int clvl,std::string cname,unsigned int val);
+#endif
   int set(int clvl,std::string cname,uint64_t    val);
 
   //
@@ -850,30 +665,33 @@ public:
 
   /// The error messages which one sees are nasty when using templates.
   /// This is the base template, make it private
+
 private:
   template<typename T1,typename T2> int findBegin_tmpl(int clvl,T1 cidx,int op,T2 val,int flags);
 public:
   /// These are instances of the above template
   /// The user will get a better error message
   int findBegin(int clvl,std::string cname,int op,std::string val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
   int findBegin(int clvl,int cidx         ,int op,std::string val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
   int findBegin(int clvl,std::string cname,int op,int         val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
   int findBegin(int clvl,int cidx         ,int op,int         val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
   int findBegin(int clvl,std::string cname,int op,double      val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
   int findBegin(int clvl,int cidx         ,int op,double      val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
+#ifndef SWIG
   int findBegin(int clvl,std::string cname,int op,unsigned int val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
   int findBegin(int clvl,int cidx         ,int op,unsigned int val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
   int findBegin(int clvl,std::string cname,int op,uint64_t     val,int flags=TSV_ORDERBY_LINE);
-  /// @brief like findBegin with different types
+  /// \brief like findBegin with different types
   int findBegin(int clvl,int cidx         ,int op,uint64_t     val,int flags=TSV_ORDERBY_LINE);
+#endif
   //
   int findNext();
   //
@@ -902,4 +720,4 @@ public:
 
 //////////
 
-#endif // TsvFile
+#endif // _TSVFILE_H_

@@ -43,7 +43,21 @@ template <class T>
 std::string ToStr(const T &t) {
   std::ostringstream s;
   s.setf(std::ios_base::boolalpha);
-  s << t; 
+  s << t;
+  
+  if(s.str() == "-1.#INF")
+      return(ToStr("-inf"));
+  else if(s.str() == "1.#INF")
+      return(ToStr("inf"));
+  else if(s.str() == "-1.#IND")
+      return(ToStr("nan"));
+  else if(s.str() == "1.#IND")
+      return(ToStr("nan"));
+  else if(s.str() == "-Inf")
+      return(ToStr("-inf"));
+  else if(s.str() == "Inf")
+      return(ToStr("inf"));
+
   return s.str();
 };
 
@@ -72,15 +86,7 @@ class Convert {
    * 
    * @return - Integer representation of num
    */
-  static int toInt(const char *num);
-
-  /** 
-   * Make an int from an stl string or die trying.
-   * @param num - string representation of number to be parsed.
-   * 
-   * @return - Integer representation of num
-   */
-  static int toInt(const std::string &num) { return toInt(num.c_str()); }
+  static int toInt(const std::string& num);
 
   /** 
    * Make an int from a c string.
@@ -89,7 +95,7 @@ class Convert {
    *   successful conversion and false upon failur.
    * @return - Integer representation of num
    */
-  static int toIntCheck(const char *num, bool *success);
+  static int toIntCheck(const std::string& num, bool *success);
 
   /** 
    * Make an unsigned int from a c string or die trying.
@@ -97,7 +103,7 @@ class Convert {
    * 
    * @return - Unsigned Integer representation of num
    */
-  static unsigned int toUnsignedInt(const char *num);
+  static unsigned int toUnsignedInt(const std::string& num);
 
   /** 
    * Make an unsigned int from a c string.
@@ -106,7 +112,7 @@ class Convert {
    *   successful conversion and false upon failur.
    * @return - Unsigned Integer representation of num, 0 if success == false
    */
-  static unsigned int toUnsignedIntCheck(const char *num, bool *success);
+  static unsigned int toUnsignedIntCheck(const std::string& num, bool *success);
 
   /** 
    * Make an float from a c string.
@@ -114,7 +120,7 @@ class Convert {
    * 
    * @return - Float representation of num
    */
-  static float toFloat(const char *num);
+  static float toFloat(const std::string& num);
   
   /** 
    * Make an float from a c string.
@@ -123,7 +129,7 @@ class Convert {
    *   successful conversion and false upon failur.
    * @return - Float representation of num
    */
-  static float toFloatCheck(const char *num, bool *success);
+  static float toFloatCheck(const std::string& num, bool *success);
 
   /** 
    * Make an double from a c string.
@@ -131,7 +137,7 @@ class Convert {
    * 
    * @return - Double representation of num
    */
-  static double toDouble(const char *num);
+  static double toDouble(const std::string& num);
 
   /** 
    * Make an double from a c string.
@@ -140,7 +146,7 @@ class Convert {
    *   successful conversion and false upon failur.
    * @return - Double representation of num
    */
-  static double toDoubleCheck(const char *num, bool *success);
+  static double toDoubleCheck(const std::string& num, bool *success);
 
   /** 
    * Make an bool from a c string.
@@ -149,7 +155,7 @@ class Convert {
    * 
    * @return - Bool representation of flag
    */
-  static bool toBool(const char *flag);
+  static bool toBool(const std::string& flag);
 
   /** 
    * Make an bool from a c string.
@@ -159,7 +165,7 @@ class Convert {
    *   successful conversion and false upon failur.
    * @return - Bool representation of flag, false on failure.
    */
-  static bool toBoolCheck(const char *flag, bool *success);
+  static bool toBoolCheck(const std::string& flag, bool *success);
 
 
   /** 
@@ -193,9 +199,7 @@ class Convert {
    * @param f float to be truncated.
    * @return truncated float
    */
-  static float floatLowPrecision(float f) {
-    return (float)((floor((f+0.05)*10))/10.0);
-  }
+  static float floatLowPrecision(float f);
 
 };
 

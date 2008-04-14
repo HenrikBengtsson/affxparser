@@ -179,7 +179,7 @@ void DATData::SetArrayId(AffymetrixGuidType& value)
 {
 	ParameterNameValueType nvt;
 	nvt.SetName(ARRAY_ID_PARAM_NAME);
-	nvt.SetValueAscii(value);
+	nvt.SetValueAscii(value, AFFY_GUID_LEN);
 	GenericDataHeader *parentGDH = GetParentArrayGenericDataHeader();
 	parentGDH->AddNameValParam(nvt);
 }
@@ -207,7 +207,7 @@ void DATData::SetArrayBarcode(std::wstring& value)
 {
 	ParameterNameValueType nvt;
 	nvt.SetName(ARRAY_BARCODE_PARAM_NAME);
-	nvt.SetValueText(value);
+	nvt.SetValueText(value, ARRAY_BARCODE_MAX_LEN);
 	GenericDataHeader *parentGDH = GetParentArrayGenericDataHeader();
 	parentGDH->AddNameValParam(nvt);
 }

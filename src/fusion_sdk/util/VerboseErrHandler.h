@@ -37,7 +37,7 @@
 #include "Except.h"
 
 /**
- * @brief Basic error handler that prints to cout and dies by either throwing an
+ * @brief Basic error handler that prints to cerr and dies by either throwing an
  * exception or calling abort()
  */
 class VerboseErrHandler : public ErrHandler {
@@ -60,7 +60,7 @@ public:
    * @param msg - Message about what went wrong.
    */
   virtual void handleError(const std::string &msg) {
-    Verbose::warn(0, msg);
+    Verbose::warn(0, msg, true, "");
     if(m_Throw) {
       throw Except(msg);
     }

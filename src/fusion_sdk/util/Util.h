@@ -27,15 +27,18 @@
  * @brief  General Utilities.
  */
 
-#ifndef _UTIL_H
-#define _UTIL_H
+#ifndef _UTIL_H_
+#define _UTIL_H_
 
+//
 #include <assert.h>
 #include <fstream>
 #include <string.h>
 #include <string>
 #include <vector>
 #include <ctype.h>
+#include <time.h>
+//
 #include "util/Convert.h"
 #include "util/Err.h"
 #include "portability/affy-base-types.h"
@@ -63,8 +66,9 @@
 /// 386 systems cant map more than 2GB of user memory.
 /// (unless you have a patched kernel...)
 #ifdef WIN32
-// cap at 1.8G on Windows due to expected memory fragmentation
-#define MEMINFO_2GB_MAX floor(1.7f*1024*1024*1024)
+// cap at 1.3G on Windows due to expected memory fragmentation
+/// @todo This was 1.7G on head before merge with python branch. Further work on genotype engine may allow for bumping this back up some.
+#define MEMINFO_2GB_MAX floor(1.3f*1024*1024*1024)
 #else
 #define MEMINFO_2GB_MAX (2UL*1024*1024*1024)
 #endif
@@ -124,6 +128,12 @@ public:
      }
    };
 
+  /** 
+   * Get a timestamp string.
+   * @return - pointer to statically allocated buffer with time.
+   */
+  static std::string getTimeStamp();
+
    /**
     * Some older compilers (solaris) don't have a round function.
     */
@@ -137,13 +147,13 @@ public:
    */
   static char *cloneString(const char *s);
 
-  /** 
-   * Open an ofstream for writing to. Abort if can't open
-   * for some reason.
-   * @param out - stream to be opened.
-   * @param fileName - name of file to be opened.
+  /**
+   * @brief     Does the string end with the other string?
+   * @param     str       string to check  
+   * @param     endstr    ending string.
+   * @return    true if str ends with endstr.
    */
-  static void mustOpenToWrite(std::ofstream &out, const char *fileName);
+  static bool stringEndsWith(const std::string& str,const std::string& end);
 
   /** 
    * Open an ofstream for writing to. Abort if can't open
@@ -151,6 +161,7 @@ public:
    * @param out - stream to be opened.
    * @param fileName - name of file to be opened.
    */
+  static void mustOpenToWrite(std::ofstream &out, const char *fileName);
   static void mustOpenToWrite(std::ofstream &out, const std::string &fileName) {
     return mustOpenToWrite(out, fileName.c_str());
   }
@@ -172,6 +183,19 @@ public:
    * @param fileName 
    */
   static bool fileReadable(const char *fileName);
+  static bool fileReadable(const std::string &fileName) {
+      return fileReadable(fileName.c_str());
+  }
+
+  /**
+   * Return true on success. False otherwise
+   * @param in - file to copy
+   * @param out - name of the new file
+   */
+  static bool fileCopy(const char *in, const char *out);
+  static bool fileCopy(const std::string &in, const std::string &out) {
+      return fileCopy(in.c_str(),out.c_str());
+  }
 
   /** 
    * @brief Chop off the last character if it is a path separator.
@@ -184,12 +208,18 @@ public:
    * @param dirName 
    */
   static bool directoryReadable(const char *dirName);
+  static bool directoryReadable(const std::string &dirName) {
+      return directoryReadable(dirName.c_str());
+  }
   
   /** 
    * Return true if directory exists and is readable, false otherwise.
    * @param dirName 
    */
   static bool directoryWritable(const char *dirName);
+  static bool directoryWritable(const std::string &dirName) {
+      return directoryWritable(dirName.c_str());
+  }
 
   /** 
    * Make a directory. Returns true if directory is created
@@ -199,6 +229,9 @@ public:
    * @return - true if created sucessfully, false if already exists.
    */
   static bool makeDir(const char *dirName);
+  static bool makeDir(const std::string &dirName) {
+      return makeDir(dirName.c_str());
+  }
 
   /**
    * Create a directory. Returns a pointer to error message, else 0.
@@ -329,6 +362,13 @@ public:
    */
   static void printStringWidth(std::ostream &out, const char *str, int prefix,
                                int currentPos, int maxWidth=70 );
+
+  /** 
+   * Wrapper for different version of isnan() on different systems.
+   * @param x - number to be checked for NaN or INF
+   * @return - true if x is finite (-INF < x && x < +INF && x != nan), false otherwise
+   */
+  static bool isFinite(double x);
   
 };
 
@@ -337,5 +377,7 @@ bool memInfo_linux(std::string proc_meminfo_filename,
                    uint64_t &free, uint64_t &total,
                    uint64_t &swapAvail, uint64_t& memAvail);
 #endif
+
+
 
 #endif /* _UTIL_H */

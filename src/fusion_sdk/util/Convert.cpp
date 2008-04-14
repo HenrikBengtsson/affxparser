@@ -28,16 +28,18 @@
  * 
  */
 
+//
 #include <assert.h>
 #include <errno.h>
+#include <float.h>
+#include <limits.h>
 #include <math.h>
 #include <sstream>
 #include <stdlib.h>
 #include <string>
-#include <limits.h>
-#include <float.h>
-#include "util/Err.h"
+//
 #include "Convert.h"
+#include "util/Err.h"
 
 using namespace std;
 
@@ -61,11 +63,28 @@ string Convert::toString(int i) {
  * 
  * @return - String version of int i;
  */
-string Convert::toString(double d) {
+std::string Convert::toString(double d) {
   stringstream ss;
   string str;
   ss << d;
   ss >> str;
+
+  // we prefer the linux format (inf/nan) to that of the windows output.
+  // convert the strings to our perfered format.
+#ifdef WIN32
+  if (str == "-1.#INF") {
+    str="-inf";
+  } 
+  else if (str == "1.#INF") {
+    str="inf";
+  }
+  else if (str == "-1.#IND") {
+    str="nan";
+  }
+  else if (str == "1.#IND") {
+    str="nan";
+  }
+#endif
   return str;
 }
 
@@ -75,7 +94,7 @@ string Convert::toString(double d) {
  * 
  * @return - Integer representation of num
  */
-int Convert::toInt(const char *num) {
+int Convert::toInt(const std::string& num) {
   bool success = true;
   int i = Convert::toIntCheck(num, &success);
   if(success != true)
@@ -90,18 +109,19 @@ int Convert::toInt(const char *num) {
  *   successful conversion and false upon failur.
  * @return - Integer representation of num, 0 if success == false
  */
-int Convert::toIntCheck(const char *num, bool *success) {
+int Convert::toIntCheck(const std::string& num, bool *success) {
   long int l = 0;
   int i = 0;
   bool ok = true;
   char *end = NULL;
+  const char* num_c_str=num.c_str();
 
-  assert(num); 
+  assert(num_c_str); 
   errno = 0;
-  l = strtol(num, &end, 10);
+  l = strtol(num_c_str, &end, 10);
 
   // end will be NULL if entire string converted.
-  ok = (*end != '\0' || end == num) ? false : true;
+  ok = (*end != '\0' || end == num_c_str) ? false : true;
   
   // cast to int and make sure that we didn't overflow
   i = (int)l;
@@ -124,7 +144,7 @@ int Convert::toIntCheck(const char *num, bool *success) {
  * 
  * @return - Unsigned Integer representation of num
  */
-unsigned int Convert::toUnsignedInt(const char *num) {
+unsigned int Convert::toUnsignedInt(const std::string& num) {
   bool success = true;
   unsigned int i = Convert::toUnsignedIntCheck(num, &success);
   if(success != true)
@@ -139,18 +159,19 @@ unsigned int Convert::toUnsignedInt(const char *num) {
  *   successful conversion and false upon failur.
  * @return - Unsigned Integer representation of num, 0 if success == false
  */
-unsigned int Convert::toUnsignedIntCheck(const char *num, bool *success) {
+unsigned int Convert::toUnsignedIntCheck(const std::string& num, bool *success) {
   long unsigned int l = 0;
   unsigned int i = 0;
   bool ok = true;
   char *end = NULL;
+  const char* num_c_str=num.c_str();
 
-  assert(num); 
+  assert(num_c_str); 
   errno = 0;
-  l = strtoul(num, &end, 10);
+  l = strtoul(num_c_str, &end, 10);
 
   // end will be NULL if entire string converted.
-  ok = (*end != '\0' || end == num) ? false : true;
+  ok = (*end != '\0' || end == num_c_str) ? false : true;
 
   // cast to unsigned int and make sure that we didn't overflow
   i = (unsigned int)l;
@@ -173,7 +194,7 @@ unsigned int Convert::toUnsignedIntCheck(const char *num, bool *success) {
  * 
  * @return - Float representation of num
  */
-float Convert::toFloat(const char *num) {
+float Convert::toFloat(const std::string& num) {
   bool success = true;
   float f = toFloatCheck(num, &success);
   if(!success) 
@@ -188,7 +209,7 @@ float Convert::toFloat(const char *num) {
  *   successful conversion and false upon failur.
  * @return - Float representation of num
  */
-float Convert::toFloatCheck(const char *num, bool *success) {
+float Convert::toFloatCheck(const std::string& num, bool *success) {
   double d = toDoubleCheck(num, success);
   if(d >= FLT_MAX && d < DBL_MAX)
     (*success) = false;
@@ -201,7 +222,7 @@ float Convert::toFloatCheck(const char *num, bool *success) {
  * 
  * @return - Double representation of num
  */
-double Convert::toDouble(const char *num){
+double Convert::toDouble(const std::string& num){
   bool success = true;
   double d = Convert::toDoubleCheck(num, &success);
 
@@ -218,17 +239,18 @@ double Convert::toDouble(const char *num){
  *   successful conversion and false upon failur.
  * @return - Double representation of num
  */
-double Convert::toDoubleCheck(const char *num, bool *success){
+double Convert::toDoubleCheck(const std::string& num, bool *success){
   double d = 0;
   char *end = NULL;
   bool ok = true;
+  const char* num_c_str=num.c_str();
 
-  assert(num);
+  assert(num_c_str);
   errno = 0;
-  d = strtod(num, &end);
+  d = strtod(num_c_str, &end);
 
   // end will point at NULL if conversion successful
-  ok = (*end != '\0' || end == num ) ? false : true;
+  ok = (*end != '\0' || end == num_c_str) ? false : true;
 
   // errno should be set if over/under flow.
   if(errno != 0)
@@ -249,7 +271,7 @@ double Convert::toDoubleCheck(const char *num, bool *success){
  *    allowed value are 'true' && 'false'
  * @return - Bool representation of flag
  */
-bool Convert::toBool(const char *flag) {
+bool Convert::toBool(const std::string& flag) {
   bool value = false, success = false;
   value = Convert::toBoolCheck(flag, &success);
   if(!success)
@@ -266,21 +288,22 @@ bool Convert::toBool(const char *flag) {
  *   successful conversion and false upon failur.
  * @return - Bool representation of flag, false on failure.
  */
-bool Convert::toBoolCheck(const char *flag, bool *success) {
+bool Convert::toBoolCheck(const std::string& flag, bool *success) {
   bool value = false;
   bool ok = true;
+  const char* flag_c_str=flag.c_str();
 
-  assert(flag);
+  assert(flag_c_str);
 
   // would like to use strcasecmp, but VC++ doesnt have it
-  if ((strcmp(flag, "true") == 0) ||
-      (strcmp(flag, "TRUE") == 0) ||
-      (strcmp(flag, "1")    == 0)) {
+  if ((strcmp(flag_c_str, "true") == 0) ||
+      (strcmp(flag_c_str, "TRUE") == 0) ||
+      (strcmp(flag_c_str, "1")    == 0)) {
     value = true;
   }
-  else if ((strcmp(flag, "false") == 0) ||
-           (strcmp(flag, "FALSE") == 0) ||
-           (strcmp(flag, "0") == 0)) {
+  else if ((strcmp(flag_c_str, "false") == 0) ||
+           (strcmp(flag_c_str, "FALSE") == 0) ||
+           (strcmp(flag_c_str, "0") == 0)) {
     value = false;
   }
   else 
@@ -303,4 +326,14 @@ bool Convert::doubleCloseEnough(double d1, double d2, int digits) {
   if(diff < 1 / (pow(10.0, (double)digits)))
     return true;
   return false;
+}
+
+/** 
+ * Make a low precision float from a normal one. Used originally to
+ * mimic truncation seen in cel files.
+ * @param f float to be truncated.
+ * @return truncated float
+ */
+float Convert::floatLowPrecision(float f) {
+  return (float)((floor((f+0.05)*10))/10.0);
 }
