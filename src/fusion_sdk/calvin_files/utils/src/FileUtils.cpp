@@ -108,7 +108,7 @@ list<string> FileUtils::ListFiles(const char *pathName, const char *ext)
 	BOOL bFound = (hHandle != INVALID_HANDLE_VALUE);
 	while (bFound)
 	{
-		if (findData.dwFileAttributes != FILE_ATTRIBUTE_DIRECTORY)
+		if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			string file = basePath + findData.cFileName;
 			files.push_back(file);

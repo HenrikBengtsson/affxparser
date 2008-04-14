@@ -22,13 +22,60 @@
 
 //
 #include <algorithm>
-#include <time.h>
 //
 #include "TsvJoin.h"
 #include "util/Guid.h"
+#include "util/Util.h"
 
 using namespace std;
 using namespace affx;
+
+const string usage =
+  "apt-tsv-join - Merge multiple tab separated text files into a single file.\n"
+  "Usage:\n"
+  "   apt-tsv-join -o data.txt -k column-name file1.txt file2.txt [...]";
+
+static PgOptions::PgOpt KEY_OPT = {
+  "k", "key", PgOptions::STRING_OPT,
+  "Name of the column to use to join the various files.",
+  "", NULL
+};
+
+static PgOptions::PgOpt OUTFILE_OPT = {
+  "o", "out-file", PgOptions::STRING_OPT,
+  "Output file to send the merged results to.",
+  "", NULL
+};
+
+static PgOptions::PgOpt PREPEND_OPT =
+  {
+    "p", "prepend-filename", PgOptions::BOOL_OPT,
+    "Prepend the filename to the column header.",
+    "false", NULL
+  };
+
+static PgOptions::PgOpt VERSION_OPT = {
+  "", "version", PgOptions::BOOL_OPT,
+  "Display version information.",
+  "false", NULL
+};
+
+static PgOptions::PgOpt HELP_OPT =
+  {
+    "h", "help", PgOptions::BOOL_OPT,
+    "Print help message.",
+    "false", NULL
+  };
+
+static PgOptions::PgOpt *options[] = {
+  &KEY_OPT,
+  &OUTFILE_OPT,
+  &PREPEND_OPT,
+  &VERSION_OPT,
+  &HELP_OPT,
+  NULL
+};
+
 
 /**
  *  @brief Constructor.
@@ -44,54 +91,11 @@ tsvJoin::tsvJoin (int argc, char* argv[], const std::string& version, const std:
   : m_Version (version), m_CvsId (cvsId),
   m_CommentLine ("############################################################\n")
 {
-  const string usage =
-    "apt-tsv-join - Merge multiple tab separated text files into a single file.\n"
-    "Usage:\n"
-    "   apt-tsv-join -o data.txt -k column-name file1.txt file2.txt [...]";
-
-  PgOptions::PgOpt KEY_OPT = {
-    "k", "key", PgOptions::STRING_OPT,
-    "Name of the column to use to join the various files.",
-    "", 0
-  };
-
-  PgOptions::PgOpt OUTFILE_OPT = {
-    "o", "out-file", PgOptions::STRING_OPT,
-    "Output file to send the merged results to.",
-    "", 0
-  };
-
-  PgOptions::PgOpt PREPEND_OPT =
-  {
-    "p", "prepend-filename", PgOptions::BOOL_OPT,
-    "Prepend the filename to the column header.",
-    "false", 0
-  };
-
-  PgOptions::PgOpt VERSION_OPT = {
-    "", "version", PgOptions::BOOL_OPT,
-    "Display version information.",
-    "false", 0
-  };
-
-  PgOptions::PgOpt HELP_OPT =
-  {
-    "h", "help", PgOptions::BOOL_OPT,
-    "Print help message.",
-    "false", 0
-  };
-
-  PgOptions::PgOpt *options[] = {
-    &KEY_OPT,
-    &OUTFILE_OPT,
-    &PREPEND_OPT,
-    &VERSION_OPT,
-    &HELP_OPT,
-    0
-  };
 
   // Prefer throw() to exit().
   Err::setThrowStatus (true);
+
+  PgOptions::hack_resetOptionsList(options);
 
   m_Opts = new PgOptions (usage, options);
   m_Opts->parseOptions (argc, argv);
@@ -103,13 +107,15 @@ tsvJoin::tsvJoin (int argc, char* argv[], const std::string& version, const std:
     string msg = "version:\n";
     msg += "   " + version + "\n";
     msg += "   " + cvsId;
-    Err::errAbort (msg);
+    cout << msg;
+    exit(0);
   }
   // Optionally display version.
   if (m_Opts->boolOpt ("version"))
   {
     string msg = "version: " + version + "   " + cvsId;
-    Err::errAbort (msg);
+    cout << msg;
+    exit(0);
   }
 
   // Require key.
@@ -305,11 +311,7 @@ void tsvJoin::beginOutputHeader (void)
   m_Out << "#%guid=" << guid << "\n";
   m_Out << "#%exec_guid=" << m_ExecGuid << "\n";
   m_Out << "#%exec_version=" << m_Version << " " << m_CvsId << "\n";
-  const time_t UTCTime = time(NULL);
-  const struct tm* localTime = localtime (&UTCTime);
-  char* timeString = asctime (localTime);
-  timeString [strlen (timeString) - 1] = '\0'; // knock off trailing '\n'
-  m_Out << "#%create_date=" << timeString << "\n";
+  m_Out << "#%create_date=" << Util::getTimeStamp() << "\n";
   m_Out << "#%cmd=" << m_CommandLine << "\n";
 }
 

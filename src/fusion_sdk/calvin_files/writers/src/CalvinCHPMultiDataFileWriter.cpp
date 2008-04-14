@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -89,6 +89,37 @@ void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ProbeSetMu
     dataSetWriter->Write(p.name, maxProbeSetName);
 	dataSetWriter->Write(p.call);
 	dataSetWriter->Write(p.confidence);
+    WriteMetrics(p.metrics);
+    entryPos[currentDataType] = writer->GetFilePos();
+}
+
+void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData & p)
+{
+    //if (seekPos == true)
+    {
+        writer->SeekFromBeginPos(entryPos[currentDataType]);
+        seekPos = false;
+    }
+    dataSetWriter->Write(p.name, maxProbeSetName);
+	dataSetWriter->Write(p.chr);
+	dataSetWriter->Write(p.position);
+    WriteMetrics(p.metrics);
+    entryPos[currentDataType] = writer->GetFilePos();
+}
+
+void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData & p)
+{
+    //if (seekPos == true)
+    {
+        writer->SeekFromBeginPos(entryPos[currentDataType]);
+        seekPos = false;
+    }
+    dataSetWriter->Write(p.name, maxProbeSetName);
+    dataSetWriter->Write(p.chr);
+    dataSetWriter->Write(p.startPosition);
+    dataSetWriter->Write(p.stopPosition);
+    dataSetWriter->Write(p.call);
+    dataSetWriter->Write(p.confidenceScore);
     WriteMetrics(p.metrics);
     entryPos[currentDataType] = writer->GetFilePos();
 }

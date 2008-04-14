@@ -19,21 +19,11 @@
 
 
 /**
-/// @file   PgfFile.h
-/// @brief
-*/
-
-/// NOTES:
-///
-/// * If you are defining a file format which is based on
-///   TsvFile, use this as an example.
-/// * PgfFile is not subclassed as we dont want it to inherit
-///   methods from TsvFile.  This prevents calling a method
-///   by accident.
-/// * m_tsv is a member so it appears when a PgfFile is made.
-///   (ie: minus messy memory management)
-/// * We make "tsv" public so if the programmer
-///   wants to work with the underlying tsv object they can.
+ * \file  PgfFile.h
+ * \brief Headers for the PgfFile class.
+ *        Read \link file-format-pgf the PgfFile format \endlink for an overview.
+ *        Read \link file-format-tsv the TsvFile docs \endlink more about TsvFile.
+ */
 
 /**
 \page file-format-pgf File Format: PGF (NON-OFFICIAL-RELEASE)
@@ -41,15 +31,14 @@
 <center><b>DRAFT</b></center>
 
 The PGF (probe group file) provides information about what
-probes are contained within a probeset and information
-about the nature of the probes necessary for analysis.
-The current PGF file format (version 1) is only spec'ed for
-expression style probesets. 
+probes are contained within a probeset and information about
+the nature of the probes necessary for analysis.  The
+current PGF file format (version 1) is only specified for
+expression style probesets.
 
-The PGF file is based on version 2 of the 
-<a href="./file-format-tsv.html">TSV file format</a>. 
+The PGF file is based on version 2 of the \link file-format-tsv TSV file format \endlink. 
 
-\section specs Specs & Features
+\section specifications Specifications
 
 - Required headers
   - chip_type: indicates the chip type (as stored in the CEL file) which the pgf file 
@@ -107,19 +96,21 @@ The PGF file is based on version 2 of the
     - probe_length (optional): the length of the probe
     - interrogation_position (optional): the interrogation position of the probe (typically 13 for 25-mer PM/MM probes)
     - probe_sequence (optional): the sequence of the probe on the array in from array surface to solution. For most
-      standard Affymetrix arrays at this writing, this would be in a 3' to 5' direction. 
-
+      standard Affymetrix arrays at this writing, this would be in a 3' to 5' direction. So for a sense target (st)
+      probe (see the type field for the probe level) you would need to complement the sequence in this field before
+      looking for matches to transcript sequences; for an antisense target (at) you would need to reverse this
+      sequence.
 \section types Types
 
 Type columns in PGF files use the following string format to catagorize probesets, atoms, and probes:
 
-\code
+\verbatim
 simple_type:=[a-z0-9\_\-]+
-\endcode
+\endverbatim
 
 So an example simple type
 
-\code
+\verbatim
 pm
 mm
 st
@@ -127,41 +118,41 @@ at
 control
 affx
 spike
-\endcode
+\endverbatim
 
 Furthermore, types can be nested. For example a particular spike may be from Affymetrix and is intended for 
 use as a control. As a result you would combine the simple types to reflect this:
 
-\code
+\verbatim
 control->affx->spike
-\endcode
+\endverbatim
 
 Thus 
 
-\code
+\verbatim
 nested_type:=(simple_type|nested_type)->(simple_type)
-\endcode
+\endverbatim
 
 Lastly, a given probeset, atom, or probe may belong to multiple independent types. For example, a probeset may be
 both a normalization control gene and part of the main design:
 
-\code
+\verbatim
 normgene->exon:main
-\endcode
+\endverbatim
 
 Thus
 
-\code
+\verbatim
 compound_type:=(simple_type|nested_type|compound_type):(simple_type|nested_type)
-\newcode
+\endverbatim
 
 Currently type values are not strongly enumerated. Values used in current commercial PGF files include:
 
-- Probeset Type
+- Probeset Type:
     - main: probesets which are a part of the main design for which the array was designed
     - normgene->exon: probe sets against exon regions of a set of housekeeping genes
     - normgene->intron: probe sets against intron regions of a set of housekeeping genes
-    - control->affx: standard Affymetrix spike control probeset (ie bacterial and polyA spikes)
+    - control->af&zwj;fx: standard Affymetrix spike control probeset (ie bacterial and polyA spikes)
     - control->bgp->antigenomic: antigenomic background probes
     - control->bgp->genomic: genomic background probes
     - control->spike->arabidopsis: arabidopsis spike control probesets
@@ -188,23 +179,27 @@ Currently type values are not strongly enumerated. Values used in current commer
 
 The official C++ parser used by affy can be found in APT under
 sdk/file/TsvFile/PgfFile.h. When possible, parsing and
-writing of TSV files should be done using this code.
+writing of PGF files should be done using this code.
 
 \section notes Notes
 
-Specific applications may require extra/optional columns in the PGF file. Thus a valid PGF file may
-fail for a particular application or analysis algorithm because the information needed by that application
-and/or algorithm is not contained in the PGF file. 
+Specific applications may require extra/optional columns in
+the PGF file. Thus a valid PGF file may fail for a
+particular application or analysis algorithm because the
+information needed by that application and/or algorithm is
+not contained in the PGF file.
 
-It should be noted that there is no significance to the ordering of probes within atoms and atoms within probesets
+It should be noted that there is no significance to the
+ordering of probes within atoms and atoms within probesets
 or even probesets within the PGF file.
 
-IDs do not have to be unique between different levels. In other words, the ID space for probeset_ids is
-separate from the ID space for atom_ids and probe_ids. 
+IDs do not have to be unique between different levels. In
+other words, the ID space for probeset_ids is separate from
+the ID space for atom_ids and probe_ids.
 
-\section example1 Example 1 -- Human Exon 1.0 ST PGF File Excerpt
+\section pgfExample1 Example 1 -- Human Exon 1.0 ST PGF File Excerpt
 
-\code
+\verbatim
 #%chip_type=HuEx-1_0-st-v2
 #%chip_type=HuEx-1_0-st-v1
 #%chip_type=HuEx-1_0-st-ta1
@@ -226,14 +221,14 @@ separate from the ID space for atom_ids and probe_ids.
 	4
 		3774604	pm:st	14	25	13	CCCCGAAGACCCTAAGATGAGGTCA
 ...
-\endcode
+\endverbatim
 
-\section example2 Example 2 -- Human Genome U133 2.0 Plus PGF File Excerpt
+\section pgfExample2 Example 2 -- Human Genome U133 2.0 Plus PGF File Excerpt
 
 Here is a hypothetical example of a PGF file for an expression
 array with PM/MM pairs.
 
-\code
+\verbatim
 #%pgf_format_version=1.0
 #%chip_type=HG-U133_Plus_2
 #%lib_set_name=HG-U133_Plus_2
@@ -254,13 +249,24 @@ array with PM/MM pairs.
 		517809	mm:target->at	12	25	13	GAATCTTATCACCAGTTCCACCTCC	1518
 	1354901
 		736948	pm:target->at	12	25	13	GAGTTCCCTCGATTCCATAAACGAG	1543
-\endcode
+\endverbatim
 
 \section related Related Pages
 
-- <a href="./TsvFile.html">TsvFile Design Notes</a>
+- <a href="./file-format-tsv-notes.html">TsvFile Design Notes</a>
 - <a href="./file-format-tsv.html">TSV File Format</a>
 
+\section pgf_dev_notes Developer Notes
+
+- If you are defining a file format which is based on
+  TsvFile, use this as an example.
+- PgfFile is not subclassed as we dont want it to inherit
+  methods from TsvFile.  This prevents calling a method
+  by accident.
+- m_tsv is a member so it appears when a PgfFile is made.
+  (ie: minus messy memory management)
+- We make "tsv" public so if the programmer
+  wants to work with the underlying tsv object may do so.
 
 */
 
@@ -305,6 +311,16 @@ public:
 
   /// @brief     Create the PgfFile object
   PgfFile() {
+    probeset_id = -1;
+    probeset_type = "";
+    probeset_name = "";
+    atom_id = -1;
+    probe_id = -1;
+    probe_type = "";
+    gc_count = -1;
+    probe_length = -1;
+    interrogation_position = -1;
+    probe_sequence = "";
     makePgfBindings();
   }
 
@@ -345,7 +361,7 @@ public:
     }
     return rc;
   }
-  /// @brief     write PGF file
+  /// @brief     start the write of a PGF file.
   /// @param     filename
   /// @return    tsv_return_t
   int write(std::string filename) {

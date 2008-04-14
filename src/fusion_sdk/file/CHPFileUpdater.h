@@ -25,7 +25,7 @@
 
 #include <fstream>
 #include "CHPFileWriter.h"
-#include "AffymetrixBaseTypes.h"
+#include "../portability/affy-base-types.h"
 
 namespace affxchpwriter
 {
@@ -69,7 +69,7 @@ public:
 	 * @param bbCall CHP bbCall value.
 	 * @param noCall CHP noCall value.
 	 */
-	void UpdateGenotypeEntry(int row, u_int8_t call, float confidence, float RAS1, float RAS2, float aaCall, float abCall, float bbCall, float noCall);
+	void UpdateGenotypeEntry(int row, uint8_t call, float confidence, float RAS1, float RAS2, float aaCall, float abCall, float bbCall, float noCall);
 
 	/*! Close CHP signal file. */
 	void CloseCHPFile();

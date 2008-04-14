@@ -53,7 +53,7 @@ void CCHPFileUpdater::OpenCHPFile(const char *fileName)
 {
 	CloseCHPFile();
 	m_CHPFile = new ofstream(fileName, ios::binary | ios::app);
-	if (!m_CHPFile) { Err::errAbort("Error: CCHPFileUpdater::OpenCHPFile() - Unable to open CHP file for updating: " + ToStr(fileName)); }
+	if (!m_CHPFile) { Err::errAbort("CCHPFileUpdater::OpenCHPFile() - Unable to open CHP file for updating: " + ToStr(fileName)); }
 }
 
 void CCHPFileUpdater::UpdateExpressionEntry(int row, unsigned char Detection, float DetectionPValue, float Signal, unsigned short NumPairs, unsigned short NumUsedPairs)
@@ -75,7 +75,7 @@ void CCHPFileUpdater::UpdateExpressionEntry(int row, unsigned char Detection, fl
 	WriteUInt16_I(*m_CHPFile, NumUsedPairs);
 }
 
-void CCHPFileUpdater::UpdateGenotypeEntry(int row, u_int8_t call, float confidence, float RAS1, float RAS2, float aaCall, float abCall, float bbCall, float noCall)
+void CCHPFileUpdater::UpdateGenotypeEntry(int row, uint8_t call, float confidence, float RAS1, float RAS2, float aaCall, float abCall, float bbCall, float noCall)
 {
 	// Save the data size for the first probe set.
 	if (row == 0)

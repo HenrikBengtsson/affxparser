@@ -17,8 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
-/// @file   tsv-test.cpp
-/// @brief  Tests for TsvFile reading and writing.
+/*
+ * \file   tsv-test.cpp
+ * \brief  Tests for TsvFile reading and writing.
+ *         This program checks that TsvFile is working as expected.
+ */
 
 #include <sstream>
 //
@@ -72,7 +75,7 @@ check_trim()
   assert(trimstr2=="");
 }
 
-// if (0) to toggle printing.
+/// Check the dequoting of a string.
 #define CHECK_DEQUOTE(Xstr1,Xstr2) \
   str1=Xstr1; \
   str2=str1;  \
@@ -154,8 +157,33 @@ check_field_name()
   //printf("0:%s=%d\n",cname.c_str(),cidx);
   assert(cidx==10);
 
+  // Make sure the alias finds it
+  cidx=tsv->cname2cidx(0,"bogus1",cname);
+  assert(cidx==10);
+  cidx=tsv->cname2cidx(0,"bogus1","bogus2",cname);
+  assert(cidx==10);
+  cidx=tsv->cname2cidx(0,"bogus1","bogus2","bogus3",cname);
+  assert(cidx==10);
+
+  //
+  cidx=tsv->cname2cidx(0,cname,"bogus1");
+  assert(cidx==10);
+  cidx=tsv->cname2cidx(0,cname,"bogus1","bogus2");
+  assert(cidx==10);
+  cidx=tsv->cname2cidx(0,cname,"bogus1","bogus2","bogus3");
+  assert(cidx==10);
+
+  //
   cname="xyz";
   cidx=tsv->cname2cidx(0,cname);
+  assert(cidx==TSV_ERR_NOTFOUND);
+
+  // Make sure the alias dont find it
+  cidx=tsv->cname2cidx(0,"bogus1",cname);
+  assert(cidx==TSV_ERR_NOTFOUND);
+  cidx=tsv->cname2cidx(0,"bogus1","bogus2",cname);
+  assert(cidx==TSV_ERR_NOTFOUND);
+  cidx=tsv->cname2cidx(0,"bogus1","bogus2","bogus3",cname);
   assert(cidx==TSV_ERR_NOTFOUND);
 
   //
@@ -242,11 +270,29 @@ check_headers()
   }
 
   // add one and get the value.
-  std::string test_val_in="test_val";
-  std::string test_val_out;
-  tsv.addHeader("test_key",test_val_in);
-  tsv.getHeader("test_key",test_val_out);
-  assert(test_val_out==test_val_in);
+  std::string test_str_in="test_val";
+  std::string test_str_out;
+  tsv.addHeader("test_str_1",test_str_in);
+  tsv.getHeader("test_str_1",test_str_out);
+  assert(test_str_out==test_str_in);
+  // should fail.
+  assert(tsv.getHeader("test_str_none",test_str_out)!=TSV_OK);
+
+  int test_int_in=123;
+  int test_int_out=0;
+  tsv.addHeader("test_int_1",test_int_in);
+  tsv.getHeader("test_int_1",test_int_out);
+  assert(test_int_out==test_int_in);
+  //
+  assert(tsv.getHeader("test_int_none",test_int_out)!=TSV_OK);
+
+  double test_double_in=123.456;
+  double test_double_out=0;
+  tsv.addHeader("test_double_1",test_double_in);
+  tsv.getHeader("test_double_1",test_double_out);
+  assert(test_double_out==test_double_in);
+  // should fail
+  assert(tsv.getHeader("test_double_none",test_double_out)!=TSV_OK);
 
   // They should remain in the order added.
   for (int i=0;i<10;i++) {
@@ -256,6 +302,8 @@ check_headers()
     tsv.addHeaderComment("comment");
   }
   //tsv.dump_headers();
+
+  //
   tsv.headersBegin();
   for (int i=0;i<10;i++) {
     tsv.headersFindNext("b",val);

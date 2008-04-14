@@ -18,17 +18,17 @@
 ////////////////////////////////////////////////////////////////
 
 //
+#include <assert.h>
 #include <fstream>
 #include <istream>
+#include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <assert.h>
-#include <iostream.h>
 //
-#include "affy-base-types.h"
 #include "CDFFileData.h"
 #include "FileIO.h"
-#include <stdio.h>
+#include "../portability/affy-base-types.h"
+
 #ifndef _MSC_VER
 #include <sys/mman.h>
 #endif
@@ -262,16 +262,15 @@ void CCDFProbeSetNames::SetName(int index, std::string name)
 
 std::string CCDFFileData::GetProbeSetName(int index)
 {
-    if (iteratorReader.is_open() == false)
-        return m_ProbeSetNames.GetName(index);
-    else
-    {
-        int loc = (int)probeSetNamePos + (index*MAX_PROBE_SET_NAME_LENGTH);
-        iteratorReader.seekg(loc, std::ios::beg);
-        char name[MAX_PROBE_SET_NAME_LENGTH + 1];
-	    ReadFixedCString(iteratorReader, name, MAX_PROBE_SET_NAME_LENGTH);
-	    return name;
-    }
+  if (iteratorReader.is_open() == false) {
+    return m_ProbeSetNames.GetName(index);
+  }
+
+  int loc = (int)probeSetNamePos + (index*MAX_PROBE_SET_NAME_LENGTH);
+  seekg(loc, std::ios::beg);
+  char name[MAX_PROBE_SET_NAME_LENGTH + 1];
+  ReadFixedCString(iteratorReader, name, MAX_PROBE_SET_NAME_LENGTH);
+  return name;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -321,6 +320,38 @@ std::string CCDFFileData::GetChipType() const
 
 //////////////////////////////////////////////////////////////////////
 
+std::vector<std::string> CCDFFileData::GetChipTypes() const
+{
+    std::vector<std::string> chiptypes;
+    std::string chiptype;
+	if (m_FileName.empty() == false)
+	{
+		int index = (int) m_FileName.rfind('\\');
+		if (index == -1)
+			index = (int) m_FileName.rfind('/');
+		chiptype = m_FileName.c_str() + index + 1;
+		chiptype.resize(chiptype.length()-4);
+	}
+    // The full file name (minus .cdf extension) is the default (1st) 
+    // chip type. This matches what GetChipType() returns.
+    // ie: foo.bar.v1.r2.cdf -> foo.bar.v1.r2
+    chiptypes.push_back(chiptype);
+
+    //We then add all substrings starting at zero and ending at '.'
+    // ie: foo.bar.v1.r2.cdf -> foo.bar.v1, foo.bar, foo
+    std::string::size_type pos = chiptype.rfind(".",chiptype.size()-1);
+    while (pos != std::string::npos){
+        if(pos>0)
+            chiptypes.push_back(chiptype.substr(0,pos));
+        pos = chiptype.rfind(".",pos-1);
+    }
+
+    //ie: foo.bar.v1.r2, foo.bar.v1, foo.bar, foo
+	return chiptypes;
+}
+
+//////////////////////////////////////////////////////////////////////
+
 bool CCDFFileData::Exists()
 {
 	// Find the file stats.
@@ -346,66 +377,85 @@ bool CCDFFileData::ReadHeader()
 
 GeneChipProbeSetType CCDFFileData::GetProbeSetType(int index)
 {
-	if (iteratorReader.is_open() == false)
+	if (iteratorReader.is_open() == false) {
 		return m_ProbeSets[index].GetProbeSetType();
-	else
-	{        
-        // Get the probe set position from the index part of the file then seek to it.
-        int32_t pos = (int32_t) probeSetIndexPos + (index*sizeof(int32_t));
-        iteratorReader.seekg(pos, std::ios::beg);
-        ReadInt32_I(iteratorReader, pos);
-	    iteratorReader.seekg(pos, std::ios::beg);
-        uint16_t usval;
-		ReadUInt16_I(iteratorReader, usval);
-		return (GeneChipProbeSetType)(usval);
-	}
+  }
+
+  uint32_t i_pos;
+  uint32_t p_pos;
+  
+  // Get the probe set position from the index part of the file then seek to it.
+  i_pos=(uint32_t) probeSetIndexPos + (index*sizeof(uint32_t));
+  iteratorReader.seekg(i_pos, std::ios::beg); // the seekg method will be called later.
+  ReadUInt32_I(iteratorReader,p_pos);
+  // skip to the record
+  seekg(p_pos, std::ios::beg);
+
+  // Now grab the probeset type.
+  uint16_t usval;
+  ReadUInt16_I(iteratorReader, usval);
+  return (GeneChipProbeSetType)(usval);
 }
 
 //////////////////////////////////////////////////////////////////////
 
 void CCDFFileData::GetProbeSetInformation(int index, CCDFProbeSetInformation & info)
 {
-	if (iteratorReader.is_open() == false)
+	if (iteratorReader.is_open() == false) {
 		info.MakeShallowCopy(m_ProbeSets[index]);
-	else
-	{
-        // Get the probe set position from the index part of the file then seek to it.
-        int32_t pos = (int32_t) probeSetIndexPos + (index*sizeof(int32_t));
-        iteratorReader.seekg(pos, std::ios::beg);
-        ReadInt32_I(iteratorReader, pos);
-	    iteratorReader.seekg(pos, std::ios::beg);
+    return;
+  }
 
-        // Read the data
-        uint16_t usval;
-        uint8_t ucval;
-        int32_t ival;
+  uint32_t i_pos;
+  uint32_t p_pos;
 
-		info.m_Index = index;
-		ReadUInt16_I(iteratorReader, usval);
-		info.m_ProbeSetType = usval;
-		ReadUInt8(iteratorReader, ucval);
-		info.m_Direction = ucval;
-		ReadInt32_I(iteratorReader, ival);
-		info.m_NumLists = ival;
-		ReadInt32_I(iteratorReader, ival);
-		info.m_NumGroups = ival;
-		ReadInt32_I(iteratorReader, ival);
-		info.m_NumCells = ival;
-		ReadInt32_I(iteratorReader, ival);
-		info.m_ProbeSetNumber = ival;
-		ReadUInt8(iteratorReader, ucval);
-		info.m_NumCellsPerList = ucval;
+  // Is this a sequential read?
+  // Are we just reading the next record?
+  // If so no, need to seek around.
+  // NOTE: Of course this expects the records to be next to each other.
+  //       |Rec:1......|Rec:2......|Rec:.....
+  if ((m_probeSetIndex_last_valid!=1)||(index!=m_probeSetIndex_last+1)) {
+    // Nope! Look it it in the index.
+    i_pos = (uint32_t)probeSetIndexPos + (index*sizeof(uint32_t));
+    iteratorReader.seekg(i_pos, std::ios::beg);
+    ReadUInt32_I(iteratorReader, p_pos);
+    // now seek to the probe pos.
+    iteratorReader.seekg(p_pos,std::ios::beg);
+  }
+  // remember which index we just read.
+  m_probeSetIndex_last_valid=1;
+  m_probeSetIndex_last=index;
 
-
-		// Read the Groups
-		CCDFProbeGroupInformation *pBlk;
-		info.m_Groups.resize(info.m_NumGroups);
-        info.m_pGroups = &info.m_Groups;
-		for (int j=0; j<info.m_NumGroups; j++)
+  // Read the data
+  uint16_t usval;
+  uint8_t ucval;
+  int32_t ival;
+  
+  info.m_Index = index;
+  ReadUInt16_I(iteratorReader, usval);
+  info.m_ProbeSetType = usval;
+  ReadUInt8(iteratorReader, ucval);
+  info.m_Direction = ucval;
+  ReadInt32_I(iteratorReader, ival);
+  info.m_NumLists = ival;
+  ReadInt32_I(iteratorReader, ival);
+  info.m_NumGroups = ival;
+  ReadInt32_I(iteratorReader, ival);
+  info.m_NumCells = ival;
+  ReadInt32_I(iteratorReader, ival);
+  info.m_ProbeSetNumber = ival;
+  ReadUInt8(iteratorReader, ucval);
+  info.m_NumCellsPerList = ucval;
+    
+  // Read the Groups
+  CCDFProbeGroupInformation *pBlk;
+  info.m_Groups.resize(info.m_NumGroups);
+  info.m_pGroups = &info.m_Groups;
+  for (int j=0; j<info.m_NumGroups; j++)
 		{
 			pBlk = &info.m_Groups[j];
 			pBlk->m_GroupIndex = j;
-
+      
 			// Group info
 			ReadInt32_I(iteratorReader, ival);
 			pBlk->m_NumLists = ival;
@@ -420,36 +470,35 @@ void CCDFFileData::GetProbeSetInformation(int index, CCDFProbeSetInformation & i
 			ReadInt32_I(iteratorReader, ival);
 			pBlk->m_Stop = ival;
 			ReadFixedString(iteratorReader, pBlk->m_Name, MAX_PROBE_SET_NAME_LENGTH);
-
+      
 			// Read the cells
 			CCDFProbeInformation *pCell;
 			pBlk->m_Cells.resize(pBlk->m_NumCells);
-            pBlk->m_pCells = &pBlk->m_Cells;
+      pBlk->m_pCells = &pBlk->m_Cells;
 			for (int k=0; k<pBlk->m_NumCells; k++)
-			{
-				pCell = &pBlk->m_Cells[k];
-
-				// Cell info.
-				ReadInt32_I(iteratorReader, ival);
-				pCell->m_ListIndex = ival;
-				ReadUInt16_I(iteratorReader, usval);
-				pCell->m_X = usval;
-				ReadUInt16_I(iteratorReader, usval);
-				pCell->m_Y = usval;
-				ReadInt32_I(iteratorReader, ival);
-				pCell->m_Expos = ival;
-				ReadUInt8(iteratorReader,ucval);
-                pCell->m_PBase = ucval;
-                ReadUInt8(iteratorReader,ucval);
-                pCell->m_TBase = ucval;
-
-				if (k==0)
-					pBlk->m_Start = pCell->m_ListIndex;
-				else if (k == pBlk->m_NumCells-1)
-					pBlk->m_Stop = pCell->m_ListIndex;
-			}
+        {
+          pCell = &pBlk->m_Cells[k];
+          
+          // Cell info.
+          ReadInt32_I(iteratorReader, ival);
+          pCell->m_ListIndex = ival;
+          ReadUInt16_I(iteratorReader, usval);
+          pCell->m_X = usval;
+          ReadUInt16_I(iteratorReader, usval);
+          pCell->m_Y = usval;
+          ReadInt32_I(iteratorReader, ival);
+          pCell->m_Expos = ival;
+          ReadUInt8(iteratorReader,ucval);
+          pCell->m_PBase = ucval;
+          ReadUInt8(iteratorReader,ucval);
+          pCell->m_TBase = ucval;
+          
+          if (k==0)
+            pBlk->m_Start = pCell->m_ListIndex;
+          else if (k == pBlk->m_NumCells-1)
+            pBlk->m_Stop = pCell->m_ListIndex;
+        }
 		}
-	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -475,24 +524,24 @@ void CCDFFileData::GetQCProbeSetInformation(int index, CCDFQCProbeSetInformation
 		info.MakeShallowCopy(m_QCProbeSets[index]);
 	else
 	{
-        // Get the QC position from the index part of the file then seek to it.
-        int32_t pos = (int32_t)qcSetIndexPos + (index*sizeof(int32_t));
-        iteratorReader.seekg(pos, std::ios::beg);
-        ReadInt32_I(iteratorReader, pos);
-	    iteratorReader.seekg(pos, std::ios::beg);
+    // Get the QC position from the index part of the file then seek to it.
+    int32_t pos = (int32_t)qcSetIndexPos + (index*sizeof(int32_t));
+    seekg(pos, std::ios::beg);
+    ReadInt32_I(iteratorReader, pos);
+    seekg(pos, std::ios::beg);
 
-        // Read the data
-        uint16_t usval;
-        int32_t ival;
-        unsigned char ucval;
-
+    // Read the data
+    uint16_t usval;
+    int32_t ival;
+    unsigned char ucval;
+    
 		ReadUInt16_I(iteratorReader, usval);
 		ReadInt32_I(iteratorReader, ival);
 
-        info.m_NumCells = ival;
+    info.m_NumCells = ival;
 		info.m_QCProbeSetType = usval;
-        info.m_Cells.resize(info.m_NumCells);
-        info.m_pCells = &info.m_Cells;
+    info.m_Cells.resize(info.m_NumCells);
+    info.m_pCells = &info.m_Cells;
 
 		// Read the cells
 		for (int j=0; j<info.m_NumCells; j++)
@@ -555,8 +604,7 @@ bool CCDFFileData::ReadXDAHeader()
 	m_Header.m_Version = ival;
 
 	// Check the values for the right format file.
-	if (m_Header.m_Magic != CDF_FILE_MAGIC_NUMBER || 
-	    m_Header.m_Version > CDF_FILE_VERSION_NUMBER)
+	if (m_Header.m_Magic != CDF_FILE_MAGIC_NUMBER || m_Header.m_Version > CDF_FILE_VERSION_NUMBER)
 	{
 		m_strError = "The file does not appear to be the correct format.";
 		return false;
@@ -596,14 +644,18 @@ bool CCDFFileData::ReadXDAFormat()
 
 	// Save the probe set name position
 	probeSetNamePos = iteratorReader.tellg();
-
 	// Skip the probe set names
-	iteratorReader.seekg(MAX_PROBE_SET_NAME_LENGTH * m_Header.m_NumProbeSets, std::ios::cur);
+	seekg(MAX_PROBE_SET_NAME_LENGTH * m_Header.m_NumProbeSets, std::ios::cur);
 
-	// Skip the indicies
-    qcSetIndexPos = iteratorReader.tellg();
-	iteratorReader.seekg(m_Header.m_NumQCProbeSets * sizeof(int32_t), std::ios::cur);
-    probeSetIndexPos = iteratorReader.tellg();
+  // remember the start of the qc index
+  qcSetIndexPos = iteratorReader.tellg();
+	// Skip it
+	seekg(m_Header.m_NumQCProbeSets * sizeof(uint32_t), std::ios::cur);
+
+  // remember the start of the probeset index
+  probeSetIndexPos = iteratorReader.tellg();
+  // invalidate 
+  m_probeSetIndex_last_valid=0;
 
 	return true;
 }
@@ -668,15 +720,9 @@ bool CCDFFileData::ReadTextFormat()
 		ReadNextLine(instr, str, MAXLINELENGTH); // #qc ProbeSets
 		subStr=strchr(str,'=')+1;
 		m_Header.m_NumQCProbeSets = atoi(subStr);
-
-		/** 
-		    JHB changed to 400000 from 65000 (should be enough to 
-		    allocate on the stack.), otherwise could use heap mem
-		    however this is not failing on my system.
-		**/
-		char strref[400000];
-		ReadNextLine(instr, strref, 400000);	// The reference string.
-		subStr = strchr(strref,'=') + 1;
+		char strref[65000];
+		ReadNextLine(instr, strref, 65000);	// The reference string.
+		subStr=strchr(strref,'=')+1;
 		m_Header.m_Reference = subStr;
 	}
 
@@ -684,6 +730,8 @@ bool CCDFFileData::ReadTextFormat()
 	// Stop if just reading the header.
 	if (readHeaderOnly)
 		return true;
+
+
 
 	// Allocate for the probe set names.
 	m_ProbeSetNames.Resize(m_Header.m_NumProbeSets);
@@ -740,7 +788,7 @@ bool CCDFFileData::ReadTextFormat()
 
 
 	// Skip until the ProbeSet section is found
- NextProbeSet:
+NextProbeSet:
 	while (1)
 	{
 		ReadNextLine(instr, str, MAXLINELENGTH);

@@ -20,6 +20,7 @@
 
 #include "CalvinCHPFileUpdater.h"
 #include "FileOutput.h"
+#include "FileIO.h"
 #include "util/Err.h"
 #include "util/Util.h"
 
@@ -74,7 +75,7 @@ void CalvinCHPFileUpdater::OpenCHPFile(const char *fileName)
 	CloseCHPFile();
 	Initialize(fileName);
 	m_CHPFile = new ofstream(fileName, ios::out | ios::in | ios::binary);
-	if (!m_CHPFile) { Err::errAbort("Error: CalvinCHPFileUpdater::OpenCHPFile() - Unable to open CHP file for updating: " + ToStr(fileName)); }
+	if (!m_CHPFile) { Err::errAbort("CalvinCHPFileUpdater::OpenCHPFile() - Unable to open CHP file for updating: " + ToStr(fileName)); }
 }
 
 void CalvinCHPFileUpdater::UpdateExpressionQuantification(int row, float quantification)
@@ -136,19 +137,225 @@ void CalvinCHPFileUpdater::UpdateMultiDataGenotypeEntry(MultiDataType dataType, 
     UpdateMetrics(entry.metrics);
 }
 
+static int GetMetricBufferSize(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics)
+{
+    int bufferSize = 0;
+	int ncols = (int) metrics.size();
+	for (int icol=0; icol<ncols; icol++)
+	{
+		const ParameterNameValueType &nv = metrics[icol];
+		switch (nv.GetParameterType())
+		{
+			case ParameterNameValueType::Int8Type:
+				bufferSize += sizeof(nv.GetValueInt8());
+				break;
+
+			case ParameterNameValueType::UInt8Type:
+				bufferSize += sizeof(nv.GetValueUInt8());
+				break;
+
+			case ParameterNameValueType::Int16Type:
+				bufferSize += sizeof(nv.GetValueInt16());
+				break;
+
+			case ParameterNameValueType::UInt16Type:
+				bufferSize += sizeof(nv.GetValueUInt16());
+				break;
+
+			case ParameterNameValueType::Int32Type:
+				bufferSize += sizeof(nv.GetValueInt32());
+				break;
+
+			case ParameterNameValueType::UInt32Type:
+				bufferSize += sizeof(nv.GetValueUInt32());
+				break;
+
+			case ParameterNameValueType::FloatType:
+				bufferSize += sizeof(nv.GetValueFloat());
+				break;
+
+			case ParameterNameValueType::AsciiType:
+                bufferSize += sizeof(int);
+				bufferSize += (int)(nv.GetValueAscii().length() * sizeof(char));
+				break;
+
+			case ParameterNameValueType::TextType:
+                bufferSize += sizeof(int);
+				bufferSize += (int)(nv.GetValueText().length() * sizeof(wchar_t));
+				break;
+            
+            case ParameterNameValueType::UnknownType:
+                break;
+		}
+	}
+    return bufferSize;
+}
+
+static void CopyMetricToBuffer(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics, char * &pbuffer)
+{
+	int ncols = (int) metrics.size();
+	for (int icol=0; icol<ncols; icol++)
+	{
+		const ParameterNameValueType &nv = metrics[icol];
+		switch (nv.GetParameterType())
+		{
+			case ParameterNameValueType::Int8Type:
+				*pbuffer = nv.GetValueInt8();
+                pbuffer += sizeof(int8_t);
+				break;
+
+			case ParameterNameValueType::UInt8Type:
+				*pbuffer = nv.GetValueUInt8();
+                pbuffer += sizeof(u_int8_t);
+				break;
+
+			case ParameterNameValueType::Int16Type:
+				MmSetUInt16_N((uint16_t *)pbuffer, nv.GetValueInt16());
+                pbuffer += sizeof(int16_t);
+				break;
+
+			case ParameterNameValueType::UInt16Type:
+				MmSetUInt16_N((uint16_t *)pbuffer, nv.GetValueUInt16());
+                pbuffer += sizeof(u_int16_t);
+				break;
+
+			case ParameterNameValueType::Int32Type:
+				MmSetUInt32_N((uint32_t *)pbuffer, nv.GetValueInt32());
+                pbuffer += sizeof(int32_t);
+				break;
+
+			case ParameterNameValueType::UInt32Type:
+				MmSetUInt32_N((uint32_t *)pbuffer, nv.GetValueUInt32());
+                pbuffer += sizeof(u_int32_t);
+				break;
+
+			case ParameterNameValueType::FloatType:
+				MmSetFloat_N((float *)pbuffer, nv.GetValueFloat());
+                pbuffer += sizeof(float);
+				break;
+
+			case ParameterNameValueType::AsciiType:
+			case ParameterNameValueType::TextType:
+            case ParameterNameValueType::UnknownType:
+                break;
+		}
+	}
+}
+
 void CalvinCHPFileUpdater::UpdateMultiDataGenotypeEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::ProbeSetMultiDataGenotypeData> &genotypeEntryBuffer)
 {
+    if (genotypeEntryBuffer.size() == 0)
+        return;
+
 	// seek to start of update row (note NAME_COLUMN is 0)
     int dsIndex = dataSetIndexMap[dataType];
 	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+
+    // Create a buffer for writing.
 	int iProbeSetNameColumnSize = colsizes[ENTRY_DATA_GROUP][ENTRY_DATA_SET][NAME_COLUMN];
-	for (int i=0; i<(int)genotypeEntryBuffer.size(); i++) 
-	{
-		m_CHPFile->seekp(iProbeSetNameColumnSize, std::ios::cur);
-		FileOutput::WriteUInt8(*m_CHPFile, genotypeEntryBuffer[i].call);
-		FileOutput::WriteFloat(*m_CHPFile, genotypeEntryBuffer[i].confidence);
-        UpdateMetrics(genotypeEntryBuffer[i].metrics);
+    int len = iProbeSetNameColumnSize - sizeof(int);
+    int bufferSize = iProbeSetNameColumnSize + sizeof(genotypeEntryBuffer[0].call) + sizeof(genotypeEntryBuffer[0].confidence) + GetMetricBufferSize(genotypeEntryBuffer[0].metrics);
+    bufferSize *= (int)genotypeEntryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+
+    // Copy the data to the buffer
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)genotypeEntryBuffer.size(); i++) 
+    {
+        MmSetUInt32_N((uint32_t *)pbuffer, len);
+        pbuffer += sizeof(int);
+        memcpy(pbuffer, genotypeEntryBuffer[i].name.c_str(), genotypeEntryBuffer[i].name.length());
+        pbuffer += len;
+        *pbuffer = genotypeEntryBuffer[i].call;
+        pbuffer += sizeof(char);
+        MmSetFloat_N((float *)pbuffer, genotypeEntryBuffer[i].confidence);
+        pbuffer += sizeof(float);
+        CopyMetricToBuffer(genotypeEntryBuffer[i].metrics, pbuffer);
     }
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateMultiDataGenotypeEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &genotypeEntryBuffer)
+{
+    if (genotypeEntryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)genotypeEntryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)genotypeEntryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, genotypeEntryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+    int dsIndex = dataSetIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateMultiDataCopyNumberEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &copyNumberEntryBuffer)
+{
+    if (copyNumberEntryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)copyNumberEntryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)copyNumberEntryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, copyNumberEntryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+    int dsIndex = dataSetIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateMultiDataCytoRegionEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &cytoEntryBuffer)
+{
+    if (cytoEntryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)cytoEntryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)cytoEntryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, cytoEntryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+    int dsIndex = dataSetIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
 }
 
 void CalvinCHPFileUpdater::UpdateMultiDataExpressionEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry)
@@ -171,6 +378,32 @@ void CalvinCHPFileUpdater::UpdateMultiDataExpressionEntryBuffer(MultiDataType da
 		FileOutput::WriteFloat(*m_CHPFile, expressionEntryBuffer[i].quantification);
         UpdateMetrics(expressionEntryBuffer[i].metrics);
     }
+}
+
+void CalvinCHPFileUpdater::UpdateMultiDataExpressionEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &expressionEntryBuffer)
+{
+    if (expressionEntryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)expressionEntryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)expressionEntryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, expressionEntryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+    int dsIndex = dataSetIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
 }
 
 void CalvinCHPFileUpdater::UpdateMetrics(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics)

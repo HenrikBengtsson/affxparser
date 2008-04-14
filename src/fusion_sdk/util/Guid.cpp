@@ -19,24 +19,26 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "Guid.h"
-#include "chksum.h"
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <sstream>
 
-#ifndef WIN32
-#include <unistd.h>
-#endif
-#ifdef WIN32
-#define snprintf _snprintf
-#endif
 #ifdef WIN32
 #pragma warning(disable: 4996) // ignore deprecated functions warning
+#define snprintf _snprintf
+//need to include winsock2 before windows.h (pulled in by affy-base-types)
 #include <winsock2.h>
 #include <process.h>
+#define getpid _getpid
+#define gethostid() 0
+#else
+#include <unistd.h>
 #endif
+
+#include "Guid.h"
+#include "chksum.h"
+
 
 #define SEEDVAL(VAL) do { \
   unsigned int val=(unsigned int)(VAL); \
@@ -44,11 +46,6 @@
     seed=seed*val; \
   } \
 } while (0)
-
-#ifdef WIN32
-#define getpid _getpid
-#define gethostid() 0
-#endif
 
 using namespace affxutil;
 

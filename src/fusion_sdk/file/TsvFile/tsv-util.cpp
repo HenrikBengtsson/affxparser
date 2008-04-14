@@ -161,5 +161,5 @@ main(int argc,char* argv[])
 
   //
   tsv_util_usage();
-  exit(1);
+  exit(0);
 }

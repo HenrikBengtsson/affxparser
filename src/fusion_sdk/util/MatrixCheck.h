@@ -76,14 +76,32 @@ public:
     generated = Util::getPathName(generated.c_str());
     gold = Util::getPathName(gold.c_str());
     /* Santiy checks. */
-    if(!Util::fileReadable(generated.c_str()))
-      Err::errAbort("Can't open file: " + ToStr(generated.c_str()) + " to read.");
-    if(!Util::fileReadable(gold.c_str()))
-      Err::errAbort("Can't open file: " + ToStr(gold.c_str()) + " to read.");
-    assert(m_ColSkip >= 0 && m_RowSkip >= 0 && m_Epsilon >= 0);
+    if(!Util::fileReadable(generated.c_str())) {
+      msg += "Can't open file: " + ToStr(generated.c_str()) + " to read.";
+      return false;
+    }
+    if(!Util::fileReadable(gold.c_str())) {
+      msg += "Can't open file: " + ToStr(gold.c_str()) + " to read.";
+      return false;
+    }
+    if(!(m_ColSkip >= 0 && m_RowSkip >= 0 && m_Epsilon >= 0)) {
+      msg += "invalid ColSkip, RowSkip, and/or Epsilon";
+      return false;
+    }
     /* Count up differences. */
-    int diffCount = Util::matrixDifferences(generated.c_str(), gold.c_str() , 
+    // push handler to throw exception
+    Err::setThrowStatus(true); 
+    int diffCount;
+    try {
+        diffCount = Util::matrixDifferences(generated.c_str(), gold.c_str() , 
                                             m_ColSkip, m_RowSkip, m_Epsilon, false, m_MatchNames);
+    } 
+    catch(Except &e) {
+        msg += "Caught exception: " + ToStr(e.what());
+        return false;
+    }
+    Err::popHandler();
+
     if(diffCount > (int)m_AllowedMisMatch) {
       success = false;
       msg += "File: " + generated + " vs " + gold + ": ";

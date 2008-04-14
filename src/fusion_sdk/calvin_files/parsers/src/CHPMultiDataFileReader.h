@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -21,7 +21,7 @@
 #ifndef _CHPMultiDataFileReader_HEADER_
 #define _CHPMultiDataFileReader_HEADER_
 
-/*! \file CHPMultiDataFileReader.h This file provides methods to read a generic genotype CHP data file.
+/*! \file CHPMultiDataFileReader.h This file provides methods to read a multi data CHP data file.
  */
 
 #include "CHPMultiDataData.h"

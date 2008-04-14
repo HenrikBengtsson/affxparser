@@ -21,13 +21,117 @@
 /// @brief  Class for dumping information from a pgf and clf file.
 
 #include <algorithm>
-#include <time.h>
 
 #include "DumpPgf.h"
 #include "util/Guid.h"
+#include "util/Util.h"
 
 using namespace std;
 using namespace affx;
+
+static const string usage =
+  "apt-dump-pgf - Dump information from a pgf file.\n"
+  "Usage:\n"
+  "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probeset-type=type [--probeset-type=...]]\n\n"
+  "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probeset-ids=file [--probeset-ids=...]]\n\n"
+  "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probe-ids=file [--probe-ids=...]]";
+
+static PgOptions::PgOpt PGF_FILE_OPT =
+  {
+    "p", "pgf-file", PgOptions::STRING_OPT,
+    "The pgf file used to dump information.",
+    "", NULL
+  };
+
+static PgOptions::PgOpt CLF_FILE_OPT =
+  {
+    "c", "clf-file", PgOptions::STRING_OPT,
+    "Optional clf file to use. When present, "
+    "probe position will be included in the output.",
+    "", NULL
+  };
+
+static PgOptions::PgOpt PROBESET_ONLY_OPT =
+  {
+    "", "probeset-only", PgOptions::BOOL_OPT,
+    "Dump only probeset level information.",
+    "false", NULL
+  };
+
+static PgOptions::PgOpt PROBESET_TYPE_OPT =
+  {
+    "", "probeset-type", PgOptions::STRING_OPT,
+    "Optional probeset type to extract; "
+    "can be specified multiple times. When specified "
+    "multiple times, the intersection of all types "
+    "is taken. The user cannot mix use of probeset-type, "
+    "probeset-ids, and probe-ids.",
+    "", NULL
+  };
+
+static PgOptions::PgOpt PROBESET_ID_FILE_OPT =
+  {
+    "s", "probeset-ids", PgOptions::STRING_OPT,
+    "Optional name of a file containing probeset ids "
+    "to extract; can be specified multiple times. The "
+    "user cannot mix use of probeset-type, probeset-ids, "
+    "and probe-ids.",
+    "", NULL
+  };
+
+static PgOptions::PgOpt PROBE_ID_FILE_OPT =
+  {
+    "", "probe-ids", PgOptions::STRING_OPT,
+    "Optional name of a file containing probe ids "
+    "to extract; can be specified multiple times. The "
+    "user cannot mix use of probeset-type, probeset-ids, "
+    "and probe-ids.",
+    "", NULL
+  };
+
+static PgOptions::PgOpt OR_OPT =
+  {
+    "", "or", PgOptions::BOOL_OPT,
+    "Use the union of the types requested, not the "
+    "intersection.",
+    "false", NULL
+  };
+
+static PgOptions::PgOpt OUTFILE_OPT =
+  {
+    "o", "out-file", PgOptions::STRING_OPT,
+    "Output file to contain the dump output.",
+    "", NULL
+  };
+
+static PgOptions::PgOpt VERSION_OPT =
+  {
+    "", "version", PgOptions::BOOL_OPT,
+    "Display version information.",
+    "false", NULL
+  };
+
+static PgOptions::PgOpt HELP_OPT =
+  {
+    "h", "help", PgOptions::BOOL_OPT,
+    "Print help message.",
+    "false", NULL
+  };
+
+static PgOptions::PgOpt *options[] =
+  {
+    &PGF_FILE_OPT,
+    &CLF_FILE_OPT,
+    &PROBESET_TYPE_OPT,
+    &PROBESET_ID_FILE_OPT,
+    &PROBE_ID_FILE_OPT,
+    &PROBESET_ONLY_OPT,
+    &OR_OPT,
+    &OUTFILE_OPT,
+    &VERSION_OPT,
+    &HELP_OPT,
+    NULL
+  };
 
 /**
  *  @brief Constructor.
@@ -43,113 +147,12 @@ using namespace affx;
 dumpPgf::dumpPgf (int argc, char* argv[], const std::string& version, const std::string& cvsId)
   : m_Version (version), m_CvsId (cvsId), m_GetProbeCoordinates (0)
 {
-  const string usage =
-    "apt-dump-pgf - Dump information from a pgf file.\n"
-    "Usage:\n"
-    "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probeset-type=type [--probeset-type=...]]\n\n"
-    "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probeset-ids=file [--probeset-ids=...]]\n\n"
-    "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probe-ids=file [--probe-ids=...]]";
-
-  PgOptions::PgOpt PGF_FILE_OPT =
-  {
-    "p", "pgf-file", PgOptions::STRING_OPT,
-    "The pgf file used to dump information.",
-    "", 0
-  };
-
-  PgOptions::PgOpt CLF_FILE_OPT =
-  {
-    "c", "clf-file", PgOptions::STRING_OPT,
-    "Optional clf file to use. When present, "
-    "probe position will be included in the output.",
-    "", 0
-  };
-
-  PgOptions::PgOpt PROBESET_ONLY_OPT =
-  {
-    "", "probeset-only", PgOptions::BOOL_OPT,
-    "Dump only probeset level information.",
-    "false", 0
-  };
-
-  PgOptions::PgOpt PROBESET_TYPE_OPT =
-  {
-    "", "probeset-type", PgOptions::STRING_OPT,
-    "Optional probeset type to extract; "
-    "can be specified multiple times. When specified "
-    "multiple times, the intersection of all types "
-    "is taken. The user cannot mix use of probeset-type, "
-    "probeset-ids, and probe-ids.",
-    "", 0
-  };
-
-  PgOptions::PgOpt PROBESET_ID_FILE_OPT =
-  {
-    "s", "probeset-ids", PgOptions::STRING_OPT,
-    "Optional name of a file containing probeset ids "
-    "to extract; can be specified multiple times. The "
-    "user cannot mix use of probeset-type, probeset-ids, "
-    "and probe-ids.",
-    "", 0
-  };
-
-  PgOptions::PgOpt PROBE_ID_FILE_OPT =
-  {
-    "", "probe-ids", PgOptions::STRING_OPT,
-    "Optional name of a file containing probe ids "
-    "to extract; can be specified multiple times. The "
-    "user cannot mix use of probeset-type, probeset-ids, "
-    "and probe-ids.",
-    "", 0
-  };
-
-  PgOptions::PgOpt OR_OPT =
-  {
-    "", "or", PgOptions::BOOL_OPT,
-    "Use the union of the types requested, not the "
-    "intersection.",
-    "false", 0
-  };
-
-  PgOptions::PgOpt OUTFILE_OPT =
-  {
-    "o", "out-file", PgOptions::STRING_OPT,
-    "Output file to contain the dump output.",
-    "", 0
-  };
-
-  PgOptions::PgOpt VERSION_OPT =
-  {
-    "", "version", PgOptions::BOOL_OPT,
-    "Display version information.",
-    "false", 0
-  };
-
-  PgOptions::PgOpt HELP_OPT =
-  {
-    "h", "help", PgOptions::BOOL_OPT,
-    "Print help message.",
-    "false", 0
-  };
-
-  PgOptions::PgOpt *options[] =
-  {
-    &PGF_FILE_OPT,
-    &CLF_FILE_OPT,
-    &PROBESET_TYPE_OPT,
-    &PROBESET_ID_FILE_OPT,
-    &PROBE_ID_FILE_OPT,
-    &PROBESET_ONLY_OPT,
-    &OR_OPT,
-    &OUTFILE_OPT,
-    &VERSION_OPT,
-    &HELP_OPT,
-    0
-  };
-
+  
   // Prefer throw() to exit().
   Err::setThrowStatus (true);
 
+  PgOptions::hack_resetOptionsList(options);
+  //
   m_Opts = new PgOptions (usage, options);
   m_Opts->parseOptions (argc, argv);
 
@@ -160,20 +163,22 @@ dumpPgf::dumpPgf (int argc, char* argv[], const std::string& version, const std:
     string msg = "version:\n";
     msg += "   " + version + "\n";
     msg += "   " + cvsId;
-    Err::errAbort (msg);
+    cout << msg;
+    exit(0);
   }
   // Optionally display version.
   if (m_Opts->boolOpt ("version"))
   {
     string msg = "version: " + version + "   " + cvsId;
-    Err::errAbort (msg);
+    cout << msg;
+    exit(0);
   }
 
   // Require pgf file.
   m_PgfFileName = m_Opts->strOpt ("pgf-file");
   if (m_PgfFileName.empty())
   {
-    string msg = "FATAL: Must provide pgf file.";
+    string msg = "Must provide pgf file.";
     Err::errAbort (msg);
   }
   // Optional clf file.
@@ -183,18 +188,18 @@ dumpPgf::dumpPgf (int argc, char* argv[], const std::string& version, const std:
   for (PgOptions::PgOpt* typeOpt = m_Opts->findPgOpt ("probeset-type");
       typeOpt != 0; typeOpt = typeOpt->next)
     // Discard empty strings.
-    if (strlen (typeOpt->value) != 0)
-      m_ProbesetTypes.push_back (typeOpt->value);
+    if (strlen (typeOpt->getValue()) != 0)
+      m_ProbesetTypes.push_back (typeOpt->getValue());
 
   // Save optional probeset, probe id file names.
   for (PgOptions::PgOpt* fileOpt = m_Opts->findPgOpt ("probeset-ids");
       fileOpt != 0; fileOpt = fileOpt->next)
-    if (strlen (fileOpt->value) != 0)
-      m_ProbesetIdFileNames.push_back (fileOpt->value);
+    if (strlen (fileOpt->getValue()) != 0)
+      m_ProbesetIdFileNames.push_back (fileOpt->getValue());
   for (PgOptions::PgOpt* fileOpt = m_Opts->findPgOpt ("probe-ids");
       fileOpt != 0; fileOpt = fileOpt->next)
-    if (strlen (fileOpt->value) != 0)
-      m_ProbeIdFileNames.push_back (fileOpt->value);
+    if (strlen (fileOpt->getValue()) != 0)
+      m_ProbeIdFileNames.push_back (fileOpt->getValue());
 
   // Allow only one of probeset-type, probeset-ids, or probe-ids options.
   int optionsChosen = 0;
@@ -204,7 +209,7 @@ dumpPgf::dumpPgf (int argc, char* argv[], const std::string& version, const std:
 
   if (optionsChosen > 1)
   {
-    string msg = "FATAL: Cannot mix use of --probeset-ids, --probe-ids, ";
+    string msg = "Cannot mix use of --probeset-ids, --probe-ids, ";
     msg += "and --probeset-type.";
     Err::errAbort (msg);
   }
@@ -215,12 +220,12 @@ dumpPgf::dumpPgf (int argc, char* argv[], const std::string& version, const std:
 
   // Probeset-only is incompatible with a probe-ids list.
   if (m_DumpProbesetsOnly && !m_ProbeIdFileNames.empty())
-    Err::errAbort ("FATAL: Cannot use --probeset-only with --probe-ids.");
+    Err::errAbort ("Cannot use --probeset-only with --probe-ids.");
 
   // Output to cout unless a writeable file was selected.
   m_Outfile = m_Opts->strOpt ("out-file");
   if (m_Outfile.empty())
-    Err::errAbort ("FATAL: Must provide an output file, --out-file option.");
+    Err::errAbort ("Must provide an output file, --out-file option.");
   else
   {
     Util::mustOpenToWrite (m_FileOut, m_Outfile);
@@ -278,7 +283,7 @@ void dumpPgf::readIdFiles()
 	m_ProbesetIds.push_back (probesetId);
     tsv.close();
   }
-  cerr << "Found " << m_ProbesetIds.size() << " probesets in probeset list files.\n";
+  Verbose::out(1,"Found " + ToStr(m_ProbesetIds.size()) + " probesets in probeset list files.");
   // Probe id file(s).
   map <int, bool> probeIdsMap;
   for (unsigned int i = 0; i < m_ProbeIdFileNames.size(); ++i)
@@ -295,7 +300,7 @@ void dumpPgf::readIdFiles()
 	m_ProbeIds.push_back (probeId);
     tsv.close();
   }
-  cerr << "Found " << m_ProbeIds.size() << " probes in probe list files.\n";
+  Verbose::out(1,"Found " + ToStr(m_ProbeIds.size()) + " probes in probe list files.");
 }
 
 /**
@@ -303,10 +308,10 @@ void dumpPgf::readIdFiles()
 */
 void dumpPgf::beginOutput()
 {
-  cerr << "MODULE: " << m_Version << " " << m_CvsId << "\n";
-  cerr << "CMD: " << m_CommandLine << "\n";
-  m_ExecGuid = affxutil::Guid::GenerateNewGuid();
-  cerr << "exec_guid " << m_ExecGuid << "\n";
+    Verbose::out(1,"MODULE: " + m_Version + " " + m_CvsId);
+    Verbose::out(1,"CMD: " + m_CommandLine);
+    m_ExecGuid = affxutil::Guid::GenerateNewGuid();
+    Verbose::out(1,"exec_guid " + m_ExecGuid);
 }
 
 /**
@@ -317,7 +322,7 @@ void dumpPgf::beginOutput()
 */
 void dumpPgf::openInputFiles()
 {
-  cerr << "Reading meta data from PGF and CLF files\n";
+    Verbose::out(1,"Reading meta data from PGF and CLF files");
   // Open pgf file.
   m_PgfTsv.bind (0, "probeset_id", &m_PgfProbesetId, TSV_BIND_REQUIRED);
   if (! m_DumpProbesetsOnly)
@@ -435,11 +440,7 @@ void dumpPgf::writeOutputHeader()
   *m_Out << "#%guid=" << guid << "\n";
   *m_Out << "#%exec_guid=" << m_ExecGuid << "\n";
   *m_Out << "#%exec_version=" << m_Version << " " << m_CvsId << "\n";
-  const time_t UTCTime = time(NULL);
-  const struct tm* localTime = localtime (&UTCTime);
-  char* timeString = asctime (localTime);
-  timeString [strlen (timeString) - 1] = '\0'; // knock off trailing '\n'
-  *m_Out << "#%create_date=" << timeString << "\n";
+  *m_Out << "#%create_date=" << Util::getTimeStamp() << "\n";
   *m_Out << "#%cmd=" << m_CommandLine << "\n";
 
   // Copy genome position file header meta tags to output.
@@ -472,11 +473,11 @@ void dumpPgf::writeMatches()
   // Indexing probesets.
   if (! m_ProbesetIdFileNames.empty())
   {
-    cerr << "Indexing probesets in PGF file\n";
-    cerr << "Dumping probeset info\n";
     const unsigned int probesetIdCount = m_ProbesetIds.size();
     for (unsigned int i = 0; i < probesetIdCount; ++i)
     {
+      if(i==0)
+          Verbose::out(1,"Indexing probesets in PGF file");
       const int probesetId = m_ProbesetIds[i];
       if (m_PgfTsv.findBegin (0, "probeset_id", TSV_OP_EQ, probesetId) != TSV_OK)
 	Err::errAbort ("Problem reading pgf file " + m_PgfFileName);
@@ -488,14 +489,16 @@ void dumpPgf::writeMatches()
       // Fatal error if more than one match was found.
       else if (resultCount > 1)
       {
-	string msg = "FATAL: probeset_id '" + ToStr (probesetId);
-	msg += "' is not a unique index. Duplicate probeset_id found, [";
-	msg += ToStr (probesetId) + "] for pgf file " + m_PgfFileName;
-	Err::errAbort (msg);
+        string msg = "probeset_id '" + ToStr (probesetId);
+        msg += "' is not a unique index. Duplicate probeset_id found, [";
+        msg += ToStr (probesetId) + "] for pgf file " + m_PgfFileName;
+        Err::errAbort (msg);
       }
       // Found one match - read, write data.
       if (m_PgfTsv.findNext() != TSV_OK)
-	Err::errAbort ("Problem reading pgf file " + m_PgfFileName);
+        Err::errAbort ("Problem reading pgf file " + m_PgfFileName);
+      if(i==0)
+        Verbose::out(1,"Dumping probeset info");
       dumpProbesetData();
     }
   }
@@ -503,14 +506,14 @@ void dumpPgf::writeMatches()
   // Indexing probes.
   else if (! m_ProbeIdFileNames.empty())
   {
-    cerr << "Indexing probes in PGF file\n";
-    cerr << "Dumping probe info\n";
     const unsigned int probeIdCount = m_ProbeIds.size();
     for (unsigned int i = 0; i < probeIdCount; ++i)
     {
       const int probeId = m_ProbeIds[i];
+      if(i==0)
+        Verbose::out(1,"Indexing probes in PGF file");
       if (m_PgfTsv.findBegin (2, "probe_id", TSV_OP_EQ, probeId) != TSV_OK)
-	Err::errAbort ("Problem reading pgf file " + m_PgfFileName);
+        Err::errAbort ("Problem reading pgf file " + m_PgfFileName);
       const int resultCount = m_PgfTsv.findResultsCount();
       // Skip if no match.
       if (resultCount == 0)
@@ -519,14 +522,16 @@ void dumpPgf::writeMatches()
       // Fatal error if more than one match was found.
       else if (resultCount > 1)
       {
-	string msg = "FATAL: probe_id '" + ToStr (probeId);
-	msg += "' is not a unique index. Duplicate probe_id found, [";
-	msg += ToStr (probeId) + "] for pgf file " + m_PgfFileName;
-	Err::errAbort (msg);
+        string msg = "probe_id '" + ToStr (probeId);
+        msg += "' is not a unique index. Duplicate probe_id found, [";
+        msg += ToStr (probeId) + "] for pgf file " + m_PgfFileName;
+        Err::errAbort (msg);
       }
       // Found one match - read, write data.
       if (m_PgfTsv.findNext() != TSV_OK)
-	Err::errAbort ("Problem reading pgf file " + m_PgfFileName);
+        Err::errAbort ("Problem reading pgf file " + m_PgfFileName);
+      if(i==0)
+        Verbose::out(1,"Dumping probe info");
       dumpProbeData();
     }
   }
@@ -534,7 +539,7 @@ void dumpPgf::writeMatches()
   // Dumping by probeset type.
   else if (! m_ProbesetTypes.empty())
   {
-    cerr << "Scanning PGF file probe for requested type(s)\n";
+    Verbose::out(1,"Scanning PGF file probe for requested type(s)");
     const vector<string>::const_iterator userTypesBegin = m_ProbesetTypes.begin();
     const vector<string>::const_iterator userTypesEnd = m_ProbesetTypes.end();
     const unsigned int userTypesCount = m_ProbesetTypes.size();
@@ -582,7 +587,7 @@ void dumpPgf::writeMatches()
   // None of the above - dump the entire pgf file.
   else
   {
-    cerr << "Dumping entire PGF file\n";
+    Verbose::out(1,"Dumping entire PGF file");
     while (m_PgfTsv.nextLevel (0) == TSV_OK)
       dumpProbesetData();
   }
@@ -688,7 +693,7 @@ void dumpPgf::getCoordsByIndex (const int probeId)
   // Fatal error if more than one match was found.
   if (resultCount > 1)
   {
-    string msg = "FATAL: probe_id '" + ToStr (m_PgfProbeId);
+    string msg = "probe_id '" + ToStr (m_PgfProbeId);
     msg += "' is not a unique index. Duplicate probe_id found, [";
     msg += ToStr (m_PgfProbeId) + "] for clf file " + m_ClfFileName;
     Err::errAbort (msg);

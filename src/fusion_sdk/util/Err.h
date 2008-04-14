@@ -83,10 +83,10 @@ class Err {
    * Print the message supplied and abort program.
    * @param msg - Message for user about what went wrong.
    */
-  static void errAbort(const std::string &msg){ // throw (Except) {
+  static void errAbort(const std::string &msg, const std::string prefix = "\nFATAL ERROR: "){ // throw (Except) {
     unsigned int size = getParam().m_ErrHandlers.size();
     assert(size > 0);
-    getParam().m_ErrHandlers[size - 1]->handleError(msg);
+    getParam().m_ErrHandlers[size - 1]->handleError(prefix + msg);
   }
 
   /** 
@@ -104,7 +104,7 @@ class Err {
   static ErrHandler *popHandler() {
     unsigned int count = getParam().m_ErrHandlers.size();
     if(count < 1) {
-      Err::errAbort("Err::popHandler() - Error can't pop error handler when there aren't any left.");
+      Err::errAbort("Err::popHandler() - can't pop error handler when there aren't any left.");
     }
     ErrHandler *handler = getParam().m_ErrHandlers[count - 1];
     getParam().m_ErrHandlers.pop_back();

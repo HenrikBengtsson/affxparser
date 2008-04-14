@@ -36,6 +36,7 @@
 #include "Verbose.h"
 #include "RegressionCheck.h"
 #include "MatrixCheck.h"
+#include "MixedFileCheck.h"
 
 /**
  * Utility class for helping to do regression testing.
@@ -45,7 +46,7 @@ class RegressionTest {
 public:
 
   /** Constructor. */
-  RegressionTest(const char *goldFile, const char *generatedFile,
+  RegressionTest(const char *generatedFile, const char *goldFile,
                  double epsilon, const char *command, int rowSkip,
                  int colSkip, bool matchNames,
                  int allowedMisMatch) {

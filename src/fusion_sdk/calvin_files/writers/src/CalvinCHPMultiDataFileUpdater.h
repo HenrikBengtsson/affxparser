@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -59,6 +59,19 @@ public:
      * @param metricColumns The column information.
 	 */
 	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry, const std::vector<ColumnInfo> &metricColumns);
+
+	/*! Update the entry for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+     * @param metricColumns The column information.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry, const std::vector<ColumnInfo> &metricColumns);
+
+	/*! Update the entry for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry, const std::vector<ColumnInfo> &metricColumns);
 
 	/*! Update only the call and confidence for the given row
 	 * @param row The row index.

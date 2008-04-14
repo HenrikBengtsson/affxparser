@@ -100,16 +100,20 @@ void GenericDataHeaderUpdater::UpdateParameters()
 		{
 			// Check that the types match and the values are the same size
 			if (ii->GetParameterType() == nvt.GetParameterType()  && 
-					ii->GetMIMEValue().Size() == nvt.GetMIMEValue().Size())
+					ii->GetMIMEValue().Size() >= nvt.GetMIMEValue().Size())
 			{
 				// Safe to update - move to filePos
 				os->seekp(filePos, std::ios::beg);
 
 				// Write value
 				MIMEValue mv = nvt.GetMIMEValue();
+				//existing value size
+				u_int32_t size = ii->GetMIMEValue().Size();
+				//new value size
 				u_int32_t sz;
 				const void* ptr = mv.GetValue(sz);
-				FileOutput::WriteBlob(*os, ptr, sz);
+				//write the value with reserved size
+				FileOutput::WriteBlob(*os, ptr, sz, size);
 			}
 		}
 
