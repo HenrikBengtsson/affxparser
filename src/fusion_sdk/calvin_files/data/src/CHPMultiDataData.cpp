@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -32,6 +32,9 @@ const static std::wstring MULTI_DATA_NAME = L"MultiData";
 /*! The column name for the probe set name. */
 const static std::wstring PROBE_SET_NAME = L"ProbeSetName";
 
+/*! The column name for the cyto region. */
+const static std::wstring CYTO_REGION_NAME = L"Region";
+
 /*! The column name for the call. */
 const static std::wstring GENOTYPE_CALL_NAME = L"Call";
 
@@ -40,6 +43,27 @@ const static std::wstring GENOTYPE_CONFIDENCE_NAME = L"Confidence";
 
 /*! The column name for the quantification value. */
 const static std::wstring EXPRESSION_QUANTIFICATION_NAME = L"Quantification";
+
+/*! The column name for the chromosome name. */
+const static std::wstring COPY_NUMBER_CHR_NAME = L"Chromosome";
+
+/*! The column name for the physical position of the SNP. */
+const static std::wstring COPY_NUMBER_POSITION_NAME = L"Position";
+
+/*! The column name for the call value. */
+const static std::wstring CYTO_CALL_NAME = L"Call";
+
+/*! The column name for the confidence value. */
+const static std::wstring CYTO_CONFIDENCE_NAME = L"Confidence";
+
+/*! The column name for the chromosome name. */
+const static std::wstring CYTO_CHR_NAME = L"Chromosome";
+
+/*! The column name for the physical position of the cyto region. */
+const static std::wstring CYTO_START_POSITION_NAME = L"StartPosition";
+
+/*! The column name for the physical position of the cyto region. */
+const static std::wstring CYTO_STOP_POSITION_NAME = L"StopPosition";
 
 CHPMultiDataData::CHPMultiDataData()
 {
@@ -157,6 +181,16 @@ void CHPMultiDataData::GetGenotypeEntry(MultiDataType dataType, int index, affym
     GetGenericGenotypeEntry(dataType, index, entry);
 }
 
+void CHPMultiDataData::GetCopyNumberEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry)
+{
+    GetGenericCopyNumberEntry(dataType, index, entry);
+}
+
+void CHPMultiDataData::GetCytoEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry)
+{
+    GetGenericCytoRegionEntry(dataType, index, entry);
+}
+
 void CHPMultiDataData::GetExpressionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry)
 {
     GetGenericExpressionEntry(dataType, index, entry);
@@ -172,6 +206,37 @@ void CHPMultiDataData::GetGenericGenotypeEntry(MultiDataType dataType, int index
 		ds->entries->GetData(index, colIndex++, entry.name);
 	    ds->entries->GetData(index, colIndex++, entry.call);
 		ds->entries->GetData(index, colIndex++, entry.confidence);
+        GetExtraMetricEntries(ds, index, colIndex, entry.metrics);
+    }
+}
+
+void CHPMultiDataData::GetGenericCopyNumberEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry)
+{
+	DataSetInfo *ds = OpenMultiDataDataSet(dataType);
+	if (ds && ds->entries && ds->entries->IsOpen())
+	{
+		int colIndex = 0;
+        entry.name.clear();
+		ds->entries->GetData(index, colIndex++, entry.name);
+	    ds->entries->GetData(index, colIndex++, entry.chr);
+		ds->entries->GetData(index, colIndex++, entry.position);
+        GetExtraMetricEntries(ds, index, colIndex, entry.metrics);
+    }
+}
+
+void CHPMultiDataData::GetGenericCytoRegionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry)
+{
+	DataSetInfo *ds = OpenMultiDataDataSet(dataType);
+	if (ds && ds->entries && ds->entries->IsOpen())
+	{
+		int colIndex = 0;
+        entry.name.clear();
+		ds->entries->GetData(index, colIndex++, entry.name);
+		ds->entries->GetData(index, colIndex++, entry.chr);
+        ds->entries->GetData(index, colIndex++, entry.startPosition);
+        ds->entries->GetData(index, colIndex++, entry.stopPosition);
+        ds->entries->GetData(index, colIndex++, entry.call);
+        ds->entries->GetData(index, colIndex++, entry.confidenceScore);
         GetExtraMetricEntries(ds, index, colIndex, entry.metrics);
     }
 }
@@ -311,18 +376,32 @@ std::string CHPMultiDataData::GetProbeSetName(MultiDataType dataType, int index)
 
 void CHPMultiDataData::AddColumns(DataSetInfo &info, DataSetHeader& hdr)
 {
-    hdr.AddAsciiColumn(PROBE_SET_NAME, info.maxProbeSetName);
     switch (info.dataType)
     {
     case ExpressionMultiDataType:
-    case ExpressionControlMultiDataType:
+        hdr.AddAsciiColumn(PROBE_SET_NAME, info.maxProbeSetName);
         hdr.AddFloatColumn(EXPRESSION_QUANTIFICATION_NAME);
         break;
         
     case GenotypeMultiDataType:
-    case GenotypeControlMultiDataType:
+        hdr.AddAsciiColumn(PROBE_SET_NAME, info.maxProbeSetName);
         hdr.AddUByteColumn(GENOTYPE_CALL_NAME);
         hdr.AddFloatColumn(GENOTYPE_CONFIDENCE_NAME);
+        break;
+
+    case CopyNumberMultiDataType:
+        hdr.AddAsciiColumn(PROBE_SET_NAME, info.maxProbeSetName);
+        hdr.AddUByteColumn(COPY_NUMBER_CHR_NAME);
+        hdr.AddUIntColumn(COPY_NUMBER_POSITION_NAME);
+        break;
+
+    case CytoMultiDataType:
+        hdr.AddAsciiColumn(CYTO_REGION_NAME, info.maxProbeSetName);
+        hdr.AddUByteColumn(CYTO_CHR_NAME);
+        hdr.AddUIntColumn(CYTO_START_POSITION_NAME);
+        hdr.AddUIntColumn(CYTO_STOP_POSITION_NAME);
+        hdr.AddUByteColumn(CYTO_CALL_NAME);
+        hdr.AddFloatColumn(CYTO_CONFIDENCE_NAME);
         break;
 
     default:
@@ -348,7 +427,16 @@ DataSetInfo *CHPMultiDataData::OpenMultiDataDataSet(MultiDataType dataType)
 		info.entries->Open();
 		int32_t ncols = info.entries->Header().GetColumnCnt();
 		info.metricColumns.clear();
-        int startCol = (dataType == ExpressionMultiDataType || dataType == ExpressionControlMultiDataType ? 2 : 3);
+        int startCol = 0;
+        if (dataType == ExpressionMultiDataType)
+            startCol = 2;
+        else if (dataType == GenotypeMultiDataType)
+            startCol = 3;
+        else if (dataType == CopyNumberMultiDataType)
+            startCol = 3;
+        else if (dataType == CytoMultiDataType)
+            startCol = 6;
+
 		for (int32_t icol=startCol; icol<ncols; icol++)
 		{
             info.metricColumns.push_back(info.entries->Header().GetColumnInfo(icol));

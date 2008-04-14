@@ -492,6 +492,11 @@ public:
 	 */
 	std::string GetChipType() const;
 
+	/*! Gets the chip types (probe array type) of the CDF file. Allow substrings deliminated by '.'
+	 * @return vector of chip types
+	 */
+    std::vector<std::string> GetChipTypes() const;
+
 	/*! Reads the entire file.
 	 * @return True if successful.
 	 */

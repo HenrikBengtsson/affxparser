@@ -107,11 +107,31 @@ void FileOutput::WriteString8(std::ofstream &outstr, const std::string &value)
 }
 
 /*
- * Write a string to the file stream.
+ * Write a string to the file stream. Pad with nulls.
  */
 void FileOutput::WriteString8(std::ofstream &outstr, const char *value, int32_t len)
 {
-	outstr.write(value, len);
+  // how much padding will we need?
+  int pad_len;
+  int str_len;
+
+  if (value==NULL) {
+    pad_len=len;
+  }
+  else {
+    str_len=strlen(value);
+    if (len<str_len) {
+      outstr.write(value,len);
+      return;
+    }
+    outstr.write(value,str_len);
+    pad_len=len-str_len;
+  }
+  // padding
+  while (pad_len!=0) {
+    outstr.put(0);
+    pad_len--;
+  }
 }
 
 /*
@@ -187,4 +207,19 @@ void FileOutput::WriteBlob(std::ofstream &outstr, const void* value, int32_t siz
 {
 	FileOutput::WriteInt32(outstr, size);
 	outstr.write((const char*)value, size);
+}
+
+/*
+ * Write a blob to the file stream with reserved space
+ */
+void FileOutput::WriteBlob(std::ofstream &outstr, const void* value, int32_t data_size, int32_t reserved_size)
+{
+	FileOutput::WriteInt32(outstr, reserved_size);
+	//write the new value
+	outstr.write((const char*)value, data_size);
+	//fill in the reserved space
+	for(int i=0;i<reserved_size-data_size;i++)
+	{
+		outstr.put('\0');
+	}
 }

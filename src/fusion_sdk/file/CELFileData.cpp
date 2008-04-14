@@ -21,6 +21,7 @@
 #include "FileIO.h"
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <cerrno>
 #include <istream>
 #include <fstream>
 #include <string.h>
@@ -884,7 +885,9 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
     if (m_lpFileMap == MAP_FAILED)
 	{
 		Close();
-		SetError("Unable to map view for the unix memory map file");
+    static char buf[2048];
+    sprintf(buf, "Unable to map view for the unix memory map file: %d", errno);
+		SetError(buf);
 		return false;
 	}
 	else
@@ -1181,7 +1184,9 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
     if (m_lpFileMap == MAP_FAILED)
 	{
 		Close();
-		SetError("Unable to map view for the unix memory map file");
+    static char buf[2048];
+    sprintf(buf, "Unable to map view for the unix memory map file: %d", errno);
+		SetError(buf);
 		return false;
 	}
 	else
@@ -1406,7 +1411,9 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
     if (m_lpFileMap == MAP_FAILED)
 	{
 		Close();
-		SetError("Unable to map view for the unix memory map file");
+    static char buf[2048];
+    sprintf(buf, "Unable to map view for the unix memory map file: %d", errno);
+		SetError(buf);
 		return false;
 	}
 	else

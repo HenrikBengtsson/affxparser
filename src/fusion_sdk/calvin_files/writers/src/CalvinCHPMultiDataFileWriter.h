@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2007 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -19,7 +19,7 @@
 #ifndef _CHPMultiDataFileWriter_HEADER_
 #define _CHPMultiDataFileWriter_HEADER_
 
-/*! \file CalvinCHPMultiDataFileWriter.h Contains classes to write a generic genotype CHP file. */
+/*! \file CalvinCHPMultiDataFileWriter.h Contains classes to write a multi data CHP file. */
 
 #include <vector>
 #include <fstream>
@@ -80,6 +80,16 @@ public:
 	 * @param p A pointer to a multi data entry.
 	 */
 	void WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataGenotypeData & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+	void WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+	void WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData & p);
 
 	/*! Write an entry.
 	 * @param p A pointer to a multi data entry.

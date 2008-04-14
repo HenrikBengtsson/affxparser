@@ -78,14 +78,14 @@ public:
    * @return Param - Our static parameters for this class.
    */
   static Param &getParam() {
-    // Avoid weird windows .NET/Forms bug where linking to cout can cause problems...
+    // Avoid weird windows .NET/Forms bug where linking to cout/cerr can cause problems...
   #ifdef _WINDOWS 
     static ProgressDot progHandler(0, NULL);
     static MsgStream  msgHandler(0, NULL);
   #else
     // Normal console mode is ok.
-    static ProgressDot progHandler(1, &std::cout);
-    static MsgStream msgHandler(1, &std::cout);
+    static ProgressDot progHandler(1, &std::cerr);
+    static MsgStream msgHandler(1, &std::cerr);
   #endif
     // By default we just use a normal message handler as the warning handler.
     static Param m_Param(&progHandler, &msgHandler, &msgHandler);
@@ -176,10 +176,10 @@ public:
    * @param s - Message to be printed.
    * @param nl - Should a newline be appended to message?
    */
-  static void warn(int level, const std::string &s, bool nl = true) {
+  static void warn(int level, const std::string &s, bool nl = true, const std::string prefix = "\nWARNING: ") {
     Param &p = getParam();
     for(unsigned int i = 0; i < p.m_WarnHandler.size(); i++) {
-      p.m_WarnHandler[i]->message(level, s, nl);
+      p.m_WarnHandler[i]->message(level, prefix + s, nl);
     }
   }
 

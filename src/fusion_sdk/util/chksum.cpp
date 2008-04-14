@@ -19,7 +19,7 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "chksum.h"
+#include "util/chksum.h"
 
 using namespace affxutil;
 

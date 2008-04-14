@@ -29,8 +29,9 @@
  * 
  */
 
-#include "MsgStream.h"
-#include "Util.h"
+#include "util/Err.h"
+#include "util/MsgStream.h"
+#include "util/Util.h"
 
 /** 
  * A message to be processed by the stream.
@@ -42,7 +43,7 @@
 void MsgStream::message(int level, const std::string &msg, bool delimiter) {
   if(level <= m_Verbosity && m_Out != NULL) {
     if(!m_Out->good()) {
-      Err::errAbort("MsgStream::message() - Error: problem writing to stream.");
+      Err::errAbort("MsgStream::message() - problem writing to stream.");
     }
     (*m_Out) << msg;
     if(delimiter)

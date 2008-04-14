@@ -33,9 +33,12 @@
 
 //////////////////////////////////////////////////////////////////////
 
+#include <fstream>
+#include <istream>
 #include <string>
 #include <vector>
-#include <fstream>
+//
+#include "../portability/affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -689,12 +692,29 @@ protected:
 
 	/*! The position of the probe set index array in the XDA file. */
 	std::ios::pos_type probeSetIndexPos;
+  /*! What was the last probesetindex read? 
+    This state allows us to handle sequential reads quickly. (no seeking.) */
+  uint32_t m_probeSetIndex_last;
+  /*! 1 if like m_probeSetIndex_last is valid. 
+   The seekg method clears this. 
+  */
+  uint32_t m_probeSetIndex_last_valid;
+
+  /*! Use this seekg method when seeking with the iteratorReader.
+    It updates the state needed for sequenial reads. */
+  void seekg(uint32_t pos,const std::ios_base::seekdir& dir) {
+    // invalidate the last probe state
+    m_probeSetIndex_last_valid=0;
+    // m_probeSetIndex_last=0; // we dont need to clear this as we just cleared "_valid"
+    // and do the seek
+    iteratorReader.seekg(pos,dir);
+  }
 
 	/*! The file stream for the probe set information iterator. */
 	std::ifstream iteratorReader;
 
-    /*! Flag to indicate that only the header part of the file is to be read. */
-    bool readHeaderOnly;
+  /*! Flag to indicate that only the header part of the file is to be read. */
+  bool readHeaderOnly;
 
 	/*! The file header object. */
 	CCDFFileHeader m_Header;
@@ -765,6 +785,11 @@ public:
 	 * @return The chip type. This is just the name (without extension) of the CDF file.
 	 */
 	std::string GetChipType() const;
+
+	/*! Gets the chip types (probe array type) of the CDF file. Allow substrings deliminated by '.'
+	 * @return vector of chip types
+	 */
+    std::vector<std::string> GetChipTypes() const;
 
 	/*! Reads the entire file.
 	 * @return True if successful.

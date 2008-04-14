@@ -17,11 +17,13 @@
 //
 ////////////////////////////////////////////////////////////////
 
-/// @file tsv-example.cpp
-/// @brief
-/// This program is provided as an example of using TsvFile.
-/// You should be able to find a common use of TsvFile as
-/// a starting point for your programs.
+/*
+ * \file tsv-example.cpp
+ * \brief This program is provided as an example of using TsvFile.
+ *        You should be able to find a common uses of TsvFile here
+ *        to use as a starting point in your programs.
+ *        Read \link file-format-tsv the TsvFile docs \endlink more about TsvFile.
+ */
 
 //
 #include <string>
@@ -276,8 +278,8 @@ example_write_2(std::string file_name)
 /////
 
 /// @brief     write v1 tsv and csv files
-/// @param     file_name
-/// @param     fmt
+/// @param     file_name name of file 
+/// @param     fmt       1 for tsv, 2 for csv
 void
 example_write_3(std::string file_name,int fmt)
 {
@@ -418,9 +420,9 @@ usage()
 }
 
 /// @brief     entry point for the program
-/// @param     argc
-/// @param     argv
-/// @return
+/// @param     argc   argument count
+/// @param     argv   vector of arguments
+/// @return    exit value
 int
 main(int argc,char* argv[])
 {
@@ -445,7 +447,7 @@ main(int argc,char* argv[])
   }
   if (*arg_next==NULL) {
     usage();
-    exit(1);
+    exit(0);
   }
 
   // people dont like bad format messages

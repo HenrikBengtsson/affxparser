@@ -27,8 +27,9 @@
  * @brief This file provides functions for computing a checksum.
  */
 
-#include "stdlib.h"
-#include "affy-base-types.h"
+#include <stdlib.h>
+//
+#include "portability/affy-base-types.h"
 
 namespace affxutil
 {

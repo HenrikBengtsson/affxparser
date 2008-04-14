@@ -18,10 +18,11 @@
 ////////////////////////////////////////////////////////////////
 
 /**
-/// @file   TsvFile/ClfFile.h
-/// @brief  Definition of the CLF file profile
-///         See "PgfFile.h" for more commentary.
-*/
+ * @file   ClfFile.h
+ * @brief  Headers for the CLF file class
+ *         Read \link file-format-clf the ClfFile format \endlink for an overview.
+ *         Read \link file-format-tsv the TsvFile docs \endlink more about TsvFile.
+ */
 
 #ifndef _CLF_FILE_H
 #define _CLF_FILE_H
@@ -42,6 +43,8 @@ namespace affx {
 The CLF (cel layout file) maps probe IDs to a particular location
 in the CEL file. The CLF file is based on version 2 of the 
 <a href="./file-format-tsv.html">TSV file format</a>. 
+
+The CLF file is based on version 1 of the \link file-format-tsv TSV file format \endlink. 
 
 \section specs Specs & Features
 
@@ -103,7 +106,7 @@ probe_id = x*rows + y + sequential
 
 The official C++ parser used by affy can be found in APT under
 sdk/file/TsvFile/ClfFile.h. When possible, parsing and
-writing of TSV files should be done using this code.
+writing of CLF files should be done using this code.
 
 \section notes Notes
 
@@ -113,9 +116,9 @@ accept CLF files for which:
 - sequential=1
 - order=col_major
 
-\section example1 Example 1
+\section clfExample1 Example 1
 
-\code
+\verbatim
 #%chip_type=HuEx-1_0-st-v2
 #%chip_type=HuEx-1_0-st-v1
 #%chip_type=HuEx-1_0-st-ta1
@@ -137,11 +140,11 @@ accept CLF files for which:
 6	5	0
 7	6	0
 ...
-\endcode
+\endverbatim
 
 \section related Related Pages
 
-- <a href="./TsvFile.html">TsvFile Design Notes</a>
+- <a href="./file-format-tsv-notes.html">TsvFile Design Notes</a>
 - <a href="./file-format-tsv.html">TSV File Format</a>
 
 */

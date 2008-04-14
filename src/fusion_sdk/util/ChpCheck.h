@@ -18,6 +18,7 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
+
 /**
  * @file   ChpCheck.h
  * @author Chuck Sugnet
@@ -35,11 +36,14 @@
 #include <math.h>
 #include <algorithm>
 #include <vector>
+#include <set>
+#include <map>
 #include "Util.h"
 #include "Verbose.h"
 #include "RegressionCheck.h"
 #include "file/CHPFileData.h"
 
+using namespace std;
 /**
  * Class for testing that CHP files are the same +/- some epsilon. Also checks
  * to make sure that at least some of the headers are the same
@@ -52,15 +56,23 @@ public:
   /// @brief     Constructor
   /// @param     generated 
   /// @param     gold      the reference data to compare with
-  /// @param     eps       epsilon
-  /// @return    
-  ChpCheck(std::vector<std::string> &generated, std::vector<std::string> &gold, double eps) {
-    if(generated.size() != gold.size()) {
-      Err::errAbort("ChpCheck::ChpCheck() - generated and gold vectors must be same size.");
-    }
+  /// @param     eps       epsilon [confidence, pvalue]
+  /// @param     prefix    the prefix for the header string alg part
+  /// @return    diffAllowed the number of differences allowed (default 0)
+  /// @return    epsPvalue epsilon for pValue (default to epsilon)
+  ChpCheck(std::vector<std::string> &generated, std::vector<std::string> &gold, 
+           int diffAllowed=0, const std::string &prefix="apt-", double eps=0.0001) {
     m_Generated = generated;
     m_Gold = gold;
-    m_Eps = eps;
+    m_Eps_confidence = eps;
+    m_Eps_pvalue = eps;
+    m_Eps_signal = eps;
+    m_DiffAllowed = diffAllowed;
+    m_Prefix = prefix;
+
+    fillInToIgnore(m_IgnoreMap, prefix); // things know to change like user, time, etc.
+
+    setMaxError(30);
   }
 
   /** 
@@ -70,26 +82,103 @@ public:
    */
   bool check(std::string &msg) {
     bool success = true;
+    if(m_Generated.size() != m_Gold.size()) {
+      return checkMsg(false, "CelCheck::check() - generated and gold vectors must be same size.",msg);
+    }
     for(unsigned int i = 0; i < m_Generated.size(); i++) {
-      m_Generated[i] = Util::getPathName(m_Generated[i].c_str());
-      m_Gold[i] = Util::getPathName(m_Gold[i].c_str());
-      if(headersSame(m_Generated[i], m_Gold[i], msg) &&
-         dataSame(m_Generated[i], m_Gold[i], msg)) {
-      }
-      if(!dataSame(m_Generated[i], m_Gold[i], msg)) {
-        return false;
-      }
+        try {
+            m_Generated[i] = Util::getPathName(m_Generated[i].c_str());
+            m_Gold[i] = Util::getPathName(m_Gold[i].c_str());
+            if(!headersSame(m_Generated[i], m_Gold[i], msg))
+                success = false;
+            if(!dataSame(m_Generated[i], m_Gold[i], msg)) {
+                success = false;
+            }
+        } // end try
+        catch(Except &e) {
+            success &= checkMsg(false, "Error: " + ToStr(e.what()),msg);
+        }
+        catch(const std::exception &e) {
+            success &= checkMsg(false, "Error: standard exception: " + ToStr(e.what()),msg);
+        }
+        catch(...) {
+            success &= checkMsg(false, "Error: Uncaught Exception.",msg);
+        }
     }
     return success;
   }
 
+  /** 
+   * Clear out the default set of header entries to ignore
+   */
+  void clearHeaderIgnore() {
+      m_IgnoreMap.clear();
+  }
+
+  /** 
+   * Add a header item to ignore
+   * @param key - reference to a wide string
+   */
+  void addHeaderIgnore(std::string &key) {
+      m_IgnoreMap.insert(key);
+  }
+
 private:
   
-  bool checkMsg(bool condition, const std::string &msg, std::string &summary) {
-    if(!condition) {
-      summary += msg;
+  // Header entries to ignore
+  static void fillInToIgnore(std::set<std::string> &ignoreMap, const std::string &prefix) {
+    ignoreMap.clear();
+    ignoreMap.insert(prefix + "exec-guid");
+    ignoreMap.insert(prefix + "analysis-guid");
+    ignoreMap.insert(prefix + "time-str"); 
+    ignoreMap.insert(prefix + "free-mem");    
+    ignoreMap.insert(prefix + "cvs-id");
+    ignoreMap.insert(prefix + "version");
+    ignoreMap.insert(prefix + "opt-block-size");
+    ignoreMap.insert(prefix + "opt-out-dir");
+  }
+
+  /** 
+   * Check the gold tag value pairs to make sure they are getting the
+   * same values in the test. We only check items that are in gold,
+   * which means that if a new field has been added it will not be
+   * checked.
+   * 
+   * @param gold - List of key, value pairs in the gold set.
+   * @param test - List of key, value pairs in the set to be checked.
+   * @param msg - Place for adding error messages as they are encountered.
+   * 
+   * @return - true if same, false otherwise.
+   */
+  bool tagValuePairMostlySame(TagValuePairTypeList &gold, TagValuePairTypeList &test, std::string &msg) {
+    bool same = true;
+    map<string,string> testMap;
+    map<string,string>::iterator testMapIter;
+    TagValuePairTypeList::iterator testIter;
+    // Load up test as a map which will be queried by items in gold.
+    for(testIter = test.begin(); testIter != test.end(); ++testIter) {
+      testMap[testIter->Tag] = testIter->Value;
     }
-    return condition;
+    TagValuePairTypeList::iterator goldIter;
+    for(goldIter = gold.begin(); goldIter != gold.end(); ++goldIter) {
+      // ignore items that are in the ignoreMap
+      if(m_IgnoreMap.find(goldIter->Tag) == m_IgnoreMap.end()) {
+        testMapIter = testMap.find(goldIter->Tag);
+        if(testMapIter == testMap.end()) {
+          msg += " Error: Test missing field: '" + ToStr(goldIter->Tag) + "'";
+          same = false;
+        }
+        else {
+          if(testMapIter->second != goldIter->Value &&
+             Util::fileRoot(testMapIter->second) != Util::fileRoot(goldIter->Value)) {
+            msg += " Error: for field '" + goldIter->Tag + "' expecting: '" + goldIter->Value + 
+              "' got: '" + testMapIter->second + "'";
+            same = false;
+          }
+        }
+      }
+    }
+    return same;
   }
   
   bool headersSame(const std::string &generated, const std::string &gold, std::string &msgs) {
@@ -115,41 +204,28 @@ private:
       success &= checkMsg(genHdr.GetChipType() == goldHdr.GetChipType(), "Error: ChipType not the same. ", msgs);
       success &= checkMsg(genHdr.GetAlgVersion() == goldHdr.GetAlgVersion(), "Error: AlgVersion not the same. ", msgs);
       success &= checkMsg(genHdr.GetProgID() == goldHdr.GetProgID(), "Error: ProgID not the same. ", msgs);
+      success &= checkMsg(genHdr.GetAssayType() == goldHdr.GetAssayType(), "Error: Assay Type not the same. ", msgs);
+
       TagValuePairTypeList &goldList = goldHdr.AlgorithmParameters();
       TagValuePairTypeList &genList = genHdr.AlgorithmParameters();
-      TagValuePairTypeList::iterator genIter, goldIter;
-      for(genIter = genList.begin(), goldIter = goldList.begin();
-          genIter != genList.end() && goldIter != goldList.end();
-          ++genIter, ++goldIter) {
-        // skip the parameters that should be changing
-        if(goldIter->Tag == "analysis-guid" ||
-           goldIter->Tag == "exec-guid" ||
-           goldIter->Tag == "cvs-id" || goldIter->Tag == "program-id" || goldIter->Tag == "chrX-file" ||
-           goldIter->Tag == "time-str" || goldIter->Tag == "cel-files") {
-          continue;
-        }
-        if(!checkMsg(goldIter->Value == genIter->Value, 
-                     "Error: values not same for: " + goldIter->Tag + " " + 
-                     goldIter->Value + " vs. " + genIter->Value, msgs)) {
-          success = false;
-        }
-      }
-    }
-    return success;
-  }
+      bool paramSame = tagValuePairMostlySame(goldList, genList, msgs);
+      success &= paramSame;
 
-  bool checkFloat(float gold, float gen, double eps, bool &success, double &maxDiff) {
-    double diff = fabs(gold - gen);
-    maxDiff = std::max(diff, maxDiff);
-    if(diff > eps) 
-      success = false;
+      goldList = goldHdr.SummaryParameters();
+      genList = genHdr.SummaryParameters();
+      paramSame = tagValuePairMostlySame(goldList, genList, msgs);
+      success &= paramSame;
+    }
     return success;
   }
 
   bool dataSame(const std::string &generated, const std::string &gold, std::string &msgs) {
     bool success = true;
-    double maxDiff = -1;
+    double maxDiffConf = -1;
+    double maxDiffPval = -1;
+    double maxDiffSignal = -1;
     int numDiff = 0;
+
     affxchp::CCHPFileData generatedChp, goldChp;
     affxchp::CCHPFileHeader genHdr, goldHdr;
     generatedChp.SetFileName(generated.c_str());
@@ -162,43 +238,96 @@ private:
       success = false;
       msgs += "Can't read CHP" + ToStr(gold) + " error is: " + goldChp.GetError();
     }    
+
     genHdr = generatedChp.GetHeader();    
-    for(int i = 0; i < genHdr.GetNumProbeSets(); i++) {
-      bool localSuccess = true;
-      affxchp::CGenotypeProbeSetResults *genResults = generatedChp.GetGenotypingResults(i);
-      affxchp::CGenotypeProbeSetResults *goldResults = goldChp.GetGenotypingResults(i);
-      if(goldResults->AlleleCall != genResults->AlleleCall) 
-        localSuccess = false;
-      checkFloat(goldResults->Confidence, genResults->Confidence, m_Eps, localSuccess, maxDiff);
-      checkFloat(goldResults->pvalue_AA, genResults->pvalue_AA, m_Eps, localSuccess, maxDiff);
-      checkFloat(goldResults->pvalue_AB, genResults->pvalue_AB, m_Eps, localSuccess, maxDiff);
-      checkFloat(goldResults->pvalue_BB, genResults->pvalue_BB, m_Eps, localSuccess, maxDiff);
-      checkFloat(goldResults->pvalue_NoCall, genResults->pvalue_NoCall, m_Eps, localSuccess, maxDiff);
-      if(!localSuccess) {
-        numDiff++;
-      }
-      success &= localSuccess;
+	if(genHdr.GetAssayType() == affxchp::CCHPFileHeader::Genotyping) {
+        for(int i = 0; i < genHdr.GetNumProbeSets(); i++) {
+            bool localSuccess = true;
+            affxchp::CGenotypeProbeSetResults *genResults = generatedChp.GetGenotypingResults(i);
+            if(genResults == NULL)
+                Err::errAbort("Failed to get entry for test (" + ToStr(i) + "). File: " + generated + " Error: " + generatedChp.GetError());
+            affxchp::CGenotypeProbeSetResults *goldResults = goldChp.GetGenotypingResults(i);
+            if(goldResults == NULL)
+                Err::errAbort("Failed to get entry for gold (" + ToStr(i) + "). File: " + gold + " Error: " + generatedChp.GetError());
+            if(goldResults->AlleleCall != genResults->AlleleCall) 
+                localSuccess = false;
+            checkFloat(goldResults->Confidence, genResults->Confidence, m_Eps_confidence, localSuccess, maxDiffConf);
+            checkFloat(goldResults->pvalue_AA, genResults->pvalue_AA, m_Eps_pvalue, localSuccess, maxDiffPval);
+            checkFloat(goldResults->pvalue_AB, genResults->pvalue_AB, m_Eps_pvalue, localSuccess, maxDiffPval);
+            checkFloat(goldResults->pvalue_BB, genResults->pvalue_BB, m_Eps_pvalue, localSuccess, maxDiffPval);
+            checkFloat(goldResults->pvalue_NoCall, genResults->pvalue_NoCall, m_Eps_pvalue, localSuccess, maxDiffPval);
+            ///@todo check RAS fields
+            //checkFloat(goldResults->RAS1, genResults->RAS1, m_Eps_ras, localSuccess, maxDiffRas);
+            //checkFloat(goldResults->RAS2, genResults->RAS2, m_Eps_ras, localSuccess, maxDiffRas);
+            if(!localSuccess)
+                numDiff++;
+            success &= localSuccess;
+        }
+        if(maxDiffConf > m_Eps_confidence)
+            Verbose::out(1, "Max diff: " + ToStr(maxDiffConf) + " is greater than expected (" + ToStr(m_Eps_confidence) + ") [confidence]");
+        if(maxDiffPval > m_Eps_pvalue)
+            Verbose::out(1, "Max diff: " + ToStr(maxDiffPval) + " is greater than expected (" + ToStr(m_Eps_pvalue) + ") [pvalue]");
+        if(numDiff > 0)
+            Verbose::out(1, ToStr(numDiff) + " of " + ToStr(genHdr.GetNumProbeSets()) + " (" + 
+                            ToStr(100.0 * numDiff/genHdr.GetNumProbeSets()) + "%) were different.");
+
+        std::string res = "different";
+        if(success) 
+            res = "same";
+        Verbose::out(1, generated + ": checked " + ToStr(genHdr.GetNumProbeSets()) + " genotype entries.");
+        Verbose::out(1, generated + ": max confidence diff is: " + ToStr(maxDiffConf));
+        Verbose::out(1, generated + ": max pvalue diff is: " + ToStr(maxDiffPval));
+        Verbose::out(1, generated + ": chip is " + res + ".");
+    } else if(genHdr.GetAssayType() == affxchp::CCHPFileHeader::Expression) {
+        for(int i = 0; i < genHdr.GetNumProbeSets(); i++) {
+            bool localSuccess = true;
+            affxchp::CExpressionProbeSetResults *genResults = generatedChp.GetExpressionResults(i);
+            affxchp::CExpressionProbeSetResults *goldResults = goldChp.GetExpressionResults(i);
+            checkFloat(goldResults->Signal, genResults->Signal, m_Eps_signal, localSuccess, maxDiffSignal);
+            ///@todo check other fields
+            if(!localSuccess)
+                numDiff++;
+            success &= localSuccess;
+        }
+        if(maxDiffSignal > m_Eps_signal)
+            Verbose::out(1, "Max diff: " + ToStr(maxDiffSignal) + " is greater than expected (" + ToStr(m_Eps_signal) + ") [signal]");
+        if(numDiff > 0)
+            Verbose::out(1, ToStr(numDiff) + " of " + ToStr(genHdr.GetNumProbeSets()) + " (" + 
+                            ToStr(100.0 * numDiff/genHdr.GetNumProbeSets()) + "%) were different.");
+
+        std::string res = "different";
+        if(success) 
+            res = "same";
+        Verbose::out(1, generated + ": checked " + ToStr(genHdr.GetNumProbeSets()) + " expression entries.");
+        Verbose::out(1, generated + ": max signal diff is: " + ToStr(maxDiffSignal));
+        Verbose::out(1, generated + ": chip is " + res + ".");
+    } else {
+        Err::errAbort("ChpCheck::ChpCheck() - unknown CHP type.");
     }
-    if(maxDiff > m_Eps) {
-      Verbose::out(1, "Max diff: " + ToStr(maxDiff) + " is greater than expected (" + ToStr(m_Eps) + ")");
-      Verbose::out(1, ToStr(numDiff) + " of " + ToStr(genHdr.GetNumProbeSets()) + " (" + 
-                   ToStr(100.0 * numDiff/genHdr.GetNumProbeSets()) + "%) were different.");
-    }
-    if(!success) {
+
+    if(!success && m_DiffAllowed >= numDiff) 
+        success = true;
+    if(!success)
       msgs += "Error: " + generated + " is different from " + gold + ". ";
-      
-    }
-    std::string res = "different";
-    if(success) 
-        res = "same";
-    Verbose::out(1, generated + ToStr(" chip is ") + res + " max diff is: " + ToStr(maxDiff));
     return success;
   }
       
-  std::vector<std::string> m_Generated;
+  /// Filenames for the gold standard or correct data chp files.
   std::vector<std::string> m_Gold;
+  /// Matching filenames for the chp files to be tested.
+  std::vector<std::string> m_Generated;
+  /// Epsilon, small value that two floats can differ by but still be considered equivalent.
   double m_Eps;
-
+  double m_Eps_confidence;
+  double m_Eps_pvalue;
+  double m_Eps_signal;
+  /// How many differences will we tolerate?
+  int m_DiffAllowed;
+  /// What is the expected prefix for parameter names?
+  std::string m_Prefix;
+  /// Header entries to ignore
+  std::set<std::string> m_IgnoreMap;
+  
 };
 
 #endif /* CHPCHECK_H */

@@ -38,6 +38,9 @@ namespace affymetrix_calvin_parameter
 /*! Defines the number of characters to reserve in the parameter list for the array type name */
 #define ARRAY_TYPE_MAX_LEN 100
 
+/*! Defines the number of characters to reserce in the parameter list for the array barcode. */
+#define ARRAY_BARCODE_MAX_LEN 50
+
 /*! Defines the static attribute name for the barcode of the physical array. */
 #define ARRAY_BARCODE_PARAM_NAME L"affymetrix-array-barcode"
 
@@ -154,6 +157,10 @@ namespace affymetrix_calvin_parameter
 
 /*! Defines US English locale. */
 #define US_ENGLISH_LOCALE L"en-US"
+
+/*! Defines the reserve length of an affymetrix GUID */
+#define AFFY_GUID_LEN 55
+
 }
 
 #endif

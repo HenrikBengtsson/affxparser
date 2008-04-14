@@ -43,12 +43,12 @@
 #include <sys/types.h>
 #include <vector>
 //
-#include "Convert.h"
-#include "Err.h"
-#include "RowFile.h"
-#include "TableFile.h"
-#include "Util.h"
-#include "Verbose.h"
+#include "util/Convert.h"
+#include "util/Err.h"
+#include "util/RowFile.h"
+#include "util/TableFile.h"
+#include "util/Util.h"
+#include "util/Verbose.h"
 
 #define	POSIX_OPEN open
 #define POSIX_CLOSE close
@@ -58,6 +58,7 @@
 #include <direct.h>
 #include <io.h>
 #include <windows.h>
+#include <float.h>
 #define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
 
 #ifndef __MINGW32__
@@ -79,6 +80,7 @@
 #endif
 #ifdef __sun__
 #include <unistd.h>
+#include <ieeefp.h>
 #endif
 
 
@@ -102,6 +104,29 @@ char *Util::cloneString(const char *s) {
   // strncpy(copy, s, length+1);
   memcpy(copy,s,length+1);
   return copy;
+}
+
+bool
+Util::stringEndsWith(const std::string& str,const std::string& end)
+{
+  std::string::const_reverse_iterator s_i=str.rbegin();
+  std::string::const_reverse_iterator s_end=str.rend();
+  std::string::const_reverse_iterator e_i=end.rbegin();
+  std::string::const_reverse_iterator e_end=end.rend();
+
+  // see if the whole thing end is there.
+  while (e_i!=e_end) {
+    if ((s_i==s_end) ||   // ran out of input string
+        ((*e_i)!=(*s_i)) // mismatch
+        ) {
+      return false; // didnt end with 'end'.
+    }
+    // advance (backwards!)
+    e_i++;
+    s_i++;
+  }
+  // 'end' was at the end of the string.
+  return true;
 }
 
 /** 
@@ -128,7 +153,7 @@ void Util::carefulClose(std::ofstream &out) {
   // If file is open, do some checks to make sure that it was successful...
   if(out.is_open()) {
     if(out.bad()) {
-      Err::errAbort("Util::carefulClose() - Error ofstream bad.");
+      Err::errAbort("Util::carefulClose() - ofstream bad.");
     }
   }
   out.close();
@@ -142,7 +167,7 @@ void Util::carefulClose(std::fstream &out) {
   // If file is open, do some checks to make sure that it was successful...
   if(out.is_open()) {
     if(out.bad()) {
-      Err::errAbort("Util::carefulClose() - Error ofstream bad.");
+      Err::errAbort("Util::carefulClose() - ofstream bad.");
     }
   }
   out.close();
@@ -158,6 +183,32 @@ bool Util::fileReadable(const char *fileName) {
   if(f < 0) 
     return false;
   POSIX_CLOSE(f);
+  return true;
+}
+
+/**
+ * Return true on success. False otherwise
+ * @param in - file to copy
+ * @param out - name of the new file
+ */
+bool Util::fileCopy(const char *in, const char *out) {
+  ///@todo there is probably a better way to copy files and check for errors
+  bool result = true;
+
+  std::ifstream is (in,ios::binary);
+  std::ofstream os (out,ios::binary);
+  if(!is.good() || !os.good())
+      result = false;
+
+  os << is.rdbuf();
+  if(!is.good() || !os.good())
+      result = false;
+
+  is.close();
+  os.close();
+  if(!is.good() || !os.good())
+      result = false;
+
   return true;
 }
 
@@ -228,14 +279,14 @@ bool Util::directoryReadable(const char *dirName) {
 }
 
 /** 
- * return true if directory exists and is readable, false otherwise.
- * @param dirname 
+ * @brief return true if directory exists and is readable, false otherwise
+ * @param dirname The dir to test for write-ability
  */
-bool Util::directoryWritable(const char *dirname) {
-  string dirString(dirname);
-  chompLastIfSep(dirString); // Windows doesn't like the trailing '\'
+bool Util::directoryWritable(const char* dirname) {
+  std::string dirname_tmp;
   struct stat s;
-  int val = 0;
+  bool writable = false;
+
 #ifdef WIN32
   int group = 0;
   int user = 0;
@@ -243,24 +294,34 @@ bool Util::directoryWritable(const char *dirname) {
   gid_t group = getgid();
   uid_t user = getuid();
 #endif
-  bool writable = false;
-  val = stat( dirString.c_str(), &s);
+
+  // we dont want the trailing slash.
+  dirname_tmp=dirname;
+  chompLastIfSep(dirname_tmp);
+
+  int rv = stat(dirname_tmp.c_str(), &s);
+
+  /* Cant write if not found. */
+  if (rv!=0) {
+    return false;
+  }
   /* If it isn't a directory we can't write to it... */
-  if(!S_ISDIR(s.st_mode) || val != 0){
+  if (!S_ISDIR(s.st_mode)) {
     return false;
   }
   /* If user owns directory and user writeable then we can write it. */
-  if(user == s.st_uid) {  
+  if (user == s.st_uid) {  
 	  writable = (S_IWUSR & s.st_mode) && (S_IXUSR & s.st_mode);
   }
   /* if group owns directory and it is user writeable then we can write it. */
-  else if(group == s.st_gid) {
+  else if (group == s.st_gid) {
     writable = (S_IWGRP & s.st_mode) && (S_IXGRP & s.st_mode);
   }
   /* if anybody can write directory then we can too. */
   else if((S_IWOTH & s.st_mode) && (S_IXOTH & s.st_mode)) {
 	  writable = true;
   }
+  //
   return writable;
 }
 
@@ -281,10 +342,11 @@ bool Util::makeDir(const char *dirName) {
   if(error != 0 && errno == EEXIST) 
     return false;
   else if(error != 0) 
-    Err::errAbort("Error: Util::makeDir() - Error making directory " + ToStr(dirName));
+    Err::errAbort("Error: Util::makeDir() - failed to make directory " + ToStr(dirName));
   return true;
 }
 
+/// @todo remove this function -- redundant with makeDir
 /**
  * Create a directory. Returns a pointer to error message, else 0.
  * An error is reported if no directory currently exists and a
@@ -375,6 +437,8 @@ void Util::chopString(const std::string &s, char delim, std::vector<std::string>
  * @return - Root of string.
  */
 string Util::fileRoot(const std::string &s) {
+  if(s.empty()) 
+    return s;
   string::size_type pos = 0;
   string name;
   pos = s.rfind(PATH_SEPARATOR);
@@ -389,7 +453,6 @@ string Util::fileRoot(const std::string &s) {
     name = s.substr(pos+1);
   else 
     name = s;
-  assert(name.length() > 0);
   return name;
 }
 
@@ -462,7 +525,13 @@ int Util::matrixDifferences(const char *targetFile, const char *queryFile,
       }
       double val = qMatrix[qMatRowIx][colIx] - tMatrix[rowIx][colIx];
       maxDiff = max(maxDiff, fabs(val));
-      if(!(fabs(val) <= epsilon)) {
+      bool failed = (fabs(val) > epsilon);
+      bool okFinite = true;
+      okFinite &= isFinite(qMatrix[qMatRowIx][colIx]);
+      okFinite &= isFinite(tMatrix[rowIx][colIx]);
+      if(!okFinite) 
+        Verbose::out(1, "Non-finite floating point numbers at row: " + ToStr(rowIx) + " column: " + ToStr(colIx));
+      if(failed || !okFinite) {
         same = false;
         rowDiff = true;
         diffCount++;
@@ -923,4 +992,41 @@ void Util::printStringWidth(std::ostream &out, const char *str, int prefix,
 
     wStart = wEnd;
   }
+}
+
+/** 
+ * Wrapper for different version of isnan() on different systems.
+ * @param x - number to be checked for NaN or INF
+ * @return - true if x is finite (-INF < x && x < +INF && x != nan), false otherwise
+ */
+bool Util::isFinite(double x) {
+  bool isOk = false;
+#ifdef WIN32
+  isOk = _finite(x);
+#else
+  isOk = finite(x);
+#endif 
+  return isOk;
+}
+
+std::string Util::getTimeStamp() 
+{
+  char *timeStr = NULL;
+  struct tm *tp;
+  time_t t = time(NULL);
+  tp = localtime(&t);
+  timeStr = asctime(tp); // timestamp prefix for log entries
+  if(timeStr == NULL) {
+    timeStr = "unknown";
+  } else if(strlen(timeStr) < 24) {
+    timeStr[strlen(timeStr) - 1] = '\0'; // knock off trailing '\n'
+  } else {
+    // we knock of to a fixed size as we've seen
+    // trailing garbage if using strlen() suggesting
+    // that there are times when the null term is not
+    // where we expect it.
+    timeStr[24] = '\0'; // knock off trailing '\n'
+  }
+  std::string timess = timeStr;
+  return timess;
 }
