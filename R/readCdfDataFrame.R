@@ -38,6 +38,7 @@
 #
 # @keyword "file"
 # @keyword "IO"
+# @keyword "internal"
 #*/######################################################################### 
 readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fields=NULL, drop=TRUE, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

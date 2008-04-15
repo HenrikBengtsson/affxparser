@@ -3,7 +3,7 @@
 % 
 %  readCdfDataFrame.R
 % 
-% on Tue Apr 15 12:32:05 2008.
+% on Tue Apr 15 12:40:44 2008.
 % 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,5 +73,7 @@ stopifnot(identical(sort(unique(df$unit)), units))
 
 
 
+
 \keyword{file}
 \keyword{IO}
+\keyword{internal}
