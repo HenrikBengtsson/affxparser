@@ -298,7 +298,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 
 
 # TO DO:
-readCdfDataFrameFinal <- function(filename, units=NULL, groups=NULL, unitFields=NULL, groupFields=NULL, cellFields=NULL, verbose=0) {
+.readCdfDataFrameFinal <- function(filename, units=NULL, groups=NULL, unitFields=NULL, groupFields=NULL, cellFields=NULL, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -354,7 +354,7 @@ readCdfDataFrameFinal <- function(filename, units=NULL, groups=NULL, unitFields=
 ##               verbose, PACKAGE="affxparser");
 
   df;
-} # readCdfDataFrameFinal()
+} # .readCdfDataFrameFinal()
 
 
 
