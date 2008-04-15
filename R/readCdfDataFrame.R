@@ -12,13 +12,21 @@
 # \arguments{
 #  \item{filename}{The filename of the CDF file.}
 #  \item{units}{An @integer @vector of unit indices
-#    specifying which units to be read.  If @NULL, all units are read.}
+#    specifying which units to be read.  If @NULL, all are read.}
+#  \item{groups}{An @integer @vector of group indices
+#    specifying which groups to be read.  If @NULL, all are read.}
+#  \item{cells}{An @integer @vector of cell indices
+#    specifying which cells to be read.  If @NULL, all are read.}
+#  \item{fields}{A @character @vector specifying what fields to read.
+#    If @NULL, all unit, group and cell fields are returned.}
+#  \item{drop}{If @TRUE and only one field is read, then a @vector
+#    (rather than a single-column @data.frame) is returned.}
 #  \item{verbose}{An @integer specifying the verbose level. If 0, the
 #    file is parsed quietly.  The higher numbers, the more details.}
 # }
 # 
 # \value{
-#   An NxK @data.frame.
+#   An NxK @data.frame or a @vector of length N.
 # }
 #
 # \author{
