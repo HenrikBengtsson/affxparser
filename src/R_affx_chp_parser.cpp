@@ -264,10 +264,23 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
 SEXP
 R_affx_GetCHPUniversalResults(FusionCHPLegacyData *chp)
 {
-  SEXP rval, ras1, ras2, aa, ab, bb, nocall, call, conf, callstr, alg;
+  SEXP ans;
+  CHPUniversalEntry Uentry;
+  FusionUniversalProbeSetResults rFU;
+  int count, i;
 
+  count = chp->GetHeader().GetNumProbeSets();
+  PROTECT(ans = NEW_NUMERIC(count));
 
+  for(i = 0; i < count; ++i) {
+    chp->GetUniversalResults(i, rFU);
+    REAL(ans)[i] = rFU.GetBackground();
+  }
+
+  UNPROTECT(1);
+  return ans;
 }
+
 SEXP
 R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
 {
@@ -577,9 +590,8 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
 	PROTECT(quantEntries = R_affx_GetCHPGenotypingResults(chp));
 	break;
       case FusionUniversal:
-	// need to find out what is in them :-(
-	//	PROTECT(quantEntries = R_affx_GetCHPUniversalResults(chp));
-	//break;
+	PROTECT(quantEntries = R_affx_GetCHPUniversalResults(chp));
+	break;
       case FusionUnknown:
       default:
 	Rf_warning("unhandled quantification entry index '%d'", 
