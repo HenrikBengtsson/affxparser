@@ -30,6 +30,15 @@ PKG_SOURCES = \
 	fusion_sdk/calvin_files/data/src/CDFQCProbeInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CDFQCProbeSetInformation.cpp\
 	fusion_sdk/calvin_files/data/src/CELData.cpp\
+	fusion_sdk/calvin_files/data/src/CHPBackgroundZone.cpp\
+	fusion_sdk/calvin_files/data/src/CHPData.cpp\
+	fusion_sdk/calvin_files/data/src/CHPExpressionEntry.cpp\
+	fusion_sdk/calvin_files/data/src/CHPMultiDataData.cpp\
+	fusion_sdk/calvin_files/data/src/CHPTilingData.cpp\
+	fusion_sdk/calvin_files/data/src/CHPQuantificationData.cpp\
+	fusion_sdk/calvin_files/data/src/CHPQuantificationDetectionData.cpp\
+	fusion_sdk/calvin_files/data/src/CHPGenotypeEntry.cpp\
+	fusion_sdk/calvin_files/data/src/CHPUniversalEntry.cpp\
 	fusion_sdk/calvin_files/data/src/DataGroup.cpp\
 	fusion_sdk/calvin_files/data/src/DataGroupHeader.cpp\
 	fusion_sdk/calvin_files/data/src/DataSet.cpp\
@@ -39,14 +48,30 @@ PKG_SOURCES = \
 	fusion_sdk/calvin_files/data/src/GenericDataHeader.cpp\
 	fusion_sdk/calvin_files/exception/src/ExceptionBase.cpp\
 	fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.cpp\
+	fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCHPDataAdapter.cpp \
 	fusion_sdk/calvin_files/fusion/src/FusionBPMAPData.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCDFData.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCDFQCProbeSetNames.cpp\
 	fusion_sdk/calvin_files/fusion/src/FusionCELData.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionCHPData.cpp \
+	fusion_sdk/calvin_files/fusion/src/FusionProbeSetResults.cpp \
 	fusion_sdk/calvin_files/fusion/src/GCOSAdapter/GCOSCELDataAdapter.cpp\
+	fusion_sdk/calvin_files/fusion/src/GCOSAdapter/GCOSCHPDataAdapter.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionCHPLegacyData.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionCHPMultiDataAccessor.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionCHPMultiDataData.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionCHPTilingData.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionCHPGenericData.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionCHPQuantificationData.cpp\
+	fusion_sdk/calvin_files/fusion/src/FusionCHPQuantificationDetectionData.cpp\
 	fusion_sdk/calvin_files/parameter/src/ParameterNameValueType.cpp\
 	fusion_sdk/calvin_files/parsers/src/CDFFileReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/CelFileReader.cpp\
+	fusion_sdk/calvin_files/parsers/src/CHPFileReader.cpp \
+	fusion_sdk/calvin_files/parsers/src/CHPMultiDataFileReader.cpp\
+	fusion_sdk/calvin_files/parsers/src/CHPTilingFileReader.cpp\
+	fusion_sdk/calvin_files/parsers/src/CHPQuantificationFileReader.cpp\
+	fusion_sdk/calvin_files/parsers/src/CHPQuantificationDetectionFileReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataGroupHeaderReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataGroupReader.cpp\
 	fusion_sdk/calvin_files/parsers/src/DataSetHeaderReader.cpp\
@@ -64,6 +89,7 @@ PKG_SOURCES = \
 	fusion_sdk/file/BPMAPFileWriter.cpp\
 	fusion_sdk/file/CDFFileData.cpp\
 	fusion_sdk/file/CELFileData.cpp\
+	fusion_sdk/file/CHPFileData.cpp\
 	fusion_sdk/file/FileIO.cpp\
 	fusion_sdk/file/FileWriter.cpp\
 	fusion_sdk/file/TsvFile/TsvFile.cpp\
@@ -76,7 +102,8 @@ PKG_SOURCES = \
 	R_affx_cdf_parser.cpp\
 	R_affx_cdf_extras.cpp\
 	R_affx_bpmap_parser.cpp\
-	R_affx_clf_pgf_parser.cpp
+	R_affx_clf_pgf_parser.cpp\
+	R_affx_chp_parser.cpp
 
 OBJECTS=$(PKG_SOURCES:.cpp=.o)
 
