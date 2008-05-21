@@ -8,8 +8,9 @@ writeTpmap <- function(filename, bpmaplist, verbose = 0){
             return(NULL)
         }
         seqInfo <- seq$seqInfo
-        if(length(setdiff(names(seqInfo))) != 0)
-            
+        if(length(setdiff(c("groupname", "version", "name"), names(seqInfo))) != 0) {
+            stop("Need a seqInfo component with 'groupname', 'version', 'name' sub-components")
+        }
         writeLines(paste("#seq_group_name", seqInfo$groupname), con = out, sep = "\n")
         writeLines(paste("#version", seqInfo$version), con = out, sep = "\n")
         if(!is.null(seqInfo$parameters)) {
