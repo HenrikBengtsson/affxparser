@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.13.3 [2008-05-20]
+o BUG FIX: Now writeTpmap works.
+
 Version: 1.11.? [2008-03-06]
 o BUG FIX: Regular expression pattern 'a-Z' is illegal on (at least) 
   some locale, e.g. 'C' (where 'A-z' works). The only way to specify 
