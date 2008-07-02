@@ -100,7 +100,7 @@ createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbo
   ncells <- header$cols*header$rows;
   cdfFile <- findCdf(header$chiptype);
   if (is.null(cdfFile)) {
-    warning("Could not find a CDF file for this chip type: ", header$chiptype);
+    warning("Skipping validation of CEL header against CDF header. Could not find a CDF file for this chip type: ", header$chiptype);
   } else {
     cdfHeader <- readCdfHeader(cdfFile);
     cdfTotal <- cdfHeader$ncols * cdfHeader$nrows;
