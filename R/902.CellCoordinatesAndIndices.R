@@ -3,7 +3,7 @@
 #
 # \description{
 #   This part describes how Affymetrix \emph{cells}, also known as
-#   \emph{probes} or \emph{features}, are address.
+#   \emph{probes} or \emph{features}, are addressed.
 # }
 #
 # \section{Cell coordinates}{
