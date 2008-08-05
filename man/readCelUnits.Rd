@@ -83,12 +83,8 @@ files <- grep("Calvin", files, value=TRUE)
 
 # Fake more CEL files if not enough
 files <- rep(files, length.out=5)
-
-
 print(files);
-
-# Clean up
-rm(files)
+rm(files);
 
 
 ##############################################################

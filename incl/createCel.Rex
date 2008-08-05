@@ -13,7 +13,9 @@ file <- files[1]
 # Read the CEL header
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hdr <- readCelHeader(file)
-stopifnot(hdr$version == 3)
+
+# Assert that we found an ASCII CEL file, but any will do
+stopifnot(hdr$version == 3) 
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

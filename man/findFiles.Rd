@@ -3,8 +3,6 @@
 % 
 %  findFiles.R
 % 
-% on Thu Feb 21 14:05:38 2008.
-% 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

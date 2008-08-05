@@ -12,7 +12,8 @@
 # \arguments{
 #   \item{filename}{The filename of the CEL file to be created.}
 #   \item{header}{A @list structure describing the CEL header, similar
-#     to the structure returned by @see "readCelHeader".}
+#     to the structure returned by @see "readCelHeader".  This header
+#     can be of any CEL header version.}
 #   \item{overwrite}{If @FALSE and the file already exists, an exception
 #     is thrown, otherwise the file is created.}
 #   \item{nsubgrids}{The number of subgrids.}
