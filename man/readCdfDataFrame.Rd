@@ -3,8 +3,6 @@
 % 
 %  readCdfDataFrame.R
 % 
-% on Tue Apr 15 12:44:35 2008.
-% 
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

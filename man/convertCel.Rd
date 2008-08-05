@@ -29,9 +29,7 @@
    \item{version}{The version of the output file format.}
    \item{...}{Not used.}
    \item{.validate}{If \code{\link[base:logical]{TRUE}}, a consistency test between the generated
-     and the original CDF is performed.  Note that the memory overhead
-     for this can be quite large, because two complete CDF structures
-     are kept in memory at the same time.}
+     and the original CEL is performed.}
    \item{verbose}{If \code{\link[base:logical]{TRUE}}, extra details are written while processing.}
  }
 
