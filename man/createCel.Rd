@@ -21,7 +21,8 @@
  \arguments{
    \item{filename}{The filename of the CEL file to be created.}
    \item{header}{A \code{\link[base]{list}} structure describing the CEL header, similar
-     to the structure returned by \code{\link{readCelHeader}}().}
+     to the structure returned by \code{\link{readCelHeader}}().  This header
+     can be of any CEL header version.}
    \item{overwrite}{If \code{\link[base:logical]{FALSE}} and the file already exists, an exception
      is thrown, otherwise the file is created.}
    \item{nsubgrids}{The number of subgrids.}
@@ -63,6 +64,8 @@ file <- files[1]
 # Read the CEL header
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 hdr <- readCelHeader(file)
+
+# Assert that we found an ASCII CEL file, but any will do
 stopifnot(hdr$version == 3)
 
 

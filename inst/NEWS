@@ -1,8 +1,16 @@
 Package: affxparser
 ===================
 
+Version: 1.13.4 [2008-08-05]
+o Renamed the HISTORY file to NEWS.
+o Now help(createCel) (and its example) clarifies that the
+  template CEL header can be of v3 (ASCII), v4 (binary;XDA), 
+  or v1 (binary;Calvin).
+
+
 Version: 1.13.3 [2008-05-20]
 o BUG FIX: Now writeTpmap works.
+
 
 Version: 1.11.? [2008-03-06]
 o BUG FIX: Regular expression pattern 'a-Z' is illegal on (at least) 
