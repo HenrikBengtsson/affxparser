@@ -725,12 +725,15 @@ extern "C" {
     */
 
     SEXP r_typeAsString;
-    PROTECT(r_typeAsString = NEW_STRING(5));
-    SET_STRING_ELT(r_typeAsString, 0, mkChar("expression"));
-    SET_STRING_ELT(r_typeAsString, 1, mkChar("genotyping"));
-    SET_STRING_ELT(r_typeAsString, 2, mkChar("tag"));
+    PROTECT(r_typeAsString = NEW_STRING(8));
+    SET_STRING_ELT(r_typeAsString, 0, mkChar("unknown"));
+    SET_STRING_ELT(r_typeAsString, 1, mkChar("expression"));
+    SET_STRING_ELT(r_typeAsString, 2, mkChar("genotyping"));
     SET_STRING_ELT(r_typeAsString, 3, mkChar("resequencing"));
-    SET_STRING_ELT(r_typeAsString, 4, mkChar("unknown"));
+    SET_STRING_ELT(r_typeAsString, 4, mkChar("tag"));
+    SET_STRING_ELT(r_typeAsString, 5, mkChar("copynumber"));
+    SET_STRING_ELT(r_typeAsString, 6, mkChar("genotypingcontrol"));
+    SET_STRING_ELT(r_typeAsString, 7, mkChar("expressioncontrol"));
 
     SEXP r_directionAsString;
     PROTECT(r_directionAsString = NEW_STRING(4));
@@ -774,15 +777,15 @@ extern "C" {
 
       if(i_returnUnitType) {
           switch (unit.GetProbeSetType()) {
-          case affxcdf::ExpressionProbeSetType:
-              SET_VECTOR_ELT(r_unit, ii++,
+          case affxcdf::UnknownProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++, 
                              ScalarString(STRING_ELT(r_typeAsString, 0)));
               break;
-          case affxcdf::GenotypingProbeSetType:
+          case affxcdf::ExpressionProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++,
                              ScalarString(STRING_ELT(r_typeAsString, 1)));
               break;
-          case affxcdf::TagProbeSetType:
+          case affxcdf::GenotypingProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++,
                              ScalarString(STRING_ELT(r_typeAsString, 2)));
               break;
@@ -790,13 +793,25 @@ extern "C" {
               SET_VECTOR_ELT(r_unit, ii++, 
                              ScalarString(STRING_ELT(r_typeAsString, 3)));
               break;
-          case affxcdf::UnknownProbeSetType:
-              SET_VECTOR_ELT(r_unit, ii++, 
+          case affxcdf::TagProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++,
                              ScalarString(STRING_ELT(r_typeAsString, 4)));
+              break;
+          case affxcdf::CopyNumberProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++,
+                             ScalarString(STRING_ELT(r_typeAsString, 5)));
+              break;
+          case affxcdf::GenotypeControlProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++,
+                             ScalarString(STRING_ELT(r_typeAsString, 6)));
+              break;
+          case affxcdf::ExpressionControlProbeSetType:
+              SET_VECTOR_ELT(r_unit, ii++,
+                             ScalarString(STRING_ELT(r_typeAsString, 7)));
               break;
           default:
               SET_VECTOR_ELT(r_unit, ii++, 
-                             ScalarString(STRING_ELT(r_typeAsString, 4)));
+                             ScalarString(STRING_ELT(r_typeAsString, 0)));
               break;
           }
       }
@@ -1765,6 +1780,8 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2008-08-09
+ * o Now unit type 5 is reported as 'copynumber' and no longer as 'unknown'.
  * 2007-01-05
  * o BUG FIX: The new group 'direction' field was added first making all
  *   fields getting names of other fields.
