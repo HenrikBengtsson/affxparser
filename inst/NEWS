@@ -1,6 +1,18 @@
 Package: affxparser
 ===================
 
+Version: 1.13.5 [2008-08-09]
+o BUG FIX: writeCdf() would write 'CustomSeq' units as 'Tag' units,
+  and vice versa.  This means that *ASCII* CDFs containing such 
+  units and converted with convertCdf() would be have an incorrect
+  unit type for these units.  Also, unit type 'Copy Number' is 
+  reported as "copynumber" and no longer as "unknown".
+o BUG FIX: The increase of the internal buffer for reading the 
+  'refseq' header field of ASCII CDFs that was done in v1.11.2 
+  was mistakenly undone in v1.13.3.
+o Made readCdf() recognize more unit types.
+
+
 Version: 1.13.4 [2008-08-05]
 o Renamed the HISTORY file to NEWS.
 o Now help(createCel) (and its example) clarifies that the
@@ -10,6 +22,34 @@ o Now help(createCel) (and its example) clarifies that the
 
 Version: 1.13.3 [2008-05-20]
 o BUG FIX: Now writeTpmap works.
+
+
+Version: 1.13.2 [2008-05-08]
+o Copied all updates in v1.12.2 (release) to v1.13.2 (devel).
+
+
+Version: 1.13.1 [2008-05-02]
+o Copied all updates in v1.12.1 (release) to v1.13.1 (devel).
+
+
+Version: 1.13.0 [2008-04-29]
+o Devel version bumped because of the new Bioconductor release.
+
+
+Version: 1.12.2 [2008-05-09]
+o BUG FIX: v1.12.1 would not build on Windows.  Fix by Martin Morgan.
+
+
+Version: 1.12.1 [2008-05-02]
+o Added readChp().  Contribution by Robert Gentleman.
+
+
+Version: 1.12.0 [2008-04-29]
+o Release version bumped because of the new Bioconductor release.
+
+
+Version: 1.11.13 [2008-04-13]
+o Updated to Fusion SDK v1.0.10b.
 
 
 Version: 1.11.? [2008-03-06]

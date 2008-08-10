@@ -170,18 +170,31 @@
 
 .writeCdfUnit <- function(unit, con, unitname=NULL) {
     ## 3. Write the unit
-    unitTypes <- c(expression=1, genotyping=2, tag=3,
-                                             resequencing=4, unknown=5);
-    unitType <- unitTypes[unit$unittype];
+##    unitTypes <- c(expression=1, genotyping=2, tag=3,
+##                                             resequencing=4, unknown=5);
+##
+##    unitType <- unitTypes[unit$unittype];
     unitDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
     unitDirection <- unitDirections[unit$unitdirection];
 
+##    unitType <- switch(unit$unittype,
+##                       expression = 1,
+##                       genotyping = 2,
+##                       tag = 3,
+##                       resequencing = 4,
+##                       unknown = 5)
+
+    # In some version of the Fusion SDK documentation, the unit type 
+    # with value 5 (five) was labelled "unknown".  For backward 
+    # compatibility we recognize input value "unknown" as well.
     unitType <- switch(unit$unittype,
                        expression = 1,
                        genotyping = 2,
-                       tag = 3,
-                       resequencing = 4,
+                       resequencing = 3,
+                       tag = 4,
+                       copynumber = 5,
                        unknown = 5)
+
     unitDirection <- switch(unit$unitdirection,
                             nodirection = 0,
                             sense = 1,
@@ -301,8 +314,11 @@
 
 ############################################################################
 # HISTORY:
+# 2008-08-09 /HB
+# o BUG FIX: .writeCdfUnit() did output unit type 'resequencing' and 'tag'
+#   as 4 and 3, and not 3 and 4, respectively.
 # 2007-11-13 /KH
-# o BUG FIX: The rrror message in internal .initializeCdf() would mention
+# o BUG FIX: The error message in internal .initializeCdf() would mention
 #   'qcUnitLengths' when it was meant to say 'unitLengths'.
 # 2007-07-13 /HB
 # o While writing unit names in .initializeCdf(), quite a few copies were
