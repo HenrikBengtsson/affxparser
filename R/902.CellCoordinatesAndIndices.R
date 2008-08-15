@@ -30,19 +30,21 @@
 #   starting at the upper-left corner.
 #   For example, with a chip layout \eqn{(N,K)=(1600,1600)} the cell at
 #   \eqn{(x,y)=(0,0)} has index i=1, and the cell at \eqn{(x,y)=(1599,1599)}
-#   has index \eqn{i=2600000}.
+#   has index \eqn{i=2560000}.  
+#   A cell at \eqn{(x,y)=(1498,3)} has index \eqn{i=6299}.
 # 
 #   Given the cell index \eqn{i}, the coordinate \eqn{(x,y)} can be 
 #   calculated as
 #   \deqn{
-#     y = mod(i-1, K)
+#     y = floor((i-1)/K)
 #   }
 #   \deqn{
 #     x = (i-1)-K*y.
 #   }
 #   Continuing the above example, the coordinate for cell \eqn{i=1} is
-#   thus \eqn{(x,y)=(0,0)} and for cell \eqn{i=2600000} it is
-#   \eqn{(x,y)=(1599,1599)}.
+#   be found to be \eqn{(x,y)=(0,0)}, for cell \eqn{i=2560000} it is
+#   \eqn{(x,y)=(1599,1599)}, for cell \eqn{i=6299} is it 
+#   \eqn{(x,y)=(1498,3)}.
 # 
 #   Although not needed to use the methods in this package, to get the 
 #   cell indices for the cell coordinates or vice versa, see 
