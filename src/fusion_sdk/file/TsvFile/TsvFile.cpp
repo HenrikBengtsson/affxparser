@@ -70,6 +70,8 @@ using namespace affx;
 #define TSV_CHAR_COMMENT (0x23)
 /// Hex code for SPACE char
 #define TSV_CHAR_SPACE   (0x20)
+/// code for end-of-file signal
+#define TSV_CHAR_EOF     (-1)
 /// Comment string
 #define TSV_STRING_COMMENT  "#"
 /// Meta string
@@ -151,7 +153,7 @@ affx::dequote(std::string& str)
 /// @param     vec       vector to fill with split strings
 /// @return    number of resulting strings
 int
-affx::splitstr(std::string str,char c,std::vector<std::string>& vec)
+affx::splitstr(const std::string& str,char c,std::vector<std::string>& vec)
 {
   string::size_type pos1=0;
   string::size_type pos2=0;
@@ -182,12 +184,13 @@ int
 affx::unescapechar(int c)
 {
   switch (c) {
-  case '\\': return '\\' ;
-  case 'a': return '\a' ;
-  case 'n': return TSV_CHAR_LF ;
-  case 'r': return TSV_CHAR_CR ;
-  case 't': return TSV_CHAR_TAB;
-    //case '': return '\\' ;
+  case 'b': return   8 ; // backspace
+  case 'e': return  27 ; // escape
+  case 'f': return  12 ; // form feed
+  case 'n': return  TSV_CHAR_LF ;
+  case 'r': return  TSV_CHAR_CR ;
+  case 't': return  TSV_CHAR_TAB;
+  case 'v': return  11; // vertical tab
     // return the character unchanged.
   default: return c;
   }
@@ -231,10 +234,33 @@ affx::TsvFileField::TsvFileField()
   // set default
   m_optAutoDequote=true;
   clear();
+  m_ctype=TSV_TYPE_UNKNOWN;
 }
 
 affx::TsvFileField::~TsvFileField()
 {
+  // nothing to deallocate
+}
+
+/// @brief     Return the expected type of the field.
+/// @return
+affx::tsv_type_t
+affx::TsvFileField::get_type() {
+  return m_ctype;
+}
+
+int
+affx::TsvFileField::get_max_size() {
+  return m_max_size;
+}
+
+/// @brief     Set the expected type of the field
+/// @param     type
+/// @return
+affx::tsv_type_t
+affx::TsvFileField::set_type(affx::tsv_type_t ctype) {
+  m_ctype=ctype;
+  return m_ctype;
 }
 
 /// @brief     Clear the members of the object. Set to null.
@@ -243,6 +269,8 @@ affx::TsvFileField::clear()
 {
   m_buffer="";
   m_isnull=true;
+  //
+  m_val_state=affx::VALSTATE_STRING;
   //
   m_value_int=-1;
   m_value_int_done=false;
@@ -271,11 +299,14 @@ affx::TsvFileField::isNull()
 /// @brief     Set the buffer value of the column
 /// @param     str       The new value
 int
-affx::TsvFileField::setBuffer(std::string str)
+affx::TsvFileField::setBuffer(const std::string& str)
 {
   // dont alias the buffer. "m_buffer=str;" might leave m_buffer as a reference
   m_buffer.erase();
   m_buffer.append(str.begin(),str.end());
+  //
+  m_val_state=affx::VALSTATE_STRING;
+  //
   m_isnull=false;
   m_value_int_done=false;
   m_value_double_done=false;
@@ -291,20 +322,54 @@ affx::TsvFileField::setPrecision(int places)
   return TSV_OK;
 }
 
+void
+affx::TsvFileField::convertToString()
+{
+  switch (m_val_state) {
+  case affx::VALSTATE_NONE:
+    m_buffer.clear();
+  case affx::VALSTATE_STRING:
+    // do nothing; already a string
+    break;
+  case affx::VALSTATE_INT:
+    {
+      std::ostringstream stream;
+      stream << m_value_int;
+      setBuffer(stream.str());
+    }
+    break;
+  case affx::VALSTATE_DOUBLE:
+    {
+      std::ostringstream stream;
+      stream.setf(ios::fixed, ios::floatfield);
+      stream.precision(m_precision);
+      stream << m_value_double;
+      setBuffer(stream.str());
+    }
+    break;
+  default:
+    Err::errAbort("TsvFileField::convertToString(): internal error.");
+  }
+}
+
 /// handy macro for code.
-#define TSV_NULL_RETURN(RV)  if (m_isnull) { val=RV; return TSV_ERR_NULL; }
+#define TSV_NULL_RETURN(RV)  if (m_isnull) { *val=RV; return TSV_ERR_NULL; }
 
 /// @brief     Get the value as a string
 /// @param     val       val to set
 /// @return    tsv_error_t
 int
-affx::TsvFileField::get(std::string& val)
+affx::TsvFileField::get(std::string* val)
 {
   TSV_NULL_RETURN("");
-
+  //
+  if (m_val_state!=affx::VALSTATE_STRING) {
+    // we need the string version, convert it...
+    convertToString();
+  }
   // Avoid data sharing by clearing then appending the contents.
-  val.erase();
-  val.append(m_buffer.begin(),m_buffer.end());
+  val->erase();
+  val->append(m_buffer.begin(),m_buffer.end());
   return TSV_OK;
 }
 
@@ -312,12 +377,12 @@ affx::TsvFileField::get(std::string& val)
 /// @param     val       val to set
 /// @return    tsv_error_t
 int
-affx::TsvFileField::get(int& val)
+affx::TsvFileField::get(int* val)
 {
   TSV_NULL_RETURN(0);
   // done already?
   if (m_value_int_done) {
-    val=m_value_int;
+    *val=m_value_int;
     return m_value_int_rv;
   }
   //
@@ -337,7 +402,7 @@ affx::TsvFileField::get(int& val)
   }
 
   m_value_int_done=true;
-  val=m_value_int;
+  *val=m_value_int;
   return m_value_int_rv;
 }
 
@@ -345,12 +410,12 @@ affx::TsvFileField::get(int& val)
 /// @param     val       val to set
 /// @return    tsv_error_t
 int
-affx::TsvFileField::get(double& val)
+affx::TsvFileField::get(double* val)
 {
   TSV_NULL_RETURN(0.0);
   // done already?
   if (m_value_double_done) {
-    val=m_value_double;
+    *val=m_value_double;
     return m_value_double_rv;
   }
   //
@@ -368,26 +433,25 @@ affx::TsvFileField::get(double& val)
   }
 
   m_value_double_done=true;
-  val=m_value_double;
+  *val=m_value_double;
   return m_value_double_rv;
 }
-
 
 /// @brief     Get the value as a float
 /// @param     val       val to set
 /// @return    tsv_error_t
 int
-affx::TsvFileField::get(float& val)
+affx::TsvFileField::get(float* val)
 {
   if (m_value_double_done) {
-    val=(float)m_value_double;
+    *val=(float)m_value_double;
     return m_value_double_rv;
   }
   // Get the double value and cast it.
   double tmp_double;
   int rv;
-  rv=get(tmp_double);
-  val=(float)tmp_double;
+  rv=get(&tmp_double);
+  *val=(float)tmp_double;
   return rv;
 }
 
@@ -395,12 +459,12 @@ affx::TsvFileField::get(float& val)
 /// @param     val       val to set
 /// @return    tsv_error_t
 int
-affx::TsvFileField::get(unsigned int& val)
+affx::TsvFileField::get(unsigned int* val)
 {
   TSV_NULL_RETURN(0);
   // done already?
   if (m_value_uint_done) {
-    val=m_value_uint;
+    *val=m_value_uint;
     return m_value_uint_rv;
   }
   //
@@ -417,7 +481,7 @@ affx::TsvFileField::get(unsigned int& val)
   }
 
   m_value_uint_done=true;
-  val=m_value_uint;
+  *val=m_value_uint;
   return m_value_uint_rv;
 }
 
@@ -425,12 +489,12 @@ affx::TsvFileField::get(unsigned int& val)
 /// @param     val       val to set
 /// @return    tsv_error_t
 int
-affx::TsvFileField::get(uint64_t& val)
+affx::TsvFileField::get(uint64_t* val)
 {
   TSV_NULL_RETURN(0);
   // done already?
   if (m_value_ulonglong_done) {
-    val=m_value_ulonglong;
+    *val=m_value_ulonglong;
     return m_value_ulonglong_rv;
   }
   //
@@ -451,10 +515,136 @@ affx::TsvFileField::get(uint64_t& val)
   }
 
   m_value_ulonglong_done=true;
-  val=m_value_ulonglong;
+  *val=m_value_ulonglong;
   return m_value_ulonglong_rv;
 }
 
+/////
+
+#define TSV_SPLIT_VEC_BODY(TYPE)                  \
+  int rv=affx::TSV_OK;                            \
+  string::size_type pos1;                         \
+  string::size_type pos2;                         \
+  char* pos_out;                                  \
+  TYPE val;                                       \
+                                                  \
+  vec->clear();                                   \
+                                                  \
+  if (m_buffer=="") {                             \
+    return rv;                                    \
+  }                                               \
+                                                  \
+  pos1=0;                                         \
+  while (1) {                                     \
+    pos2=m_buffer.find(sep,pos1);                 \
+    if (pos2==string::npos) {                     \
+      val=CONVERT_FUNC();                         \
+      vec->push_back(val);                        \
+      break;                                      \
+    } else {                                      \
+      val=CONVERT_FUNC();                         \
+      vec->push_back(val);                        \
+      pos1=pos2+1;                                \
+    }                                             \
+  }                                               \
+  return rv;
+
+int
+affx::TsvFileField::get(std::vector<int>* vec,char sep)
+{
+#define CONVERT_FUNC() strtol(&m_buffer[pos1],&pos_out,10)
+  TSV_SPLIT_VEC_BODY(int);
+#undef CONVERT_FUNC
+}
+int
+affx::TsvFileField::get(std::vector<float>* vec,char sep)
+{
+#define CONVERT_FUNC() (float)strtod(&m_buffer[pos1],&pos_out)
+  TSV_SPLIT_VEC_BODY(float);
+#undef CONVERT_FUNC
+}
+int
+affx::TsvFileField::get(std::vector<double>* vec,char sep)
+{
+#define CONVERT_FUNC() strtod(&m_buffer[pos1],&pos_out)
+  TSV_SPLIT_VEC_BODY(double);
+#undef CONVERT_FUNC
+}
+
+int
+affx::TsvFileField::get(std::vector<std::string>* vec,char sep)
+{
+  int rv=affx::TSV_OK;
+  string::size_type pos1;
+  string::size_type pos2;
+  std::string val;
+
+  vec->clear();
+
+  if (m_buffer=="") {
+    return rv;
+  }
+
+  pos1=0;
+  while (1) {
+    pos2=m_buffer.find(sep,pos1);
+    if (pos2==string::npos) {
+      val.assign(m_buffer,pos1,m_buffer.size()-pos1);
+      vec->push_back(val);
+      break;
+    } else {
+      val.assign(m_buffer,pos1,pos2-pos1);
+      vec->push_back(val);
+      pos1=pos2+1;
+    }
+  }
+
+  return rv;
+}
+
+//////////
+
+#define TSV_CONCAT_VEC_BODY() {                 \
+  if (vec.size()>0) {                           \
+    stream << vec[0];                           \
+    for (int i=1;i<vec.size();i++) {            \
+      stream << sep << vec[i];                  \
+    }                                           \
+  }                                             \
+  setBuffer(stream.str());                      \
+  return TSV_OK;                                \
+  }
+
+int
+affx::TsvFileField::set(const std::vector<std::string>& vec,char sep)
+{
+  std::ostringstream stream;
+  TSV_CONCAT_VEC_BODY();
+}
+int
+affx::TsvFileField::set(const std::vector<int>& vec,char sep)
+{
+  std::ostringstream stream;
+  TSV_CONCAT_VEC_BODY();
+}
+int
+affx::TsvFileField::set(const std::vector<float>& vec,char sep)
+{
+  std::ostringstream stream;
+  stream.setf(ios::fixed, ios::floatfield);
+  stream.precision(m_precision);
+  TSV_CONCAT_VEC_BODY();
+}
+int
+affx::TsvFileField::set(const std::vector<double>& vec,char sep)
+{
+  std::ostringstream stream;
+  stream.setf(ios::fixed, ios::floatfield);
+  stream.precision(m_precision);
+  TSV_CONCAT_VEC_BODY();
+}
+
+#undef TSV_CONCAT_VEC_BODY
 
 //////////
 
@@ -473,9 +663,34 @@ affx::TsvFileField::set(const std::string& val)
 int
 affx::TsvFileField::set(int val)
 {
-  std::ostringstream stream;
-  stream << val;
-  return setBuffer(stream.str());
+  m_value_int=val;
+  m_value_int_done=true;
+  m_value_int_rv=TSV_OK;
+  m_val_state=affx::VALSTATE_INT;
+  return TSV_OK;
+}
+
+#define TSV_CONVERT_FLOAT_BODY() {            \
+  std::ostringstream stream;                  \
+  stream.setf(ios::fixed, ios::floatfield);   \
+  stream.precision(m_precision);              \
+  stream << val;                              \
+  return setBuffer(stream.str());             \
+  }
+
+/// @brief     set the value of the buffer
+/// @param     val       the new value
+/// @return    tsv_return_t
+/// @todo      dont use ostringstream, use something faster
+int
+affx::TsvFileField::set(float val)
+{
+  //TSV_CONVERT_FLOAT_BODY();
+  m_value_double=val;
+  m_value_double_done=true;
+  m_value_double_rv=TSV_OK;
+  m_val_state=affx::VALSTATE_DOUBLE;
+  return affx::TSV_OK;
 }
 /// @brief     set the value of the buffer
 /// @param     val       the new value
@@ -484,12 +699,15 @@ affx::TsvFileField::set(int val)
 int
 affx::TsvFileField::set(double val)
 {
-  std::ostringstream stream;
-  stream.setf(ios::fixed, ios::floatfield);
-  stream.precision(m_precision);
-  stream << val;
-  return setBuffer(stream.str());
+  m_value_double=val;
+  m_value_double_done=true;
+  m_value_double_rv=affx::TSV_OK;
+  m_val_state=affx::VALSTATE_DOUBLE;
+  return affx::TSV_OK;
 }
+
+#undef TSV_CONVERT_FLOAT_BODY
+
 /// @brief     set the value of the buffer
 /// @param     val       the new value
 /// @return    tsv_return_t
@@ -497,6 +715,7 @@ affx::TsvFileField::set(double val)
 int
 affx::TsvFileField::set(unsigned int val)
 {
+  // not used as often, just convert it to a string now.
   std::ostringstream stream;
   stream << val;
   return setBuffer(stream.str());
@@ -508,6 +727,7 @@ affx::TsvFileField::set(unsigned int val)
 int
 affx::TsvFileField::set(uint64_t val)
 {
+  // not used as often, just convert it to a string now.
   std::ostringstream stream;
   stream << val;
   return setBuffer(stream.str());
@@ -541,22 +761,22 @@ affx::TsvFileField::linkedvars_assign(affx::TsvFile* tsvfile)
     if (var!=NULL) {
       // These are sorted by frequency of use.
       if (var->m_ptr_int!=NULL) {
-        rv=get(*var->m_ptr_int);
+        rv=get(var->m_ptr_int);
       }
       else if (var->m_ptr_string!=NULL) {
-        rv=get(*var->m_ptr_string);
+        rv=get(var->m_ptr_string);
       }
       else if (var->m_ptr_float!=NULL) {
-        rv=get(*var->m_ptr_float);
+        rv=get(var->m_ptr_float);
       }
       else if (var->m_ptr_double!=NULL) {
-        rv=get(*var->m_ptr_double);
+        rv=get(var->m_ptr_double);
       }
       else if (var->m_ptr_uint!=NULL) {
-        rv=get(*var->m_ptr_uint);
+        rv=get(var->m_ptr_uint);
       }
       else if (var->m_ptr_ulonglong!=NULL) {
-        rv=get(*var->m_ptr_ulonglong);
+        rv=get(var->m_ptr_ulonglong);
       }
       else {
         Err::errAbort(TSV_ERR_AT("Internal error: Binding does not have a pointer!"));
@@ -652,28 +872,28 @@ affx::TsvFileIndex::data_add(TsvFileField* field,linenum_t line)
   }
   if (m_kind==TSV_INDEX_INT) {
     int tmp_int;
-    if (field->get(tmp_int)==TSV_OK) {
+    if (field->get(&tmp_int)==TSV_OK) {
       m_index_int2line.insert(make_pair(tmp_int,line));
     }
     return;
   }
   if (m_kind==TSV_INDEX_DOUBLE) {
     double tmp_double;
-    if (field->get(tmp_double)==TSV_OK) {
+    if (field->get(&tmp_double)==TSV_OK) {
       m_index_double2line.insert(make_pair(tmp_double,line));
     }
     return;
   }
   if (m_kind==TSV_INDEX_UINT) {
     unsigned int tmp_uint;
-    if (field->get(tmp_uint)==TSV_OK) {
+    if (field->get(&tmp_uint)==TSV_OK) {
       m_index_uint2line.insert(make_pair(tmp_uint,line));
     }
     return;
   }
   if (m_kind==TSV_INDEX_ULONGLONG) {
     uint64_t tmp_ulonglong;
-    if (field->get(tmp_ulonglong)==TSV_OK) {
+    if (field->get(&tmp_ulonglong)==TSV_OK) {
       m_index_ulonglong2line.insert(make_pair(tmp_ulonglong,line));
     }
     return;
@@ -830,7 +1050,7 @@ affx::TsvFileHeaderLine::TsvFileHeaderLine()
 }
 
 /// @brief  Init the slots to the values given.
-affx::TsvFileHeaderLine::TsvFileHeaderLine(std::string key,std::string value,int order)
+affx::TsvFileHeaderLine::TsvFileHeaderLine(const std::string& key,const std::string& value,int order)
 {
   m_key=key;
   m_value=value;
@@ -877,7 +1097,7 @@ affx::TsvFile::TsvFile()
 /// @brief     Create, clear and open a tsvfile
 /// @param     filename
 /// @return    lvalue
-affx::TsvFile::TsvFile(std::string filename)
+affx::TsvFile::TsvFile(const std::string& filename)
 {
   clear();
   open(filename);
@@ -916,8 +1136,10 @@ affx::TsvFile::default_options()
   m_optAutoTrim=false;
   //m_optCommentChar='#';
   m_optDoQuote=false;
-  m_optEscapeChar='\\';
   m_optEscapeOk=true;
+  m_optEscapeChar='\\';
+  m_optQuoteChar1='\'';
+  m_optQuoteChar2='"';
   m_optFieldSep=TSV_CHAR_TAB;
   m_optHasColumnHeader=true;
   m_optQuoteChar='"';
@@ -925,6 +1147,13 @@ affx::TsvFile::default_options()
   m_optEndl=TSV_EOL;
   m_optLinkVarsOnOpen = true;
   m_headName = "header";
+  m_optPrecision=-1;
+}
+
+bool
+affx::TsvFile::eof()
+{
+  return m_eof;
 }
 
 /// @brief     What line did we just read? (external)
@@ -948,7 +1177,7 @@ affx::TsvFile::lineLevel()
 /// @param     filename
 /// @return
 int
-affx::TsvFile::setFilename(std::string filename)
+affx::TsvFile::setFilename(const std::string& filename)
 {
   m_fileName=filename;
   return TSV_OK;
@@ -969,6 +1198,7 @@ affx::TsvFile::clear()
   //
   m_lineLvl=0;
   m_lineNum=0;
+  m_eof=false;
   m_index_done=false;
   // now get rid of the column info.
   m_column_map.clear();
@@ -1150,7 +1380,7 @@ affx::TsvFile::f_getline(std::string& line)
     //c=m_fileStream.get();
     c=M_GETC();
     // eof?
-    if (!m_fileStream.good()) {
+    if ((c==TSV_CHAR_EOF)||!m_fileStream.good()) {
       break;
     }
     // LF ends a line
@@ -1227,7 +1457,7 @@ affx::TsvFile::nextHeaderPtr()
 /// @param     val       value of the header matched
 /// @return
 int
-affx::TsvFile::headersFindNext(std::string key,std::string& val)
+affx::TsvFile::headersFindNext(const std::string& key,std::string& val)
 {
   // if the key is different that the last, do an implicit begin
   if (key!=m_headers_curkey_string) {
@@ -1284,7 +1514,7 @@ affx::TsvFile::headersCount()
 /// @param     key       the key to check
 /// @return    tsv_return_t
 int
-affx::TsvFile::headerKeyLegal(std::string key)
+affx::TsvFile::headerKeyLegal(const std::string& key)
 {
   // We dont allow '=' in the key
   if (key.find('=')!=std::string::npos) {
@@ -1358,7 +1588,7 @@ affx::TsvFile::addHeader(const std::string& key,double val)
 /// @param     order     sort order
 /// @return    tsv_error_t
 int
-affx::TsvFile::addHeaderComment(std::string comment,int order)
+affx::TsvFile::addHeaderComment(const std::string& comment,int order)
 {
   return addHeader_nocheck("",comment,order);
 }
@@ -1368,7 +1598,7 @@ affx::TsvFile::addHeaderComment(std::string comment,int order)
 /// @return    tsv_error_t
 /// @remarks   sort order defaults to order added
 int
-affx::TsvFile::addHeaderComment(std::string comment)
+affx::TsvFile::addHeaderComment(const std::string& comment)
 {
   return addHeader_nocheck("",comment,(int)m_headers_vec.size());
 }
@@ -1381,6 +1611,20 @@ int
 affx::TsvFile::addHeader_nocheck(const std::string& key,const std::string& val)
 {
   return addHeader_nocheck(key,val,(int)m_headers_vec.size());
+}
+
+/// @brief     Writes a comment directly to the file.
+/// @param     comment
+/// @return    tsv_error_t
+int
+affx::TsvFile::writeFileComment(const std::string& comment)
+{
+  if (!m_fileStream.good()) {
+    Err::errAbort("TsvFile: File is not writeable.");
+  }
+  m_fileStream << TSV_STRING_COMMENT << comment << m_optEndl;
+  //
+  return TSV_OK;
 }
 
 /// @brief     Add a header to the TSV without checking to see if it is legal
@@ -1414,7 +1658,7 @@ affx::TsvFile::addHeadersFrom(affx::TsvFile& f_tsv,int flags)
 /// @param     flags     which kind of headers to add (TSV_ADD_COMMENTS,TSV_ADD_KEYS)
 /// @return    tsv_error_t
 int
-affx::TsvFile::addHeadersFrom(affx::TsvFile& f_tsv,std::string prefix,int flags)
+affx::TsvFile::addHeadersFrom(affx::TsvFile& f_tsv,const std::string& prefix,int flags)
 {
   string key;
   string val;
@@ -1440,7 +1684,9 @@ affx::TsvFile::addHeadersFrom(affx::TsvFile& f_tsv,std::string prefix,int flags)
 /// @param     key_vec   vector of keys to add
 /// @return    tsv_error_t
 int
-affx::TsvFile::addHeadersFrom(affx::TsvFile& f_tsv,std::string prefix,std::vector<std::string>& key_vec)
+affx::TsvFile::addHeadersFrom(affx::TsvFile& f_tsv,
+                              const std::string& prefix,
+                              std::vector<std::string>& key_vec)
 {
   string val;
 
@@ -1596,11 +1842,9 @@ affx::TsvFile::f_read_header_v1()
     // Dont autosense if there are both separators present.
     if ((colname_tab_vec.size()==1)&&(colname_comma_vec.size()>0)) {
       m_optFieldSep=',';
-      //printf("commas\n");
     }
     if ((colname_comma_vec.size()==1)&&(colname_tab_vec.size()>0)) {
       m_optFieldSep='\t';
-      //printf("tabs\n");
     }
   }
 
@@ -1730,13 +1974,27 @@ affx::TsvFile::headers_to_fields_v2()
 
 //////////
 
+
+/// @brief     Define a column with a
+/// @param     clvl
+/// @param     cidx
+/// @param     cname
+/// @param     ctype
+/// @return
+int affx::TsvFile::defineColumn(int clvl,int cidx,const std::string& cname)
+{
+  return defineColumn(clvl,cidx,cname,TSV_TYPE_UNKNOWN);
+}
+
 /// @brief     record the mapping of column names (cname) to column indexes (cidx).
 /// @param     clvl      column level the mapping is for
 /// @param     cidx      position the column is at
 /// @param     cname     name of the column
 /// @remarks   resizes the maps as needed
+
+
 int
-affx::TsvFile::defineColumn(int clvl,int cidx,std::string cname)
+affx::TsvFile::defineColumn(int clvl,int cidx,const std::string& cname,tsv_type_t ctype)
 {
   if (clvl<0) {
     return (TSV_ERR_NOTFOUND);
@@ -1754,9 +2012,15 @@ affx::TsvFile::defineColumn(int clvl,int cidx,std::string cname)
   m_column_map[clvl][cidx].m_clvl=clvl;
   m_column_map[clvl][cidx].m_cidx=cidx;
   m_column_map[clvl][cidx].m_cname=cname;
+  m_column_map[clvl][cidx].m_ctype=ctype;
   // map cname to cidx
   cnametocidx_map[clvl][cname]=cidx;
 
+  // default precision if set
+  if (m_optPrecision>=0) {
+    m_column_map[clvl][cidx].setPrecision(m_optPrecision);
+  }
+  
   return (TSV_OK);
 }
 
@@ -1857,7 +2121,7 @@ affx::TsvFile::clvlcidx2colptr(int clvl,int cidx) {
 /// @param     cname     name of column
 /// @return    NULL if not found
 TsvFileField*
-affx::TsvFile::clvlcidx2colptr(int clvl,std::string cname) {
+affx::TsvFile::clvlcidx2colptr(int clvl,const std::string& cname) {
   return clvlcidx2colptr(clvl,cname2cidx(clvl,cname));
 }
 
@@ -1875,6 +2139,14 @@ affx::TsvFile::cidx2cname(int clvl,int cidx,std::string& cname)
   }
   cname=colptr->m_cname;
   return TSV_OK;
+}
+
+std::string
+affx::TsvFile::getColumnName(int clvl,int cidx)
+{
+  std::string cname;
+  cidx2cname(clvl,cidx,cname);
+  return cname;
 }
 
 int
@@ -1899,7 +2171,7 @@ affx::TsvFile::setPrecision(int clvl,const std::string& cname,int places)
 /// @param     fname     name of file to open
 /// @return    TSV_OK or an error
 int
-affx::TsvFile::open(std::string fname)
+affx::TsvFile::open(const std::string& fname)
 {
   int rv;
 
@@ -1967,7 +2239,7 @@ affx::TsvFile::open(std::string fname)
 /// @param     fname
 /// @return
 int
-affx::TsvFile::openTable(std::string fname)
+affx::TsvFile::openTable(const std::string& fname)
 {
   m_optHasColumnHeader=false;
   m_optAutoColumns=true;
@@ -1979,7 +2251,7 @@ affx::TsvFile::openTable(std::string fname)
 /// @param     fname
 /// @return
 int
-affx::TsvFile::openCsv(std::string fname)
+affx::TsvFile::openCsv(const std::string& fname)
 {
   m_optAutoColumns=true;
   m_optAutoDequote=true;
@@ -2191,14 +2463,16 @@ affx::TsvFile::f_read_column(TsvFileField* col)
       c=unescapechar(c);
     }
     // start or end of quotes?
-    else if ((c=='\'')||(c=='\"')) {
-      if (in_quotes==0) { // open
-        in_quotes=c;
+    else if (((c==m_optQuoteChar1)&&(m_optQuoteChar1!=0))||
+             ((c==m_optQuoteChar2)&&(m_optQuoteChar2!=0))) 
+      {
+        if (in_quotes==0) { // open
+          in_quotes=c;
+        }
+        else if (c==in_quotes) { // close
+          in_quotes=0;
+        }
       }
-      else if (c==in_quotes) { // close
-        in_quotes=0;
-      }
-    }
     else if ((m_optFieldSep==c)&&(in_quotes==0)) {
       col->m_buffer.resize(bi); // trunc the buffer to size.
       break; // discard the field-sep-char
@@ -2272,6 +2546,11 @@ affx::TsvFile::f_read_columns(int line_clvl)
   f_advance_eol();
 
   return TSV_OK;
+}
+
+std::fstream::pos_type affx::TsvFile::line_fpos()
+{
+  return m_line_fpos; ///< Where the current line starts
 }
 
 //////////
@@ -2449,7 +2728,7 @@ affx::TsvFile::unbindAll()
 //////////
 
 /// macro to define code
-#define TSV_DEFUN_BIND(Xtype,Xfield) \
+#define TSV_BIND_FUNC(Xtype,Xfield) \
 int \
 affx::TsvFile::bind(int clvl,int cidx,Xtype* ptr,tsv_bindopt_t flags,int interncache_size) \
 { \
@@ -2482,15 +2761,15 @@ affx::TsvFile::bind(int clvl,const std::string& cname,Xtype* ptr,tsv_bindopt_t f
 }
 
 // Expand the above
-TSV_DEFUN_BIND(std::string,m_ptr_string);
-TSV_DEFUN_BIND(int,m_ptr_int);
-TSV_DEFUN_BIND(double,m_ptr_double);
-TSV_DEFUN_BIND(float,m_ptr_float);
-TSV_DEFUN_BIND(unsigned int,m_ptr_uint);
-TSV_DEFUN_BIND(uint64_t,m_ptr_ulonglong);
+TSV_BIND_FUNC(std::string,m_ptr_string);
+TSV_BIND_FUNC(int,m_ptr_int);
+TSV_BIND_FUNC(double,m_ptr_double);
+TSV_BIND_FUNC(float,m_ptr_float);
+TSV_BIND_FUNC(unsigned int,m_ptr_uint);
+TSV_BIND_FUNC(uint64_t,m_ptr_ulonglong);
 
 // dont need this any more.
-#undef TSV_DEFUN_BIND
+#undef TSV_BIND_FUNC
 
 //////////
 
@@ -2505,8 +2784,10 @@ affx::TsvFile::rewind()
   //
   m_lineLvl=0;
   m_lineNum=0;
+  m_eof=false;
   //
   if (!m_fileStream.good()) {
+    m_eof=true;
     return (TSV_ERR_FILEIO);
   }
   return TSV_OK;
@@ -2524,6 +2805,7 @@ affx::TsvFile::nextLine()
   // some sort of error or eof?
   //if ((!m_fileStream.good())||(m_fileStream.peek()==EOF)) {
   if ((!m_fileStream.good())||(M_PEEK()==EOF)) {
+    m_eof=true;
     return (TSV_ERR_FILEIO);
   }
 
@@ -2556,6 +2838,8 @@ affx::TsvFile::nextLevel(int seek_clvl)
   // Read lines until we find a line of the correct level.
   while (1) {
     if (!m_fileStream.good()) {
+      clearFields();
+      m_eof=true;
       return (TSV_ERR_FILEIO);
     }
     c = M_PEEK();
@@ -2566,6 +2850,7 @@ affx::TsvFile::nextLevel(int seek_clvl)
       return TSV_LEVEL_LAST;
     }
     else if (c == EOF) {
+      clearFields();
       return TSV_ERR_EOF;
     }
 
@@ -2597,13 +2882,169 @@ affx::TsvFile::nextLevel(int seek_clvl)
 
 //////////
 
+
+
+/// @brief     Read a couple of lines of the TsvFile and figure out the types.
+/// @return
+int
+affx::TsvFile::deduce_types()
+{
+  std::vector<int> clvl_seen;
+  int clvl_seen_cnt;
+  int clvl_max;
+  int clvl;
+  int cidx_max;
+  int cidx;
+
+  // start from the beginning.
+  rewind();
+
+  //
+  clvl_seen.resize(getLevelCount(),0);
+  clvl_seen_cnt=0;
+  clvl_max=getLevelCount();
+
+  while (nextLine()==affx::TSV_OK) {
+    clvl=lineLevel();
+    // skip if we have done this level already...
+    if (clvl_seen[clvl]==1) {
+      continue;
+    }
+    // mark being seen.
+    clvl_seen[clvl]=1;
+    clvl_seen_cnt++;
+
+    // scan the columns
+    cidx_max=getColumnCount(clvl);
+    for (cidx=0;cidx<cidx_max;cidx++) {
+      // set type from value
+      int tmp_int;
+      double tmp_double;
+      std::string tmp_string;
+      if (get(clvl,cidx,tmp_int)==affx::TSV_OK) {
+        set_type(clvl,cidx,affx::TSV_TYPE_INT);
+      }
+      else if (get(clvl,cidx,tmp_double)==affx::TSV_OK) {
+        set_type(clvl,cidx,affx::TSV_TYPE_DOUBLE);
+      }
+      else if (get(clvl,cidx,tmp_string)==affx::TSV_OK) {
+        set_type(clvl,cidx,affx::TSV_TYPE_STRING);
+      }
+      else {
+        set_type(clvl,cidx,affx::TSV_TYPE_UNKNOWN);
+      }
+    }
+      // all levels seen?
+    if (clvl_seen_cnt==clvl_max) {
+      break;
+    }
+  }
+
+  // rewind and return
+  rewind();
+  return 0;
+}
+
+
+int
+affx::TsvFile::deduce_sizes()
+{
+  // reset the sizes
+  for (unsigned int clvl=0;clvl<m_column_map.size();++clvl) {
+    for (unsigned int cidx=0;cidx<m_column_map[clvl].size();cidx++) {
+      m_column_map[clvl][cidx].m_max_size=0;
+    }
+  }
+
+  // start from the beginning.
+  rewind();
+
+  TsvFileField* col;
+  unsigned int clvl;
+  //
+  while (nextLine()==affx::TSV_OK) {
+    clvl=lineLevel();
+    // scan the columns
+    int cidx_max=getColumnCount(clvl);
+    for (int cidx=0;cidx<cidx_max;cidx++) {
+      col=&m_column_map[clvl][cidx];
+      int col_cur_size=col->m_buffer.size();
+      if (col_cur_size>col->m_max_size) {
+        col->m_max_size=col_cur_size;
+      }
+    }
+  }
+
+  // rewind and return
+  rewind();
+  return 0;
+}
+
+/// @brief     Return the declared type of this column
+/// @param     clvl
+/// @param     cname
+/// @return
+affx::tsv_type_t
+affx::TsvFile::get_type(int clvl,const std::string& cname)
+{
+  TsvFileField* col=clvlcidx2colptr(clvl,cname);
+  if (col==NULL) {
+    return (TSV_TYPE_ERR);
+  }
+  return col->get_type();
+}
+
+/// @brief     Return the declared type of this column
+/// @param     clvl
+/// @param     cidx
+/// @return
+affx::tsv_type_t
+affx::TsvFile::get_type(int clvl,int cidx)
+{
+  TsvFileField* col=clvlcidx2colptr(clvl,cidx);
+  if (col==NULL) {
+    return (TSV_TYPE_ERR);
+  }
+  return col->get_type();
+}
+
+/// @brief     Return the declared type of this column
+/// @param     clvl
+/// @param     cname
+/// @return
+affx::tsv_type_t
+affx::TsvFile::set_type(int clvl,const std::string& cname,affx::tsv_type_t type)
+{
+  TsvFileField* col=clvlcidx2colptr(clvl,cname);
+  if (col==NULL) {
+    return (TSV_TYPE_ERR);
+  }
+  return col->set_type(type);
+}
+
+/// @brief     Return the declared type of this column
+/// @param     clvl
+/// @param     cidx
+/// @return
+affx::tsv_type_t
+affx::TsvFile::set_type(int clvl,int cidx,affx::tsv_type_t type)
+{
+  TsvFileField* col=clvlcidx2colptr(clvl,cidx);
+  if (col==NULL) {
+    return (TSV_TYPE_ERR);
+  }
+  return col->set_type(type);
+}
+
+//////////
+
 //! Handy snippet of code.
 #define TSV_GET_VALUE_CIDX() \
   TsvFileField* col=clvlcidx2colptr(clvl,cidx); \
   if ((col==NULL)||(col->isNull())) { \
     return (TSV_ERR_NOTFOUND); \
   } \
-  return col->get(val);
+  return col->get(&val);
 
 /// @brief     Get the string value of a field
 /// @param     clvl      The column level level of field
@@ -2676,7 +3117,7 @@ affx::TsvFile::get(int clvl,int cidx,uint64_t& val)
   if ((col==NULL)||(col->isNull())) { \
     return (TSV_ERR_NOTFOUND); \
   } \
-  return col->get(val);
+  return col->get(&val);
 
 /// @brief     Get the string value of a field
 /// @param     clvl      The column level level of field
@@ -2684,7 +3125,7 @@ affx::TsvFile::get(int clvl,int cidx,uint64_t& val)
 /// @param     val       The string in which to store the value
 /// @return    a tsv_return_t code
 int
-affx::TsvFile::get(int clvl,std::string cname,std::string& val)
+affx::TsvFile::get(int clvl,const std::string& cname,std::string& val)
 {
   TSV_GET_VALUE_CNAME();
 }
@@ -2695,7 +3136,7 @@ affx::TsvFile::get(int clvl,std::string cname,std::string& val)
 /// @param     val       The integer in which to store the value
 /// @return    a tsv_return_t code
 int
-affx::TsvFile::get(int clvl,std::string cname,int& val)
+affx::TsvFile::get(int clvl,const std::string& cname,int& val)
 {
   TSV_GET_VALUE_CNAME();
 }
@@ -2705,7 +3146,7 @@ affx::TsvFile::get(int clvl,std::string cname,int& val)
 /// @param     val       The double in which to store the value
 /// @return    a tsv_return_t code
 int
-affx::TsvFile::get(int clvl,std::string cname,double& val)
+affx::TsvFile::get(int clvl,const std::string& cname,double& val)
 {
   TSV_GET_VALUE_CNAME();
 }
@@ -2716,7 +3157,7 @@ affx::TsvFile::get(int clvl,std::string cname,double& val)
 /// @param     val       The float in which to store the value
 /// @return    a tsv_return_t code
 int
-affx::TsvFile::get(int clvl,std::string cname,float& val)
+affx::TsvFile::get(int clvl,const std::string& cname,float& val)
 {
   TSV_GET_VALUE_CNAME();
 }
@@ -2727,7 +3168,7 @@ affx::TsvFile::get(int clvl,std::string cname,float& val)
 /// @param     val       The integer in which to store the value
 /// @return    a tsv_return_t code
 int
-affx::TsvFile::get(int clvl,std::string cname,unsigned int& val)
+affx::TsvFile::get(int clvl,const std::string& cname,unsigned int& val)
 {
   TSV_GET_VALUE_CNAME();
 }
@@ -2738,7 +3179,7 @@ affx::TsvFile::get(int clvl,std::string cname,unsigned int& val)
 /// @param     val       The integer in which to store the value
 /// @return    a tsv_return_t code
 int
-affx::TsvFile::get(int clvl,std::string cname,uint64_t& val)
+affx::TsvFile::get(int clvl,const std::string& cname,uint64_t& val)
 {
   TSV_GET_VALUE_CNAME();
 }
@@ -2748,67 +3189,95 @@ affx::TsvFile::get(int clvl,std::string cname,uint64_t& val)
 
 //////////
 
+#define TSV_GET_VEC_BODY()                       \
+  TsvFileField* col=clvlcidx2colptr(clvl,cidx);  \
+  if ((col==NULL)||(col->isNull())) {            \
+    return (TSV_ERR_NOTFOUND);                   \
+  }                                              \
+  return col->get(vec,sep)
+
+#define TSV_GET_VEC_FUNC(TYPE)                  \
+  int                                                                 \
+  affx::TsvFile::get(int clvl,int cidx,std::vector<TYPE>* vec,char sep) \
+  {                                                                     \
+    TSV_GET_VEC_BODY();                                                 \
+  }                                                                     \
+  int                                                                   \
+  affx::TsvFile::get(int clvl,const std::string& cidx,std::vector<TYPE>* vec,char sep) \
+  {                                                                     \
+    TSV_GET_VEC_BODY();                                                 \
+  }
+
+TSV_GET_VEC_FUNC(std::string);
+TSV_GET_VEC_FUNC(int);
+TSV_GET_VEC_FUNC(float);
+TSV_GET_VEC_FUNC(double);
+
+#undef TSV_GET_VEC_BODY
+#undef TSV_GET_VEC_FUNC
+
+//////////
+
 /// Handy code to get the value of a column
-#define TSV_SET_VALUE() \
+#define TSV_SET_VALUE_BODY()                    \
   TsvFileField* col=clvlcidx2colptr(clvl,cidx); \
-  if (col==NULL) { \
-    return (TSV_ERR_NOTFOUND); \
-  } \
+  if (col==NULL) {                              \
+    return (TSV_ERR_NOTFOUND);                  \
+  }                                             \
   return col->set(val);
 
-int
-affx::TsvFile::set(int clvl,int cidx,std::string val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,int cidx,int val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,int cidx,double val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,int cidx,unsigned int val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,int cidx,uint64_t val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,std::string cidx,std::string val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,std::string cidx,int val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,std::string cidx,double val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,std::string cidx,unsigned int val)
-{
-  TSV_SET_VALUE();
-}
-int
-affx::TsvFile::set(int clvl,std::string cidx,uint64_t val)
-{
-  TSV_SET_VALUE();
-}
+#define TSV_SET_VALUE_FUNC(TYPE)                \
+  int                                           \
+  affx::TsvFile::set(int clvl,int cidx,TYPE val)  \
+  {                                               \
+    TSV_SET_VALUE_BODY();                         \
+  }                                               \
+  int                                                                   \
+  affx::TsvFile::set(int clvl,const std::string& cidx,TYPE val) \
+  {                                                                     \
+    TSV_SET_VALUE_BODY();                                               \
+  }
+
+//
+TSV_SET_VALUE_FUNC(const std::string&)
+TSV_SET_VALUE_FUNC(int)
+TSV_SET_VALUE_FUNC(unsigned int)
+TSV_SET_VALUE_FUNC(float)
+TSV_SET_VALUE_FUNC(double)
+TSV_SET_VALUE_FUNC(uint64_t)
 
 // dont need it any more.
-#undef TSV_SET_VALUE
+#undef TSV_SET_VALUE_BODY
+#undef TSV_SET_VALUE_FUNC
+
+//// Macros for vectors of data.
+#define TSV_SET_VEC_BODY()                      \
+  TsvFileField* col=clvlcidx2colptr(clvl,cidx); \
+  if (col==NULL) {                              \
+    return (TSV_ERR_NOTFOUND);                  \
+  }                                             \
+  return col->set(vec,sep);
+
+#define TSV_SET_VEC_FUNC(TYPE)                                                \
+  int                                                                         \
+  affx::TsvFile::set(int clvl,int cidx,const std::vector<TYPE>& vec,char sep) \
+  {                                                                     \
+    TSV_SET_VEC_BODY()                                                  \
+  }                                                                     \
+  int                                                                   \
+  affx::TsvFile::set(int clvl,const std::string& cidx,const std::vector<TYPE>& vec,char sep) \
+  {                                                                     \
+    TSV_SET_VEC_BODY()                                                  \
+  }
+
+// define them.
+TSV_SET_VEC_FUNC(std::string)
+TSV_SET_VEC_FUNC(int);
+TSV_SET_VEC_FUNC(float);
+TSV_SET_VEC_FUNC(double);
+
+#undef TSV_SET_VEC_BODY
+#undef TSV_SET_VEC_FUNC
 
 //////////
 
@@ -2958,7 +3427,7 @@ affx::TsvFile::index_alloc()
 /// @return    TSV_OK
 /// @remark    The indexing is not done until it is actually needed
 int
-affx::TsvFile::defineIndex(int clvl,std::string cname,int kind,int flags)
+affx::TsvFile::defineIndex(int clvl,const std::string& cname,int kind,int flags)
 {
   TsvFileIndex* idx=index_alloc();
   idx->m_bindto_type=TSV_BINDTO_CNAME;
@@ -3062,6 +3531,21 @@ affx::TsvFile::gotoLine(linenum_t line)
   }
 
   return TSV_OK;
+}
+
+void affx::TsvFile::currentLineAsString(std::string& line)
+{
+  for (int t=0;t<m_lineLvl;t++) {
+    line.append("\t");
+  }
+  //
+  for (int c_idx=0;c_idx<m_column_map[m_lineLvl].size();c_idx++) {
+    if (c_idx!=0) {
+      line.append("\t");
+    }
+    line.append(m_column_map[m_lineLvl][c_idx].m_buffer);
+  }
+  line.append("\n");
 }
 
 /// @brief     build the indexes for a file
@@ -3315,6 +3799,8 @@ TSV_DEFUN_FIND_BEGIN(std::string,unsigned int);
 TSV_DEFUN_FIND_BEGIN(int        ,uint64_t);
 TSV_DEFUN_FIND_BEGIN(std::string,uint64_t);
 
+#undef TSV_DEFUN_FIND_BEGIN
+
 //////////
 
 /// @brief     Return the count of found lines.
@@ -3343,7 +3829,7 @@ affx::TsvFile::findNext()
 /// @param     definition
 /// @return    tsv_return_t
 int
-affx::TsvFile::defineFile(std::string definition)
+affx::TsvFile::defineFile(const std::string& definition)
 {
   // clear out the old state
   clear();
@@ -3358,7 +3844,7 @@ affx::TsvFile::defineFile(std::string definition)
 ///          and "," to add options to the field name.
 ///          at the moment there arent any options.
 int
-affx::TsvFile::defineFileParse(std::string definition)
+affx::TsvFile::defineFileParse(const std::string& definition)
 {
   std::vector<std::string> split_line;
   std::vector<std::string> split_col;
@@ -3558,11 +4044,10 @@ affx::TsvFile::writeCsv(const std::string& filename)
 /// @return    tsv_return_t
 /// @remarks   Once open, set the values with "tsv->set(lvl,col,val)" and
 ///            write them with "tsv->writeLevel(lvl)".
-///            This function could be called "writeTsv_v2"
 ///            If you want to define your own format, you can cobble it up from:
 ///            writeOpen, setting the options, and the writeHeaders().
 int
-affx::TsvFile::writeTsv(const std::string& filename)
+affx::TsvFile::writeTsv_v2(const std::string& filename)
 {
   int rv;
   if ((rv=writeOpen(filename))!=TSV_OK) {
@@ -3573,6 +4058,16 @@ affx::TsvFile::writeTsv(const std::string& filename)
 
   //
   return TSV_OK;
+}
+
+/// @brief     open the file for writing in "v2" format.
+/// @param     filename
+/// @return    tsv_error_t
+int
+affx::TsvFile::writeTsv(const std::string& filename)
+{
+  // default to "v2" format.
+  return writeTsv_v2(filename);
 }
 
 /// @brief     Write a level of data to the file.
@@ -3592,19 +4087,49 @@ affx::TsvFile::writeLevel(int clvl)
 
   size_t cidx_size=(int)m_column_map[clvl].size();
   size_t cidx_size_1=cidx_size-1;
+  int last_precision=-1;
   for (size_t cidx=0;cidx<cidx_size;cidx++) {
-    write_str(m_column_map[clvl][cidx].m_buffer);
+    TsvFileField* col=&m_column_map[clvl][cidx];
+    //
+    if (m_optDoQuote==true) {
+      m_fileStream<<m_optQuoteChar;
+    }
+    // using the state, pick an output method.
+    if (col->m_val_state==affx::VALSTATE_STRING) {
+      m_fileStream << col->m_buffer;
+    }
+    else if (col->m_val_state==affx::VALSTATE_DOUBLE) {
+      // change in precision?
+      if (last_precision!=col->m_precision) {
+        m_fileStream.setf(ios::fixed, ios::floatfield);
+        m_fileStream.precision(col->m_precision);
+        last_precision=col->m_precision;
+      }
+      m_fileStream << col->m_value_double;
+    }
+    else if (col->m_val_state==affx::VALSTATE_INT) {
+      m_fileStream << col->m_value_int;
+    }
+    else {
+      Err::errAbort("TsvFile::writeLevel(): internal error.");
+    }
+    //
+    if (m_optDoQuote==true) {
+      m_fileStream<<m_optQuoteChar;
+    }
+    //
     if (cidx<cidx_size_1) {
       m_fileStream << m_optFieldSep;
     }
   }
   m_fileStream << m_optEndl;
 
+  // 
   if (!m_fileStream.good()) {
-    assert(0); // barf for now
+    Err::errAbort("TsvFile::writeLevel(): bad filestream.");
     return (TSV_ERR_FILEIO);
   }
-
+  
   return TSV_OK;
 }
 
@@ -3638,4 +4163,48 @@ affx::TsvFile::copyLevel(affx::TsvFile& f_tsv,int clvl)
     return TSV_OK;
   }
   return (TSV_ERR_NOTFOUND);
+}
+
+int
+affx::TsvFile::extractColToVec(const std::string& fileName,
+                               const std::string& colName,
+                               std::vector<std::string>* vec,
+                               int flags)
+{
+  affx::TsvFile tsv;
+  int col_idx;
+  std::string tmp_str;
+
+  vec->clear();
+
+  if (tsv.open(fileName)!=TSV_OK) {
+    Err::errAbort("Cant open: '" +fileName+"'");
+  }
+  if (flags!=0) {
+    tsv.m_optEscapeOk=false;
+  }
+
+  col_idx=tsv.cname2cidx(0,colName);
+  if (col_idx<0) {
+    Err::errAbort("TsvFile::extractColToVec: column '"+colName+"'"+
+                  " not found in file '"+fileName+"'");
+  }  
+
+  while(tsv.nextLevel(0)==TSV_OK) {
+    if (tsv.get(0,col_idx,tmp_str)!=TSV_OK) {
+      Err::errAbort("TsvFile::extractColToVec: Problem reading '"+colName+"'"+
+                    " from '"+fileName+"'");
+    }
+    vec->push_back(tmp_str);
+  }
+  tsv.close();
+  //
+  return TSV_OK;
+}
+
+int
+affx::TsvFile::setPrecision(int p)
+{
+  m_optPrecision=p;
+  return TSV_OK;
 }

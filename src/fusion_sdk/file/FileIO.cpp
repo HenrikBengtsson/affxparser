@@ -18,10 +18,13 @@
 ////////////////////////////////////////////////////////////////
 
 //
+//
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+//
 
 //////////////////////////////////////////////////////////////////////
 
@@ -35,7 +38,9 @@
 #endif
 
 // Include winsock2.h before these
-#include "FileIO.h"
+#include "file/FileIO.h"
+#include "util/Convert.h"
+#include "util/Err.h"
 #include "portability/affy-base-types.h"
 
 // Some machines (sparc) dont support unaligned memory access
@@ -182,6 +187,14 @@ ReadCString_I(IFSTREAM& instr, char*& str)
   instr.read(str,slen);
   // ensure null -- this replaces the last char read.
   str[slen]=0; 
+}
+void
+ReadCString_I(IFSTREAM& instr,std::string& str)
+{
+  uint32_t slen;
+  ReadUInt32_I(instr,slen);
+  str.resize(slen);
+  instr.read(&str[0],slen);
 }
 
 void
@@ -555,4 +568,262 @@ MmSetFloat_N(float* ptr,float val)
 {
   MmSetUInt32_N((uint32_t*)ptr,*(uint32_t*)&val);
 }
+#endif
+
+
+//////////
+
+
+
+//
+// FILE* of the above
+//
+
+#ifdef FILEIO_WITH_STDIO
+
+void
+ReadUInt32_I(FILE* file, uint32_t& val) 
+{
+  uint32_t v=0;
+  fread(&v,sizeof(v),1,file);
+  val=itohl(v);
+}
+void
+ReadInt32_I(FILE* file,int32_t& val) 
+{
+  ReadUInt32_I(file,(uint32_t&)val);
+}
+void
+ReadFloat_I(FILE* file,float& val) 
+{
+  ReadUInt32_I(file,(uint32_t&)val);
+}
+//
+void
+ReadUInt16_I(FILE* file, uint16_t& val) 
+{
+  uint16_t v=0;
+  fread(&v,sizeof(v),1,file);
+  val=itohs(v);
+}
+void
+ReadInt16_I(FILE* file,int16_t& val) 
+{
+  ReadUInt16_I(file,(uint16_t&)val);
+}
+
+//====================
+//
+// No byte swapping needed for bytes
+//
+void
+ReadUInt8(FILE* file, uint8_t& val) 
+{
+  fread((char*)&val,sizeof(val),1,file);
+}
+void
+ReadInt8(FILE* file,int8_t& val) 
+{
+  ReadUInt8(file,(uint8_t&)val);
+}
+
+//====================
+//
+// Network (big-endian) byte order
+//
+void
+ReadUInt32_N(FILE* file, uint32_t& val) 
+{
+  uint32_t v=0;
+  fread(&v,sizeof(v),1,file);
+  val=ntohl(v);
+}
+void
+ReadInt32_N(FILE* file,int32_t& val) 
+{
+  ReadUInt32_N(file,(uint32_t&)val);
+}
+void
+ReadFloat_N(FILE* file,float& val) 
+{
+  ReadUInt32_N(file,(uint32_t&)val);
+}
+//
+void
+ReadUInt16_N(FILE* file, uint16_t& val) 
+{
+  uint16_t v=0;
+  fread((char*)&v,sizeof(v),1,file);
+  val=ntohs(v);
+}
+void
+ReadInt16_N(FILE* file, int16_t& val) 
+{
+  ReadUInt16_N(file,(uint16_t&)val);
+}
+
+void
+ReadCString_I(FILE* file, char*& str)
+{
+  uint32_t slen;
+  ReadUInt32_I(file,slen);
+  str=new char[slen+1];
+  fread(str,slen,1,file);
+  str[slen]=0; 
+}
+
+void
+ReadCString_I(FILE* file,std::string& str)
+{
+  uint32_t slen;
+  ReadUInt32_I(file,slen);
+  str.resize(slen);
+  fread(&str[0],slen,1,file);
+}
+
+#endif
+
+#ifdef FILEIO_WITH_ZLIB
+
+void
+ReadUInt32_I(gzFile gzfile, uint32_t& val) 
+{
+  uint32_t v=0;
+  int cnt=gzread(gzfile,&v,sizeof(v));
+  if (cnt!=sizeof(v)) {
+    Err::errAbort("ReadUInt32_I: bad read.");
+  }
+  val=itohl(v);
+  // printf("ReadUInt32_I(%p)==%d\n",gzfile,val);
+}
+void
+ReadInt32_I(gzFile gzfile,int32_t& val) 
+{
+  ReadUInt32_I(gzfile,(uint32_t&)val);
+}
+void
+ReadFloat_I(gzFile gzfile,float& val) 
+{
+  ReadUInt32_I(gzfile,(uint32_t&)val);
+}
+//
+void
+ReadUInt16_I(gzFile gzfile, uint16_t& val) 
+{
+  uint16_t v=0;
+  int cnt=gzread(gzfile,&v,sizeof(v));
+  if (cnt!=sizeof(v)) {
+    Err::errAbort("ReadUInt16_I: bad read.");
+  }
+  val=itohs(v);
+}
+void
+ReadInt16_I(gzFile gzfile,int16_t& val) 
+{
+  ReadUInt16_I(gzfile,(uint16_t&)val);
+}
+
+//====================
+//
+// No byte swapping needed for bytes
+//
+void
+ReadUInt8(gzFile gzfile, uint8_t& val) 
+{
+  int cnt=gzread(gzfile,(char*)&val,sizeof(val));
+  if (cnt!=sizeof(val)) {
+    Err::errAbort("ReadUInt8: bad read.");
+  }
+}
+void
+ReadInt8(gzFile gzfile,int8_t& val) 
+{
+  ReadUInt8(gzfile,(uint8_t&)val);
+}
+
+//====================
+//
+// Network (big-endian) byte order
+//
+void
+ReadUInt32_N(gzFile gzfile, uint32_t& val) 
+{
+  uint32_t v=0;
+  int cnt=gzread(gzfile,&v,sizeof(v));
+  if (cnt!=sizeof(v)) {
+    Err::errAbort("ReadUInt32_N: bad read.");
+  }
+  val=ntohl(v);
+}
+void
+ReadInt32_N(gzFile gzfile,int32_t& val) 
+{
+  ReadUInt32_N(gzfile,(uint32_t&)val);
+}
+void
+ReadFloat_N(gzFile gzfile,float& val) 
+{
+  ReadUInt32_N(gzfile,(uint32_t&)val);
+}
+//
+void
+ReadUInt16_N(gzFile gzfile, uint16_t& val) 
+{
+  uint16_t v=0;
+  int cnt=gzread(gzfile,&v,sizeof(v));
+  if (cnt!=sizeof(v)) {
+    Err::errAbort("ReadUInt16_N: bad read.");    
+  }
+  val=ntohs(v);
+}
+void
+ReadInt16_N(gzFile gzfile, int16_t& val) 
+{
+  ReadUInt16_N(gzfile,(uint16_t&)val);
+}
+
+void
+ReadCString_I(gzFile gzfile,std::string& str)
+{
+  uint32_t slen;
+  ReadUInt32_I(gzfile,slen);
+  str.resize(slen);
+  int cnt=gzread(gzfile,&str[0],slen);
+  if (cnt!=slen) {
+    Err::errAbort("ReadCString_I: bad read. ("+ToStr(cnt)+"!="+ToStr(slen)+")");
+  }
+  /*
+  printf("== %3d: '",slen);
+  for (int i=0;i<slen;i++) {
+    int c=gzgetc(gzfile);
+    if (c==-1) {
+      Err::errAbort("ReadCString_I: bad read. ["+ToStr(i)+"/"+ToStr(slen)+"]");
+    }
+    str[i]=c;
+    printf(" %02x:%c",c,c);
+    fflush(NULL);
+  }
+  printf("'\n");
+  */
+}
+
+void
+ReadFixedString(gzFile gzfile, string& str, uint32_t len)
+{
+  str.resize(len);
+  int cnt=gzread(gzfile,&str[0],len);
+  if (cnt!=len) {
+    Err::errAbort("ReadFixedString: bad read.");
+  }
+}
+
+void
+ReadFixedCString(gzFile gzfile, char* str, uint32_t len)
+{
+  int cnt=gzread(gzfile,str,len);
+  if (cnt!=len) {
+    Err::errAbort("ReadFixedCString: bad read.");
+  }
+}
+
 #endif

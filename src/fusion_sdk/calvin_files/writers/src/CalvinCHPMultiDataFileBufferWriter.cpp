@@ -35,7 +35,7 @@ using namespace affymetrix_calvin_parameter;
 
 CHPMultiDataFileBufferWriter::CHPMultiDataFileBufferWriter()
 {
-	m_BufferSize = 0;
+	m_BufferSize = 0; 
 	m_MaxBufferSize = MAX_BUFFER_SIZE;
 }
 
@@ -87,6 +87,16 @@ void CHPMultiDataFileBufferWriter::Cleanup()
 	m_TargetMultiDataExpressionBuffers.clear();
 	m_TargetMultiDataExpressionRowIndexes.clear();
 
+    for (int target=0; target<(int)m_TargetMultiDataCopyNumberVariationRegionBuffers.size(); target++) 
+	{ 
+        int nbufs = (int) m_TargetMultiDataCopyNumberVariationRegionBuffers[target].size();
+        for (int ibuf=0; ibuf<nbufs; ibuf++)
+            delete[] m_TargetMultiDataCopyNumberVariationRegionBuffers[target][ibuf];
+		m_TargetMultiDataCopyNumberVariationRegionBuffers[target].clear();
+	}
+	m_TargetMultiDataCopyNumberVariationRegionBuffers.clear();
+	m_TargetMultiDataCopyNumberVariationRegionRowIndexes.clear();
+
     dataSetIndexMap.clear();
 }
 
@@ -98,6 +108,7 @@ void CHPMultiDataFileBufferWriter::Initialize(vector<string> *CHPFileNames, std:
     genoBufferSize = 0;
     cnBufferSize = 0;
     cyBufferSize = 0;
+    cnvBufferSize = 0;
 	Cleanup();
 	for (int i=0; i<(int)m_CHPFileNames->size(); i++)
 	{
@@ -135,6 +146,14 @@ void CHPMultiDataFileBufferWriter::Initialize(vector<string> *CHPFileNames, std:
 		                m_TargetMultiDataExpressionBuffers.push_back(buffer);
                     }
                     m_TargetMultiDataExpressionRowIndexes.push_back(0);
+                    break;
+
+                case CopyNumberVariationMultiDataType:
+                    {
+		               vector<char *> buffer;
+		               m_TargetMultiDataCopyNumberVariationRegionBuffers.push_back(buffer);
+                    }
+                    m_TargetMultiDataCopyNumberVariationRegionRowIndexes.push_back(0);
                     break;
 
                 default:
@@ -379,6 +398,35 @@ void CHPMultiDataFileBufferWriter::WriteMultiDataCytoRegionEntry(MultiDataType d
 	}
 }
 
+void CHPMultiDataFileBufferWriter::WriteMultiDataCopyNumberVariationRegionEntry(MultiDataType dataType, int target, 
+        const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData  &entry)
+{
+    if (cnvBufferSize == 0)
+        cnvBufferSize = m_maxProbeSetNameLength[dataType] + sizeof(int) + sizeof(entry.signal) + sizeof(entry.call) +
+                sizeof(entry.confidenceScore) + GetMetricBufferSize(entry.metrics);
+    char *buffer = new char[cnvBufferSize];
+    memset(buffer, 0, cnvBufferSize);
+    char *pbuffer = buffer;
+    MmSetUInt32_N((uint32_t *)pbuffer, m_maxProbeSetNameLength[dataType]);
+    pbuffer += sizeof(int);
+    memcpy(pbuffer, entry.name.c_str(), entry.name.length());
+    pbuffer += m_maxProbeSetNameLength[dataType]; 
+    MmSetFloat_N((float *)pbuffer, entry.signal);
+    pbuffer += sizeof(entry.signal);
+    MmSetUInt8((uint8_t *)pbuffer, entry.call);
+    pbuffer += sizeof(entry.call);
+    MmSetFloat_N((float *)pbuffer, entry.confidenceScore);
+    pbuffer += sizeof(entry.confidenceScore);
+    CopyMetricToBuffer(entry.metrics, pbuffer);
+    m_TargetMultiDataCopyNumberVariationRegionBuffers[target].push_back(buffer);
+    m_BufferSize += cnvBufferSize;
+
+    if (m_BufferSize > m_MaxBufferSize)
+	{
+		FlushBuffer();
+	}
+}
+
 void CHPMultiDataFileBufferWriter::FlushBuffer()
 {
 	if(m_BufferSize > 0)
@@ -426,6 +474,16 @@ void CHPMultiDataFileBufferWriter::FlushBuffer()
                 for (int ibuf=0; ibuf<nbufs; ibuf++)
                     delete[] m_TargetMultiDataExpressionBuffers[target][ibuf];
 		        m_TargetMultiDataExpressionBuffers[target].clear();
+            }
+
+             if (m_TargetMultiDataCopyNumberVariationRegionRowIndexes.size() > 0)
+            {
+                updater.UpdateMultiDataCopyNumberVariationRegionEntryBuffer(CopyNumberVariationMultiDataType, m_TargetMultiDataCopyNumberVariationRegionRowIndexes[target], cnvBufferSize, m_TargetMultiDataCopyNumberVariationRegionBuffers[target]);
+			    m_TargetMultiDataCopyNumberVariationRegionRowIndexes[target] += (int) m_TargetMultiDataCopyNumberVariationRegionBuffers[target].size();
+                int nbufs = (int) m_TargetMultiDataCopyNumberVariationRegionBuffers[target].size();
+                for (int ibuf=0; ibuf<nbufs; ibuf++)
+                    delete[] m_TargetMultiDataCopyNumberVariationRegionBuffers[target][ibuf];
+		        m_TargetMultiDataCopyNumberVariationRegionBuffers[target].clear();
             }
 
 			updater.CloseCHPFile();

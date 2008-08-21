@@ -3,17 +3,17 @@
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License 
+// it under the terms of the GNU Lesser General Public License
 // (version 2.1) as published by the Free Software Foundation.
-// 
+//
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
 
@@ -202,62 +202,201 @@ check_field_convert()
   // a good int conversion
   col.clear();
   col.setBuffer("123");
-  rv=col.get(val_int);
+  rv=col.get(&val_int);
   assert((rv==TSV_OK)&&(val_int==123));
-  rv=col.get(val_int);
+  rv=col.get(&val_int);
   assert((rv==TSV_OK)&&(val_int==123));
 
   // a bad int conversion
   col.clear();
   col.setBuffer("abc");
-  rv=col.get(val_int);
+  rv=col.get(&val_int);
   assert((rv==TSV_ERR_CONVERSION)&&(val_int==-1));
-  rv=col.get(val_int);
+  rv=col.get(&val_int);
   assert((rv==TSV_ERR_CONVERSION)&&(val_int==-1));
 
   // a bad int conversion
   col.clear();
   col.setBuffer("123.4");
-  rv=col.get(val_int);
+  rv=col.get(&val_int);
   assert((rv==TSV_ERR_CONVERSION)&&(val_int==-1));
-  rv=col.get(val_int);
+  rv=col.get(&val_int);
   assert((rv==TSV_ERR_CONVERSION)&&(val_int==-1));
 
   // a good double conversion
   col.clear();
   col.setBuffer("123.5");
-  rv=col.get(val_double);
+  rv=col.get(&val_double);
   assert((rv==TSV_OK)&&(val_double==123.5));
-  rv=col.get(val_double);
+  rv=col.get(&val_double);
   assert((rv==TSV_OK)&&(val_double==123.5));
 
   // exponent
   col.clear();
   col.setBuffer("123.5e6");
-  rv=col.get(val_double);
+  rv=col.get(&val_double);
   assert((rv==TSV_OK)&&(val_double==123.5e6));
-  rv=col.get(val_double);
+  rv=col.get(&val_double);
   assert((rv==TSV_OK)&&(val_double==123.5e6));
 
   // a bad double conversion
   col.clear();
   col.setBuffer("abc");
-  rv=col.get(val_double);
+  rv=col.get(&val_double);
   assert((rv==TSV_ERR_CONVERSION)&&(val_double==-1));
-  rv=col.get(val_double);
+  rv=col.get(&val_double);
   assert((rv==TSV_ERR_CONVERSION)&&(val_double==-1));
 
   // bad partial
   col.setBuffer("123abc");
-  rv=col.get(val_double);
+  rv=col.get(&val_double);
   assert((rv==TSV_ERR_CONVERSION)&&(val_double==-1));
-  rv=col.get(val_double);
+  rv=col.get(&val_double);
   assert((rv==TSV_ERR_CONVERSION)&&(val_double==-1));
+
+  /*
+  for (int p=0;p<5;p++) {
+    col.clear();
+    col.setPrecision(p);
+    col.set(-1.0);
+    std::string buf;
+    col.get(&buf);
+    printf("%d: col val='%s'\n",p,buf.c_str());
+  }
+  */
+}
+
+void
+check_field_vec_convert()
+{
+  affx::TsvFileField col;
+  int rv;
+
+#define TEST_VEC_CONVERT_123(TYPE) do {                         \
+    std::vector<TYPE> out_vec_##TYPE;                           \
+    rv=col.get(&out_vec_##TYPE,',');                            \
+    assert((rv==TSV_OK)&&(out_vec_##TYPE.size()==3)&&           \
+           (out_vec_##TYPE[0]==123)&&(out_vec_##TYPE[2]==789)); \
+  } while(0)
+
+  // a good int conversion
+  col.clear();
+  col.setBuffer("123,456,789");
+  //
+  TEST_VEC_CONVERT_123(int);
+  TEST_VEC_CONVERT_123(float);
+  TEST_VEC_CONVERT_123(double);
+
+  col.setBuffer(" 123 , 456 , 789 ");
+  TEST_VEC_CONVERT_123(int);
+  TEST_VEC_CONVERT_123(float);
+  TEST_VEC_CONVERT_123(double);
+
+  col.setBuffer(" 123 ,, 789 ");
+  TEST_VEC_CONVERT_123(int);
+  TEST_VEC_CONVERT_123(float);
+  TEST_VEC_CONVERT_123(double);
+
+  col.setBuffer(" 123 , , 789 ");
+  TEST_VEC_CONVERT_123(int);
+  TEST_VEC_CONVERT_123(float);
+  TEST_VEC_CONVERT_123(double);
+
+#undef TEST_VEC_CONVERT_123
+
+  //
+  std::vector<std::string> out_vec_string;
+  col.setBuffer("abc,def,ghi");
+  rv=col.get(&out_vec_string);
+  assert((rv==TSV_OK)&&
+         (out_vec_string.size()==3)&&
+         (out_vec_string[0]=="abc")&&
+         (out_vec_string[1]=="def")&&
+         (out_vec_string[2]=="ghi"));
+
+  //
+  col.setBuffer("");
+  rv=col.get(&out_vec_string);
+  assert((rv==TSV_OK)&&
+         (out_vec_string.size()==0));
+
+  col.setBuffer(",");
+  rv=col.get(&out_vec_string);
+  assert((rv==TSV_OK)&&
+         (out_vec_string.size()==2)&&
+         (out_vec_string[0]=="")&&
+         (out_vec_string[1]==""));
+
+  //
+  col.setBuffer("");
+
+#define TEST_VEC_CONVERT_BLANK(TYPE) do {                       \
+    std::vector<TYPE> out_vec_##TYPE;                           \
+    rv=col.get(&out_vec_##TYPE,',');                            \
+    assert((rv==TSV_OK)&&(out_vec_##TYPE.size()==0));           \
+  } while (0)
+
+  TEST_VEC_CONVERT_BLANK(int);
+  TEST_VEC_CONVERT_BLANK(float);
+  TEST_VEC_CONVERT_BLANK(double);
+
+#undef TEST_VEC_CONVERT_BLANK
+
+  std::vector<int> in_vec_int_0;
+  //
+  col.set("abc");
+  //
+  in_vec_int_0.clear();
+  col.set(in_vec_int_0,',');
+  assert(col.m_buffer=="");
+  
+  std::vector<int> in_vec_int_1(1,123);
+  col.set(in_vec_int_1,',');
+  assert(col.m_buffer=="123");
+
+  std::vector<int> in_vec_int_2(2,123);
+  col.set(in_vec_int_2,',');
+  assert(col.m_buffer=="123,123");
+
+  //
+  std::vector<std::string> in_vec_str_1;
+  col.set(in_vec_str_1,':');
+  assert(col.m_buffer=="");
+  //
+  in_vec_str_1.push_back("abc");
+  col.set(in_vec_str_1,':');
+  assert(col.m_buffer=="abc");
+  //
+  in_vec_str_1.push_back("def");   
+  in_vec_str_1.push_back("ghi");
+  //
+  col.set(in_vec_str_1);
+  assert(col.m_buffer=="abc,def,ghi");
+  col.set(in_vec_str_1,':');
+  assert(col.m_buffer=="abc:def:ghi");
+
+  //
+  std::vector<double> in_vec_d_1;
+  col.setPrecision(6);
+  col.set(in_vec_d_1,':');
+  assert(col.m_buffer=="");
+  //
+  in_vec_d_1.push_back(1.0);
+  col.set(in_vec_d_1);
+  //printf("### m_buffer='%s'\n",col.m_buffer.c_str());
+  assert(col.m_buffer=="1.000000");
+  //
+  in_vec_d_1.push_back(2.0000091);   
+  in_vec_d_1.push_back(3.0000011);
+  //
+  col.set(in_vec_d_1);
+  //printf("### m_buffer='%s'\n",col.m_buffer.c_str());
+  assert(col.m_buffer=="1.000000,2.000009,3.000001");
 }
 
 /// @brief     Check that the headers work
 void
-check_headers()
+check_headers_1()
 {
   affx::TsvFile tsv;
   std::string key;
@@ -349,7 +488,7 @@ check_read_table_1()
 
 /// @brief     Check the behavior of headers
 void
-check_headers_1()
+check_headers_2()
 {
   affx::TsvFile tsv_a;
   affx::TsvFile tsv_z;
@@ -419,11 +558,41 @@ check_headers_1()
   tsv_0.close();
 }
 
+void
+check_comment_1()
+{
+  affx::TsvFile tsv;
+  std::string filename="check-comment.tsv";
+  std::string comment="comment for testing";
+
+  //
+  tsv.writeTsv(filename);
+  tsv.writeFileComment(comment);
+  tsv.close();
+  //
+  tsv.open(filename);
+  tsv.headersBegin();
+  TsvFileHeaderLine* hdr;
+  int hdr_cnt=0;
+  int hdr_found=0;
+  while ((hdr=tsv.nextHeaderPtr())!=NULL) {
+    // printf("hdr='%s'\n",hdr->m_value.c_str());
+    hdr_cnt++;
+    if ((hdr->m_key=="") && (hdr->m_value==comment)) {
+      hdr_found++;
+    }
+  }
+  //
+  assert((hdr_cnt==1)&&(hdr_found==1));
+  //
+  tsv.close();
+}
+
 #define CH2_CNT 10
 
-/// @brief     Check the behavior of headers 
+/// @brief     Check the behavior of headers
 void
-check_headers_2()
+check_headers_3()
 {
   affx::TsvFile tsv;
   int rv;
@@ -438,7 +607,7 @@ check_headers_2()
     rv=tsv.headersFindNext("abc",val);
     assert(rv==TSV_OK);
   }
-  
+
   rv=tsv.headersFindNext("abc",val);
   assert(rv!=TSV_OK);
 
@@ -479,14 +648,14 @@ check_csv_1()
     rv=tsv.get(0,1,tmpdbl); assert((rv==TSV_OK) && (tmpdbl==2.0));
     rv=tsv.get(0,2,tmpstr); assert((rv==TSV_OK) && (tmpstr=="3"));
     rv=tsv.get(0,2,tmpdbl); assert((rv==TSV_OK) && (tmpdbl==3.0));
-  }    
+  }
 
   for (int i=0;i<2;i++) {
     rv=tsv.nextLevel(0);    assert(rv==TSV_OK);
     rv=tsv.get(0,0,tmpstr); assert((rv==TSV_OK) && (tmpstr=="\"1\""));
     rv=tsv.get(0,1,tmpstr); assert((rv==TSV_OK) && (tmpstr=="\"2\""));
     rv=tsv.get(0,2,tmpstr); assert((rv==TSV_OK) && (tmpstr=="\"3\""));
-  }    
+  }
 
   // a mixed up line ("1",",","3\"")
   rv=tsv.nextLevel(0);    assert(rv==TSV_OK);
@@ -591,9 +760,134 @@ check_winpath_1()
   assert(rv==TSV_OK);
   //printf("pathname='%s'\n",pathname.c_str());
   assert(pathname=="C:\\some\\path\\to\\a\\file.txt");
-  
+
   tsv.close();
 }
+
+//////////
+
+void check_read_vec_1()
+{
+  int rv;
+  std::vector<int> vec_i;
+
+  affx::TsvFile tsv;
+  rv=tsv.open("./data-test-4.tsv");
+  assert(rv==TSV_OK);
+
+  tsv.nextLevel(0);
+
+  rv=tsv.get(0,"col_00",&vec_i);
+  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]=1)&&(vec_i[2]==3));
+  
+  rv=tsv.get(0,"col_01",&vec_i);
+  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]=4)&&(vec_i[2]==6));
+
+  tsv.nextLevel(0);
+
+  rv=tsv.get(0,"col_00",&vec_i);
+  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]=7)&&(vec_i[2]==9));
+  
+  rv=tsv.get(0,"col_01",&vec_i,':');
+  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]=10)&&(vec_i[2]==12));
+
+  tsv.nextLevel(0);
+  std::string tmp_str;
+  std::vector<double> tmp_vec_d;
+  
+  rv=tsv.get(0,0,tmp_str);
+  assert((rv==TSV_OK)&&(tmp_str=="7.005,8.123,9.100"));
+  tsv.get(0,0,&tmp_vec_d);
+  assert((rv==TSV_OK)&&(tmp_vec_d.size()==3)&&
+         (tmp_vec_d[0]==7.005)&&(tmp_vec_d[1]==8.123)&&(tmp_vec_d[2]==9.100));;
+
+  rv=tsv.get(0,"col_01",tmp_str);
+  assert((rv==TSV_OK)&&(tmp_str=="7.005005:8.123456:9.100000"));
+  rv=tsv.get(0,"col_01",&tmp_vec_d,':');
+  assert((rv==TSV_OK)&&(tmp_vec_d.size()==3)&&
+         (tmp_vec_d[0]==7.005005)&&(tmp_vec_d[1]==8.123456)&&(tmp_vec_d[2]==9.100000));;
+
+  tsv.close();
+
+}
+
+void check_write_10()
+{
+  affx::TsvFile tsv;
+  tsv.defineColumn(0,0,"col_00");
+  tsv.writeTsv_v1("./data-test-10.out");
+  for (int i=0;i<10;i++) {
+    tsv.set(0,0,i);
+    tsv.writeLevel(0);
+  }
+  tsv.close();
+}
+
+void check_write_vec_1()
+{
+  int rv;
+
+  affx::TsvFile tsv;
+  tsv.defineColumn(0,0,"col_00");
+  tsv.defineColumn(0,1,"col_01");
+  rv=tsv.writeTsv_v1("./data-test-4.out");
+
+  //
+  std::vector<int> vec_i;
+  //
+  vec_i.clear();
+  vec_i.push_back(1); vec_i.push_back(2); vec_i.push_back(3);
+  tsv.set(0,0,vec_i);
+  vec_i.clear();
+  vec_i.push_back(4); vec_i.push_back(5); vec_i.push_back(6);
+  tsv.set(0,"col_01",vec_i);
+  //
+  tsv.writeLevel(0);
+
+  //
+  vec_i.clear();
+  vec_i.push_back(7); vec_i.push_back(8); vec_i.push_back(9);
+  tsv.set(0,0,vec_i);
+  vec_i.clear();
+  vec_i.push_back(10); vec_i.push_back(11); vec_i.push_back(12);
+  tsv.set(0,"col_01",vec_i,':');
+  //
+  tsv.writeLevel(0);
+
+  //
+  std::vector<double> vec_d;
+  vec_d.push_back(7.0050051);
+  vec_d.push_back(8.123456);
+  vec_d.push_back(9.1);  
+  //
+  tsv.setPrecision(0,0,3);
+  tsv.set(0,0,vec_d);
+  //
+  tsv.setPrecision(0,"col_01",6);
+  tsv.set(0,"col_01",vec_d,':');
+  //
+  tsv.writeLevel(0);
+
+  //
+  tsv.close();
+}
+
+void check_read_colvec_1()
+{
+  std::vector<std::string> colvec;
+  affx::TsvFile::extractColToVec("data-test-3.tsv","val",&colvec,0);
+  //
+  if (0) {
+    for (int i=0;i<colvec.size();i++) {
+      printf("%2d: %s",i,colvec[i].c_str());
+    }
+  }
+  assert(colvec.size()==9);
+  assert(colvec[0]=="101");
+  assert(colvec[3]=="404");
+  assert(colvec[8]=="909");
+}
+ 
 
 //////////
 
@@ -611,17 +905,28 @@ main(int argc,char* argv[])
   //
   check_field_name();
   check_field_convert();
-  check_headers();
-  //
-  check_read_table_1();
+  check_field_vec_convert();
   //
   check_headers_1();
+  check_headers_2();
+  check_headers_3();
+  //
+  check_read_table_1();
   //
   check_csv_1();
   //
   check_index_1();
   //
   check_winpath_1();
+  //
+  check_comment_1();
+  //
+  check_write_10();
+  //
+  check_read_vec_1();
+  check_write_vec_1();
+  //
+  check_read_colvec_1();
   //
   printf("ok.\n");
 }

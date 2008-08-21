@@ -52,7 +52,7 @@ public:
    * Entries are -1 = NN, 0 = AA, 1 = AB, 2 = BB 
    * @param fileName - name of file to open.
    */
-  void open(const char *fileName) {
+  void open(const std::string& fileName) {
     affx::TsvFile tsv;
     std::string snpName;
     std::vector<int> gTypes;

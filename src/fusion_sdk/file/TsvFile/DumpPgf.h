@@ -20,16 +20,17 @@
 #ifndef DUMP_PGF_H
 #define DUMP_PGF_H
 
+//
 #include <assert.h>
-#include <string>
 #include <ostream>
+#include <string>
 #include <vector>
 //
+#include "file/TsvFile/SequentialClfFile.h"
+#include "file/TsvFile/TsvFile.h"
 #include "util/Err.h"
 #include "util/PgOptions.h"
 #include "util/Util.h"
-#include "file/TsvFile/SequentialClfFile.h"
-#include "file/TsvFile/TsvFile.h"
 
 /**
  * @file  DumpPgf.h
@@ -45,7 +46,7 @@ public:
    * @param cvsId CVS id string.
    */
 
-  dumpPgf (int argc, char* argv[], const std::string& version, const std::string& cvsId);
+  dumpPgf (char* argv[], const std::string& version, const std::string& cvsId);
 
   /** Destructor.
    */
@@ -64,7 +65,7 @@ private:
    */
   void clear()
   {
-    delete m_Opts;
+    //delete m_Opts;
   }
 
   /** Read optional transcript cluster id and probeset id files.
@@ -117,7 +118,9 @@ private:
   /// CVS id string.
   const std::string& m_CvsId;
   /// Command line options.
-  PgOptions* m_Opts;
+public:
+  PgOptions m_Opts;
+private:
   /// Command line as a string.
   std::string m_CommandLine;
   /// Pgf file name.
@@ -180,7 +183,6 @@ private:
   typedef void (dumpPgf::* PMemProbeCoord_t) (const int probeId);
   // Pointer to function to determine the probe coordinates.
   PMemProbeCoord_t m_GetProbeCoordinates;
-
 };
 
 #endif /* DUMP_PGF_H */

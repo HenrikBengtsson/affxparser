@@ -55,6 +55,7 @@
 #define Max(a,b) max(a,b)
 #define Min(a,b) min(a,b)
 #else            // assume other people implement the standard
+#include <algorithm>
 #define Max(a,b) std::max(a,b)
 #define Min(a,b) std::min(a,b)
 #endif           // _MSC_VER
@@ -136,6 +137,9 @@ typedef	unsigned int           uint32_t;
 #ifndef BYTE_ORDER
 // Big guys first...
 #ifdef __ppc__
+#define BYTE_ORDER BIG_ENDIAN
+#endif
+#ifdef __ppc64__
 #define BYTE_ORDER BIG_ENDIAN
 #endif
 #ifdef __sparc__

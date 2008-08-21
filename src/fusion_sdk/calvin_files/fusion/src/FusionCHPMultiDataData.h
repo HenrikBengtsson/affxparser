@@ -117,6 +117,14 @@ public:
     void GetCopyNumberEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry)
     { chpData.GetCopyNumberEntry(dataType, index, entry); } 
 
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The copy number results.
+	 */
+    void GetCopyNumberEntryLog2Ratio(affymetrix_calvin_io::MultiDataType dataType, int index, int log2RatioIndex, float *val)
+    { chpData.GetCopyNumberEntryLog2Ratio(dataType, index, val); } 
+
 	/*! Gets the cyto region data.
      * @param dataType The data type
 	 * @param index The row index.
@@ -124,6 +132,14 @@ public:
 	 */
     void GetCytoRegionEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry)
     { chpData.GetCytoEntry(dataType, index, entry); } 
+
+    /*! Gets the copy number variation region data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The cyto region results.
+	 */
+    void GetCopyNumberVariationRegionEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry)
+    { chpData.GetCopyNumberVariationEntry(dataType, index, entry); } 
 
 	/*! Gets the probe set data.
      * @param dataType The data type

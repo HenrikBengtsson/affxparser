@@ -20,6 +20,24 @@
 #ifndef _CELFILEDATA_H_
 #define _CELFILEDATA_H_
 
+// file io options
+
+// enable reading of ".gz" celfiles.
+// #define CELFILE_USE_ZLIB 1
+#ifndef CELFILE_USE_ZLIB
+#define CELFILE_USE_STDSTREAM 1
+#endif
+
+#include "file/FileIO.h"
+
+#ifdef CELFILE_USE_ZLIB
+#ifndef FILEIO_WITH_ZLIB
+#error CELFILE_USE_ZLIB requires FILEIO_WITH_ZLIB
+#endif
+#endif
+
+//////////
+
 #include <map>
 #include <string>
 //
@@ -637,6 +655,7 @@ public:
 	/*! Sets the error string.
 	 * @param str The error.
 	 */
+	void SetError(const std::string& str);
 	void SetError(const char* str);
 
 	///////////////////////////////////////////////////////////////////////////////
@@ -951,6 +970,7 @@ public:
 	 * @return True if the file exists.
 	 */
 	bool Exists();
+  std::string ResolveName();
 
 	/*! Reads the header of the CEL file.
 	 * @return True if successful.

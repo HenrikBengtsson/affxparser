@@ -137,6 +137,21 @@ void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ProbeSetMu
     entryPos[currentDataType] = writer->GetFilePos();
 }
 
+void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData & p)
+{
+    //if (seekPos == true)
+    {
+        writer->SeekFromBeginPos(entryPos[currentDataType]);
+        seekPos = false;
+    }
+    dataSetWriter->Write(p.name, maxProbeSetName);
+    dataSetWriter->Write(p.signal);
+    dataSetWriter->Write(p.call);
+    dataSetWriter->Write(p.confidenceScore);
+    WriteMetrics(p.metrics);
+    entryPos[currentDataType] = writer->GetFilePos();
+}
+
 void CHPMultiDataFileWriter::WriteMetrics(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics)
 {
 	int ncols = (int) metrics.size();
