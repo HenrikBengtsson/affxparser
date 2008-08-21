@@ -358,6 +358,34 @@ void CalvinCHPFileUpdater::UpdateMultiDataCytoRegionEntryBuffer(MultiDataType da
     buffer = NULL;
 }
 
+void CalvinCHPFileUpdater::UpdateMultiDataCopyNumberVariationRegionEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, 
+                                                                               const std::vector<char *> &cnVariationEntryBuffer)
+
+{
+    if (cnVariationEntryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)cnVariationEntryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)cnVariationEntryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, cnVariationEntryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+    int dsIndex = dataSetIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
+}
+
 void CalvinCHPFileUpdater::UpdateMultiDataExpressionEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry)
 {
     int dsIndex = dataSetIndexMap[dataType];

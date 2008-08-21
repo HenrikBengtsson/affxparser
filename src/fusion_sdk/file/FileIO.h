@@ -24,10 +24,20 @@
  */
 
 //
-#include <fstream>
-#include <string>
-//
 #include "portability/affy-base-types.h"
+//
+#include <fstream>
+#include <stdio.h>
+#include <string>
+
+//
+//#define FILEIO_WITH_STDIO 1
+//#define FILEIO_WITH_ZLIB  1
+
+//
+#ifdef FILEIO_WITH_ZLIB
+#include "zlib.h"
+#endif
 
 // Affy uses little-endian byte order for some of their files.
 // This requires defining a the complements to the normal functions "hton".
@@ -95,37 +105,38 @@ affy_swap16(uint16_t x) {
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadUInt32_I(IFSTREAM& instr,uint32_t& val);
+void ReadUInt32_I(IFSTREAM& instr, uint32_t& val);
 
 /*! Reads a signed 32 bit integer from a file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadInt32_I(IFSTREAM&  instr,int32_t& val);
+void ReadInt32_I(IFSTREAM& instr, int32_t& val);
 
 /*! Reads a float from a file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadFloat_I(IFSTREAM& instr,float& val);
+void ReadFloat_I(IFSTREAM& instr, float& val);
 
 /*! Reads an unsigned 16 bit integer from a file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadUInt16_I(IFSTREAM& instr,uint16_t& val);
+void ReadUInt16_I(IFSTREAM& instr, uint16_t& val);
 
 /*! Reads a signed 16 bit integer from a file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadInt16_I(IFSTREAM& instr,int16_t& val);
+void ReadInt16_I(IFSTREAM& instr, int16_t& val);
 
 /*! Reads a string from a little endian file
  * @param instr The input file stream
  * @param str The returned value
  */
 void ReadCString_I(IFSTREAM& instr, char*& str);
+void ReadCString_I(IFSTREAM& instr,std::string& str);
 
 /*! Reads a string from a little endian file
  * @param instr The input file stream
@@ -137,49 +148,49 @@ void ReadString_I(IFSTREAM& instr, std::string& str);
  * @param instr The input file stream
  * @param s The returned value
  */
-void ReadUIntLenString_I(IFSTREAM &instr, std::string &s);
+void ReadUIntLenString_I(IFSTREAM& instr, std::string &s);
 
 /*! Reads an unsigned 8 bit value from a file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadUInt8(IFSTREAM& instr,uint8_t& val);
+void ReadUInt8(IFSTREAM& instr, uint8_t& val);
 
 /*! Reads an 8 bit value from a file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadInt8(IFSTREAM& instr,int8_t& val);
+void ReadInt8(IFSTREAM& instr, int8_t& val);
 
 /*! Reads an unsigned 32 bit value from a big endian file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadUInt32_N(IFSTREAM& instr,uint32_t& val);
+void ReadUInt32_N(IFSTREAM& instr, uint32_t& val);
 
 /*! Reads a signed 32 bit value from a big endian file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadInt32_N(IFSTREAM&  instr,int32_t& val);
+void ReadInt32_N(IFSTREAM&  instr, int32_t& val);
 
 /*! Reads a float value from a big endian file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadFloat_N(IFSTREAM& instr,float& val);
+void ReadFloat_N(IFSTREAM& instr, float& val);
 
 /*! Reads an unsigned 16 bit value from a big endian file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadUInt16_N(IFSTREAM& instr,uint16_t& val);
+void ReadUInt16_N(IFSTREAM& instr, uint16_t& val);
 
 /*! Reads a signed 16 bit value from a big endian file
  * @param instr The input file stream
  * @param val The returned value
  */
-void ReadInt16_N(IFSTREAM& instr,int16_t& val);
+void ReadInt16_N(IFSTREAM& instr, int16_t& val);
 
 /*! Reads a string from a big endian file
  * @param instr The input file stream
@@ -197,7 +208,7 @@ void ReadString_N(IFSTREAM& instr, std::string& str);
  * @param instr The input file stream
  * @param s The returned value
  */
-void ReadUIntLenString_N(IFSTREAM &instr, std::string &s);
+void ReadUIntLenString_N(IFSTREAM& instr, std::string &s);
 
 /*! Reads a fixed length string from a file.
  * @param instr The input file stream
@@ -232,14 +243,80 @@ void ReadCharacterArray(IFSTREAM& instr, char* str, uint32_t len);
  * @param line The returned string (the data must already be allocated)
  * @param len The maximum length of the line to read.
  */
-void ReadNextLine(IFSTREAM& instr,char* line,int len);
+void ReadNextLine(IFSTREAM& instr,char* line, int len);
 
 /*! This function is for older BPMAP file with incorrectly written float's
  *  The floats were written as ints
  * @param instr The input file stream.
  * @param fval The returned float
  */
-void ReadFloatFromOldBPMAP_N(IFSTREAM &instr, float &fval);
+void ReadFloatFromOldBPMAP_N(IFSTREAM& instr, float &fval);
+
+
+//
+#ifdef FILEIO_WITH_STDIO
+
+void ReadUInt32_I(FILE* file, uint32_t& val);
+void ReadInt32_I(FILE* file, int32_t& val);
+void ReadFloat_I(FILE* file, float& val);
+void ReadUInt16_I(FILE* file, uint16_t& val);
+void ReadInt16_I(FILE* file, int16_t& val);
+void ReadCString_I(FILE* file, char*& str);
+void ReadCString_I(FILE* file,std::string& str);
+void ReadString_I(FILE* file, std::string& str);
+void ReadUIntLenString_I(FILE* file, std::string &s);
+void ReadUInt8(FILE* file, uint8_t& val);
+void ReadInt8(FILE* file, int8_t& val);
+void ReadUInt32_N(FILE* file, uint32_t& val);
+void ReadInt32_N(IFSTREAM&  instr, int32_t& val);
+void ReadFloat_N(FILE* file, float& val);
+void ReadUInt16_N(FILE* file, uint16_t& val);
+void ReadInt16_N(FILE* file, int16_t& val);
+// unimplemented.
+//void ReadCString_N(FILE* file, char*& str);
+//void ReadString_N(FILE* file, std::string& str);
+//void ReadUIntLenString_N(FILE* file, std::string &s);
+//void ReadFixedString(FILE* file, std::string& str, uint32_t len);
+//void ReadFixedCString(FILE* file, char* str, uint32_t len);
+//void ReadFixedUCString(FILE* file, unsigned char* str, uint32_t len);
+//void ReadCharacterArray(FILE* file, char* str, uint32_t len);
+//void ReadNextLine(FILE* file,char* line, int len);
+//void ReadFloatFromOldBPMAP_N(FILE* file, float &fval);
+
+#endif 
+
+//
+#ifdef FILEIO_WITH_ZLIB
+
+void ReadUInt32_I(gzFile gzfile, uint32_t& val);
+void ReadInt32_I(gzFile gzfile, int32_t& val);
+void ReadFloat_I(gzFile gzfile, float& val);
+void ReadUInt16_I(gzFile gzfile, uint16_t& val);
+void ReadInt16_I(gzFile gzfile, int16_t& val);
+void ReadCString_I(gzFile gzfile, char*& str);
+void ReadCString_I(gzFile gzfile,std::string& str);
+void ReadString_I(gzFile gzfile, std::string& str);
+void ReadUIntLenString_I(gzFile gzfile, std::string &s);
+void ReadUInt8(gzFile gzfile, uint8_t& val);
+void ReadInt8(gzFile gzfile, int8_t& val);
+void ReadUInt32_N(gzFile gzfile, uint32_t& val);
+void ReadInt32_N(gzFile gzfile, int32_t& val);
+void ReadFloat_N(gzFile gzfile, float& val);
+void ReadUInt16_N(gzFile gzfile, uint16_t& val);
+void ReadInt16_N(gzFile gzfile, int16_t& val);
+// unimplemented.
+//void ReadCString_N(gzFile gzfile, char*& str);
+//void ReadString_N(gzFile gzfile, std::string& str);
+//void ReadUIntLenString_N(gzFile gzfile, std::string &s);
+void ReadFixedString(gzFile gzfile, std::string& str, uint32_t len);
+void ReadFixedCString(gzFile gzfile, char* str, uint32_t len);
+//void ReadFixedUCString(gzFile gzfile, unsigned char* str, uint32_t len);
+//void ReadCharacterArray(gzFile gzfile, char* str, uint32_t len);
+//void ReadNextLine(gzFile gzfile,char* line, int len);
+//void ReadFloatFromOldBPMAP_N(gzFile gzfile, float &fval);
+
+#endif 
+
 
 /*! Gets a 32 bit unsigned int from a little endian data stream.
  * @param ptr A pointer to a little endian data stream
@@ -407,3 +484,4 @@ void MmSetFloat_N(float*     ptr,float    val);
 #define UCHAR_SIZE  sizeof(uint8_t)
 
 #endif // AFFX_FILEIO_H
+

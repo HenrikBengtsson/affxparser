@@ -148,6 +148,27 @@ typedef struct _ProbeSetMultiDataExpressionData
 
 } ProbeSetMultiDataExpressionData;
 
+
+/*! Stores data for a copy number variation results. */
+typedef struct _ProbeSetMultiDataCopyNumberVariationRegionData
+{
+	/*! The name of the region. */
+	std::string name;
+
+    /*! The signal for the region */
+    float signal;
+
+	/*! The call for the region. */
+	u_int8_t call;
+
+	/*! The confidence score. */
+	float confidenceScore;
+
+	/*! Other metrics associated with the result. */
+	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
+
+} ProbeSetMultiDataCopyNumberVariationRegionData;
+
 /*! Convert a string representation of a chromosome to a numeric representation.
  * @param chr The chromosome value.
  * @return A numeric representation of the chromosome value.

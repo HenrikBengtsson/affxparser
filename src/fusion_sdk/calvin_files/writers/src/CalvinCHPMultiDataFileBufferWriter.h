@@ -86,6 +86,14 @@ public:
 	 */
 	void WriteMultiDataExpressionEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry);
 
+    /*! Write a copy number variation region entry to buffer. If the buffer is full, flush it.
+     * @param dataType The data type.
+	 * @param target Target for the entry.
+	 * @param entry Value for the copy number entry.
+	 */
+	void WriteMultiDataCopyNumberVariationRegionEntry(MultiDataType dataType, int target, 
+        const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData  &entry);
+
 	/*! Write the content of the buffer to CHP files. */
 	void FlushBuffer();
 
@@ -108,6 +116,9 @@ private:
 	/*! List of targets used for storing entries. */
     std::vector< std::vector<char *> > m_TargetMultiDataExpressionBuffers;
 
+    /*! List of targets used for storing entries. */
+	std::vector< std::vector<char *> > m_TargetMultiDataCopyNumberVariationRegionBuffers;
+
 	/*! Buffer for storing row indexes. */
 	std::vector<int> m_TargetMultiDataGenotypeRowIndexes;
 
@@ -119,6 +130,9 @@ private:
 
 	/*! Buffer for storing row indexes. */
 	std::vector<int> m_TargetMultiDataExpressionRowIndexes;
+
+    /*! Buffer for storing row indexes. */
+	std::vector<int> m_TargetMultiDataCopyNumberVariationRegionRowIndexes;
 
 	/*! Size of the current buffer in bytes. */
 	int m_BufferSize;
@@ -140,6 +154,9 @@ private:
 
     /*! The buffer size of a cyto entry */
     int cyBufferSize;
+
+    /*! The buffer size of a copy number variation entry */
+    int cnvBufferSize;
 };
 
 }

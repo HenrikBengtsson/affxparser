@@ -307,6 +307,13 @@ public:
 	 */
 	GenericData& GetGenericData() { return genericData; }
 
+	/*! Determine the x-y coordinate given a cell index.
+	 *	@param cellIdx Cell index
+	 *	@param x Cell x-coordinate
+	 *	@param y Cell y-coordinate
+	 */
+	void ComputeXY(int32_t cellIdx, int16_t& x, int16_t& y);
+
 private:
 	/*!  */
 	void SetFileCreationTime(const std::wstring &f);
@@ -364,12 +371,6 @@ private:
 	 *	@return True if the cell mask flag is true
 	 */
 	bool IsMasked(int32_t cellIdx);
-	/*! Determine the x-y coordinate given a cell index.
-	 *	@param cellIdx Cell index
-	 *	@param x Cell x-coordinate
-	 *	@param y Cell y-coordinate
-	 */
-	void ComputeXY(int32_t cellIdx, int16_t& x, int16_t& y);
 	/*! Find a DataSetHeader by name.
 	 *	@param name DataSetHeader name
 	 *	@return Pointer to a DataSetHeader with name parameter, otherwise 0

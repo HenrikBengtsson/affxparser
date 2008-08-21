@@ -17,8 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "CELFileData.h"
-#include "FileIO.h"
+//
+#include "file/CELFileData.h"
+#include "file/FileIO.h"
+
+//
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <cerrno>
@@ -654,11 +657,32 @@ void CCELFileHeaderData::ParseCorners()
 ///////////////////////////////////////////////////////////////////////////////
 bool CCELFileData::Exists()
 {
+  if (ResolveName()=="") {
+    return false;
+  }
+  return true;
+}
+
+std::string CCELFileData::ResolveName()
+{
 	assert(m_FileName != "");
 
-	// Find the file stats.
+  std::string name;
 	struct stat st;
-	return ((stat(m_FileName.c_str(), &st) == 0)? true: false);
+  // name 
+  name=m_FileName;
+  if (stat(name.c_str(), &st) == 0) {
+    return name;
+  }
+  //
+#ifdef CELFILE_USE_ZLIB
+  name=m_FileName+".gz";
+  if (stat(name.c_str(), &st) == 0) {
+    return name;
+  }
+#endif
+  //
+  return "";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -669,11 +693,12 @@ bool CCELFileData::Exists()
 ///////////////////////////////////////////////////////////////////////////////
 uint32_t CCELFileData::GetFileSize()
 {
-	assert(m_FileName != "");
+  std::string name=ResolveName();
+	assert(name != "");
 
 	int32_t lSize = 0;
 	struct stat st;
-	if (stat(m_FileName.c_str(), &st) == 0)
+	if (stat(name.c_str(), &st) == 0)
 	{
 		lSize = st.st_size;
 	}
@@ -728,18 +753,50 @@ bool CCELFileData::Open(bool bReadHeaderOnly)
 bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 {
 	bool retVal = false;
+  std::string tmp_FileName;
 
-	// Open the file.
+  tmp_FileName=ResolveName();
+  if (tmp_FileName=="") {
+    SetError("File '"+m_FileName+"' not found");
+    return false;
+  }
+
+#define OPEN_ERR_MSG "Unable to open the file."
+
+#ifdef CELFILE_USE_STDSTREAM
+  // Open the file.
 	std::ifstream instr;
-	instr.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
+  tmp_FileName=m_FileName;
+	instr.open(tmp_FileName.c_str(), std::ios::in | std::ios::binary);
+  // Check if open
+  if (!instr) {
+		SetError(OPEN_ERR_MSG " (ifstream)");
+ 		return false;
+ 	}
+#endif
 
-	// Check if open
-	if (!instr)
-	{
-		SetError("Unable to open the file.");
-		return false;
-	}
+// #ifdef CELFILE_USE_STDIO
+//   FILE* instr;
+//   tmp_FileName=m_FileName;
+//   instr=fopen(tmp_FileName.c_str(),"rb");
+//   if (instr==NULL) {
+//     SetError(OPEN_ERR_MSG " (stdio)");
+//     return false;
+//   }
+// #endif
 
+#ifdef CELFILE_USE_ZLIB
+  gzFile instr;
+  // try the UNgziped file first.
+  tmp_FileName=ResolveName();
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  if (instr==NULL) {
+    SetError(OPEN_ERR_MSG " (gzopen)");
+    return false;
+  }
+  //printf("### CCELFileData::ReadXDABCel('%s'): open1\n",tmp_FileName.c_str());
+#endif
+  
 	Clear();
 
 	// Read the header
@@ -748,7 +805,8 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 
 	int32_t version;
 	int32_t nSubGrids;
-	char *sval=NULL;
+	// char *sval=NULL;
+  std::string tmp_str;
 
 	// Read the magic number.
 	ReadInt32_I(instr, magic);
@@ -781,24 +839,21 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 	m_HeaderData.SetCells(iValue);
 
 	// Read the other members.
-	ReadCString_I(instr, sval);
+	ReadCString_I(instr, tmp_str);
 	iHeaderBytes += INT_SIZE;
-	iHeaderBytes += ((int) strlen(sval));
-	m_HeaderData.SetHeader(sval);
-	delete[] sval;
-	sval = NULL;
-	ReadCString_I(instr, sval);
+	iHeaderBytes += tmp_str.size();
+	m_HeaderData.SetHeader(tmp_str.c_str());
+
+	ReadCString_I(instr, tmp_str);
 	iHeaderBytes += INT_SIZE;
-	iHeaderBytes += ((int) strlen(sval));
-	m_HeaderData.SetAlg(sval);
-	delete[] sval;
-	sval = NULL;
-	ReadCString_I(instr, sval);
+	iHeaderBytes += tmp_str.size();
+	m_HeaderData.SetAlg(tmp_str.c_str());
+
+	ReadCString_I(instr, tmp_str);
 	iHeaderBytes += INT_SIZE;
-	iHeaderBytes += ((int) strlen(sval));
-	m_HeaderData.SetParams(sval);
-	delete[] sval;
-	sval = NULL;
+	iHeaderBytes += tmp_str.size();
+	m_HeaderData.SetParams(tmp_str.c_str());
+
 	ReadInt32_I(instr, iValue);
 	iHeaderBytes += INT_SIZE;
 	m_HeaderData.SetMargin(iValue);
@@ -821,21 +876,21 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 	// Set grid coordinates
 	m_HeaderData.ParseCorners();
 
+#ifdef CELFILE_USE_STDSTREAM
 	instr.close();
+#endif
+#ifdef CELFILE_USE_STDIO
+  fclose(instr);
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzclose(instr);
+#endif
 
 	// Read the remaining data.
 	if (bReadHeaderOnly)
 		return true;
 
-  // This is a double negative as I know that _DONT_USE_MEM_MAPPING_ isnt used
-  // and I dont want to break the build. People who dont
-  // want MEMMAPPING (Chuck) can define this
-
-  /// @todo USE_MEM_MAPPING should be set in all the makefiles?
-  // #ifndef _DONT_USE_MEM_MAPPING_
-
-  //#if defined(_USE_MEM_MAPPING_)
-#ifndef _DONT_USE_MEM_MAPPING_
+#ifdef CELFILE_USE_MEMMAP
 
 #ifdef _MSC_VER
 	// Memory map file on windows...
@@ -903,6 +958,57 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 
 #else
   // No memory mapping ...
+
+#ifdef CELFILE_USE_ZLIB
+
+  // take a guess at how big the uncompressed file is.
+  int alloc_size=(20*1024) + // approx header
+    ((FLOAT_SIZE + FLOAT_SIZE + SHORT_SIZE)*(GetRows()*GetCols())) + // row*col
+    ((SHORT_SIZE + SHORT_SIZE)             * GetNumMasked()) + // masked
+    ((SHORT_SIZE + SHORT_SIZE)             * GetNumOutliers()); // outliers
+  // alloc it
+  m_lpData = new char[alloc_size];
+
+  // do the read -- must be the same file name as above.
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  if (instr==NULL) {
+    SetError("gzip open failed - take2");
+    return false;
+  }
+  gzseek(instr,iHeaderBytes,SEEK_SET);
+  int read_size=gzread(instr,m_lpData,alloc_size);
+  
+  //printf("### CCELFileData::ReadXDABCel('%s')=%d (alloc=%d)\n",tmp_FileName.c_str(),read_size,alloc_size);
+  gzclose(instr);
+
+#else
+#ifdef _MSC_VER
+	// Memory map file on windows...
+	SYSTEM_INFO info;
+	GetSystemInfo(&info);
+	m_hFile = CreateFile(m_FileName.c_str(), GENERIC_READ, FILE_SHARE_READ,
+			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL/*FILE_FLAG_RANDOM_ACCESS*/);
+	if (m_hFile == INVALID_HANDLE_VALUE)
+	{
+		SetError("Failed to open the file for win memory mapping.");
+		return false;
+	}
+	m_hFileMap = CreateFileMapping(m_hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+	if (m_hFileMap != NULL)
+	{
+		m_lpFileMap = MapViewOfFile(m_hFileMap, FILE_MAP_READ, 0, 0, 0);
+		if (m_lpFileMap == NULL)
+		{
+			Close();
+			SetError("Unable to map view for the win memory map file.");
+			return false;
+		}
+		else
+		{
+			m_lpData = (char *)(m_lpFileMap) + iHeaderBytes;
+		}
+	}
+#else
   // printf("OPEN: non memory mapped.\n"); //
   m_lpFileMap=NULL;
   m_File=fopen(m_FileName.c_str(),"r");
@@ -924,8 +1030,10 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
   }
   //
   fclose(m_File);
+#endif
+#endif // CELFILE_USE_ZLIB
 
-#endif // _USE_MEM_MAPPING_
+#endif // CELFILE_USE_MEMMAP
 
 	int16_t x=0;
 	int16_t y=0;
@@ -983,18 +1091,32 @@ bool CCELFileData::ReadXDABCel(bool bReadHeaderOnly)
 ///////////////////////////////////////////////////////////////////////////////
 bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 {
+  std::string tmp_FileName=ResolveName();
 	bool retVal = false;
 
-	// Open the file.
+#ifdef CELFILE_USE_STDSTREAM
+  // Open the file.
 	std::ifstream instr;
-	instr.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
+  tmp_FileName=m_FileName;
+	instr.open(tmp_FileName.c_str(), std::ios::in | std::ios::binary);
+  // Check if open
+  if (!instr) {
+		SetError(OPEN_ERR_MSG " (ifstream)");
+ 		return false;
+ 	}
+#endif
 
-	// Check if open
-	if (!instr)
-	{
-		SetError("Unable to open the file.");
-		return false;
-	}
+#ifdef CELFILE_USE_ZLIB
+  gzFile instr;
+  // try the UNgziped file first.
+  tmp_FileName=ResolveName();
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  if (instr==NULL) {
+    SetError(OPEN_ERR_MSG " (gzopen)");
+    return false;
+  }
+  //printf("### CCELFileData::ReadTranscriptomeBCel('%s'): open1\n",tmp_FileName.c_str());
+#endif
 
 	Clear();
 
@@ -1134,8 +1256,15 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 	if (bReadHeaderOnly)
 		return true;
 
+#ifdef CELFILE_USE_STDSTREAM
 	instr.close();
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzclose(instr);
+#endif
 
+
+#ifdef CELFILE_USE_MEMMAP
 	// Memory map file
 #ifdef _MSC_VER
 	SYSTEM_INFO info;
@@ -1162,7 +1291,7 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 			m_lpData = (char *)(m_lpFileMap) + iHeaderBytes;
 		}
 	}
-#else
+#else // posix
 	int32_t lFileSize = GetFileSize();
 	char* szBuffer = new char[iHeaderBytes + 1];
 	m_File = fopen(m_FileName.c_str(), "r");
@@ -1198,6 +1327,31 @@ bool CCELFileData::ReadTranscriptomeBCel(bool bReadHeaderOnly)
 		fclose(m_File);
 		m_File = NULL;
 	}
+
+#endif // if _msc_ver
+#endif // celfile_use_mmap
+
+#ifdef CELFILE_USE_STDSTREAM
+  int alloc_size=GetFileSize();
+  m_lpData=new char[alloc_size];
+  instr.open(tmp_FileName.c_str(),std::ios::in | std::ios::binary);
+  instr.seekg(iHeaderBytes,std::ios::beg);
+  instr.read(m_lpData,alloc_size-iHeaderBytes);
+  instr.close();
+#endif
+
+#ifdef CELFILE_USE_ZLIB
+  int alloc_size=
+    ((SHORT_SIZE+SHORT_SIZE+CHAR_SIZE)*(GetRows()*GetCols())) + // row*col
+    (100*1024) // add 100k for masked and outliers
+    ;
+  m_lpData=new char[alloc_size];
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  gzseek(instr,iHeaderBytes,SEEK_SET);
+  int read_size=gzread(instr,m_lpData,alloc_size);
+  //printf("### CCELFileData::ReadCompactCelFile('%s')=%d (alloc=%d)\n",tmp_FileName.c_str(),read_size,alloc_size);
+  gzclose(instr);
+  
 #endif
 
 	// Read the Mean data
@@ -1262,24 +1416,42 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 {
 	bool retVal = false;
 
-	// Open the file.
-	std::ifstream instr;
-	instr.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
+  std::string tmp_FileName;
+  tmp_FileName=ResolveName();
 
+  if (tmp_FileName=="") {
+    SetError("File '"+m_FileName+"' not found");
+    return false;
+  }
+
+	// Open the file.
+#ifdef CELFILE_USE_STDSTREAM
+	std::ifstream instr;
+	instr.open(tmp_FileName.c_str(), std::ios::in | std::ios::binary);
 	// Check if open
 	if (!instr)
 	{
 		SetError("Unable to open the file.");
 		return false;
 	}
-
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzFile instr;
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  if (instr==NULL) {
+    SetError("Unable to open the file." " (gzopen)");
+    return false;
+  }
+  //printf("### CCELFileData::ReadCompactBCel('%s')\n",tmp_FileName.c_str());
+#endif
+  
 	Clear();
 
 	// Read the header
 	int iHeaderBytes = 0;
 	int32_t version;
 	int32_t nSubGrids;
-	char *sval = NULL;
+  std::string tmpstr;
 
 	// Read the magic number.
 	std::string magic;
@@ -1312,24 +1484,21 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 	m_HeaderData.SetCells(iValue);
 
 	// Read the other members.
-	ReadCString_I(instr, sval);
+	ReadCString_I(instr, tmpstr);
 	iHeaderBytes += INT_SIZE;
-	iHeaderBytes += ((int) strlen(sval));
-	m_HeaderData.SetHeader(sval);
-	delete[] sval;
-	sval = NULL;
-	ReadCString_I(instr, sval);
+	iHeaderBytes += tmpstr.size();
+	m_HeaderData.SetHeader(tmpstr.c_str());
+
+	ReadCString_I(instr,tmpstr);
 	iHeaderBytes += INT_SIZE;
-	iHeaderBytes += ((int) strlen(sval));
-	m_HeaderData.SetAlg(sval);
-	delete[] sval;
-	sval = NULL;
-	ReadCString_I(instr, sval);
+	iHeaderBytes += tmpstr.size();
+	m_HeaderData.SetAlg(tmpstr.c_str());
+
+	ReadCString_I(instr, tmpstr);
 	iHeaderBytes += INT_SIZE;
-	iHeaderBytes += ((int) strlen(sval));
-	m_HeaderData.SetParams(sval);
-	delete[] sval;
-	sval = NULL;
+	iHeaderBytes += tmpstr.size();
+	m_HeaderData.SetParams(tmpstr.c_str());
+
 	ReadInt32_I(instr, iValue);
 	iHeaderBytes += INT_SIZE;
 	m_HeaderData.SetMargin(iValue);
@@ -1357,13 +1526,19 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 	// Set grid coordinates
 	m_HeaderData.ParseCorners();
 
+#ifdef CELFILE_USE_STDSTREAM
 	instr.close();
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzclose(instr);
+#endif
 
 	// Read the remaining data.
 	if (bReadHeaderOnly)
 		return true;
 
 	// Memory map file
+#ifdef CELFILE_USE_MEMMAP
 #ifdef _MSC_VER
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
@@ -1425,6 +1600,28 @@ bool CCELFileData::ReadCompactBCel(bool bReadHeaderOnly)
 		fclose(m_File);
 		m_File = NULL;
 	}
+#endif
+#else
+  // no-mem-map
+  int alloc_size=(20*1024)+
+    ((SHORT_SIZE)*(GetRows()*GetCols())) + // row*col
+    ((SHORT_SIZE + SHORT_SIZE)             * GetNumMasked()) + // masked
+    ((SHORT_SIZE + SHORT_SIZE)             * GetNumOutliers()); // outliers
+  m_lpData=new char[alloc_size];
+
+#ifdef CELFILE_USE_STDSTREAM
+  instr.open(tmp_FileName.c_str(),std::ios::in | std::ios::binary);
+  instr.seekg(iHeaderBytes,std::ios::beg);
+  instr.read(m_lpData,alloc_size-iHeaderBytes);
+#endif
+
+#ifdef CELFILE_USE_ZLIB
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  gzseek(instr,iHeaderBytes,SEEK_SET);
+  int read_size=gzread(instr,m_lpData,alloc_size);
+  //printf("### CCELFileData::ReadCompactCelFile('%s')=%d (alloc=%d)\n",tmp_FileName.c_str(),read_size,alloc_size);
+  gzclose(instr);
+#endif
 #endif
 
 	// Read the Mean data
@@ -1528,17 +1725,31 @@ void CCELFileData::EnsureNotMmapped()
 bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 {
 	bool retVal = false;
+  std::string tmp_FileName;
+  tmp_FileName=ResolveName();
+  if (tmp_FileName=="") {
+    SetError("Cant find file: '"+m_FileName+"'");
+    return false;
+  }
 
+  //#ifdef CELFILE_USE_STDSTREAM
 	// Open the file.
 	std::ifstream instr;
-	instr.open(m_FileName.c_str(), std::ios::in);
-
+	instr.open(tmp_FileName.c_str(), std::ios::in);
 	// Check if open
 	if (!instr)
 	{
-		SetError("Unable to open the file.");
+		SetError("Unable to open the file." " (stdstream)");
 		return false;
 	}
+  //#endif
+//#ifdef CELFILE_USE_ZLIB
+//  gzFile instr;
+//  instr=gzopen(tmp_FileName.c_str(),"rb");
+//  if (instr==NULL) {
+//    SetError("Unable to open the file." " (gzopen)");
+//  }
+//#endif
 
 	Clear();
 
@@ -1547,7 +1758,12 @@ bool CCELFileData::ReadTextCel(bool bReadHeaderOnly)
 	char tempStr[MAXLINELENGTH];
 
 	// Extract a line of header
-	instr.getline(pszHeader, MAXLINELENGTH);
+  //#ifdef CELFILE_USE_STDSTREAM
+	instr.getline(pszHeader, sizeof(pszHeader));
+  //#endif
+//#ifdef CELFILE_USE_ZLIB
+//  gzgets(instr,pszHeader,sizeof(pszHeader));
+//#endif
 
 	//Determine the version number
 	if (strncmp(pszHeader,"[CEL]",5)==0)
@@ -1999,67 +2215,59 @@ bool CCELFileData::ReadEx(const char *filename, int nState)
 std::string CCELFileData::GetHeaderKey(const char* key)
 {
 	assert(key != NULL);
+  // tmp buff for snprintf
+  char buf[SVALUE_LENGTH+1];
 
 	std::string strKey = key;
 	std::transform(strKey.begin(), strKey.end(), strKey.begin(), toupper);
 
-
-
-	if (strKey == "HEADER")
+	if (strKey == "HEADER") {
 		return GetHeaderString();
+  }
 	else if (strKey == "VERSION")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "%d", GetVersion());
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "%d", GetVersion());
+		return std::string(buf);
 	}
 	else if (strKey == "COLS")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "%d", GetCols());
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "%d", GetCols());
+		return std::string(buf);
 	}
 	else if (strKey == "ROWS")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "%d", GetRows());
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "%d", GetRows());
+		return std::string(buf);
 	}
 	else if (strKey == "TOTALX")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "%d", GetCols());
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "%d", GetCols());
+		return std::string(buf);
 	}
 	else if (strKey == "TOTALY")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "%d", GetRows());
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "%d", GetRows());
+		return std::string(buf);
 	}
 	else if (strKey == "GRIDCORNERUL")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().upperleft.x, GetGridCorners().upperleft.y);
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().upperleft.x, GetGridCorners().upperleft.y);
+		return std::string(buf);
 	}
 	else if (strKey == "GRIDCORNERUR")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().upperright.x, GetGridCorners().upperright.y);
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().upperright.x, GetGridCorners().upperright.y);
+		return std::string(buf);
 	}
 	else if (strKey == "GRIDCORNERLL")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().lowerleft.x, GetGridCorners().lowerleft.y);
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().lowerleft.x, GetGridCorners().lowerleft.y);
+		return std::string(buf);
 	}
 	else if (strKey == "GRIDCORNERLR")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().lowerright.x, GetGridCorners().lowerright.y);
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "(%d, %d)", GetGridCorners().lowerright.x, GetGridCorners().lowerright.y);
+		return std::string(buf);
 	}
 	else if (strKey == "OFFSETX")
 		return "0";
@@ -2079,22 +2287,20 @@ std::string CCELFileData::GetHeaderKey(const char* key)
 		return GetParams();
 	else if (strKey == "NUMBERCELLS")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "%d", GetNumCells());
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "%d", GetNumCells());
+		return std::string(buf);
 	}
 	else if (strKey == "NUMBERMASKEDCELLS")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "%d", GetNumMasked());
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "%d", GetNumMasked());
+		return std::string(buf);
 	}
 	else if (strKey == "NUMBEROUTLIERCELLS")
 	{
-		char* sValue = new char[SVALUE_LENGTH];
-		snprintf(sValue,SVALUE_LENGTH, "%d", GetNumOutliers());
-		return sValue;
+		snprintf(buf,SVALUE_LENGTH, "%d", GetNumOutliers());
+		return std::string(buf);
 	}
+  // unknown header...
 	return "";
 }
 
@@ -2388,16 +2594,34 @@ bool CCELFileData::IsOutlier(int index)
 ///////////////////////////////////////////////////////////////////////////////
 bool CCELFileData::IsXDACompatibleFile()
 {
+  std::string tmp_FileName;
+  tmp_FileName=ResolveName();
+
+#ifdef CELFILE_USE_STDSTREAM
 	// Open the file.
-	std::ifstream instr(m_FileName.c_str(), std::ios::in | std::ios::binary);
+	std::ifstream instr(tmp_FileName.c_str(), std::ios::in | std::ios::binary);
 	if (!instr)
 		return 0;
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzFile instr;
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  if (instr==NULL) {
+    return 0;
+  }
+#endif
 
 	// Read the magic number from the file.
 	uint32_t magic=0;
 	ReadUInt32_I(instr, magic);
 	bool bXDAFile = ((magic == CELL_FILE_MAGIC_NUMBER) ? true : false);
+
+#ifdef CELFILE_USE_STDSTREAM
 	instr.close();
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzclose(instr);
+#endif
 
 	return bXDAFile;
 }
@@ -2436,10 +2660,23 @@ bool CCELFileData::IsVersion3CompatibleFile()
 ///////////////////////////////////////////////////////////////////////////////
 bool CCELFileData::IsTranscriptomeBcelFile()
 {
+  std::string tmp_FileName;
+  tmp_FileName=ResolveName();
+
 	// Open the file.
-	std::ifstream instr(m_FileName.c_str(), std::ios::in | std::ios::binary);
-	if (!instr)
+#ifdef CELFILE_USE_STDSTREAM
+	std::ifstream instr(tmp_FileName.c_str(), std::ios::in | std::ios::binary);
+	if (!instr) {
 		return 0;
+  }
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzFile instr;
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  if (instr==NULL) {
+    return 0;
+  }
+#endif
 
 	// Read the header marker from the file.
 	char szMarker[BCEL_HEADER_LEN];
@@ -2447,7 +2684,12 @@ bool CCELFileData::IsTranscriptomeBcelFile()
 	bool bTranscriptomeFile = false;
 	if (strncmp(szMarker, BCEL_HEADER_BYTES, BCEL_HEADER_LEN) == 0)
 		bTranscriptomeFile = true;
+#ifdef CELFILE_USE_STDSTREAM
 	instr.close();
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzclose(instr);
+#endif
 
 	return bTranscriptomeFile;
 }
@@ -2460,10 +2702,24 @@ bool CCELFileData::IsTranscriptomeBcelFile()
 ///////////////////////////////////////////////////////////////////////////////
 bool CCELFileData::IsCompactCelFile()
 {
+  std::string tmp_FileName;
+  tmp_FileName=ResolveName();
+
 	// Open the file.
-	std::ifstream instr(m_FileName.c_str(), std::ios::in | std::ios::binary);
-	if (!instr)
+#ifdef CELFILE_USE_STDSTREAM
+	std::ifstream instr(tmp_FileName.c_str(), std::ios::in | std::ios::binary);
+	if (!instr) {
 		return 0;
+  }
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzFile instr;
+  tmp_FileName=ResolveName();
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  if (instr==NULL) {
+    return 0;
+  }
+#endif
 
 	// Read the header marker from the file.
 	char szMarker[CCEL_HEADER_LEN];
@@ -2472,7 +2728,12 @@ bool CCELFileData::IsCompactCelFile()
 	if (strncmp(szMarker, CCEL_HEADER_BYTES, CCEL_HEADER_LEN) == 0)
 		bCompactCelFile = true;
 
+#ifdef CELFILE_USE_STDSTREAM
 	instr.close();
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzclose(instr);
+#endif
 
 	return bCompactCelFile;
 }
@@ -2485,10 +2746,23 @@ bool CCELFileData::IsCompactCelFile()
 ///////////////////////////////////////////////////////////////////////////////
 bool CCELFileData::IsUnsupportedCompactCelFile()
 {
+  std::string tmp_FileName;
+  tmp_FileName=ResolveName();
+
+#ifdef CELFILE_USE_STDSTREAM
 	// Open the file.
-	std::ifstream instr(m_FileName.c_str(), std::ios::in | std::ios::binary);
+	std::ifstream instr(tmp_FileName.c_str(), std::ios::in | std::ios::binary);
 	if (!instr)
 		return 0;
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzFile instr;
+  tmp_FileName=ResolveName();
+  instr=gzopen(tmp_FileName.c_str(),"rb");
+  if (instr==NULL) {
+    return 0;
+  }
+#endif
 
 	// Read the header marker from the file.
 	char szMarker[CCEL_HEADER_LEN];
@@ -2497,7 +2771,12 @@ bool CCELFileData::IsUnsupportedCompactCelFile()
 	if (strncmp(szMarker, OLD_CCEL_HEADER_BYTES, CCEL_HEADER_LEN) == 0)
 		bCompactCelFile = true;
 
+#ifdef CELFILE_USE_STDSTREAM
 	instr.close();
+#endif
+#ifdef CELFILE_USE_ZLIB
+  gzclose(instr);
+#endif
 
 	return bCompactCelFile;
 }
@@ -2584,12 +2863,13 @@ CCELFileData::~CCELFileData()
 ///  @param  str const char * 	Error string
 ///  @return void	
 ///////////////////////////////////////////////////////////////////////////////
+void CCELFileData::SetError(const std::string& str)
+{
+	m_strError = str;
+}
 void CCELFileData::SetError(const char* str)
 {
-	assert(str != NULL);
-	int iLen = (int) strlen(str);
-	assert(iLen > 0);
-	m_strError = str;
+  m_strError=str;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

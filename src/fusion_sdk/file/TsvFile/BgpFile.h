@@ -166,13 +166,13 @@ public:
   /// @brief     Open a BGP file
   /// @param     filename     the pathname of the file
   /// @returns   tsv_return_t
-  int open(std::string filename) {
+  int open(const std::string& filename) {
     return m_tsv.open(filename);
   }
   /// @brief     Start the write to a file
   /// @param     filename
   /// @returns   tsv_return_t
-  int write(std::string filename) {
+  int write(const std::string& filename) {
     return m_tsv.writeTsv(filename);
   }
   /// @brief     Close a PGF file

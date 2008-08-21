@@ -20,118 +20,65 @@
 /// @file   DumpPgf.cpp
 /// @brief  Class for dumping information from a pgf and clf file.
 
-#include <algorithm>
-
 #include "DumpPgf.h"
+//
+#include <algorithm>
+//
 #include "util/Guid.h"
 #include "util/Util.h"
 
 using namespace std;
 using namespace affx;
 
-static const string usage =
-  "apt-dump-pgf - Dump information from a pgf file.\n"
-  "Usage:\n"
-  "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probeset-type=type [--probeset-type=...]]\n\n"
-  "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probeset-ids=file [--probeset-ids=...]]\n\n"
-  "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probe-ids=file [--probe-ids=...]]";
-
-static PgOptions::PgOpt PGF_FILE_OPT =
-  {
-    "p", "pgf-file", PgOptions::STRING_OPT,
-    "The pgf file used to dump information.",
-    "", NULL
-  };
-
-static PgOptions::PgOpt CLF_FILE_OPT =
-  {
-    "c", "clf-file", PgOptions::STRING_OPT,
-    "Optional clf file to use. When present, "
-    "probe position will be included in the output.",
-    "", NULL
-  };
-
-static PgOptions::PgOpt PROBESET_ONLY_OPT =
-  {
-    "", "probeset-only", PgOptions::BOOL_OPT,
-    "Dump only probeset level information.",
-    "false", NULL
-  };
-
-static PgOptions::PgOpt PROBESET_TYPE_OPT =
-  {
-    "", "probeset-type", PgOptions::STRING_OPT,
-    "Optional probeset type to extract; "
-    "can be specified multiple times. When specified "
-    "multiple times, the intersection of all types "
-    "is taken. The user cannot mix use of probeset-type, "
-    "probeset-ids, and probe-ids.",
-    "", NULL
-  };
-
-static PgOptions::PgOpt PROBESET_ID_FILE_OPT =
-  {
-    "s", "probeset-ids", PgOptions::STRING_OPT,
-    "Optional name of a file containing probeset ids "
-    "to extract; can be specified multiple times. The "
-    "user cannot mix use of probeset-type, probeset-ids, "
-    "and probe-ids.",
-    "", NULL
-  };
-
-static PgOptions::PgOpt PROBE_ID_FILE_OPT =
-  {
-    "", "probe-ids", PgOptions::STRING_OPT,
-    "Optional name of a file containing probe ids "
-    "to extract; can be specified multiple times. The "
-    "user cannot mix use of probeset-type, probeset-ids, "
-    "and probe-ids.",
-    "", NULL
-  };
-
-static PgOptions::PgOpt OR_OPT =
-  {
-    "", "or", PgOptions::BOOL_OPT,
-    "Use the union of the types requested, not the "
-    "intersection.",
-    "false", NULL
-  };
-
-static PgOptions::PgOpt OUTFILE_OPT =
-  {
-    "o", "out-file", PgOptions::STRING_OPT,
-    "Output file to contain the dump output.",
-    "", NULL
-  };
-
-static PgOptions::PgOpt VERSION_OPT =
-  {
-    "", "version", PgOptions::BOOL_OPT,
-    "Display version information.",
-    "false", NULL
-  };
-
-static PgOptions::PgOpt HELP_OPT =
-  {
-    "h", "help", PgOptions::BOOL_OPT,
-    "Print help message.",
-    "false", NULL
-  };
-
-static PgOptions::PgOpt *options[] =
-  {
-    &PGF_FILE_OPT,
-    &CLF_FILE_OPT,
-    &PROBESET_TYPE_OPT,
-    &PROBESET_ID_FILE_OPT,
-    &PROBE_ID_FILE_OPT,
-    &PROBESET_ONLY_OPT,
-    &OR_OPT,
-    &OUTFILE_OPT,
-    &VERSION_OPT,
-    &HELP_OPT,
-    NULL
-  };
+void define_dumppgf_options(PgOptions* opts) {
+  opts->setUsage("apt-dump-pgf - Dump information from a pgf file.\n"
+                 "Usage:\n"
+                 "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probeset-type=type [--probeset-type=...]]\n\n"
+                 "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probeset-ids=file [--probeset-ids=...]]\n\n"
+                 "   apt-dump-pgf -o int.txt -c file.clf -p file.pgf [--probe-ids=file [--probe-ids=...]]"
+                 );
+  opts->defineOption("p", "pgf-file", PgOpt::STRING_OPT,
+                     "The pgf file used to dump information.",
+                     "");
+  opts->defineOption("c", "clf-file", PgOpt::STRING_OPT,
+                     "Optional clf file to use. When present, "
+                     "probe position will be included in the output.",
+                     "");
+  opts->defineOption("", "probeset-only", PgOpt::BOOL_OPT,
+                     "Dump only probeset level information.",
+                     "false");
+  opts->defOptMult("", "probeset-type", PgOpt::STRING_OPT,
+                   "Optional probeset type to extract; "
+                   "can be specified multiple times. When specified "
+                   "multiple times, the intersection of all types "
+                   "is taken. The user cannot mix use of probeset-type, "
+                   "probeset-ids, and probe-ids.",
+                   "");
+  opts->defineOption("s", "probeset-ids", PgOpt::STRING_OPT,
+                     "Optional name of a file containing probeset ids "
+                     "to extract; can be specified multiple times. The "
+                     "user cannot mix use of probeset-type, probeset-ids, "
+                     "and probe-ids.",
+                     "");
+  opts->defineOption("", "probe-ids", PgOpt::STRING_OPT,
+                     "Optional name of a file containing probe ids "
+                     "to extract; can be specified multiple times. The "
+                     "user cannot mix use of probeset-type, probeset-ids, "
+                     "and probe-ids.",
+                     "");
+  opts->defineOption("", "or", PgOpt::BOOL_OPT,
+                     "Use the union of the types requested, not the intersection.",
+                     "false");
+  opts->defineOption("o", "out-file", PgOpt::STRING_OPT,
+                     "Output file to contain the dump output.",
+                     "");
+  opts->defineOption("", "version", PgOpt::BOOL_OPT,
+                     "Display version information.",
+                     "false");
+  opts->defineOption("h", "help", PgOpt::BOOL_OPT,
+                     "Print help message.",
+                     "false");
+}
 
 /**
  *  @brief Constructor.
@@ -144,62 +91,56 @@ static PgOptions::PgOpt *options[] =
  *  Errors: throw exception to display help messages, if unsupported
  *  option choices were made.
 */
-dumpPgf::dumpPgf (int argc, char* argv[], const std::string& version, const std::string& cvsId)
+dumpPgf::dumpPgf (char* argv[], const std::string& version, const std::string& cvsId)
   : m_Version (version), m_CvsId (cvsId), m_GetProbeCoordinates (0)
 {
-  
   // Prefer throw() to exit().
   Err::setThrowStatus (true);
 
-  PgOptions::hack_resetOptionsList(options);
   //
-  m_Opts = new PgOptions (usage, options);
-  m_Opts->parseOptions (argc, argv);
+  //m_Opts = new PgOptions ();
+  define_dumppgf_options(&m_Opts);
+  m_Opts.parseArgv(argv);
+
+  // The command line is copied to output.
+  m_CommandLine=m_Opts.commandLine();
 
   // Optionally display usage message.
-  if (m_Opts->boolOpt ("help") || argc == 1)
+  if (m_Opts.getBool("help") || (m_Opts.argc() <= 1))
   {
-    m_Opts->usage();
-    string msg = "version:\n";
-    msg += "   " + version + "\n";
-    msg += "   " + cvsId;
-    cout << msg;
+    m_Opts.usage();
+    cout << "version:\n" << "   " << version << "\n";
+    cout << "   " << cvsId;
     exit(0);
   }
   // Optionally display version.
-  if (m_Opts->boolOpt ("version"))
+  if (m_Opts.getBool("version"))
   {
-    string msg = "version: " + version + "   " + cvsId;
-    cout << msg;
+    cout << "version: " << version << "   " << cvsId;
     exit(0);
   }
 
   // Require pgf file.
-  m_PgfFileName = m_Opts->strOpt ("pgf-file");
+  m_PgfFileName = m_Opts.get("pgf-file");
   if (m_PgfFileName.empty())
   {
     string msg = "Must provide pgf file.";
     Err::errAbort (msg);
   }
   // Optional clf file.
-  m_ClfFileName = m_Opts->strOpt ("clf-file");
+  m_ClfFileName = m_Opts.get("clf-file");
+
+  PgOpt* opt;
 
   // Save optional types.
-  for (PgOptions::PgOpt* typeOpt = m_Opts->findPgOpt ("probeset-type");
-      typeOpt != 0; typeOpt = typeOpt->next)
-    // Discard empty strings.
-    if (strlen (typeOpt->getValue()) != 0)
-      m_ProbesetTypes.push_back (typeOpt->getValue());
-
-  // Save optional probeset, probe id file names.
-  for (PgOptions::PgOpt* fileOpt = m_Opts->findPgOpt ("probeset-ids");
-      fileOpt != 0; fileOpt = fileOpt->next)
-    if (strlen (fileOpt->getValue()) != 0)
-      m_ProbesetIdFileNames.push_back (fileOpt->getValue());
-  for (PgOptions::PgOpt* fileOpt = m_Opts->findPgOpt ("probe-ids");
-      fileOpt != 0; fileOpt = fileOpt->next)
-    if (strlen (fileOpt->getValue()) != 0)
-      m_ProbeIdFileNames.push_back (fileOpt->getValue());
+  opt = m_Opts.mustFindOpt("probeset-type");
+  opt->push_user_values_into(m_ProbesetTypes);
+  // Save optional probeset
+  opt = m_Opts.mustFindOpt("probeset-ids");
+  opt->push_user_values_into(m_ProbesetIdFileNames);
+  // and probe id file names.
+  opt = m_Opts.mustFindOpt("probe-ids");
+  opt->push_user_values_into(m_ProbeIdFileNames);
 
   // Allow only one of probeset-type, probeset-ids, or probe-ids options.
   int optionsChosen = 0;
@@ -215,15 +156,15 @@ dumpPgf::dumpPgf (int argc, char* argv[], const std::string& version, const std:
   }
 
   // Save optional probeset-only, or flags.
-  m_DumpProbesetsOnly = m_Opts->boolOpt ("probeset-only");
-  m_DumpUnion = m_Opts->boolOpt ("or");
+  m_DumpProbesetsOnly = m_Opts.getBool("probeset-only");
+  m_DumpUnion = m_Opts.getBool("or");
 
   // Probeset-only is incompatible with a probe-ids list.
   if (m_DumpProbesetsOnly && !m_ProbeIdFileNames.empty())
     Err::errAbort ("Cannot use --probeset-only with --probe-ids.");
 
   // Output to cout unless a writeable file was selected.
-  m_Outfile = m_Opts->strOpt ("out-file");
+  m_Outfile = m_Opts.get("out-file");
   if (m_Outfile.empty())
     Err::errAbort ("Must provide an output file, --out-file option.");
   else
@@ -232,11 +173,7 @@ dumpPgf::dumpPgf (int argc, char* argv[], const std::string& version, const std:
     m_Out = &m_FileOut;
   }
 
-  // The command line is copied to output.
-  assert (argc > 0);
-  m_CommandLine = argv[0];
-  for (int i = 1; i < argc; ++i)
-    m_CommandLine += " " + string (argv [i]);
+
 }
 
 /**

@@ -65,6 +65,21 @@ const static std::wstring CYTO_START_POSITION_NAME = L"StartPosition";
 /*! The column name for the physical position of the cyto region. */
 const static std::wstring CYTO_STOP_POSITION_NAME = L"StopPosition";
 
+/*! The column name for the copy number variation region. */
+const static std::wstring COPY_NUMBER_VARIATION_REGION_NAME = L"Region";
+
+/*! The column name for the copy number variation region. */
+const static std::wstring COPY_NUMBER_VARIATION_SIGNAL_NAME = L"Signal";
+
+/*! The column name for the copy number variation call. */
+const static std::wstring COPY_NUMBER_VARIATION_CALL_NAME = L"Call";
+
+/*! The column name for the copy number variation confidence value. */
+const static std::wstring COPY_NUMBER_VARIATION_CONFIDENCE_NAME = L"Confidence";
+
+/*! used for full column index for log2Ratio */
+const static int cnlog2RatioIndexOffset = 4;
+
 CHPMultiDataData::CHPMultiDataData()
 {
 	Clear();
@@ -186,6 +201,11 @@ void CHPMultiDataData::GetCopyNumberEntry(MultiDataType dataType, int index, aff
     GetGenericCopyNumberEntry(dataType, index, entry);
 }
 
+void CHPMultiDataData::GetCopyNumberEntryLog2Ratio(MultiDataType dataType, int index, float* val)
+{
+	GetGenericCopyNumberEntryLog2Ratio(dataType, index, val);
+}
+
 void CHPMultiDataData::GetCytoEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry)
 {
     GetGenericCytoRegionEntry(dataType, index, entry);
@@ -194,6 +214,11 @@ void CHPMultiDataData::GetCytoEntry(MultiDataType dataType, int index, affymetri
 void CHPMultiDataData::GetExpressionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry)
 {
     GetGenericExpressionEntry(dataType, index, entry);
+}
+
+void CHPMultiDataData::GetCopyNumberVariationEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry)
+{
+    GetGenericCopyNumberVariationRegionEntry(dataType, index, entry);
 }
 
 void CHPMultiDataData::GetGenericGenotypeEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry)
@@ -224,6 +249,15 @@ void CHPMultiDataData::GetGenericCopyNumberEntry(MultiDataType dataType, int ind
     }
 }
 
+void CHPMultiDataData::GetGenericCopyNumberEntryLog2Ratio(MultiDataType dataType, int index, float* val)
+{
+	DataSetInfo *ds = OpenMultiDataDataSet(dataType);
+	if (ds && ds->entries && ds->entries->IsOpen())
+	{
+		GetExtraCopyNumberFloatTypeNoNameLog2Ratio(ds, index, val);
+    }
+}
+
 void CHPMultiDataData::GetGenericCytoRegionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry)
 {
 	DataSetInfo *ds = OpenMultiDataDataSet(dataType);
@@ -250,6 +284,22 @@ void CHPMultiDataData::GetGenericExpressionEntry(MultiDataType dataType, int ind
         entry.name.clear();
 		ds->entries->GetData(index, colIndex++, entry.name);
 		ds->entries->GetData(index, colIndex++, entry.quantification);
+        GetExtraMetricEntries(ds, index, colIndex, entry.metrics);
+    }
+}
+
+void CHPMultiDataData::GetGenericCopyNumberVariationRegionEntry(MultiDataType dataType, int index, 
+                                                                affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry)
+{
+	DataSetInfo *ds = OpenMultiDataDataSet(dataType);
+	if (ds && ds->entries && ds->entries->IsOpen())
+	{
+		int colIndex = 0;
+        entry.name.clear();
+		ds->entries->GetData(index, colIndex++, entry.name);	
+        ds->entries->GetData(index, colIndex++, entry.signal);
+        ds->entries->GetData(index, colIndex++, entry.call);
+        ds->entries->GetData(index, colIndex++, entry.confidenceScore);
         GetExtraMetricEntries(ds, index, colIndex, entry.metrics);
     }
 }
@@ -338,6 +388,14 @@ void CHPMultiDataData::GetExtraMetricEntries(DataSetInfo *ds, int rowIndex, int 
 	}
 }
 
+void CHPMultiDataData::GetExtraCopyNumberFloatTypeNoNameLog2Ratio(DataSetInfo *ds, int rowIndex, float *val)
+{
+	float valFloat = 0.0f;
+
+	ds->entries->GetData(rowIndex, cnlog2RatioIndexOffset, (float&)valFloat);
+	*val = valFloat;
+}
+
 u_int8_t CHPMultiDataData::GetGenoCall(MultiDataType dataType, int index)
 {
 	u_int8_t call = 0;
@@ -404,6 +462,13 @@ void CHPMultiDataData::AddColumns(DataSetInfo &info, DataSetHeader& hdr)
         hdr.AddFloatColumn(CYTO_CONFIDENCE_NAME);
         break;
 
+    case CopyNumberVariationMultiDataType:
+        hdr.AddAsciiColumn(COPY_NUMBER_VARIATION_REGION_NAME, info.maxProbeSetName);  
+        hdr.AddFloatColumn(COPY_NUMBER_VARIATION_SIGNAL_NAME);
+        hdr.AddUByteColumn(COPY_NUMBER_VARIATION_CALL_NAME);
+        hdr.AddFloatColumn(COPY_NUMBER_VARIATION_CONFIDENCE_NAME);
+        break;
+
     default:
         break;
     }
@@ -428,14 +493,16 @@ DataSetInfo *CHPMultiDataData::OpenMultiDataDataSet(MultiDataType dataType)
 		int32_t ncols = info.entries->Header().GetColumnCnt();
 		info.metricColumns.clear();
         int startCol = 0;
-        if (dataType == ExpressionMultiDataType)
+        if (dataType == ExpressionMultiDataType || dataType == ExpressionControlMultiDataType)
             startCol = 2;
-        else if (dataType == GenotypeMultiDataType)
+        else if (dataType == GenotypeMultiDataType || dataType == GenotypeControlMultiDataType)
             startCol = 3;
         else if (dataType == CopyNumberMultiDataType)
             startCol = 3;
         else if (dataType == CytoMultiDataType)
             startCol = 6;
+        else if (dataType == CopyNumberVariationMultiDataType)
+              startCol = 4;
 
 		for (int32_t icol=startCol; icol<ncols; icol++)
 		{
