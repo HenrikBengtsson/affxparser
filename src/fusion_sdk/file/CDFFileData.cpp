@@ -720,8 +720,8 @@ bool CCDFFileData::ReadTextFormat()
 		ReadNextLine(instr, str, MAXLINELENGTH); // #qc ProbeSets
 		subStr=strchr(str,'=')+1;
 		m_Header.m_NumQCProbeSets = atoi(subStr);
-		char strref[65000];
-		ReadNextLine(instr, strref, 65000);	// The reference string.
+		char strref[400000];
+		ReadNextLine(instr, strref, 400000);	// The reference string.
 		subStr=strchr(strref,'=')+1;
 		m_Header.m_Reference = subStr;
 	}
