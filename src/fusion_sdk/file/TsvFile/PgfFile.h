@@ -351,7 +351,7 @@ public:
   /// @brief     Open a PGF file
   /// @param     filename the pathname of the file
   /// @return    tsv_return_t
-  int open(std::string filename) {
+  int open(const std::string& filename) {
     std::string val;
     int rc = m_tsv.open(filename);
     if(rc == TSV_OK) {
@@ -364,7 +364,7 @@ public:
   /// @brief     start the write of a PGF file.
   /// @param     filename
   /// @return    tsv_return_t
-  int write(std::string filename) {
+  int write(const std::string& filename) {
     return m_tsv.writeTsv(filename);
   }
   /// @brief     Close a PGF file

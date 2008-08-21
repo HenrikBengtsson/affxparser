@@ -129,6 +129,14 @@ public:
 	 */
 	void UpdateMultiDataCytoRegionEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &cytoEntryBuffer);
 
+    /*! Seek to appropriate file position and update cyto entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param cytoEntryBuffer The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataCopyNumberVariationRegionEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &cnVariationEntryBuffer);
+
 	/*! Seek to appropriate file position and update expression entry
      * @param dataType The data type.
 	 * @param row The row index.

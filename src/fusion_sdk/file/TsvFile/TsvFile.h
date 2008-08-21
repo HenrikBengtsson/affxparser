@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
@@ -67,7 +67,23 @@ namespace affx {
   enum bindto_t {
     TSV_BINDTO_NONE  = 0, ///< The binding wont be bound
     TSV_BINDTO_CIDX  = 1, ///< Bound to column indexed by number
-    TSV_BINDTO_CNAME = 2  ///< Bound to a column index by name
+    TSV_BINDTO_CNAME = 2, ///< Bound to a column index by name
+  };
+
+  enum valstate_t {
+    VALSTATE_NONE=0,
+    VALSTATE_INT=1,
+    VALSTATE_DOUBLE=2,
+    VALSTATE_STRING=3,
+  };
+
+  enum tsv_type_t {
+    TSV_TYPE_UNKNOWN = 0,
+    TSV_TYPE_ERR     = 1,
+    TSV_TYPE_STRING  = 2,
+    TSV_TYPE_INT     = 3,
+    TSV_TYPE_FLOAT   = 4,
+    TSV_TYPE_DOUBLE  = 5,
   };
 
   /// Return values to signal Error codes
@@ -86,7 +102,7 @@ namespace affx {
     TSV_HEADER_LAST          = -31, ///< Did not read a header line
     TSV_LEVEL_LAST           = -32, ///< Did not read a line of the correct level
     TSV_FIND_LAST            = -33, ///< Found the last matching value
-    TSV_LASTVALUE            = -99  ///< end of errors
+    TSV_LASTVALUE            = -99, ///< end of errors
   };
 
   /// Flags supplied to when finding matches
@@ -95,7 +111,7 @@ namespace affx {
     TSV_OP_LTEQ   = 0x03,
     TSV_OP_EQ     = 0x02,
     TSV_OP_GTEQ   = 0x06,
-    TSV_OP_GT     = 0x04
+    TSV_OP_GT     = 0x04,
   };
 
   /// The datatype of a index
@@ -139,7 +155,7 @@ namespace affx {
   void rtrim(std::string& str);
   void trim(std::string& str);
   void dequote(std::string& str);
-  int  splitstr(std::string str,char c,std::vector<std::string>& vec);
+  int  splitstr(const std::string& str,char c,std::vector<std::string>& vec);
   int unescapechar(int c);
   //
   bool header_ptr_less(const affx::TsvFileHeaderLine* a,const affx::TsvFileHeaderLine* b);
@@ -197,6 +213,7 @@ public:
   int         m_clvl;             ///< The indent level of the column
   int         m_cidx;             ///< The column number of the column.
   std::string m_cname;            ///< Column name. (Could be blank)
+  tsv_type_t  m_ctype;
   bool m_optAutoDequote;          ///< Automatically strip quotes?
   bool m_optAutoTrim;             ///< Automatically strip white space?
   std::string m_buffer;           ///< Buffer space
@@ -211,10 +228,15 @@ public:
   bool m_isnull;                 ///< True if null
   bool m_ignore;           ///< If this column should be ignored
 
+  int m_val_state;
+
   //// Cached "int" conversions.  Once converted we dont need to do it again
   int    m_value_int;             ///< The cached value
   bool   m_value_int_done;        ///< Has this value been converted?
   int    m_value_int_rv;          ///< The return value for the conversion
+
+  ////
+  int m_max_size;
 
   /// Cached "double" conversions.
   double m_value_double;          ///< same as int
@@ -241,17 +263,31 @@ public:
   bool isNull();
   void clear();
   //
-  int setBuffer(std::string str);
+  int setBuffer(const std::string& str);
   int setPrecision(int places);
   //int setInternCacheSize(int size);
+  void convertToString();
+
+  affx::tsv_type_t get_type();
+  int get_max_size();
+  affx::tsv_type_t set_type(affx::tsv_type_t ctype);
 
   // get the value of the column
-  int get(std::string&  val);
-  int get(int&          val);
-  int get(double&       val);
-  int get(float&        val);
-  int get(unsigned int& val);
-  int get(uint64_t&     val);
+  int get(std::string*  val);
+  int get(int*          val);
+  int get(double*       val);
+  int get(float*        val);
+  int get(unsigned int* val);
+  int get(uint64_t*     val);
+  //
+#ifndef SWIG
+  //
+  int get(std::vector<int>* val,char sep=',');
+  int get(std::vector<float>* val,char sep=',');
+  int get(std::vector<double>* val,char sep=',');
+  int get(std::vector<std::string>* val,char sep=',');
+#endif
+
   //
   int set(const std::string& val); ///< set the val
   int set(int           val); ///< set the val
@@ -261,6 +297,14 @@ public:
 #ifndef SWIG
   int set(float         val); ///< set the val
 #endif
+  //
+#ifndef SWIG
+  int set(const std::vector<std::string>& val,char sep=',');
+  int set(const std::vector<int>& val,char sep=',');
+  int set(const std::vector<float>& val,char sep=',');
+  int set(const std::vector<double>& val,char sep=',');
+#endif
+
   ///
   void linkedvar_push(affx::TsvFileBinding* var);
   void linkedvars_clear();
@@ -324,7 +368,7 @@ public:
                    /// normally equal to the line number)
 
   TsvFileHeaderLine();
-  TsvFileHeaderLine(std::string key,std::string value,int order);
+  TsvFileHeaderLine(const std::string& key,const std::string& value,int order);
 
   //
   bool operator<(const affx::TsvFileHeaderLine& b) const;
@@ -351,7 +395,6 @@ public:
   bool m_optAutoIndex;          ///< ?
   bool m_optAutoSenseSep;       ///< Autosense between tabs and commas
   bool m_optAutoTrim;           ///< remove whitespace from value?
-  //char m_optCommentChar;        ///< Comment char
   bool m_optDoQuote;            ///< Put quotes on output?
   char m_optEscapeChar;         ///< the escape char to use
   bool m_optEscapeOk;           ///< Obey the escapechar?
@@ -362,8 +405,14 @@ public:
   unsigned char m_optFieldSep;  ///< Field seperator defaults to TAB.
   bool m_optHdrDblQuoteComma;   ///< Header contains '","'.
   bool m_optLinkVarsOnOpen;     ///< Link variables when calling open()
+  //
+  char m_optQuoteChar1;         ///< Quoting Character 
+  char m_optQuoteChar2;         ///< Quoting Character 
+  //
+  int m_optPrecision;           ///< Default Precision
 
   int m_errno;         ///< The error number
+  bool m_eof;          ///< at eof?
   int  m_fileFormat;   ///< What version of file was read?
 
   /// The filename being visited
@@ -427,7 +476,7 @@ private:
 public:
   //
   TsvFile();
-  TsvFile(std::string fname);
+  TsvFile(const std::string& fname);
   ~TsvFile();
 
   // Dont use the implicit copy or assigment...
@@ -452,18 +501,18 @@ public:
   linenum_t line_number();
   int line_level();
 
-  int setFilename(std::string filename);
+  int setFilename(const std::string& filename);
   /// \brief Get the filename of the TsvFile
   std::string getFileName() { return m_fileName; }
   int getLevelCount();
   int getColumnCount(int clvl);
 
   /// \brief Opens a file -- attempts to guess some defaults
-  int open(std::string filename);
+  int open(const std::string& filename);
   /// Open a Csv file
-  int openCsv(std::string filename);
+  int openCsv(const std::string& filename);
   /// Opens a file as a table
-  int openTable(std::string filename);
+  int openTable(const std::string& filename);
   /// Close the file
   int close();
   /// Closes the file and clears bindings and other info
@@ -478,7 +527,9 @@ public:
   void default_options();
   /// Check if file is opened
   int isFileOpen() { return (m_fileStream.is_open()? TSV_OK : TSV_ERR_FILEIO); }
+  // same as the filestream
   int is_open() { return m_fileStream.is_open(); }
+  int good() { return m_fileStream.good(); }
 
   //
   int f_getline(std::string& line);
@@ -495,16 +546,20 @@ public:
   void headers_to_fields_v2();
 
   /// User methods
-  int defineColumn(int clvl,int cidx,std::string cname);
+  int defineColumn(int clvl,int cidx,const std::string& cname);
+  int defineColumn(int clvl,int cidx,const std::string& cname,tsv_type_t ctype);
 
   //
-  int defineFile(std::string definition);
-  int defineFileParse(std::string definition);
+  int defineFile(const std::string& definition);
+  int defineFileParse(const std::string& definition);
   //
   int writeOpen(const std::string& filename);
   int writeCsv(const std::string& filename);
+  //
   int writeTsv(const std::string& filename);
   int writeTsv_v1(const std::string& filename);
+  int writeTsv_v2(const std::string& filename);
+
   //
   int write_str(const std::string& str);
   //
@@ -516,7 +571,7 @@ public:
   int writeLevel(int clvl);
 
   /// \todo should check for duplicate indexes and not make them
-  int defineIndex(int clvl,std::string cname,int kind,int flags);
+  int defineIndex(int clvl,const std::string& cname,int kind,int flags);
   int defineIndex(int clvl,int cidx         ,int kind,int flags);
 
   //
@@ -531,22 +586,25 @@ public:
   int  addHeader(const std::string& key,int val);
   int  addHeader(const std::string& key,double val);
   int  addHeadersFrom(affx::TsvFile& f_tsv,int flags);
-  int  addHeadersFrom(affx::TsvFile& f_tsv,std::string prefix,int flags);
-  int  addHeadersFrom(affx::TsvFile& f_tsv,std::string prefix,std::vector<std::string>& key_vec);
+  int  addHeadersFrom(affx::TsvFile& f_tsv,const std::string& prefix,int flags);
+  int  addHeadersFrom(affx::TsvFile& f_tsv,const std::string& prefix,std::vector<std::string>& key_vec);
   int  addHeader_nocheck(const std::string& key,const std::string& val,int order);
   int  addHeader_nocheck(const std::string& key,const std::string& val);
-  int  headerKeyLegal(std::string key);
+  int  headerKeyLegal(const std::string& key);
   int  headersCount();
   void headersBegin();
   int  headersNext(std::string& key,std::string& val);
-  int  headersFindNext(std::string key,std::string& val);
+  int  headersFindNext(const std::string& key,std::string& val);
 #ifndef SWIG
   TsvFileHeaderLine* nextHeaderPtr();
   int deleteHeaderPtr(TsvFileHeaderLine* hdrptr);
 #endif
-  int addHeaderComment(std::string comment);
-  int addHeaderComment(std::string comment,int order);
+  int addHeaderComment(const std::string& comment);
+  int addHeaderComment(const std::string& comment,int order);
+  //
   void resortHeaders();
+  //
+  int writeFileComment(const std::string& comment);
 
   //
   int  cname2cidx(int clvl,int cidx);
@@ -558,11 +616,15 @@ public:
 
 #ifndef SWIG
   TsvFileField* clvlcidx2colptr(int clvl,int cidx);
-  TsvFileField* clvlcidx2colptr(int clvl,const std::string cname);
+  TsvFileField* clvlcidx2colptr(int clvl,const std::string& cname);
 #endif
   ///  \todo rename this nicer...
   int  cidx2cname(int clvl,int cidx,std::string& cname);
+  std::string getColumnName(int clvl,int cidx);
 
+  // set the default precision
+  int setPrecision(int places);
+  // set the precision on a column
   int setPrecision(int clvl,const std::string& cname,int places);
   int setPrecision(int clvl,int cidx,int places);
 
@@ -608,10 +670,23 @@ public:
   int rewind();
   int seekLine(linenum_t line);
   int gotoLine(linenum_t line);
+  bool eof();
+
+  //
+  void currentLineAsString(std::string& line);
 
   //
   bool isNull(int clvl,int cidx);
   bool isNull(int clvl,const std::string& cname);
+
+  affx::tsv_type_t get_type(int clvl,const std::string& cidx);
+  affx::tsv_type_t get_type(int clvl,int cidx);
+  affx::tsv_type_t set_type(int clvl,const std::string& cidx,affx::tsv_type_t type);
+  affx::tsv_type_t set_type(int clvl,int cidx,affx::tsv_type_t type);
+
+  //
+  int deduce_types();
+  int deduce_sizes();
 
   // Get a value given a clvl and cidx
   int get(int clvl,int cidx,std::string& val);
@@ -621,16 +696,31 @@ public:
   int get(int clvl,int cidx,unsigned int& val);
   int get(int clvl,int cidx,uint64_t&    val);
   //
-  int get(int clvl,std::string cname,std::string& val);
-  int get(int clvl,std::string cname,int&         val);
-  int get(int clvl,std::string cname,double&      val);
-  int get(int clvl,std::string cname,float&       val);
-  int get(int clvl,std::string cname,unsigned int& val);
-  int get(int clvl,std::string cname,uint64_t&    val);
+  int get(int clvl,const std::string& cname,std::string& val);
+  int get(int clvl,const std::string& cname,int&         val);
+  int get(int clvl,const std::string& cname,double&      val);
+  int get(int clvl,const std::string& cname,float&       val);
+  int get(int clvl,const std::string& cname,unsigned int& val);
+  int get(int clvl,const std::string& cname,uint64_t&    val);
+
+#ifndef SWIG
   //
-  int set(int clvl,int cidx,std::string  val);
+  int get(int clvl,int cidx,std::vector<int>* val,char sep=',');
+  int get(int clvl,int cidx,std::vector<float>* val,char sep=',');
+  int get(int clvl,int cidx,std::vector<double>* val,char sep=',');
+  int get(int clvl,int cidx,std::vector<std::string>* val,char sep=',');
+  //
+  int get(int clvl,const std::string& cname,std::vector<int>* val,char sep=',');
+  int get(int clvl,const std::string& cname,std::vector<float>* val,char sep=',');
+  int get(int clvl,const std::string& cname,std::vector<double>* val,char sep=',');
+  int get(int clvl,const std::string& cname,std::vector<std::string>* val,char sep=',');
+#endif
+
+  //
+  int set(int clvl,int cidx,const std::string& val);
   //#ifndef SWIG
   int set(int clvl,int cidx,int          val);
+  int set(int clvl,int cidx,float        val);
   int set(int clvl,int cidx,double       val);
 #ifndef SWIG
   int set(int clvl,int cidx,unsigned int val);
@@ -638,13 +728,28 @@ public:
   int set(int clvl,int cidx,uint64_t     val);
   //#endif
   //
-  int set(int clvl,std::string cname,std::string val);
-  int set(int clvl,std::string cname,int         val);
-  int set(int clvl,std::string cname,double      val);
+  int set(int clvl,const std::string& cname,const std::string& val);
+  int set(int clvl,const std::string& cname,int         val);
+  int set(int clvl,const std::string& cname,float       val);
+  int set(int clvl,const std::string& cname,double      val);
 #ifndef SWIG
-  int set(int clvl,std::string cname,unsigned int val);
+  int set(int clvl,const std::string& cname,unsigned int val);
 #endif
-  int set(int clvl,std::string cname,uint64_t    val);
+  int set(int clvl,const std::string& cname,uint64_t    val);
+
+#ifndef SWIG
+  //
+  int set(int clvl,int cidx,const std::vector<int>& val,char sep=',');
+  int set(int clvl,int cidx,const std::vector<float>& val,char sep=',');
+  int set(int clvl,int cidx,const std::vector<double>& val,char sep=',');
+  int set(int clvl,int cidx,const std::vector<std::string>& val,char sep=',');
+  //
+  int set(int clvl,const std::string& cname,const std::vector<int>& val,char sep=',');
+  int set(int clvl,const std::string& cname,const std::vector<float>& val,char sep=',');
+  int set(int clvl,const std::string& cname,const std::vector<double>& val,char sep=',');
+  int set(int clvl,const std::string& cname,const std::vector<std::string>& val,char sep=',');
+#endif
+
 
   //
 #ifndef SWIG
@@ -662,6 +767,8 @@ public:
   TsvFileIndex* index_matching_1(int clvl,int cidx,unsigned int val);
   TsvFileIndex* index_matching_1(int clvl,int cidx,uint64_t val);
 #endif
+
+  std::fstream::pos_type line_fpos();
 
   /// The error messages which one sees are nasty when using templates.
   /// This is the base template, make it private
@@ -716,6 +823,9 @@ public:
 
   /// Return a pointer to ourself for swig.
   affx::TsvFile* tsv_ptr() { return this; };
+
+  //
+  static int extractColToVec(const std::string& fileName,const std::string& colName,std::vector<std::string>* vec,int flags);
 };
 
 //////////

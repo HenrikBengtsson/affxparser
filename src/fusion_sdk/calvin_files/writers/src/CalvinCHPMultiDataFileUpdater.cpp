@@ -122,6 +122,16 @@ void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int 
     UpdateMetrics(dsIndex, row, 2, entry.metrics, metricColumns);
 }
 
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData
+         &entry, const std::vector<ColumnInfo> &metricColumns)
+{
+    int dsIndex = dataSetIndexMap[dataType];  
+    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.signal);
+    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.call);
+    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.confidenceScore);
+    UpdateMetrics(dsIndex, row, 4, entry.metrics, metricColumns);
+}
+
 void CalvinCHPMultiDataFileUpdater::UpdateMetrics(int dataSetIndex, int row, int startColIndex, const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics, const std::vector<ColumnInfo> &metricColumns)
 {
 	int colIndex=0;

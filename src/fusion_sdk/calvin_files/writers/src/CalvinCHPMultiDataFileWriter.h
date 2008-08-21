@@ -96,6 +96,11 @@ public:
 	 */
 	void WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataExpressionData & p);
 
+    /*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+	void WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData & p);
+
 	/*! Seeks to the data set.
      * @param dataType The data type
      */

@@ -36,7 +36,7 @@ namespace affymetrix_calvin_io
 #define CHP_MULTI_DATA_TYPE "affymetrix-multi-data-type-analysis"
 
 /*! An enumerant to store the types of data stored in the file. */
-typedef enum MultiDataType { ExpressionMultiDataType, ExpressionControlMultiDataType, GenotypeMultiDataType, GenotypeControlMultiDataType, CopyNumberMultiDataType, CytoMultiDataType };
+typedef enum MultiDataType { ExpressionMultiDataType, ExpressionControlMultiDataType, GenotypeMultiDataType, GenotypeControlMultiDataType, CopyNumberMultiDataType, CytoMultiDataType, CopyNumberVariationMultiDataType };
 
 /*! The data set name. */
 const static std::wstring MultiDataDataSetNames[] = 
@@ -46,7 +46,8 @@ const static std::wstring MultiDataDataSetNames[] =
     L"Genotype",
     L"GenotypeControl",
     L"CopyNumber",
-    L"Cyto"
+    L"Cyto",
+    L"CopyNumberVariation"
 };
 
 /*! The data types. */
@@ -57,7 +58,8 @@ const static MultiDataType MultiDataDataTypes[] =
     GenotypeMultiDataType,
     GenotypeControlMultiDataType,
     CopyNumberMultiDataType,
-    CytoMultiDataType
+    CytoMultiDataType,
+    CopyNumberVariationMultiDataType
 };
 
 /*! Holds data set information. */
@@ -223,6 +225,13 @@ public:
 	/*! Gets the probe set data.
      * @param dataType The data type
 	 * @param index The row index.
+	 * @param entry The copy number results.
+	 */
+	void GetCopyNumberEntryLog2Ratio(MultiDataType dataType, int index, float *val);
+
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
 	 * @param entry The cyto results.
 	 */
     void GetCytoEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry);
@@ -254,6 +263,14 @@ public:
 	 * @return The quantification.
 	 */
 	float GetExpressionQuantification(MultiDataType dataType, int index);
+
+    /*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The copy number variation results.
+	 */
+    void GetCopyNumberVariationEntry(MultiDataType dataType, int index, 
+        affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry);
 
 	/*! Get the probe set name.
      * @param dataType The data type
@@ -295,6 +312,13 @@ private:
      * @param metrics The results.
      */
     void GetExtraMetricEntries(DataSetInfo *ds, int rowIndex, int colIndex, std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics);
+    /*! Get the extra metric columns.
+     * @param ds The data set info.
+     * @param rowIndex The row index.
+     * @param colIndex The column index
+     * @param metrics The results.
+     */
+    void GetExtraCopyNumberFloatTypeNoNameLog2Ratio(DataSetInfo *ds, int rowIndex, float *val);
 
 	/*! Gets the probe set data.
      * @param dataType The data type
@@ -310,6 +334,13 @@ private:
 	 */
 	void GetGenericCopyNumberEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry);
 
+	/*! Gets the probe set data (log2Ratio only).
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param val The copy number result (log2Ratio).
+	 */
+	void GetGenericCopyNumberEntryLog2Ratio(MultiDataType dataType, int index, float *val);
+
 	/*! Gets the probe set data.
      * @param dataType The data type
 	 * @param index The row index.
@@ -323,6 +354,14 @@ private:
 	 * @param entry The expression results.
 	 */
 	void GetGenericExpressionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry);
+
+    /*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The copy number variation region results.
+	 */
+	void GetGenericCopyNumberVariationRegionEntry(MultiDataType dataType, int index, 
+        affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry);
 
 	/*! Opens a group for reading.
      * @param dataType The data type

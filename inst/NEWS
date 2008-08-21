@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.13.6 [2008-08-21]
+o Updated Fusion SDK from 1.10b to 1.11
+
 Version: 1.13.x [2008-08-14]
 o Fixed typos and incorrect equation in help page
   '2. Cell coordinates and cell indices'.

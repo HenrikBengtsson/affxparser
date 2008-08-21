@@ -92,6 +92,13 @@ public:
 	 */
 	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry);
 
+    /*! Update the entry for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData
+         &entry, const std::vector<ColumnInfo> &metricColumns);
+
 private:
     std::map<MultiDataType, int> dataSetIndexMap;
 

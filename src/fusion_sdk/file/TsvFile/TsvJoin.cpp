@@ -30,52 +30,28 @@
 using namespace std;
 using namespace affx;
 
-const string usage =
-  "apt-tsv-join - Merge multiple tab separated text files into a single file.\n"
-  "Usage:\n"
-  "   apt-tsv-join -o data.txt -k column-name file1.txt file2.txt [...]";
+void define_tsvjoin_options(PgOptions* opts)
+{
+  opts->setUsage("apt-tsv-join - Merge multiple tab separated text files into a single file.\n"
+                 "Usage:\n"
+                 "   apt-tsv-join -o data.txt -k column-name file1.txt file2.txt [...]");
 
-static PgOptions::PgOpt KEY_OPT = {
-  "k", "key", PgOptions::STRING_OPT,
-  "Name of the column to use to join the various files.",
-  "", NULL
-};
-
-static PgOptions::PgOpt OUTFILE_OPT = {
-  "o", "out-file", PgOptions::STRING_OPT,
-  "Output file to send the merged results to.",
-  "", NULL
-};
-
-static PgOptions::PgOpt PREPEND_OPT =
-  {
-    "p", "prepend-filename", PgOptions::BOOL_OPT,
-    "Prepend the filename to the column header.",
-    "false", NULL
-  };
-
-static PgOptions::PgOpt VERSION_OPT = {
-  "", "version", PgOptions::BOOL_OPT,
-  "Display version information.",
-  "false", NULL
-};
-
-static PgOptions::PgOpt HELP_OPT =
-  {
-    "h", "help", PgOptions::BOOL_OPT,
-    "Print help message.",
-    "false", NULL
-  };
-
-static PgOptions::PgOpt *options[] = {
-  &KEY_OPT,
-  &OUTFILE_OPT,
-  &PREPEND_OPT,
-  &VERSION_OPT,
-  &HELP_OPT,
-  NULL
-};
-
+  opts->defineOption("k", "key", PgOpt::STRING_OPT,
+                     "Name of the column to use to join the various files.",
+                     "");
+  opts->defineOption("o", "out-file", PgOpt::STRING_OPT,
+                     "Output file to send the merged results to.",
+                     "");
+  opts->defineOption("p", "prepend-filename", PgOpt::BOOL_OPT,
+                     "Prepend the filename to the column header.",
+                     "false");
+  opts->defineOption("", "version", PgOpt::BOOL_OPT,
+                     "Display version information.",
+                     "false");
+  opts->defineOption("h", "help", PgOpt::BOOL_OPT,
+                     "Print help message.",
+                     "false");
+}
 
 /**
  *  @brief Constructor.
@@ -95,13 +71,12 @@ tsvJoin::tsvJoin (int argc, char* argv[], const std::string& version, const std:
   // Prefer throw() to exit().
   Err::setThrowStatus (true);
 
-  PgOptions::hack_resetOptionsList(options);
-
-  m_Opts = new PgOptions (usage, options);
-  m_Opts->parseOptions (argc, argv);
+  m_Opts = new PgOptions();
+  define_tsvjoin_options(m_Opts);
+  m_Opts->parseArgv(argv);
 
   // Optionally display usage message.
-  if (m_Opts->boolOpt ("help") || argc == 1)
+  if (m_Opts->getBool("help") || argc == 1)
   {
     m_Opts->usage();
     string msg = "version:\n";
@@ -111,7 +86,7 @@ tsvJoin::tsvJoin (int argc, char* argv[], const std::string& version, const std:
     exit(0);
   }
   // Optionally display version.
-  if (m_Opts->boolOpt ("version"))
+  if (m_Opts->getBool("version"))
   {
     string msg = "version: " + version + "   " + cvsId;
     cout << msg;
@@ -119,14 +94,14 @@ tsvJoin::tsvJoin (int argc, char* argv[], const std::string& version, const std:
   }
 
   // Require key.
-  m_Key = m_Opts->strOpt ("key");
+  m_Key = m_Opts->get("key");
   if (m_Key.empty())
   {
     string msg = "FATAL: Must provide --key option.";
     Err::errAbort (msg);
   }
   // Require at least two input files.
-  m_FileCount = (unsigned int)m_Opts->getNumArgs();
+  m_FileCount = (unsigned int)m_Opts->getArgCount();
   if (m_FileCount < 2)
   {
     string msg = "FATAL: Must provide 2 or more files to merge.";
@@ -136,7 +111,7 @@ tsvJoin::tsvJoin (int argc, char* argv[], const std::string& version, const std:
     m_FileNames.push_back (string (m_Opts->getArg(i)));
 
   // Require writeable output file.
-  m_Outfile = m_Opts->strOpt ("out-file");
+  m_Outfile = m_Opts->get("out-file");
   if (m_Outfile.empty())
   {
     string msg = "FATAL: Must provide -out-file output file.";
@@ -146,7 +121,7 @@ tsvJoin::tsvJoin (int argc, char* argv[], const std::string& version, const std:
     Util::mustOpenToWrite (m_Out, m_Outfile);
 
   // Save prepend status.
-  m_Prepend = m_Opts->boolOpt ("prepend-filename");
+  m_Prepend = m_Opts->getBool("prepend-filename");
 
   // The command line is copied to the output file header.
   assert (argc > 0);
