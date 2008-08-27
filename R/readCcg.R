@@ -521,22 +521,18 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 ##      nchars <- nchars[1];
       nchars <- readInt(con=value, n=1);
       rm(value);
-      gc <- gc();
 
       ccs <- 1:(size-4);
       value <- raw[ccs,];
       raw <- raw[-ccs,,drop=FALSE];
-      gc <- gc();
       value <- rawToChar(value, multiple=TRUE);
       dim(value) <- c(nchars, nbrOfRows);
-      gc <- gc();
 
       # Build strings using vectorization (not apply()!)
       strs <- NULL;
       for (pp in seq(length=nrow(value))) {
         valuePP <- value[1,,drop=FALSE];
         value <- value[-1,,drop=FALSE];
-#        gc <- gc();
         if (pp == 1) {
           strs <- valuePP;
         } else {
@@ -550,16 +546,12 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       ccs <- 1:size;
       value <- raw[ccs,,drop=FALSE];
       raw <- raw[-ccs,,drop=FALSE];
-      gc <- gc();
       value <- readBin(con=value, what=what, size=size, signed=signed, endian="big", n=nbrOfRows);
     }
 
-    # Garbage collect
-    gc <- gc();
-
     table[[cc]] <- value;
     colsOffset <- colsOffset + size;
-  }
+  } # for (cc ...)
 
   # Turn into a data frame
   attr(table, "row.names") <- .set_row_names(length(table[[1]]));
@@ -574,6 +566,8 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
 ############################################################################
 # HISTORY:
+# 2008-08-23
+# o SPEED UP: Removed all gc() calls.
 # 2008-01-13
 # o Removed dependency on intToChar() in R.utils.
 # o BUG FIX/UPDATE: The file format was updated between April 2006 and
