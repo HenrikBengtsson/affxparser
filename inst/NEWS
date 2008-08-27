@@ -1,8 +1,14 @@
 Package: affxparser
 ===================
 
+Version: 1.13.7 [2008-08-23]
+o SPEED UP: readCcg() is substantially faster after removing 
+  all gc() calls.
+
+
 Version: 1.13.6 [2008-08-21]
-o Updated Fusion SDK from 1.10b to 1.11
+o Updated Fusion SDK from 1.0.10b (Jan 2008) to 1.0.11 (July 2008).
+
 
 Version: 1.13.x [2008-08-14]
 o Fixed typos and incorrect equation in help page
