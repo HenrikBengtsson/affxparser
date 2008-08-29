@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <istream>
 #include <fstream>
+#include <string.h>
 
 #ifdef _INCLUDE_UNISTD_HEADER_
 #include <unistd.h>

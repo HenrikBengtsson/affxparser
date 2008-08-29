@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.13.8 [2008-08-28]
+o Fix of include statements in Fusion, details are described in
+inst/info/changes2fusion.txt. This fixes an issue with GCC 4.3
+
 Version: 1.13.7 [2008-08-23]
 o SPEED UP: readCcg() is substantially faster after removing 
   all gc() calls.

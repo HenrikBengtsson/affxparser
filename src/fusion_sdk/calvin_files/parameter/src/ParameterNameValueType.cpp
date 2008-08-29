@@ -19,6 +19,7 @@
 
 #include "ParameterNameValueType.h"
 #include "StringUtils.h"
+#include <string.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.

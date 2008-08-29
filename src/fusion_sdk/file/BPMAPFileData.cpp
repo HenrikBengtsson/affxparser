@@ -25,6 +25,7 @@
 #include <fstream>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifndef _MSC_VER
 #include <sys/mman.h>

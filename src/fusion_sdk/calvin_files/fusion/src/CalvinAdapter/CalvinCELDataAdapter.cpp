@@ -24,6 +24,7 @@
 #include "CELAlgorithmParameterNames.h"
 #include "GenericDataTypes.h"
 #include "StringUtils.h"
+#include <stdlib.h>
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;
