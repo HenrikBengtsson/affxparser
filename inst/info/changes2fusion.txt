@@ -1,0 +1,44 @@
+Issue: long CDF reference string
+line 723 and 724 of *** has the number 65000 changed to 400000
+
+Issue: GCC 4.3.1+ has stricter include statements
+- use of wstring
+ in fusion_sdk/calvin_files/utils/src/AffyStlCollectionTypes.h
+ requires #include <string>
+
+- use of atoi()
+ in fusion_sdk/calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.cpp
+ requires #include <stdlib.h>
+
+- use of memset() and memcpy()
+ in fusion_sdk/calvin_files/parameter/src/ParameterNameValueType.cpp
+ requires #include <string.h>
+
+- use of memcpy()
+ in fusion_sdk/calvin_files/parsers/src/FileInput.cpp
+ requires #include <string.h>
+
+- use of strlen()
+ in fusion_sdk/calvin_files/utils/src/AffymetrixGuid.cpp
+ requires #include <string.h>
+
+- use of wcstombs and mbstowcs
+ in fusion_sdk/calvin_files/utils/src/StringUtils.cpp
+ requires #include <stdlib.h>
+
+- use of EXIT_FAILURE and EXIT_SUCCESS
+ in fusion_sdk/file/BPMAPFileData.cpp
+ requires #include <stdlib.h>
+
+- use of strncmp(), strchr(), strlen() and atoi()
+ in fusion_sdk/file/CDFFileData.cpp
+ requires #include <string.h> and #include <stdlib.h>
+
+- use of strlen() and strcmp()
+ in fusion_sdk/file/CHPFileData.cpp
+ requires #include <string.h>
+
+- use of strcmp()
+ in fusion_sdk/util/Convert.cpp
+ requires #include <string.h>
+

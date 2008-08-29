@@ -37,6 +37,8 @@
 #include <sstream>
 #include <stdlib.h>
 #include <string>
+#include <string.h>
+
 //
 #include "Convert.h"
 #include "util/Err.h"
