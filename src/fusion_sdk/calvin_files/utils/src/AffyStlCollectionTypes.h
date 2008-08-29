@@ -23,6 +23,7 @@
 
 #include <list>
 #include <vector>
+#include <string>
 //
 #include "AffymetrixBaseTypes.h"
 

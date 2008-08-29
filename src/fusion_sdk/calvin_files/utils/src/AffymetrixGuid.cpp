@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sstream>
+#include <string.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // ignore deprecated functions warning
