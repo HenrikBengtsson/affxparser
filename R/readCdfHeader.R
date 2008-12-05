@@ -1,4 +1,4 @@
-readCdfHeader <- function(filename){
+readCdfHeader <- function(filename) {
   # Expand '~' pathnames to full pathnames.
   filename <- file.path(dirname(filename), basename(filename));
   if (!file.exists(filename))
@@ -12,6 +12,12 @@ readCdfHeader <- function(filename){
   res$probesets <- res$nunits;
   res$qcprobesets <- res$nqcunits;
   res$reference <- res$refseq;
+
+  # Workaround for a bug in Fusion SDK. /HB 2008-12-04
+  # If the CDF file is on a Windows share, then the from
+  # pathname inferred chip type contains a path as well.
+  # Reference: See aroma.affymetrix thread on Dec 4, 2008.
+  res$chiptype <- basename(res$chiptype);
 
   res;
 }

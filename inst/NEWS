@@ -1,9 +1,29 @@
 Package: affxparser
 ===================
 
+Version: 1.15.1 [2008-12-04]
+o Same bug fix as in release version v1.14.1.
+
+
+Version: 1.15.0 [2008-10-21]
+o Devel version bumped because of the new Bioconductor release.
+
+
+Version: 1.14.1 [2008-12-04]
+o BUG FIX: When the CDF file is on a Windows network, that is,
+  has a pathname starting with '//' or '\\', then the 'chiptype'
+  reported by readCdfHeader() contains a path component as well.
+  This seems to be due to a bug in Fusion SDK.
+
+
+Version: 1.14.0 [2008-10-21]
+o Release version bumped because of the new Bioconductor release.
+
+
 Version: 1.13.8 [2008-08-28]
 o Fix of include statements in Fusion, details are described in
 inst/info/changes2fusion.txt. This fixes an issue with GCC 4.3
+
 
 Version: 1.13.7 [2008-08-23]
 o SPEED UP: readCcg() is substantially faster after removing 
