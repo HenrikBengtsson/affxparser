@@ -778,7 +778,7 @@ R_affx_ReadCHP(FusionCHPMultiDataData *chp, bool isBrief)
   if(nGeno > 0) nDataTypes++;
   if(nGenoC > 0) nDataTypes++;
 
-  lstNbr = nDataTypes + 6;
+  lstNbr = nDataTypes + 7;
   PROTECT(lst = NEW_LIST(lstNbr));
   PROTECT(nms = NEW_CHARACTER(lstNbr));
   nprotect+=2;

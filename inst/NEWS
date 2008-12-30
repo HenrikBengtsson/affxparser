@@ -1,12 +1,21 @@
 Package: affxparser
 ===================
 
+Version: 1.15.2 [2008-12-30]
+o Same bug fix as in release version v1.14.2.
+
+
 Version: 1.15.1 [2008-12-04]
 o Same bug fix as in release version v1.14.1.
 
 
 Version: 1.15.0 [2008-10-21]
 o Devel version bumped because of the new Bioconductor release.
+
+
+Version: 1.14.2 [2008-12-30]
+o BUG FIX: readChp() would not read all data.  Thanks 
+  Gabor Csardi for reporting this and providing a patch.
 
 
 Version: 1.14.1 [2008-12-04]
