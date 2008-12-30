@@ -23,9 +23,7 @@
 # \value{
 #  Returns a @list structure with the same number of groups as the 
 #  \code{groups} argument.  To each group, one fields is added:
-#  \itemize{
 #   \item{plasqType}{A @vector of @integers in [0,15].}
-#  }
 # }
 #
 # \details{

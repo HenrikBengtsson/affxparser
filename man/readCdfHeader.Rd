@@ -17,7 +17,6 @@
 
 \value{
   A named list with the following components:
-  \itemize{
     \item{rows}{the number of rows on the chip.}
     \item{cols}{the number of columns on the chip.}
     \item{probesets}{the number of probesets on the chip.}
@@ -26,7 +25,6 @@
       for resequencing chips).}
     \item{chiptype}{the type of the chip.}
     \item{filename}{the name of the cdf file.}
-  }
 }
 
 \examples{
