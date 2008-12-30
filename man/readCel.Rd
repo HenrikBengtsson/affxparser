@@ -52,7 +52,7 @@ readCel(filename,
   Only cell values specified by argument \code{readIndices} are returned.
 
   This value returns a named list with compontents described below:
-  \itemize{
+
    \item{\code{header}}{The header of the CEL file. Equivalent to the 
       output from \code{readCelHeader}, see the documentation for that
       function.}
@@ -80,7 +80,6 @@ readCel(filename,
       Note that there is a difference between \code{masked=NULL} and
       \code{masked=integer(0)}; the last case happens when 
       \code{readMasked=TRUE} but there are no masked features.}
-  }
 
   The elements of the cell values are ordered according to argument 
   \code{indices}.  The lengths of the cell-value elements equals the

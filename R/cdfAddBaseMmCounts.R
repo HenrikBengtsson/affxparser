@@ -27,12 +27,10 @@
 # \value{
 #  Returns a @list structure with the same number of groups as the 
 #  \code{groups} argument.  To each group, two fields is added:
-#  \itemize{
 #   \item{mmACount}{The number of nucleotides in the probe sequence 
 #      that mismatches the target sequence of allele A.}
 #   \item{mmBCount}{The number of nucleotides in the probe sequence 
 #      that mismatches the target sequence of allele B.}
-#  }
 # }
 #
 # \details{
