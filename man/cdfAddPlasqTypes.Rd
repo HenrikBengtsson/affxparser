@@ -32,9 +32,7 @@
 \value{
  Returns a \code{\link[base]{list}} structure with the same number of groups as the
  \code{groups} argument.  To each group, one fields is added:
- \itemize{
   \item{plasqType}{A \code{\link[base]{vector}} of \code{\link[base]{integer}}s in [0,15].}
- }
 }
 
 \details{
