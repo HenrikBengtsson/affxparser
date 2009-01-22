@@ -60,7 +60,7 @@
      \item Data Group \#1
       \enumerate{
        \item Data Set \#1
-        \itemize {
+        \itemize{
          \item Parameters
          \item Column definitions
          \item Matrix of data
