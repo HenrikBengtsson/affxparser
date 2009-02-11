@@ -51,7 +51,7 @@
 #     \item Data Group \#1
 #      \enumerate{
 #       \item Data Set \#1
-#        \itemize {
+#        \itemize{
 #         \item Parameters
 #         \item Column definitions
 #         \item Matrix of data
@@ -225,6 +225,15 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  rawToString <- function(raw, ...) {
+    # This approach drops all '\0', in order to avoid warnings
+    # in rawToChar().  Note, it does not truncate the string after
+    # the first '\0'.  However, such strings should never occur in
+    # the first place.
+    raw <- raw[raw != as.raw(0)];
+    rawToChar(raw);
+  }
+
   readInt <- function(con, n=1, ...) {
     readBin(con, what=integer(), size=4, signed=TRUE, endian="big", n=n);
   }
@@ -239,9 +248,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       return("");
     bfr <- readBin(con, what=raw(), n=2*nchars);
     bfr <- bfr[seq(from=2, to=length(bfr), by=2)];
-    bfr <- rawToChar(bfr, multiple=TRUE);
-    bfr <- paste(bfr, collapse="");
-    bfr;
+    rawToString(bfr);
   }
 
   readRaw <- function(con, ...) {
@@ -311,6 +318,15 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  rawToString <- function(raw, ...) {
+    # This approach drops all '\0', in order to avoid warnings
+    # in rawToChar().  Note, it does not truncate the string after
+    # the first '\0'.  However, such strings should never occur in
+    # the first place.
+    raw <- raw[raw != as.raw(0)];
+    rawToChar(raw);
+  }
+
   readByte <- function(con, n=1, ...) {
     readBin(con, what=integer(), size=1, signed=TRUE, endian="big", n=n);
   }
@@ -336,9 +352,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       return("");
     bfr <- readBin(con, what=raw(), n=2*nchars);
     bfr <- bfr[seq(from=2, to=length(bfr), by=2)];
-    bfr <- rawToChar(bfr, multiple=TRUE);
-    bfr <- paste(bfr, collapse="");
-    bfr;
+    rawToString(bfr);
   }
 
   readRaw <- function(con, ...) {
@@ -369,15 +383,14 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
     value <- switch(type, 
       "text/ascii" = {
-        rawToChar(raw);
+        rawToString(raw);
       },
 
       "text/plain" = {
         # Unicode/UTF-16?!?
         raw <- matrix(raw, ncol=2, byrow=TRUE);
         raw <- raw[,2];
-        value <- rawToChar(raw);
-        paste(value);  # Terminate string at first '\0'.
+        rawToString(raw);
       },
 
       "text/x-calvin-integer-8" = {
@@ -566,6 +579,9 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
 ############################################################################
 # HISTORY:
+# 2009-02-10
+# o Added internal rawToString() replacing rawToChar() to avoid warnings
+#   on "truncating string with embedded nul".
 # 2008-08-23
 # o SPEED UP: Removed all gc() calls.
 # 2008-01-13
