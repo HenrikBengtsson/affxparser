@@ -1,6 +1,16 @@
 Package: affxparser
 ===================
 
+Version: 1.15.4 [2009-02-10]
+o readCcg() and readCcgHeader() no longer give warnings
+  on 'truncating string with embedded nul' in rawToChar().
+  These warnings made no difference, but were annoying.
+
+
+Version: 1.15.3 [2009-01-22]
+o Fixed a minor Rd problem.
+
+
 Version: 1.15.2 [2008-12-30]
 o Same bug fix as in release version v1.14.2.
 

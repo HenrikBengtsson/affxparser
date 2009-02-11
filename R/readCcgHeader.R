@@ -171,6 +171,15 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  rawToString <- function(raw, ...) {
+    # This approach drops all '\0', in order to avoid warnings
+    # in rawToChar().  Note, it does not truncate the string after
+    # the first '\0'.  However, such strings should never occur in
+    # the first place.
+    raw <- raw[raw != as.raw(0)];
+    rawToChar(raw);
+  }
+
   readByte <- function(con, n=1, ...) {
     readBin(con, what=integer(), size=1, signed=TRUE, endian="big", n=n);
   }
@@ -200,8 +209,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
       return("");
     raw <- readBin(con, what=raw(), n=2*nchars);
     raw <- raw[seq(from=2, to=length(raw), by=2)];
-    value <- rawToChar(raw);
-    paste(value, collapse="");  # Terminate string at first '\0'.
+    rawToString(raw);
   }
 
   readRaw <- function(con, ...) {
@@ -228,15 +236,14 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
     n <- length(raw);
     value <- switch(type, 
       "text/ascii" = {
-        paste(rawToChar(raw));
+        rawToString(raw);
       },
 
       "text/plain" = {
         # Unicode/UTF-16?!?
         raw <- matrix(raw, ncol=2, byrow=TRUE);
         raw <- raw[,2];
-        value <- rawToChar(raw);
-        paste(value);  # Terminate string at first '\0'.
+        rawToString(raw);
       },
 
       "text/x-calvin-integer-8" = {
@@ -330,6 +337,9 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
 
 ############################################################################
 # HISTORY:
+# 2009-02-10
+# o Added internal rawToString() replacing rawToChar() to avoid warnings
+#   on "truncating string with embedded nul".
 # 2007-08-16
 # o Now the read data is converted according to the mime type.  See internal
 #   readWVT() function.  The code is still ad hoc, so it is not generic.
