@@ -110,6 +110,7 @@ protected:
    */
   void checkFloat(float gold, float gen, double eps, bool &success, double &maxDiff, bool log = false) {
 
+	  if (!Util::isFinite(gold) && !Util::isFinite(gen)) {return;}
       if(!Util::isFinite(gold) || !Util::isFinite(gen)) {
         // Allow for case where both inf to not be an error
         if(gold == gen)

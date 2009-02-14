@@ -21,18 +21,18 @@
 /// @brief  The implementation of TsvFile
 
 //
+#include "file/TsvFile/TsvFile.h"
+//
+#include "util/Convert.h"
+#include "util/Err.h"
+#include "util/Verbose.h"
+//
 #include <algorithm>
 #include <assert.h>
 #include <iostream>
 #include <sstream>
 #include <stdlib.h>
 #include <string>
-//
-#include "util/Convert.h"
-#include "util/Err.h"
-#include "util/Verbose.h"
-//
-#include "file/TsvFile/TsvFile.h"
 
 //
 using namespace std;
@@ -225,6 +225,31 @@ affx::TsvFileBinding::clear()
   m_ptr_ulonglong=NULL;
 }
 
+std::string
+TsvFileBinding::get_type_str()
+{
+  if (m_ptr_int!=NULL) {
+    return "int";
+  }
+  if (m_ptr_string!=NULL) {
+    return "string";
+  }
+  if (m_ptr_float!=NULL) {
+    return "float";
+  }
+  if (m_ptr_double!=NULL) {
+    return "double";
+  }
+  if (m_ptr_uint!=NULL) {
+    return "uint";
+  }
+  if (m_ptr_ulonglong!=NULL) {
+    return "longlong";
+  }
+  //
+  return "unbound";
+}
+
 ////////////////////
 
 /// @brief     Creator of TsvFileField
@@ -294,6 +319,15 @@ bool
 affx::TsvFileField::isNull()
 {
   return m_isnull;
+}
+
+bool
+affx::TsvFileField::isEmpty()
+{
+  if (m_isnull||m_buffer=="") {
+    return true;
+  }
+  return false;
 }
 
 /// @brief     Set the buffer value of the column
@@ -388,6 +422,8 @@ affx::TsvFileField::get(int* val)
   //
   const char* ptr_start=m_buffer.c_str();
   char* ptr_end=NULL;
+
+  /// @todo: "" should be an error?
 
   // do the conversion (Force base 10)
   m_value_int=strtol(ptr_start,&ptr_end,10);
@@ -784,11 +820,52 @@ affx::TsvFileField::linkedvars_assign(affx::TsvFile* tsvfile)
       //
       if ((rv!=TSV_OK)&&(var->m_flags&TSV_BIND_REQUIRED)) {
         // We say "data line" to make it clear we arent counting header lines.
-        Err::errAbort(TSV_ERR_AT("Conversion of required field failed!")
-                      +"(on data line "+ToStr(tsvfile->lineNumber()+1)+")");
+        std::string errmsg="Conversion error\n";
+        errmsg+="TSVERROR: '"+tsvfile->m_fileName+"':"+ToStr(tsvfile->lineNumber()+1)+": ";
+        errmsg+="Conversion of required field '"+m_cname+"'"+
+          " to "+var->get_type_str()+" "+
+          "from '"+m_buffer+"' failed!\n";
+        Err::errAbort(TSV_ERR_AT("")+errmsg);
       }
     }
   }
+}
+
+std::string
+affx::TsvFileField::get_bound_types_str()
+{
+  std::string rv="";
+  size_t lvar_vec_size=m_linkedvar_vec.size();
+
+  for (size_t vi=0;vi<lvar_vec_size;vi++) {
+    TsvFileBinding* var=m_linkedvar_vec[vi];
+    if (var!=NULL) {
+      // These are sorted by frequency of use.
+      if (var->m_ptr_int!=NULL) {
+        rv+="int,";
+      }
+      else if (var->m_ptr_string!=NULL) {
+        rv+="string,";
+      }
+      else if (var->m_ptr_float!=NULL) {
+        rv+="float,";
+      }
+      else if (var->m_ptr_double!=NULL) {
+        rv+="double,";
+      }
+      else if (var->m_ptr_uint!=NULL) {
+        rv+="uint,";
+      }
+      else if (var->m_ptr_ulonglong!=NULL) {
+        rv+="longlong,";
+      }
+    }
+  }
+  // trim trailing ","
+  if (rv!="") {
+    rv.erase(rv.size()-1);
+  }
+  return rv;
 }
 
 /* Unused -- code which wants this generally uses <std::map>
@@ -1303,18 +1380,10 @@ affx::TsvFile::getError()
 
 //////////
 
-/// @brief     The level of the current line
-/// @return    number
-int
-affx::TsvFile::line_level()
-{
-  return m_lineLvl;
-}
-
 /// @brief     The line number of the current line (internal)
 /// @return    number
 linenum_t
-affx::TsvFile::line_number()
+affx::TsvFile::lineNum()
 {
   return m_lineNum;
 }
@@ -1422,6 +1491,7 @@ affx::TsvFile::clearHeaders()
   }
   //
   m_headers_vec.clear();
+  m_headers_vec_packed=true;
   // clear these too...
   headersBegin();
 }
@@ -1507,6 +1577,10 @@ affx::TsvFile::headersNext(std::string& key,std::string& val)
 int
 affx::TsvFile::headersCount()
 {
+  // test here to save a method call.
+  if (m_headers_vec_packed==false) {
+    repackHeaders();
+  }
   return (int)m_headers_vec.size();
 }
 
@@ -1703,7 +1777,7 @@ affx::TsvFile::addHeadersFrom(affx::TsvFile& f_tsv,
 int
 affx::TsvFile::headerCount()
 {
-  resortHeaders(); // this removes null ptrs as well.
+  repackHeaders(); // this removes null ptrs so headerCount==size()
   return m_headers_vec.size();
 }
 
@@ -1770,18 +1844,76 @@ affx::TsvFile::getHeader(const std::string& key,double& val)
   return TSV_ERR_NOTFOUND;
 }
 
+
+/// @brief     Does the file have a key==value header which matches
+/// @param     key       key to check
+/// @param     val       value to check
+/// @return    true if there is a matching key==val header
+/// @remarks   This is handy to check for matching chip types.
+int
+affx::TsvFile::hasHeaderEqualTo(const std::string& key,const std::string& val)
+{
+  // printf("hasHeaderEqualTo('%s','%s')\n",key.c_str(),val.c_str());
+  // scan the headers.
+  affx::TsvFile::header_iter_t i;
+  for (i=m_headers_bykey.find(key);(i!=m_headers_bykey.end())&&(i->first==key);i++) {
+    // printf("hasHeaderEqualTo: check '%s'/'%s')\n",i->first.c_str(),i->second->m_value.c_str());
+    if (i->second->m_value==val) {
+      return TSV_OK;
+    }
+  }
+  // didnt find it.
+  return TSV_ERR_NOTFOUND;
+}
+
+void
+affx::TsvFile::repackHeaders()
+{
+  if (m_headers_vec_packed==true) {
+    return;
+  }
+
+  //
+  std::vector<affx::TsvFileHeaderLine*> tmp_vec;
+  std::vector<affx::TsvFileHeaderLine*>::iterator i;
+
+  // save the non-null ones...
+  for (i=m_headers_vec.begin();i!=m_headers_vec.end();i++) {
+    if (*i!=NULL) {
+      tmp_vec.push_back(*i);
+    }
+  }
+  // ...and put them back.
+  m_headers_vec=tmp_vec;
+  // we are packed
+  m_headers_vec_packed=true;
+}
+
+
 /// @brief     Sort the headers of this TSV file by (order,key,value)
 void
 affx::TsvFile::resortHeaders()
 {
+  //
+  repackHeaders();
   // put headers in order
   sort(m_headers_vec.begin(),m_headers_vec.end(),affx::header_ptr_less);
-  // removet trailing null pointers
-  int vi=(int)m_headers_vec.size();
-  while ((vi>0)&&(m_headers_vec[vi-1]==NULL)) {
-    vi--;
+}
+
+/// @brief     Remove the headers named with the key.
+/// @param     key the header key value.
+/// @return    tsv_error_t
+
+int
+affx::TsvFile::deleteHeaders(const std::string& key)
+{
+  int v_size=(int)m_headers_vec.size();
+  for (int vi=0;vi<v_size;vi++) {
+    if ((m_headers_vec[vi]!=NULL) && (m_headers_vec[vi]->m_key==key)) {
+      deleteHeaderPtr(m_headers_vec[vi]);
+    }
   }
-  m_headers_vec.resize(vi);
+  return TSV_OK;
 }
 
 /// @brief     Remove the header pointed to
@@ -1794,23 +1926,33 @@ affx::TsvFile::deleteHeaderPtr(affx::TsvFileHeaderLine* hdrptr)
   if (hdrptr==NULL) {
     return TSV_OK;
   }
+
   // find the header ptrs in the map and erase them
   affx::TsvFile::header_iter_t mi;
+  // Goto is an ugly hag to work around win32 stl bug
+  START_DEL_HEADER_PTR:
   for (mi=m_headers_bykey.begin();mi!=m_headers_bykey.end();mi++) {
-    if ((*mi).second==hdrptr) {
+    if (mi->second==hdrptr) {
       m_headers_bykey.erase(mi);
+      goto START_DEL_HEADER_PTR;
     }
   }
-  // erase it from the vector
+  // erase it from the vector, dont resize it.
+  int find_cnt=0;
   int v_size=(int)m_headers_vec.size();
   for (int vi=0;vi<v_size;vi++) {
     if (m_headers_vec[vi]==hdrptr) {
       m_headers_vec[vi]=NULL;
-       // dealloc
-      delete hdrptr;
-      return TSV_OK;
+      find_cnt++;
     }
   }
+  // delete the pointer if it was found in the list.
+  if (find_cnt>0) {
+    m_headers_vec_packed=false;
+    delete hdrptr;
+    return TSV_OK;
+  }
+
   // didnt find it in the list.
   return TSV_ERR_NOTFOUND;
 }
@@ -2020,7 +2162,7 @@ affx::TsvFile::defineColumn(int clvl,int cidx,const std::string& cname,tsv_type_
   if (m_optPrecision>=0) {
     m_column_map[clvl][cidx].setPrecision(m_optPrecision);
   }
-  
+
   return (TSV_OK);
 }
 
@@ -2464,7 +2606,7 @@ affx::TsvFile::f_read_column(TsvFileField* col)
     }
     // start or end of quotes?
     else if (((c==m_optQuoteChar1)&&(m_optQuoteChar1!=0))||
-             ((c==m_optQuoteChar2)&&(m_optQuoteChar2!=0))) 
+             ((c==m_optQuoteChar2)&&(m_optQuoteChar2!=0)))
       {
         if (in_quotes==0) { // open
           in_quotes=c;
@@ -3292,7 +3434,7 @@ affx::TsvFile::isNull(int clvl,int cidx)
   if (col==NULL) {
     return true;
   }
-  return col->m_isnull;
+  return col->isNull();
 }
 /// @brief     Is the field set?
 /// @param     clvl      The column level level of field
@@ -3305,7 +3447,34 @@ affx::TsvFile::isNull(int clvl,const std::string& cname)
   if (col==NULL) {
     return true;
   }
-  return col->m_isnull;
+  return col->isNull();
+}
+
+/// @brief     Is the field empty (null or no value)?
+/// @param     clvl      The column level level of field
+/// @param     cidx      The column index (0-based) of the field
+/// @return    false if set, otherwise true
+bool
+affx::TsvFile::isEmpty(int clvl,int cidx)
+{
+  TsvFileField* col=clvlcidx2colptr(clvl,cidx);
+  if (col==NULL) {
+    return true;
+  }
+  return col->isEmpty();
+}
+/// @brief     Is the field set?
+/// @param     clvl      The column level level of field
+/// @param     cname     The column index (0-based) of the field
+/// @return    false if set, otherwise true
+bool
+affx::TsvFile::isEmpty(int clvl,const std::string& cname)
+{
+  TsvFileField* col=clvlcidx2colptr(clvl,cname);
+  if (col==NULL) {
+    return true;
+  }
+  return col->isEmpty();
 }
 
 ////////////////////
@@ -3926,12 +4095,14 @@ affx::TsvFile::writeKeyValHeaders()
 void
 affx::TsvFile::writeColumnHeaders_clvl(int clvl)
 {
-  size_t cidx_size=m_column_map[clvl].size();
-  size_t cidx_size_1=cidx_size-1;
-  for (size_t cidx=0;cidx<cidx_size;cidx++) {
-    write_str(m_column_map[clvl][cidx].m_cname);
-    if (cidx<cidx_size_1) {
-      m_fileStream << m_optFieldSep;
+  if ((0<=clvl)&&(clvl<m_column_map.size())) {
+    size_t cidx_size=m_column_map[clvl].size();
+    size_t cidx_size_1=cidx_size-1;
+    for (size_t cidx=0;cidx<cidx_size;cidx++) {
+      write_str(m_column_map[clvl][cidx].m_cname);
+      if (cidx<cidx_size_1) {
+        m_fileStream << m_optFieldSep;
+      }
     }
   }
   m_fileStream << m_optEndl;
@@ -3959,7 +4130,7 @@ affx::TsvFile::writeHeaders()
 /// @brief     open the stream for writing
 /// @param     filename
 /// @return    tsv_return_t
-int
+tsv_return_t
 affx::TsvFile::writeOpen(const std::string& filename)
 {
   // finish off the old stream
@@ -3984,11 +4155,11 @@ affx::TsvFile::writeOpen(const std::string& filename)
 /// @brief     Set the options up for "tsv" format and write the tsv-v1 header
 /// @param     filename
 /// @return
-int
+tsv_return_t
 affx::TsvFile::writeTsv_v1(const std::string& filename)
 {
   // this file format only supports one level.
-  if (getLevelCount()!=1) {
+  if (getLevelCount()>1) {
     return (TSV_ERR_FORMAT);
   }
 
@@ -3998,7 +4169,7 @@ affx::TsvFile::writeTsv_v1(const std::string& filename)
   m_optQuoteChar='"';
 
   //
-  int rv;
+  tsv_return_t rv;
   if ((rv=writeOpen(filename))!=TSV_OK) {
     return rv;
   }
@@ -4006,7 +4177,9 @@ affx::TsvFile::writeTsv_v1(const std::string& filename)
   // dump_headers();
 
   writeKeyValHeaders();
-  writeColumnHeaders_clvl(0);
+  if (getLevelCount()==1) {
+    writeColumnHeaders_clvl(0);
+  }
 
   return TSV_OK;
 }
@@ -4014,7 +4187,7 @@ affx::TsvFile::writeTsv_v1(const std::string& filename)
 /// @brief     Set the options up for "csv" format and write the CSV header
 /// @param     filename
 /// @return
-int
+tsv_return_t
 affx::TsvFile::writeCsv(const std::string& filename)
 {
   // this file format only supports one level.
@@ -4028,7 +4201,7 @@ affx::TsvFile::writeCsv(const std::string& filename)
   m_optQuoteChar='"';
 
   //
-  int rv;
+  tsv_return_t rv;
   if ((rv=writeOpen(filename))!=TSV_OK) {
     return rv;
   }
@@ -4046,10 +4219,10 @@ affx::TsvFile::writeCsv(const std::string& filename)
 ///            write them with "tsv->writeLevel(lvl)".
 ///            If you want to define your own format, you can cobble it up from:
 ///            writeOpen, setting the options, and the writeHeaders().
-int
+tsv_return_t
 affx::TsvFile::writeTsv_v2(const std::string& filename)
 {
-  int rv;
+  tsv_return_t rv;
   if ((rv=writeOpen(filename))!=TSV_OK) {
     return rv;
   }
@@ -4063,11 +4236,17 @@ affx::TsvFile::writeTsv_v2(const std::string& filename)
 /// @brief     open the file for writing in "v2" format.
 /// @param     filename
 /// @return    tsv_error_t
-int
+tsv_return_t
 affx::TsvFile::writeTsv(const std::string& filename)
 {
-  // default to "v2" format.
-  return writeTsv_v2(filename);
+  // use v2 ("#%headerN=") when required
+  if (getLevelCount()>0) {
+    return writeTsv_v2(filename);
+  }
+  // otherwise v1
+  else {
+    return writeTsv_v1(filename);
+  }
 }
 
 /// @brief     Write a level of data to the file.
@@ -4124,12 +4303,12 @@ affx::TsvFile::writeLevel(int clvl)
   }
   m_fileStream << m_optEndl;
 
-  // 
+  //
   if (!m_fileStream.good()) {
     Err::errAbort("TsvFile::writeLevel(): bad filestream.");
     return (TSV_ERR_FILEIO);
   }
-  
+
   return TSV_OK;
 }
 
@@ -4188,7 +4367,7 @@ affx::TsvFile::extractColToVec(const std::string& fileName,
   if (col_idx<0) {
     Err::errAbort("TsvFile::extractColToVec: column '"+colName+"'"+
                   " not found in file '"+fileName+"'");
-  }  
+  }
 
   while(tsv.nextLevel(0)==TSV_OK) {
     if (tsv.get(0,col_idx,tmp_str)!=TSV_OK) {

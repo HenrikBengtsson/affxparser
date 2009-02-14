@@ -44,92 +44,186 @@ CalvinCHPMultiDataFileUpdater::~CalvinCHPMultiDataFileUpdater()
 
 void CalvinCHPMultiDataFileUpdater::Initialize(const char *file)
 {
-    DataSetUpdater::Initialize(file);
-    dataSetIndexMap.clear();
-    int nds=(int)dataSetNames[0].size();
-    int ndt=sizeof(MultiDataDataTypes) / sizeof(MultiDataType);
-    for (int ids=0; ids<nds; ids++)
-    {
-        for (int idt=0; idt<ndt; idt++)
-        {
-            if (dataSetNames[0][ids] == MultiDataDataSetNames[idt])
-            dataSetIndexMap[MultiDataDataTypes[idt]] = ids;
-        }
-    }
+	DataSetUpdater::Initialize(file);
+	dataSetIndexMap.clear();
+	int nds=(int)dataSetNames[0].size();
+	int ndt=sizeof(MultiDataDataTypes) / sizeof(MultiDataType);
+	for (int ids=0; ids<nds; ids++)
+	{
+		for (int idt=0; idt<ndt; idt++)
+		{
+			if (dataSetNames[0][ids] == MultiDataDataSetNames[idt])
+			{
+				dataSetIndexMap[MultiDataDataTypes[idt]] = ids;
+			}
+		}
+	}
 }
 
 /*
- * Update the value for the given row.
- */
+* Update the value for the given row.
+*/
 void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataGenotypeData &entry)
 {
-    int dsIndex = dataSetIndexMap[dataType];
+	int dsIndex = dataSetIndexMap[dataType];
 	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.call);
 	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.confidence);
 }
 
 /*
- * Update the value for the given row.
- */
-void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataCopyNumberData &entry, const vector<ColumnInfo> &metricColumns)
-{
-    int dsIndex = dataSetIndexMap[dataType];
-	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.chr);
-	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.position);
-    UpdateMetrics(dsIndex, row, 3, entry.metrics, metricColumns);
-}
-
-/*
- * Update the value for the given row.
- */
-void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataCytoRegionData &entry, const vector<ColumnInfo> &metricColumns)
-{
-    int dsIndex = dataSetIndexMap[dataType];
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.chr);
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.startPosition);
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.stopPosition);
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 4, entry.call);
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 5, entry.confidenceScore);
-    UpdateMetrics(dsIndex, row, 6, entry.metrics, metricColumns);
-}
-
-/*
- * Update the value for the given row.
- */
+* Update the value for the given row.
+*/
 void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataGenotypeData &entry, const vector<ColumnInfo> &metricColumns)
 {
-    int dsIndex = dataSetIndexMap[dataType];
-    UpdateMultiData(dataType, row, entry);
-    UpdateMetrics(dsIndex, row, 3, entry.metrics, metricColumns);
+	int dsIndex = dataSetIndexMap[dataType];
+	UpdateMultiData(dataType, row, entry);
+	UpdateMetrics(dsIndex, row, 3, entry.metrics, metricColumns);
 }
 
 /*
- * Update the value for the given row.
- */
+* Update the value for the given row.
+*/
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataCopyNumberData &entry, const vector<ColumnInfo> &metricColumns)
+{
+	int dsIndex = dataSetIndexMap[dataType];
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.chr);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.position);
+	UpdateMetrics(dsIndex, row, 3, entry.metrics, metricColumns);
+}
+
+/*
+* Update the value for the given row.
+*/
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataCytoRegionData &entry, const vector<ColumnInfo> &metricColumns)
+{
+	int dsIndex = dataSetIndexMap[dataType];
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.chr);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.startPosition);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.stopPosition);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 4, entry.call);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 5, entry.confidenceScore);
+	UpdateMetrics(dsIndex, row, 6, entry.metrics, metricColumns);
+}
+
+/*
+* Update the value for the given row.
+*/
 void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataExpressionData &entry)
 {
-    int dsIndex = dataSetIndexMap[dataType];
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.quantification);
+	int dsIndex = dataSetIndexMap[dataType];
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.quantification);
 }
 
 /*
- * Update the value for the given row.
- */
+* Update the value for the given row.
+*/
 void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const ProbeSetMultiDataExpressionData &entry, const vector<ColumnInfo> &metricColumns)
 {
-    int dsIndex = dataSetIndexMap[dataType];
-    UpdateMultiData(dataType, row, entry);
-    UpdateMetrics(dsIndex, row, 2, entry.metrics, metricColumns);
+	int dsIndex = dataSetIndexMap[dataType];
+	UpdateMultiData(dataType, row, entry);
+	UpdateMetrics(dsIndex, row, 2, entry.metrics, metricColumns);
 }
 
 void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData
-         &entry, const std::vector<ColumnInfo> &metricColumns)
+																										&entry, const std::vector<ColumnInfo> &metricColumns)
 {
-    int dsIndex = dataSetIndexMap[dataType];  
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.signal);
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.call);
-    Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.confidenceScore);
-    UpdateMetrics(dsIndex, row, 4, entry.metrics, metricColumns);
+	int dsIndex = dataSetIndexMap[dataType];  
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.signal);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.call);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.confidenceScore);
+	UpdateMetrics(dsIndex, row, 4, entry.metrics, metricColumns);
+}
+
+/*
+* Update the value for the given row.
+*/
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const DmetBiAllelicData &entry)
+{
+	vector<ColumnInfo> metricColumns;
+	UpdateMultiData(dataType, row, entry, metricColumns);
+}
+
+/*
+* Update the value for the given row.
+*/
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const DmetBiAllelicData &entry, const vector<ColumnInfo> &metricColumns)
+{
+	int dsIndex = dataSetIndexMap[dataType];
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.call);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.confidence);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.force);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 4, entry.signalA);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 5, entry.signalB);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 6, entry.contextA);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 7, entry.contextB);
+	if(metricColumns.size() > 0)
+	{
+		UpdateMetrics(dsIndex, row, 8, entry.metrics, metricColumns);
+	}
+}
+
+/*
+* Update the value for the given row.
+*/
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const DmetCopyNumberData &entry)
+{
+	vector<ColumnInfo> metricColumns;
+	UpdateMultiData(dataType, row, entry, metricColumns);
+}
+
+/*
+* Update the value for the given row.
+*/
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const DmetCopyNumberData &entry, const vector<ColumnInfo> &metricColumns)
+{
+	int dsIndex = dataSetIndexMap[dataType];
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.call);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.confidence);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.force);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 4, entry.estimate);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 5, entry.lower);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 6, entry.upper);
+	if(metricColumns.size() > 0)
+	{
+		UpdateMetrics(dsIndex, row, 7, entry.metrics, metricColumns);
+	}
+}
+
+/*
+* Update the value for the given row.
+*/
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const DmetMultiAllelicData &entry)
+{
+	vector<ColumnInfo> metricColumns;
+	UpdateMultiData(dataType, row, entry, metricColumns);
+}
+
+/*
+* Update the value for the given row.
+*/
+void CalvinCHPMultiDataFileUpdater::UpdateMultiData(MultiDataType dataType, int row, const DmetMultiAllelicData &entry, const vector<ColumnInfo> &metricColumns)
+{
+	int dsIndex = dataSetIndexMap[dataType];
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 1, entry.call);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 2, entry.confidence);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 3, entry.force);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 4, entry.alleleCount);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 5, entry.signalA);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 6, entry.signalB);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 7, entry.signalC);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 8, entry.signalD);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 9, entry.signalE);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 10, entry.signalF);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 11, entry.contextA);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 12, entry.contextB);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 13, entry.contextC);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 14, entry.contextD);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 15, entry.contextE);
+	Update(MULTI_DATA_DATA_GROUP, dsIndex, row, 16, entry.contextF);
+	if(metricColumns.size() > 0)
+	{
+		UpdateMetrics(dsIndex, row, 17, entry.metrics, metricColumns);
+	}
 }
 
 void CalvinCHPMultiDataFileUpdater::UpdateMetrics(int dataSetIndex, int row, int startColIndex, const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics, const std::vector<ColumnInfo> &metricColumns)

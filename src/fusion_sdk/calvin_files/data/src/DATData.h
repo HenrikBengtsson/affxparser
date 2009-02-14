@@ -166,6 +166,20 @@ public:
 	 *	@param value The ID of the scanner used to generate the DAT.
 	 */
 	void SetScannerID(const std::wstring& value);
+
+	std::wstring GetExposureTime();
+	void SetExposureTime(std::wstring& value);
+
+	/*! Get the index of the subimage of the peg.
+	 *	@return Return the index of the subimage of the peg.
+	 */
+	int32_t GetPegSubImageIndex();
+
+	/*! Set the index of the subimage of the peg.
+	 *	@return void and set the subimage of the peg to the DAT file.
+	 */
+	void SetPegSubImageIndex(int32_t value);
+
 	/*! Get the date of the scan.
 	 *	@return Returns the date of the scan.
 	 */

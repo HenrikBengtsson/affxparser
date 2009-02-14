@@ -85,7 +85,9 @@ void DataSetUpdater::SeekToPosition(ofstream &os, int groupIndex, int setIndex, 
 {
 	int pos = positions[groupIndex][setIndex] + (row*rowsizes[groupIndex][setIndex]);
 	for (int i=0; i<col; i++)
+	{
 		pos += colsizes[groupIndex][setIndex][i];
+	}
 	os.seekp(pos, std::ios::beg);
 }
 

@@ -52,9 +52,13 @@ public:
 	int8_t GetPBase() const { return baseProbe; }
 	/*! Get the base of the target at the interrogation position */
 	int8_t GetTBase() const { return baseTarget; }
+	/*! Get the probe length */
+	u_int16_t GetProbeLength() const { return probeLength; }
+	/*! Get the probe grouping */
+	u_int16_t GetProbeGrouping() const { return probeGrouping; }
 
 protected:
-	enum DataSetColumns { XCoordCol, YCoordCol, ListIndexCol, IndexPosCol, BaseProbeCol, BaseTargetCol };
+	enum DataSetColumns { XCoordCol, YCoordCol, ListIndexCol, IndexPosCol, BaseProbeCol, BaseTargetCol, ProbeLenCol, ProbeGroupCol };
 
 	/*!  */
 	void CopyFromDataSet(DataSet* ds, int32_t row);
@@ -72,6 +76,10 @@ protected:
 	int8_t baseProbe;
 	/*! Base of the probe at the interrogation position, m_TBase in C++  */
 	int8_t baseTarget;
+	/*! Probe length, m_ProbeLength in C++  */
+	u_int16_t probeLength;
+	/*! Probe grouping, m_ProbeGrouping in C++  */
+	u_int16_t probeGrouping;
 
 	friend class CDFProbeGroupInformation;
 };

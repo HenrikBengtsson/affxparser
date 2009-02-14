@@ -25,7 +25,7 @@ using namespace affymetrix_calvin_io;
 FileHeader::FileHeader() 
 {
 	magic = MAGIC_NUM; 
-	version = VERSION; 
+	version = CALVINIOVERSION; 
 }
 
 void FileHeader::Clear()

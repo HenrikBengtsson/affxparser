@@ -1,6 +1,6 @@
 #include "FusionCHPData.h"
 #include "FusionCHPLegacyData.h"
- #include "FusionCHPMultiDataData.h"
+#include "FusionCHPMultiDataData.h"
 #include "FusionCHPQuantificationData.h"
 #include "FusionCHPQuantificationDetectionData.h"
 #include "FusionCHPDataAdapterInterface.h"
@@ -439,18 +439,18 @@ R_affx_GetCHPExpressionResults(FusionCHPLegacyData *chp)
   SET_ELEMENT(result, 11, change);
   SEXP nms;
   PROTECT(nms = NEW_CHARACTER(12));
-  SET_ELEMENT(nms, 0, mkChar("DetectionPValue"));
-  SET_ELEMENT(nms, 1, mkChar("Signal"));
-  SET_ELEMENT(nms, 2, mkChar("NumPairs"));
-  SET_ELEMENT(nms, 3, mkChar("NumUsedPairs"));
-  SET_ELEMENT(nms, 4, mkChar("Detection"));
-  SET_ELEMENT(nms, 5, mkChar("HasCompResults"));
-  SET_ELEMENT(nms, 6, mkChar("ChangePValue"));
-  SET_ELEMENT(nms, 7, mkChar("SignalLogRatio"));
-  SET_ELEMENT(nms, 8, mkChar("SignalLogRatioLow"));
-  SET_ELEMENT(nms, 9, mkChar("SignalLogRatioHigh"));
-  SET_ELEMENT(nms, 10, mkChar("NumCommonPairs"));
-  SET_ELEMENT(nms, 11, mkChar("Change"));
+  SET_STRING_ELT(nms, 0, mkChar("DetectionPValue"));
+  SET_STRING_ELT(nms, 1, mkChar("Signal"));
+  SET_STRING_ELT(nms, 2, mkChar("NumPairs"));
+  SET_STRING_ELT(nms, 3, mkChar("NumUsedPairs"));
+  SET_STRING_ELT(nms, 4, mkChar("Detection"));
+  SET_STRING_ELT(nms, 5, mkChar("HasCompResults"));
+  SET_STRING_ELT(nms, 6, mkChar("ChangePValue"));
+  SET_STRING_ELT(nms, 7, mkChar("SignalLogRatio"));
+  SET_STRING_ELT(nms, 8, mkChar("SignalLogRatioLow"));
+  SET_STRING_ELT(nms, 9, mkChar("SignalLogRatioHigh"));
+  SET_STRING_ELT(nms, 10, mkChar("NumCommonPairs"));
+  SET_STRING_ELT(nms, 11, mkChar("Change"));
 
   SET_NAMES(result, nms);
   UNPROTECT(14);
@@ -481,8 +481,8 @@ R_affx_GetCHPEntries(FusionCHPQuantificationData *qData)
   SET_ELEMENT(result, 1, qVec);
   SEXP nms;
   PROTECT(nms = NEW_CHARACTER(2));
-  SET_ELEMENT(nms, 0, mkChar("ProbeSetName"));
-  SET_ELEMENT(nms, 1, mkChar("QuantificationValue"));
+  SET_STRING_ELT(nms, 0, mkChar("ProbeSetName"));
+  SET_STRING_ELT(nms, 1, mkChar("QuantificationValue"));
   SET_NAMES(result, nms);
 
   UNPROTECT(5);
@@ -651,8 +651,8 @@ SEXP R_affx_ReadTilingDataSeqEntries(FusionCHPTilingData *chp, int Entry)
   SET_ELEMENT(rval, 1, value);
 
   PROTECT(nms = NEW_CHARACTER(2));
-  SET_ELEMENT(nms, 0, mkChar("position"));
-  SET_ELEMENT(nms, 1, mkChar("value"));
+  SET_STRING_ELT(nms, 0, mkChar("position"));
+  SET_STRING_ELT(nms, 1, mkChar("value"));
   SET_NAMES(rval, nms);
   UNPROTECT(4);
   return rval;
@@ -689,8 +689,8 @@ R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
 		R_affx_ReadTilingDataSeqHeader(chp->GetTilingSequenceData())); 
     SET_ELEMENT(seqi, 1, R_affx_ReadTilingDataSeqEntries(chp, i));
     PROTECT(seqiNms = NEW_CHARACTER(2));
-    SET_ELEMENT(seqiNms, 0, mkChar("seq"));
-    SET_ELEMENT(seqiNms, 1, mkChar("entries"));
+    SET_STRING_ELT(seqiNms, 0, mkChar("seq"));
+    SET_STRING_ELT(seqiNms, 1, mkChar("entries"));
     SET_NAMES(seqi, seqiNms);
     SET_ELEMENT(seqList, i, seqi);
     UNPROTECT(2);

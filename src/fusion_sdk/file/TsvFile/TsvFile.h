@@ -1,4 +1,4 @@
-///////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
@@ -26,6 +26,9 @@
 #ifndef _TSVFILE_H_
 #define _TSVFILE_H_
 
+// this comes with the affy SDK
+#include "portability/affy-base-types.h"
+#include "util/Err.h"
 //
 #include <fstream>
 #include <map>
@@ -33,10 +36,6 @@
 #include <streambuf>
 #include <string>
 #include <vector>
-
-// this comes with the affy SDK
-#include "portability/affy-base-types.h"
-#include "util/Err.h"
 
 /// The default number of decimal places in output
 #define TSV_DEFAULT_PRECISION 6
@@ -192,6 +191,7 @@ public:
   ///
   TsvFileBinding();
   void clear();
+  std::string get_type_str();
 };
 
 
@@ -261,7 +261,9 @@ public:
 
   //
   bool isNull();
+  bool isEmpty();
   void clear();
+
   //
   int setBuffer(const std::string& str);
   int setPrecision(int places);
@@ -309,6 +311,8 @@ public:
   void linkedvar_push(affx::TsvFileBinding* var);
   void linkedvars_clear();
   void linkedvars_assign(affx::TsvFile* tsvfile);
+  //
+  std::string get_bound_types_str();
 };
 
 //////////
@@ -406,8 +410,8 @@ public:
   bool m_optHdrDblQuoteComma;   ///< Header contains '","'.
   bool m_optLinkVarsOnOpen;     ///< Link variables when calling open()
   //
-  char m_optQuoteChar1;         ///< Quoting Character 
-  char m_optQuoteChar2;         ///< Quoting Character 
+  char m_optQuoteChar1;         ///< Quoting Character
+  char m_optQuoteChar2;         ///< Quoting Character
   //
   int m_optPrecision;           ///< Default Precision
 
@@ -439,6 +443,7 @@ private:
   //private:
   ///
   std::vector<header_t*> m_headers_vec;
+  bool m_headers_vec_packed;
   // where we are in the vector
   int m_headers_idx;
   header_t* m_headers_curptr;
@@ -498,8 +503,7 @@ public:
   int bindErrorCnt();
 
   //
-  linenum_t line_number();
-  int line_level();
+
 
   int setFilename(const std::string& filename);
   /// \brief Get the filename of the TsvFile
@@ -553,12 +557,12 @@ public:
   int defineFile(const std::string& definition);
   int defineFileParse(const std::string& definition);
   //
-  int writeOpen(const std::string& filename);
-  int writeCsv(const std::string& filename);
+  tsv_return_t writeOpen(const std::string& filename);
+  tsv_return_t writeCsv(const std::string& filename);
   //
-  int writeTsv(const std::string& filename);
-  int writeTsv_v1(const std::string& filename);
-  int writeTsv_v2(const std::string& filename);
+  tsv_return_t writeTsv(const std::string& filename);
+  tsv_return_t writeTsv_v1(const std::string& filename);
+  tsv_return_t writeTsv_v2(const std::string& filename);
 
   //
   int write_str(const std::string& str);
@@ -575,9 +579,12 @@ public:
   int defineIndex(int clvl,int cidx         ,int kind,int flags);
 
   //
-  int  getHeader(const std::string& key,std::string& val);
-  int  getHeader(const std::string& key,int& val);
-  int  getHeader(const std::string& key,double& val);
+  int getHeader(const std::string& key,std::string& val);
+  int getHeader(const std::string& key,int& val);
+  int getHeader(const std::string& key,double& val);
+
+  // check to see if there is a header which is equal to val.
+  int hasHeaderEqualTo(const std::string& key,const std::string& val);
 
   /// \todo maybe add a flag to "addHeader" to skip checking?
   int  addHeader(const std::string& key,const std::string& val,int order);
@@ -595,6 +602,7 @@ public:
   void headersBegin();
   int  headersNext(std::string& key,std::string& val);
   int  headersFindNext(const std::string& key,std::string& val);
+  int  deleteHeaders(const std::string& key);
 #ifndef SWIG
   TsvFileHeaderLine* nextHeaderPtr();
   int deleteHeaderPtr(TsvFileHeaderLine* hdrptr);
@@ -602,6 +610,7 @@ public:
   int addHeaderComment(const std::string& comment);
   int addHeaderComment(const std::string& comment,int order);
   //
+  void repackHeaders();
   void resortHeaders();
   //
   int writeFileComment(const std::string& comment);
@@ -662,15 +671,17 @@ public:
   //void setInternCacheSize(int clvl,int cidx,int size);
   //void setInternCacheSize(int clvl,std::string cname,int size);
 
-  // movement commands.
+  // info about the current line/row.
   unsigned int lineNumber();
+  linenum_t lineNum();
   int lineLevel();
+  bool eof();
+  // movement commands.
   int nextLine();
   int nextLevel(int clvl);
   int rewind();
   int seekLine(linenum_t line);
   int gotoLine(linenum_t line);
-  bool eof();
 
   //
   void currentLineAsString(std::string& line);
@@ -678,7 +689,11 @@ public:
   //
   bool isNull(int clvl,int cidx);
   bool isNull(int clvl,const std::string& cname);
+  //
+  bool isEmpty(int clvl,int cidx);
+  bool isEmpty(int clvl,const std::string& cname);
 
+  //
   affx::tsv_type_t get_type(int clvl,const std::string& cidx);
   affx::tsv_type_t get_type(int clvl,int cidx);
   affx::tsv_type_t set_type(int clvl,const std::string& cidx,affx::tsv_type_t type);

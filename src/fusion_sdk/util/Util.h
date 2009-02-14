@@ -38,10 +38,15 @@
 #include <vector>
 #include <ctype.h>
 #include <time.h>
+#include <string>
+
 //
 #include "util/Convert.h"
 #include "util/Err.h"
 #include "portability/affy-base-types.h"
+
+
+
 
 /// The string which seperates path components on windows
 #define PATH_SEPARATOR_WIN32      "\\"
@@ -66,9 +71,13 @@
 /// 386 systems cant map more than 2GB of user memory.
 /// (unless you have a patched kernel...)
 #ifdef WIN32
+#ifdef _WIN64
+#define MEMINFO_2GB_MAX (2UL*1024*1024*1024)
+#else
 // cap at 1.3G on Windows due to expected memory fragmentation
 /// @todo This was 1.7G on head before merge with python branch. Further work on genotype engine may allow for bumping this back up some.
 #define MEMINFO_2GB_MAX floor(1.3f*1024*1024*1024)
+#endif
 #else
 #define MEMINFO_2GB_MAX (2UL*1024*1024*1024)
 #endif
@@ -124,7 +133,15 @@ public:
    struct ltstr {
      /// Is one string less than another?
      bool operator()(const char* s1, const char* s2) const {
-       return strcmp(s1, s2) < 0;
+      return strcmp(s1, s2) < 0;
+     }
+   };
+
+   struct ltstring {
+     /// Is one string less than another?
+     bool operator()(const std::string& s1, const std::string& s2) const {
+       return strcmp(s1.c_str(), s2.c_str()) < 0;
+		 //return s1.compare(s2)<0; //vliber
      }
    };
 
@@ -145,8 +162,10 @@ public:
    * @param s - c-string to be copied.
    * @return char * newly allocated c-string.
    */
-  static char *cloneString(const char *s);
-
+  static char *cloneString(const char *);
+  // one shouldnt need this. -jhg
+  // static char *cloneString(const std::string &);
+  
   /**
    * @brief     Does the string end with the other string?
    * @param     str       string to check  
@@ -156,16 +175,12 @@ public:
   static bool stringEndsWith(const std::string& str,const std::string& end);
 
   /** 
-   * Open an ofstream for writing to. Abort if can't open
-   * for some reason.
+   * Open an ofstream for writing to. Abort if can't open for some reason.
    * @param out - stream to be opened.
    * @param fileName - name of file to be opened.
    */
-  static void mustOpenToWrite(std::ofstream &out, const char *fileName);
-  static void mustOpenToWrite(std::ofstream &out, const std::string &fileName) {
-    return mustOpenToWrite(out, fileName.c_str());
-  }
-
+  static void mustOpenToWrite(std::ofstream &out, const std::string& fileName);
+ 
   /** 
    * Close an output stream making sure that it is ok before doing so.
    * @param out - stream to be closed.
@@ -182,20 +197,33 @@ public:
    * Return true if file exists, false otherwise.
    * @param fileName 
    */
-  static bool fileReadable(const char *fileName);
-  static bool fileReadable(const std::string &fileName) {
-      return fileReadable(fileName.c_str());
-  }
+  static bool fileReadable(const std::string &fileName);
+
+  /** 
+   * Return true if file exists, false otherwise.
+   * @param fileName 
+   */
+  static bool fileExists(const std::string &fileName);
 
   /**
    * Return true on success. False otherwise
    * @param in - file to copy
    * @param out - name of the new file
    */
-  static bool fileCopy(const char *in, const char *out);
-  static bool fileCopy(const std::string &in, const std::string &out) {
-      return fileCopy(in.c_str(),out.c_str());
-  }
+  static bool fileCopy(const std::string &in, const std::string &out, bool throwOnError = true); 
+
+  /**
+   * Return true on success. False otherwise
+   * @param in - file to copy
+   * @param out - name of the new file
+   */
+  static bool fileRename(const std::string &in, const std::string &out, bool throwOnError = true);
+
+  /*! Deletes a file.
+   * @param fileName The name of the file to delete.
+   * @return True if the file was deleted.
+   */
+  static bool fileRemove(const std::string &fileName, bool throwOnError = true);
 
   /** 
    * @brief Chop off the last character if it is a path separator.
@@ -207,19 +235,13 @@ public:
    * Return true if directory exists and is readable, false otherwise.
    * @param dirName 
    */
-  static bool directoryReadable(const char *dirName);
-  static bool directoryReadable(const std::string &dirName) {
-      return directoryReadable(dirName.c_str());
-  }
+  static bool directoryReadable(const std::string &dirName); 
   
   /** 
    * Return true if directory exists and is readable, false otherwise.
    * @param dirName 
    */
-  static bool directoryWritable(const char *dirName);
-  static bool directoryWritable(const std::string &dirName) {
-      return directoryWritable(dirName.c_str());
-  }
+  static bool directoryWritable(const std::string &dirName); 
 
   /** 
    * Make a directory. Returns true if directory is created
@@ -228,10 +250,7 @@ public:
    * @param dirName - Directory name to be made.
    * @return - true if created sucessfully, false if already exists.
    */
-  static bool makeDir(const char *dirName);
-  static bool makeDir(const std::string &dirName) {
-      return makeDir(dirName.c_str());
-  }
+  static bool makeDir(const std::string &dirName); 
 
   /**
    * Create a directory. Returns a pointer to error message, else 0.
@@ -242,7 +261,7 @@ public:
    * @param dirName - Directory name to be made.
    * @return - Pointer to error message if any, else zero.
    */
-  static std::string* createDir(const char *dirName);
+  static std::string* createDir(const std::string &dirName);
 
   /** 
    * Chop up a string into a vector of words.
@@ -264,13 +283,26 @@ public:
     s = s.erase(0,s.find_first_not_of(whitespace));
   }
 
+  /// @brief     Change the end of a string
+  /// @param     str       string to change
+  /// @param     from      string to change from
+  /// @param     to        string to change to
+  static void changeEnd(std::string& str,const std::string& from,const std::string& to);
+
+  /// @brief     Change the endings of a vector of strings.
+  /// @param     str_vec   vector to change
+  /// @param     from      string to change from
+  /// @param     to        string to change to
+  static void changeEnd(std::vector<std::string>& str_vec,const std::string& from,const std::string& to);
+
   /** 
    * @brief Get the root of a filename. Chops on '/' for unix and
    * '\' or '/' windows.
    * @param s - File name to find root of.
    * @return - Root of string.
    */
-  static std::string fileRoot(const std::string &s);
+  static std::string fileRoot(const std::string& filename);
+  static std::vector<std::string> fileRoot(const std::vector<std::string>& filename_vec);
 
   /** 
    * @brief Check to see if two strings are the same.
@@ -278,12 +310,12 @@ public:
    * @param s1 - string 1.
    * @param s2 - string 2.
    * 
-   * @return true if strcmp() considers them the same.
+   * @return true if compare() considers them the same.
    */
-  static bool sameString(const char *s1, const char *s2) {
-    return strcmp(s1,s2) == 0;
+  static bool sameString(const std::string &s1, const std::string &s2) {
+    return s1.compare(s2) == 0;
   }
-
+ 
   /** 
    * Check each entry in two matrices to see if they are the same.  If
    * doing 'match-rows' we will attempt to find the matching row by the
@@ -300,7 +332,8 @@ public:
    * 
    * @return - Number of differences >= epsilon found.
    */
-  static int matrixDifferences(const char *targetFile, const char *queryFile, 
+  static int matrixDifferences(const std::string& targetFile, 
+                               const std::string& queryFile, 
                                int colSkip, int rowSkip, double epsilon, bool printMismatch,
                                bool matchRows);
 
@@ -330,7 +363,7 @@ public:
    * 
    * @return converted filename for that platform.
    */
-  static std::string getPathName(const char *path);
+  static std::string getPathName(const std::string &path);
 
 
   /**
@@ -348,7 +381,7 @@ public:
    * @return - Pointer to next whitespace character or NULL if none
    *   found. 
    */
-  static const char *nextWhiteSpace(const char *s);
+  static const char *nextWhiteSpace(const char *);
 
   /**
    * Print a string wrapping at max width from the current
@@ -360,8 +393,7 @@ public:
    * @param currentPos - What position in the line is 
    *                      cursor currently at.
    */
-  static void printStringWidth(std::ostream &out, const char *str, int prefix,
-                               int currentPos, int maxWidth=70 );
+  static void printStringWidth(std::ostream &out,const std::string& str, int prefix,int currentPos, int maxWidth=70);
 
   /** 
    * Wrapper for different version of isnan() on different systems.
@@ -369,6 +401,14 @@ public:
    * @return - true if x is finite (-INF < x && x < +INF && x != nan), false otherwise
    */
   static bool isFinite(double x);
+
+  inline static void PrintTextClassTitle(const std::string &className){
+    printf ("****%s****\n",className.c_str());
+  }
+
+  static void PrintTextFunctionTitle(const std::string &className, const std::string &functionName){
+    printf ("****%s::%s****\n",className.c_str(),functionName.c_str());
+  }
   
 };
 

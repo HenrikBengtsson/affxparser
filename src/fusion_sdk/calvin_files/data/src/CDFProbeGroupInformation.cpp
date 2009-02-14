@@ -56,6 +56,8 @@ void CDFProbeGroupInformation::SetDataSet(DataSet* ds)
 	direction = 0;
 	listCnt = 0;
 	cellCnt = 0;
+	wobbleSituation = 0;
+	alleleCode = 0;
 	probeSetNumber = 0;
 	cellsPerList = 0;
 
@@ -76,6 +78,14 @@ void CDFProbeGroupInformation::SetDataSet(DataSet* ds)
 	// CellsPerList (cells per atom)
 	if (dsh.FindNameValParam(CDF_CELLS_PER_ATOM, nvt))
 		cellsPerList = nvt.GetValueUInt8();
+
+	// Wobble situation 
+//	if (dsh.FindNameValParam(CDF_WOBBLE_SITUATION, nvt))
+//		wobbleSituation = nvt.GetValueUInt8();
+
+	// Allele code
+//	if (dsh.FindNameValParam(CDF_ALLELE, nvt))
+//		allele = nvt.GetValueUInt8();
 
 	// List (atom)
 	if (dsh.FindNameValParam(CDF_ATOMS, nvt))

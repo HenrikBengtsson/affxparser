@@ -43,8 +43,9 @@
 class VerboseErrHandler : public ErrHandler {
 
 public:
-  VerboseErrHandler(bool doThrow) { 
+  VerboseErrHandler(bool doThrow=false, bool verbose=true) { 
     m_Throw = doThrow;
+    m_Verbose = verbose;
   }
 
   /** Virtual destructor for a virtual class. */
@@ -60,7 +61,8 @@ public:
    * @param msg - Message about what went wrong.
    */
   virtual void handleError(const std::string &msg) {
-    Verbose::warn(0, msg, true, "");
+    if(m_Verbose)
+        Verbose::out(1, msg);
     if(m_Throw) {
       throw Except(msg);
     }
@@ -71,6 +73,7 @@ public:
 
 private:
   bool m_Throw;          ///< Determines if we throw an exception or just call abort()
+  bool m_Verbose;        ///< Determines if we call Verbose::out
 };
 
 

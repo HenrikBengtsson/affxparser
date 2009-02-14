@@ -39,7 +39,7 @@ namespace affymetrix_calvin_io
 {
 
 static const u_int8_t MAGIC_NUM = 59;
-static const u_int8_t VERSION = 1;
+static const u_int8_t CALVINIOVERSION = 1;
 
 /*! This class defines a data container for the generic file header */
 class FileHeader

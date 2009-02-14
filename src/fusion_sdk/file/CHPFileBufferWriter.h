@@ -29,10 +29,12 @@
 #ifndef _CCHPFILEBUFFERWRITER_HEADER_
 #define _CCHPFILEBUFFERWRITER_HEADER_
 
+//
 #include <string>
 #include <vector>
-#include "../portability/affy-base-types.h"
-#include "CHPFileData.h"
+//
+#include "portability/affy-base-types.h"
+#include "file/CHPFileData.h"
 
 #define MAX_BUFFER_SIZE				5242880		// 5 MB
 

@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 //
+#include "util/Convert.h"
 #include "util/Err.h"
 #include "util/PgOptions.h"
 
@@ -116,8 +117,8 @@ tsv_util_copy(const std::string& f_fileName,const std::string& t_fileName,int fm
   }
 
   while (f_tsv->nextLine()==affx::TSV_OK) {
-    t_tsv->copyLevel(*f_tsv,f_tsv->line_level());
-    t_tsv->writeLevel(f_tsv->line_level());
+    t_tsv->copyLevel(*f_tsv,f_tsv->lineLevel());
+    t_tsv->writeLevel(f_tsv->lineLevel());
   }
 
   t_tsv->close();
@@ -135,7 +136,8 @@ void
 tsv_util_paste(const std::string& out_fileName,
                const std::vector<std::string> in_tsv_fileNames,
                int seg_max_lines,
-               const std::string& key_col_name)
+               const std::string& key_col_name,
+               int verbose)
 {
   std::vector<affx::TsvFile*> in_tsv;
   std::vector<int> in_tsv_key_cidx;
@@ -145,8 +147,22 @@ tsv_util_paste(const std::string& out_fileName,
   int out_tsv_lines=0;
 
   //
+  if (in_tsv_fileNames.size()>1000) {
+    Err::errAbort("tsv-paste: Can only paste 1000 tsv files at at time. (unix fh limit.)");
+  }
+
+  //
   if (seg_max_lines<0) {
-    Err::errAbort("seg_max_lines must be 0 (disabled) a postive number.");
+    Err::errAbort("tsv-paste: seg_max_lines must be 0 (disabled) a postive number.");
+  }
+
+  // the key_col_name might be numeric.
+  char* key_col_name_ptr2;
+  const char* key_col_name_ptr1=key_col_name.c_str();
+  int key_col_num=strtol(key_col_name_ptr1,&key_col_name_ptr2,10);
+  // not a full conversion.
+  if (*key_col_name_ptr2!=0) {
+    key_col_num=-1;
   }
 
   // scan the inputs to...
@@ -155,14 +171,25 @@ tsv_util_paste(const std::string& out_fileName,
     affx::TsvFile* tsvp=new affx::TsvFile();
     tsvp->open(in_tsv_fileNames[i]);
     in_tsv.push_back(tsvp);
+    //
+    if (verbose>=1) { 
+      printf("tsv_paste: open '%s'\n",in_tsv_fileNames[i].c_str());
+    }
     // ...check for key name.
     if (key_col_name=="") { // no key name
       in_tsv_key_cidx.push_back(-1);
     }
     else {
-      int key_cidx=in_tsv[i]->cname2cidx(0,key_col_name);
-      if (key_cidx<0) {
-        Err::errAbort("missing '"+key_col_name+"' in input '"+in_tsv_fileNames[i]+"'");
+      int key_cidx;
+      key_cidx=in_tsv[i]->cname2cidx(0,key_col_name);
+      if (key_col_num>=0) {
+        key_cidx=key_col_num;
+      }
+      else {
+        Err::errAbort("tsv-paste: missing column '"+key_col_name+"' in input '"+in_tsv_fileNames[i]+"'");
+      }
+      if ((key_cidx<0)||(key_cidx>=in_tsv[i]->getColumnCount(0))) {
+        Err::errAbort("tsv-paste: key column is out of bounds. (key_cidx="+ToStr(key_cidx)+")");
       }
       in_tsv_key_cidx.push_back(key_cidx);
     }
@@ -223,7 +250,7 @@ tsv_util_paste(const std::string& out_fileName,
         if (i_cidx==in_tsv_key_cidx[i]) {
           // must be set
           if (rv!=affx::TSV_OK) {
-            Err::errAbort("check column value is required. '"+in_tsv_fileNames[i]+"'");
+            Err::errAbort("tsv-paste: Check column value is required. '"+in_tsv_fileNames[i]+"'");
           }
           // the first is the reference
           if (i==0) {
@@ -232,7 +259,7 @@ tsv_util_paste(const std::string& out_fileName,
           }
           else {
             if (tmp!=key_col_value) {
-              Err::errAbort("Check column mismatch.  ref='"+key_col_value+"'  val='"+tmp+"'");
+              Err::errAbort("tsv-paste: Check column mismatch.  ref='"+key_col_value+"'  val='"+tmp+"'");
             }
           }
         }
@@ -319,6 +346,9 @@ main(int argc,char* argv[])
   opts->defineOption("h","help", PgOpt::BOOL_OPT,
                     "This message.",
                     "false");
+  opts->defineOption("v","verbose",PgOpt::INT_OPT,
+                     "verbose level",
+                     "0");
 
   opts->defineOption("","headers", PgOpt::BOOL_OPT,
                     "INFILE = Display the headers of the CSV/TSV file.",
@@ -337,8 +367,8 @@ main(int argc,char* argv[])
                     "OUTFILE  FILELIST = Paste the files of filelist into outfile.",
                     "");
   opts->defineOption("","seg-lines",PgOpt::INT_OPT,
-                    " Segment size",
-                    "0");
+                     "Segment size",
+                     "0");
   opts->defineOption("","key-col", PgOpt::STRING_OPT,
                     "COLUMN_NAME = Column name which must be present and equal in all inputs files, if set.",
                     "");
@@ -423,7 +453,8 @@ main(int argc,char* argv[])
     tsv_util_paste(opts->get("paste"),
                    opts->getArgVector(),
                    opts->getInt("seg-lines"),
-                   opts->get("key-col"));
+                   opts->get("key-col"),
+                   opts->getInt("verbose"));
   }
   //
   else if (opts->getBool("diff")) {

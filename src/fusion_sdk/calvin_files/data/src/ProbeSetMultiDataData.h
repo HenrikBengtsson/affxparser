@@ -53,8 +53,8 @@ typedef struct _ProbeSetMultiDataGenotypeData
 	/*! The name of the probe set. */
 	std::string name;
 
-    /*! The call. */
-    u_int8_t call;
+	/*! The call. */
+  u_int8_t call;
 
 	/*! The confidence of the call. */
 	float confidence;
@@ -82,8 +82,8 @@ typedef struct _ProbeSetMultiDataCopyNumberData
 	/*! The name of the probe set. */
 	std::string name;
 
-    /*! The chromosome value. */
-    u_int8_t chr;
+  /*! The chromosome value. */
+  u_int8_t chr;
 
 	/*! The physical position. */
 	u_int32_t position;
@@ -114,8 +114,8 @@ typedef struct _ProbeSetMultiDataCytoRegionData
 	/*! The name of the region. */
 	std::string name;
 
-    /*! The chromosome value. */
-    u_int8_t chr;
+	/*! The chromosome value. */
+	u_int8_t chr;
 
 	/*! The physical start position. */
 	u_int32_t startPosition;
@@ -155,8 +155,8 @@ typedef struct _ProbeSetMultiDataCopyNumberVariationRegionData
 	/*! The name of the region. */
 	std::string name;
 
-    /*! The signal for the region */
-    float signal;
+        /*! The signal for the region */
+        float signal;
 
 	/*! The call for the region. */
 	u_int8_t call;
@@ -168,6 +168,99 @@ typedef struct _ProbeSetMultiDataCopyNumberVariationRegionData
 	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
 
 } ProbeSetMultiDataCopyNumberVariationRegionData;
+
+/*! Stores data for a DMET copy number result of a probe set. */
+typedef struct _DmetCopyNumberData
+{
+	/*! The name of the probe set. */
+	std::string name;
+
+  /*! The call for the region. */
+  int16_t call;
+
+	/*! The confidence score. */
+	float confidence;
+
+	/*! The copy number force*/
+	int16_t force;
+
+	/*! copy number estimate */
+	float estimate;
+
+	/*! lower bounds */
+	float lower;
+
+	/*! upper bounds */
+	float upper;
+
+	/*! Other metrics associated with the result. */
+	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
+
+} DmetCopyNumberData;
+
+/*! Stores data for a DMET genotype probe set. */
+typedef struct _DmetMultiAllelicData
+{
+	/*! The name of the probe set. */
+	std::string name;
+
+  /*! The call for the region. */
+  u_int8_t call;
+
+	/*! The confidence score. */
+	float confidence;
+
+	/*! The copy number force*/
+	u_int8_t force;
+
+	/*! copy number estimate */
+	u_int8_t alleleCount;
+
+	float signalA;
+	float signalB;
+	float signalC;
+	float signalD;
+	float signalE;
+	float signalF;
+
+	u_int8_t contextA;
+	u_int8_t contextB;
+	u_int8_t contextC;
+	u_int8_t contextD;
+	u_int8_t contextE;
+	u_int8_t contextF;
+
+	/*! Other metrics associated with the result. */
+	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
+
+} DmetMultiAllelicData;
+
+/*! Stores data for a DMET genotype probe set. */
+typedef struct _DmetBiAllelicData
+{
+	/*! The name of the probe set. */
+	std::string name;
+
+  /*! The call for the region. */
+  u_int8_t call;
+
+	/*! The confidence score. */
+	float confidence;
+
+	/*! The copy number force*/
+	u_int8_t force;
+
+	/*! lower bounds */
+	float signalA;
+	float signalB;
+
+	u_int8_t contextA;
+	u_int8_t contextB;
+
+	/*! Other metrics associated with the result. */
+	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
+
+} DmetBiAllelicData;
 
 /*! Convert a string representation of a chromosome to a numeric representation.
  * @param chr The chromosome value.

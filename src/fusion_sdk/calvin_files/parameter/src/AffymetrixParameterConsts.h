@@ -62,6 +62,119 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute name for the column location of the array plate well. */
 #define PLATE_WELL_COL_PARAM_NAME L"affymetrix-plate-well-col"
 
+/*! Defines the static attribute name for the exposure time for the plate. */
+#define PLATE_EXPOSURE_TIME L"affymetrix-plate-exposuretime"
+
+/*! Defines the static attribute name for the barcode of the plate. */
+#define PLATE_BARCODE L"affymetrix-plate-barcode"
+
+/*! Defines the static attribute name for the well position of the plate. */
+#define PLATE_PEG_WELL_POSITION L"affymetrix-plate-peg-wellposition"
+
+/*! Defines the static attribute name for the index of the subimage of the array plate. */
+#define PLATE_PEG_SUBIMAGE_INDEX L"affymetrix-plate-peg-subimage-index"
+
+/*! Defines the static attribute name for the GOS datFileName. */
+#define PLATE_GCOS_DATFILENAME L"affymetrix-plate-gcos-datfilename"
+
+/*! Defines the static attribute name for the plate GUID. */
+#define PLATE_GUID L"affymetrix-plate-GUID"
+
+/*! Defines the static attribute name for the plate peg GUID. */
+#define PLATE_PLATE_PEG_GUID L"affymetrix-plate-peg-GUID"
+
+
+#define AFFY_SCAN_PARAMETER_PREFIX	L"affymetrix-scanparameter-"
+#define AFFY_SCAN_PARAMETER_PREFIX_S std::wstring(AFFY_SCAN_PARAMETER_PREFIX)
+
+
+/*! Defines the static attribute name for the scanner array name. */
+#define SCANNER_ARRAY_NAME L"arrayname"
+
+/*! Defines the static attribute name for the array part name. */
+#define SCANNER_ARRAY_PART_NUMBER L"array-part-number"
+
+/*! Defines the static attribute name for the media type. */
+#define SCANNER_MEDIA_TYPE L"media-type"
+
+/*! Defines the static attribute name for the scanner feature size. */
+#define SCANNER_FEATURE_SIZE L"feature-size"
+
+/*! Defines the static attribute name for the scanner array width. */
+#define SCANNER_ARRAY_WIDTH L"array-width"
+
+/*! Defines the static attribute name for the scanner array height. */
+#define SCANNER_ARRAY_HEIGHT L"array-height"
+
+/*! Defines the static attribute name for the scanner array focus-width. */
+#define SCANNER_ARRAY_FOCUS_WIDTH L"array-focus-width"
+
+/*! Defines the static attribute name for the scanner array focus-height. */
+#define SCANNER_ARRAY_FOCUS_HEIGHT L"array-focus-height"
+
+/*! Defines the static attribute name for the scanner array num-wave-lengths. */
+#define SCANNER_ARRAY_NUM_WAVE_LENGHTS L"array-num-wave-lengths"
+
+/*! Defines the static attribute name for the scanner array num-wave-lengths1. */
+#define SCANNER_ARRAY_WAVE_LENGHTS1 L"array-wave-lengths1"
+
+/*! Defines the static attribute name for the scanner array num-wave-lengths2. */
+#define SCANNER_ARRAY_WAVE_LENGHTS2 L"array-wave-lengths2"
+
+/*! Defines the static attribute name for the scanner array num-wave-lengths3. */
+#define SCANNER_ARRAY_WAVE_LENGHTS3 L"array-wave-lengths3"
+
+/*! Defines the static attribute name for the scanner array num-wave-lengths4. */
+#define SCANNER_ARRAY_WAVE_LENGHTS4 L"array-wave-lengths4"
+
+/*! Defines the static attribute name for the scanner array num-wave-lengths5. */
+#define SCANNER_ARRAY_WAVE_LENGHTS5 L"array-wave-lengths5"
+
+/*! Defines the static attribute name for the scanner array numx-sub-arrays. */
+#define SCANNER_ARRAY_NUMX_SUB_ARRAYS L"array-numx-sub-arrays"
+
+/*! Defines the static attribute name for the scanner array numy-sub-arrays. */
+#define SCANNER_ARRAY_NUMY_SUB_ARRAYS L"array-numy-sub-arrays"
+
+/*! Defines the static attribute name for the scanner sub array xoffset-um. */
+#define SCANNER_SUBARRAY_XOFFSET_UM L"sub-array-xoffset-um"
+
+/*! Defines the static attribute name for the scanner sub array yoffset-um. */
+#define SCANNER_SUBARRAY_YOFFSET_UM L"sub-array-yoffset-um"
+
+/*! Defines the static attribute name for the scanner sub array xspacing-um. */
+#define SCANNER_SUBARRAY_XSPACING_UM L"sub-array-xspacing-um"
+
+/*! Defines the static attribute name for the scanner sub array yspacing-um. */
+#define SCANNER_SUBARRAY_YSPACING_UM L"sub-array-yspacing-um"
+
+/*! Defines the static attribute name for the scanner sub array af target ul-xum. */
+#define SCANNER_ARRAY_AF_TARGET_UL_XUM L"array-af-target-ul-xum"
+
+/*! Defines the static attribute name for the scanner sub array af target ul-yum. */
+#define SCANNER_ARRAY_AF_TARGET_UL_YUM L"array-af-target-ul-yum"
+
+/*! Defines the static attribute name for the scanner sub array af target lr-xum. */
+#define SCANNER_ARRAY_AF_TARGET_LR_XUM L"array-af-target-lr-xum"
+
+/*! Defines the static attribute name for the scanner sub array af target lr-yum. */
+#define SCANNER_ARRAY_AF_TARGET_LR_YUM L"array-af-target-lr-yum"
+
+/*! Defines the static attribute name for the scanner array num exposure times. */
+#define SCANNER_ARRAY_NUM_EXPOSURE_TIMES L"array-num-exposure-times"
+
+/*! Defines the static attribute name for the scanner sub array exposure times ms1. */
+#define SCANNER_ARRAY_EXPOSURE_TIMES_MS1 L"array-exposure-times-ms1"
+
+/*! Defines the static attribute name for the scanner sub array exposure times ms2. */
+#define SCANNER_ARRAY_EXPOSURE_TIMES_MS2 L"array-exposure-times-ms2"
+
+/*! Defines the static attribute name for the scanner sub array exposure times ms3. */
+#define SCANNER_ARRAY_EXPOSURE_TIMES_MS3 L"array-exposure-times-ms3"
+
+/*! Defines the static attribute name for the scanner sub array exposure times ms4. */
+#define SCANNER_ARRAY_EXPOSURE_TIMES_MS4 L"affymetrix-scanner-array-exposure-times-ms4"
+
 /*! Defines the static attribute name for the algorithm name. */
 #define ALGORITHM_NAME_PARAM_NAME L"affymetrix-algorithm-name"
 
@@ -122,6 +235,12 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute name for the number of pixel cols */
 #define COLS_PARAM_NAME L"affymetrix-pixel-cols"
 
+/*! Defines the static attribute name for the number of feature rows */
+#define FEATURE_ROWS_NAME L"affymetrix-feature-rows"
+
+/*! Defines the static attribute name for the number of feature cols */
+#define FEATURE_COLS_NAME L"affymetrix-feature-cols"
+
 /*! Defines the static attribute for the algorithm version. */
 #define ALG_VERSION_PARAM_NAME std::wstring(L"affymetrix-algorithm-version")
 
@@ -160,6 +279,43 @@ namespace affymetrix_calvin_parameter
 
 /*! Defines the reserve length of an affymetrix GUID */
 #define AFFY_GUID_LEN 55
+
+/*! Defines the parent file identifier GUID */
+#define AFFY_PARENT_FILE_IDENTIFIER L"affymetrix-parent-dat-file-identifier"
+
+/*! Defines the exposure time string */
+#define AFFY_EXPOSURE_TIME L"affymetrix-exposure-time"
+
+/*! Defines attribute name for array parameter */
+#define AFFY_ARRAY_PARAMETER_PREFIX	L"affymetrix-ArrayParameter-"
+#define AFFY_ARRAY_PARAMETER_PREFIX_S std::wstring(AFFY_ARRAY_PARAMETER_PREFIX)
+
+/*! Defines attribute name for array parameter, feature columns */
+#define FEATURE_COLUMNS			L"featureColumns"
+
+/*! Defines attribute name for array parameter, feature rows */
+#define FEATURE_ROWS			L"featureRows"
+
+/*! Defines attribute name for array parameter, feature setback */
+#define FEATURE_SET_BACK		L"featureSetback"
+
+/*! Defines attribute name for array parameter, feature height */
+#define FEATURE_HEIGHT			L"featureHeight"
+
+/*! Defines attribute name for array parameter, feature width */
+#define FEATURE_WIDTH			L"featureWidth"
+
+/*! Defines attribute name for array parameter, part number */
+#define PART_NUMBER				L"partNumber"
+
+/*! Defines attribute name for array parameter, test type */
+#define TEST_TYPE				L"testType"
+
+#define AFFY_FILE_CREATOR		L"affymetrix-file-creator"
+
+/*! Defines attribute name for fludics parameter */
+#define AFFY_FLUIDICS_PARAMETER_PREFIX	L"affymetrix-"
+#define AFFY_FLUIDICS_PARAMETER_PREFIX_S std::wstring(AFFY_FLUIDICS_PARAMETER_PREFIX)
 
 }
 

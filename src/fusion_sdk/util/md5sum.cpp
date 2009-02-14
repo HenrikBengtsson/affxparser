@@ -79,6 +79,16 @@ affx::md5sum::update(char const * const str)
 /// @brief     update the MD5 state with a int in network byte order.
 /// @param     val       Value to update the md5 with.
 /// @return    non-zero on error
+int affx::md5sum::update_nbo(int32_t val)
+{
+  uint32_t val_bigendian=htonl((uint32_t)val);
+  MD5Update(&m_context,(uint8_t*)&val_bigendian,sizeof(uint32_t));
+  return 0;
+}
+
+/// @brief     update the MD5 state with a int in network byte order.
+/// @param     val       Value to update the md5 with.
+/// @return    non-zero on error
 int affx::md5sum::update_nbo(uint32_t val)
 {
   uint32_t val_bigendian=htonl(val);
