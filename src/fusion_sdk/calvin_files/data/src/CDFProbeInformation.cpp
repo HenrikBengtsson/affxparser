@@ -33,6 +33,8 @@ CDFProbeInformation::CDFProbeInformation()
 	indexPos = 0;
 	baseProbe = 0;
 	baseTarget = 0;
+	probeLength = 0;
+	probeGrouping = 0;
 }
 
 
@@ -44,5 +46,7 @@ void CDFProbeInformation::CopyFromDataSet(DataSet* dataSet, int32_t row)
 	dataSet->GetData(row, IndexPosCol, indexPos);
 	dataSet->GetData(row, BaseProbeCol, baseProbe);
 	dataSet->GetData(row, BaseTargetCol, baseTarget);
+//	dataSet->GetData(row, ProbeLengthCol, probeLength);
+//	dataSet->GetData(row, ProbeGroupingCol, probeGrouping);
 }
 

@@ -62,9 +62,9 @@ TableFile::~TableFile() {
  * @param colName - Name of column of interest.
  * @return - npos if not found, column index otherwise.
  */
-unsigned int TableFile::colIndex(const char *colName) {
-  assert(colName);
-  TMapConstIter iter = m_ColNameMap.find((char *)colName);
+unsigned int TableFile::colIndex(const std::string& colName) {
+  assert(colName!="");
+  TMapConstIter iter = m_ColNameMap.find(colName);
   if(iter == m_ColNameMap.end())
     return npos;
 
@@ -76,9 +76,9 @@ unsigned int TableFile::colIndex(const char *colName) {
  * @param rowName - Name of row of interest.
  * @return - npos if not found, row index otherwise.
  */
-unsigned int TableFile::rowIndex(const char *rowName) {
-  assert(rowName);
-  TMapConstIter iter = m_RowNameMap.find((char *)rowName);
+unsigned int TableFile::rowIndex(const std::string& rowName) {
+  assert(rowName!="");
+  TMapConstIter iter = m_RowNameMap.find(rowName);
   if(iter == m_RowNameMap.end())
     return npos;
 
@@ -90,7 +90,7 @@ unsigned int TableFile::rowIndex(const char *rowName) {
  * @param fileName - file to be read.
  * @return - true if successful.
  */
-bool TableFile::open(const char *fileName) {
+bool TableFile::open(const std::string& fileName) {
   std::vector<string> requiredCols;
   return open(fileName, requiredCols);
 }
@@ -101,8 +101,8 @@ bool TableFile::open(const char *fileName) {
  * @param requiredCols - column names that must be present.
  * @return - true if successful.
  */
-bool TableFile::open(const char *fileName, const std::vector<std::string> &requiredCols) {
-  assert(fileName);
+bool TableFile::open(const std::string& fileName, const std::vector<std::string> &requiredCols) {
+  assert(fileName!="");
   vector<bool> found(requiredCols.size());
   vector<string> words;
   char *name = NULL;
@@ -111,7 +111,7 @@ bool TableFile::open(const char *fileName, const std::vector<std::string> &requi
   int count = 0;
   RowFile rf;
   rowOffset = (m_UseRowNames == true) ? 1 : 0;
-  rf.open(fileName);
+  rf.open(fileName.c_str());
 
   /* Read in any header. */
   rf.readHeader(rf, m_Header, m_HeaderLines);
@@ -124,7 +124,7 @@ bool TableFile::open(const char *fileName, const std::vector<std::string> &requi
     /* Read in the column header names. */
     for(i = 0; i < words.size(); i++) {
       name = Util::cloneString(words[i].c_str());
-      m_MemToFree.push_back(name);
+      //m_MemToFree.push_back(name);
       
       /* Was this a required column? */
       for(unsigned int requiredIx = 0; requiredIx < requiredCols.size(); requiredIx++) {
@@ -214,14 +214,14 @@ void TableFile::writeVector(std::ostream &out, std::vector<std::string> data, ch
  * @param fileName - name of file to write to.
  * @return - true if successful.
  */
-bool TableFile::write(const char *fileName) {
-  assert(fileName);
+bool TableFile::write(const std::string& fileName) {
+  assert(fileName!="");
   if(m_Data.empty()) 
     Err::errAbort("TableFile::write() - No data do write.");
-    ofstream out(fileName);
-    unsigned int i = 0;
-    RowFile::writeHeader(out, m_HeaderLines);
-    writeVector(out, m_ColNames, m_Delim);
+  ofstream out(fileName.c_str());
+  unsigned int i = 0;
+  RowFile::writeHeader(out, m_HeaderLines);
+  writeVector(out, m_ColNames, m_Delim);
   for(i = 0; i < m_Data.size(); i++) {
     out << m_RowNames[i];
     out.put(m_Delim);
@@ -241,11 +241,12 @@ bool TableFile::write(const char *fileName) {
  * 
  * @return true if successful false otherwise.
  */
-bool TableFile::columnFromFile(const char *fileName, std::vector<std::string> &colVec, 
-                               const char *colName, unsigned int skipCols, bool unique) {
+bool TableFile::columnFromFile(const std::string& fileName,
+                               std::vector<std::string> &colVec, 
+                               const std::string& colName, unsigned int skipCols, bool unique) {
   RowFile rf;
   vector<string> words;
-  rf.open(fileName);
+  rf.open(fileName.c_str());
   unsigned int colIx = npos;
 
   /* Skip rows. */
@@ -284,11 +285,12 @@ bool TableFile::columnFromFile(const char *fileName, std::vector<std::string> &c
  * 
  * @return true if successful false otherwise.
  */
-bool TableFile::columnFromFile(const char *fileName, std::vector<std::string> &colVec, 
+bool TableFile::columnFromFile(const std::string& fileName,
+                               std::vector<std::string> &colVec, 
                                unsigned int colIx, unsigned int skipCols, bool unique) {
   RowFile rf;
   vector<string> words;
-  rf.open(fileName);
+  rf.open(fileName.c_str());
 
   /* Skip rows. */
   while(skipCols > 0 && rf.nextRow(words)) {

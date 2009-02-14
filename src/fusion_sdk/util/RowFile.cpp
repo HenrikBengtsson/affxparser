@@ -53,9 +53,9 @@ RowFile::RowFile(char delimChar, char commentChar, char commentChar2):
  * Open file fileName or die trying.
  * @param char * fileName - full path of fileName to be opened.
  */
-void RowFile::open(const char *fileName) {
-  m_FileName = string(fileName);
-  m_In.open(fileName, ios_base::in);
+void RowFile::open(const std::string& fileName) {
+  m_FileName = fileName;
+  m_In.open(fileName.c_str(), ios_base::in);
   if(m_In.fail()) {
     Err::errAbort("Can't open file " + string(fileName) + " to read.");
   }
@@ -314,12 +314,13 @@ void RowFile::writeHeader(std::ostream &out, const std::vector<std::string> &lin
  * @param skipLines - lines (possibly header?) to skip.
  * @param skipCols - number of columns (row names?) to skip.
  */
-void RowFile::matrixFromFile(const char *fileName, std::vector< std::vector<double> > &matrix,
-               unsigned int skipLines, unsigned int skipCols) {
+void RowFile::matrixFromFile(const std::string& fileName,
+                             std::vector< std::vector<double> > &matrix,
+                             unsigned int skipLines, unsigned int skipCols) {
   RowFile rf;
   unsigned int i = 0;
   vector<string> words;
-  rf.open(fileName);
+  rf.open(fileName.c_str());
   for(i = 0; i < skipLines; i++)
     rf.nextRow(words);
   while(rf.nextRow(words)) {
@@ -339,12 +340,13 @@ void RowFile::matrixFromFile(const char *fileName, std::vector< std::vector<doub
  * @param skipLines - lines (possibly header?) to skip.
  * @param skipCols - number of columns (row names?) to skip.
  */
-void RowFile::matrixFromFile(const char *fileName, std::vector< std::vector<float> > &matrix,
-               unsigned int skipLines, unsigned int skipCols) {
+void RowFile::matrixFromFile(const std::string& fileName,
+                             std::vector< std::vector<float> > &matrix,
+                             unsigned int skipLines, unsigned int skipCols) {
   RowFile rf;
   unsigned int i = 0;
   vector<string> words;
-  rf.open(fileName);
+  rf.open(fileName.c_str());
   for(i = 0; i < skipLines; i++)
     rf.nextRow(words);
   while(rf.nextRow(words)) {

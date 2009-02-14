@@ -31,16 +31,19 @@
 #ifndef ERR_H
 #define ERR_H
 
+
 #include <assert.h>
 #include <iostream>
+#include <new>
+#include <stdlib.h>
 #include <string>
 #include <vector>
-#include <new>
-#include "stdlib.h"
+
 #include "Except.h"
 #include "Verbose.h"
 #include "ErrHandler.h"
 #include "VerboseErrHandler.h"
+
 /**
  *  Err
  * @brief Common abort with message function for programs to call.
@@ -53,9 +56,9 @@ class Err {
     public:
     /** By default add an error handler that calls verbose. */
     Param() {
-      VerboseErrHandler *handler = new VerboseErrHandler(false);
+      VerboseErrHandler *handler = new VerboseErrHandler();
       m_ErrHandlers.push_back(handler);
-      m_Throw = false;
+      m_NewLineOnError = true;
     }
     
     /** Cleanup any error handlers that are still around. */
@@ -66,7 +69,7 @@ class Err {
     }
 
     std::vector<ErrHandler *> m_ErrHandlers; ///< vector of handlers
-    bool m_Throw; ///< Should we throw an exception rather than exit(1)?
+    bool m_NewLineOnError; ///< Should we print a newline before error message?
   };
     
   /** 
@@ -82,11 +85,17 @@ class Err {
   /** 
    * Print the message supplied and abort program.
    * @param msg - Message for user about what went wrong.
+   * @param prefix - Prefix to add to the error message.
    */
-  static void errAbort(const std::string &msg, const std::string prefix = "\nFATAL ERROR: "){ // throw (Except) {
+  static void errAbort(const std::string &msg, const std::string prefix = "FATAL ERROR: "){ // throw (Except) {
     unsigned int size = getParam().m_ErrHandlers.size();
     assert(size > 0);
-    getParam().m_ErrHandlers[size - 1]->handleError(prefix + msg);
+    std::string errMsg = prefix + msg;;
+    // GUI's do not like the newline
+    if(getParam().m_NewLineOnError) {
+        errMsg = "\n" + errMsg;
+    }
+    getParam().m_ErrHandlers[size - 1]->handleError(errMsg);
   }
 
   /** 
@@ -146,6 +155,26 @@ class Err {
   static void setThrowStatus(bool doThrow) {
     VerboseErrHandler *handler = new VerboseErrHandler(doThrow);
     pushHandler(handler);
+  }
+
+  /** 
+   * Configure new error handler
+   * 
+   * @param doThrow - should an exception be thrown, or call exit
+   * @param verbose - should the error handler call verbose methods
+   */
+  static void configureErrHandler(bool doThrow, bool verbose) {
+    VerboseErrHandler *handler = new VerboseErrHandler(doThrow, verbose);
+    pushHandler(handler);
+  }
+
+  /** 
+   * Toggle whether we are throwing exceptions or exiting on errors.
+   * 
+   * @param doThrow - if true exceptions will be thrown, if false exit(1) called.
+   */
+  static void setNewLineOnError(bool newline) {
+    getParam().m_NewLineOnError = newline;
   }
 
 };

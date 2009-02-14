@@ -92,7 +92,7 @@ rm(cdfFile, readMap, writeMap, moves, smallMoves, largeMoves, main)
 
 
    ##############################################################
-if (require("AffymetrixTestDataFiles")) {            # START #
+if (require("AffymetrixDataTestFiles")) {            # START #
 ##############################################################
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

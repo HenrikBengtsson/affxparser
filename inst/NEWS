@@ -1,6 +1,17 @@
 Package: affxparser
 ===================
 
+Version: 1.15.5 [2009-02-14]
+o Fixed a bug related to SET_VECTOR_ELT/SET_ELEMENR used on strings.
+  Affected readChp.
+o Fixed a bug related to naming of the list structures (we assigned
+  a list instead of a character as the name. Affected readCdfUnits and
+  readCdfCellIndices.
+o Updated Fusion from 1.11 to 1.12.
+o Fixed a bug in the example for readCdfUnitsWriteMap: the package
+  AffymetrixDataTestFiles was misspelled, so the tests were never run.
+
+
 Version: 1.15.4 [2009-02-10]
 o readCcg() and readCcgHeader() no longer give warnings
   on 'truncating string with embedded nul' in rawToChar().

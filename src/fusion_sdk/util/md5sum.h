@@ -47,6 +47,7 @@ public:
   int update(const std::string& str);
   int update(char const * const str);
   //
+  int update_nbo(int32_t val);
   int update_nbo(uint32_t val);
   int update_nbo(uint16_t val);
   int update_nbo(uint8_t  val);

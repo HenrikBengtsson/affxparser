@@ -20,12 +20,14 @@
 
 /*! \file CHPFileUpdater.h Provides interfaces to update data in a "Calvin" binary "signal" data file. */
 
-#ifndef _CHPFileUpdater_HEADER_
-#define _CHPFileUpdater_HEADER_
+#ifndef _CHPFileUpdater_H_
+#define _CHPFileUpdater_H_
 
+//
 #include <fstream>
-#include "CHPFileWriter.h"
-#include "../portability/affy-base-types.h"
+//
+#include "file/CHPFileWriter.h"
+#include "portability/affy-base-types.h"
 
 namespace affxchpwriter
 {
@@ -81,4 +83,4 @@ private:
 
 }
 
-#endif // _CHPFileUpdater_HEADER_
+#endif // _CHPFileUpdater_H_

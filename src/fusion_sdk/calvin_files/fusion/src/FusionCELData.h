@@ -109,6 +109,11 @@ public:
 	 */
 	std::wstring GetAlg();
 
+	/*!	Retrieve algorithm version
+	 *	@return Algorithm version
+	 */
+	std::wstring GetAlgVer();
+
 	/*! Retrieve algorithm parameters
 	 *  @return	Algorithm parameters
 	 */

@@ -253,6 +253,26 @@ void DATData::SetScannerID(const std::wstring& value)
 	SetWStringToGenericHdr(SCANNER_ID_PARAM_NAME, value);
 }
 
+std::wstring DATData::GetExposureTime()
+{
+	return GetWStringFromGenericHdr(PLATE_EXPOSURE_TIME);
+}
+
+void DATData::SetExposureTime(std::wstring& value)
+{
+	SetWStringToGenericHdr(PLATE_EXPOSURE_TIME, value);
+}
+
+int32_t DATData::GetPegSubImageIndex()
+{
+	return GetInt32FromGenericHdr(PLATE_PEG_SUBIMAGE_INDEX);
+}
+
+void DATData::SetPegSubImageIndex(int32_t value)
+{
+	SetInt32ToGenericHdr(PLATE_PEG_SUBIMAGE_INDEX, value);
+}
+
 affymetrix_calvin_utilities::DateTime DATData::GetScanDate()
 {
 	std::wstring dateString = GetWStringFromGenericHdr(SCAN_DATE_PARAM_NAME);

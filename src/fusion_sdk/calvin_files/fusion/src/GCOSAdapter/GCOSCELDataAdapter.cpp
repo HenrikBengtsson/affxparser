@@ -106,6 +106,16 @@ std::wstring GCOSCELDataAdapter::GetAlg()
 
 /*
  */
+std::wstring GCOSCELDataAdapter::GetAlgVer()
+{
+	std::wstring emptyStr;
+
+	// to be implemented if needed
+	return emptyStr;
+}
+
+/*
+ */
 std::wstring GCOSCELDataAdapter::GetParams()
 {
 	return StringUtils::ConvertMBSToWCS(gcosCel.GetParams());

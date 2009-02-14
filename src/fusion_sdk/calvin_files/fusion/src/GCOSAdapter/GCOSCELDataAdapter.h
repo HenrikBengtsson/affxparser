@@ -98,6 +98,11 @@ public:
 	 *	\return The algorithm name.
 	 */
 	virtual std::wstring GetAlg();
+	/*! \brief Get the algorithm version.
+	 *	\return The algorithm version.
+	 */
+	virtual std::wstring GetAlgVer();
+
 	/*! \brief Get the parameters.
 	 *	\return The parameters used for creating the cell file.
 	 */

@@ -22,10 +22,15 @@
 // 
 // sdk/util/util-meminfo.cpp ---
 // 
-// $Id: util-meminfo.cpp,v 1.6 2007/05/21 18:04:20 awilli Exp $
+// $Id: util-meminfo.cpp,v 1.8 2008/06/07 00:20:26 awilli Exp $
 // 
 
 #include "util/Util.h"
+
+#define B_FMT "%12llu  "
+#define B_CVT(x) ((long long unsigned int)x)
+#define M_FMT "%10.3fMB  "
+#define M_CVT(x) (x/(1024.0*1024))
 
 int
 main(int argc,char* argv[])
@@ -40,21 +45,33 @@ main(int argc,char* argv[])
     printf("Reading linux /proc/meminfo from '%s' for testing:\n",argv[1]);
     memInfo_linux(argv[1],free,total,swapAvail,memAvail);
   } else {
-    Util::memInfo(free,total,swapAvail,memAvail);
+    Util::memInfo(free,total,swapAvail,memAvail,false);
   }
 #else
-  Util::memInfo(free,total,swapAvail,memAvail);
+  Util::memInfo(free,total,swapAvail,memAvail,false);
 #endif
 
-#define B_FMT "%12llu  "
-#define B_CVT(x) ((long long unsigned int)x)
   printf("meminfo: free=" B_FMT "total=" B_FMT "swapAvail=" B_FMT "memAvail=" B_FMT "\n",
          B_CVT(free),B_CVT(total),B_CVT(swapAvail),B_CVT(memAvail));
-  //
-#define M_FMT "%10.3fMB  "
-#define M_CVT(x) (x/(1024.0*1024))
-
   printf("meminfo: free=" M_FMT "total=" M_FMT "swapAvail=" M_FMT "memAvail=" M_FMT "\n",
+         M_CVT(free),M_CVT(total),M_CVT(swapAvail),M_CVT(memAvail));
+
+// and again with a cap
+
+#ifdef __linux__
+  if (argc==2) {
+    printf("Reading linux /proc/meminfo from '%s' for testing:\n",argv[1]);
+    memInfo_linux(argv[1],free,total,swapAvail,memAvail);
+  } else {
+    Util::memInfo(free,total,swapAvail,memAvail,true);
+  }
+#else
+  Util::memInfo(free,total,swapAvail,memAvail,true);
+#endif
+
+  printf("meminfo (cap): free=" B_FMT "total=" B_FMT "swapAvail=" B_FMT "memAvail=" B_FMT "\n",
+         B_CVT(free),B_CVT(total),B_CVT(swapAvail),B_CVT(memAvail));
+  printf("meminfo (cap): free=" M_FMT "total=" M_FMT "swapAvail=" M_FMT "memAvail=" M_FMT "\n",
          M_CVT(free),M_CVT(total),M_CVT(swapAvail),M_CVT(memAvail));
 
   return 0;

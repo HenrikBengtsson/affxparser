@@ -71,7 +71,7 @@ public:
    * Open file fileName or die trying.
    * @param fileName - full path of fileName to be opened.
    */
-  void open(const char *fileName);
+  void open(const std::string& fileName);
   
   /**
    * Close file streams. 
@@ -178,7 +178,8 @@ public:
    * @param skipLines - lines (possibly header?) to skip.
    * @param skipCols - number of columns (row names?) to skip.
    */
-  static void matrixFromFile(const char *fileName, std::vector< std::vector<double> > &matrix,
+  static void matrixFromFile(const std::string& fileName,
+                             std::vector< std::vector<double> > &matrix,
                              unsigned int skipLines=0, unsigned int skipCols=0);
 
   /** 
@@ -188,7 +189,8 @@ public:
    * @param skipLines - lines (possibly header?) to skip.
    * @param skipCols - number of columns (row names?) to skip.
    */
-  static void matrixFromFile(const char *fileName, std::vector< std::vector<float> > &matrix,
+  static void matrixFromFile(const std::string& fileName,
+                             std::vector< std::vector<float> > &matrix,
                              unsigned int skipLines=0, unsigned int skipCols=0);
   
   /** 

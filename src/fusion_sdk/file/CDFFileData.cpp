@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
-//
+
 #include "CDFFileData.h"
 #include "FileIO.h"
 #include "../portability/affy-base-types.h"
@@ -48,7 +48,7 @@ using namespace affxcdf;
 //////////////////////////////////////////////////////////////////////
 
 #define CDF_FILE_MAGIC_NUMBER 67
-#define CDF_FILE_VERSION_NUMBER 1
+#define CDF_FILE_VERSION_NUMBER 2
 
 //////////////////////////////////////////////////////////////////////
 
@@ -83,7 +83,9 @@ CCDFProbeInformation::CCDFProbeInformation() :
 	m_X(0),
 	m_Y(0),
 	m_PBase(' '),
-	m_TBase(' ')
+	m_TBase(' '),
+	m_ProbeLength(0),
+	m_ProbeGrouping(0)
 {
 }
 
@@ -96,6 +98,8 @@ CCDFProbeGroupInformation::CCDFProbeGroupInformation() :
 	m_Stop(0),
 	m_ProbeSetIndex(0),
 	m_GroupIndex(0),
+	m_WobbleSituation(0),
+	m_AlleleCode(0),
 	m_NumCellsPerList(0),
 	m_Direction(0),
 	m_pCells(NULL)
@@ -122,6 +126,8 @@ void CCDFProbeGroupInformation::MakeShallowCopy(CCDFProbeGroupInformation &orig)
 	m_Name = orig.m_Name;
 	m_NumCellsPerList = orig.m_NumCellsPerList;
 	m_Direction = orig.m_Direction;
+	m_WobbleSituation = orig.m_WobbleSituation;
+	m_AlleleCode = orig.m_AlleleCode;
 	m_pCells = &orig.m_Cells;
 }
 
@@ -472,34 +478,49 @@ void CCDFFileData::GetProbeSetInformation(int index, CCDFProbeSetInformation & i
 			ReadInt32_I(iteratorReader, ival);
 			pBlk->m_Stop = ival;
 			ReadFixedString(iteratorReader, pBlk->m_Name, MAX_PROBE_SET_NAME_LENGTH);
-      
+			if (m_Header.m_Version >= 2)
+			{
+				ReadUInt16_I(iteratorReader, usval);
+				pBlk->m_WobbleSituation = usval;
+				ReadUInt16_I(iteratorReader, usval);
+				pBlk->m_AlleleCode = usval;
+			}
+
 			// Read the cells
 			CCDFProbeInformation *pCell;
 			pBlk->m_Cells.resize(pBlk->m_NumCells);
-      pBlk->m_pCells = &pBlk->m_Cells;
+			pBlk->m_pCells = &pBlk->m_Cells;
 			for (int k=0; k<pBlk->m_NumCells; k++)
-        {
-          pCell = &pBlk->m_Cells[k];
-          
-          // Cell info.
-          ReadInt32_I(iteratorReader, ival);
-          pCell->m_ListIndex = ival;
-          ReadUInt16_I(iteratorReader, usval);
-          pCell->m_X = usval;
-          ReadUInt16_I(iteratorReader, usval);
-          pCell->m_Y = usval;
-          ReadInt32_I(iteratorReader, ival);
-          pCell->m_Expos = ival;
-          ReadUInt8(iteratorReader,ucval);
-          pCell->m_PBase = ucval;
-          ReadUInt8(iteratorReader,ucval);
-          pCell->m_TBase = ucval;
-          
-          if (k==0)
-            pBlk->m_Start = pCell->m_ListIndex;
-          else if (k == pBlk->m_NumCells-1)
-            pBlk->m_Stop = pCell->m_ListIndex;
-        }
+			{
+				pCell = &pBlk->m_Cells[k];
+
+				// Cell info.
+				ReadInt32_I(iteratorReader, ival);
+				pCell->m_ListIndex = ival;
+				ReadUInt16_I(iteratorReader, usval);
+				pCell->m_X = usval;
+				ReadUInt16_I(iteratorReader, usval);
+				pCell->m_Y = usval;
+				ReadInt32_I(iteratorReader, ival);
+				pCell->m_Expos = ival;
+				ReadUInt8(iteratorReader,ucval);
+				pCell->m_PBase = ucval;
+				ReadUInt8(iteratorReader,ucval);
+				pCell->m_TBase = ucval;
+
+				if (k==0)
+					pBlk->m_Start = pCell->m_ListIndex;
+				else if (k == pBlk->m_NumCells-1)
+					pBlk->m_Stop = pCell->m_ListIndex;
+
+				if (m_Header.m_Version >= 2)
+				{
+					ReadUInt16_I(iteratorReader, usval);
+					pCell->m_ProbeLength = usval;
+					ReadUInt16_I(iteratorReader, usval);
+					pCell->m_ProbeGrouping = usval;
+				}
+			}
 		}
 }
 
@@ -649,15 +670,15 @@ bool CCDFFileData::ReadXDAFormat()
 	// Skip the probe set names
 	seekg(MAX_PROBE_SET_NAME_LENGTH * m_Header.m_NumProbeSets, std::ios::cur);
 
-  // remember the start of the qc index
-  qcSetIndexPos = iteratorReader.tellg();
+	// remember the start of the qc index
+	qcSetIndexPos = iteratorReader.tellg();
 	// Skip it
 	seekg(m_Header.m_NumQCProbeSets * sizeof(uint32_t), std::ios::cur);
 
-  // remember the start of the probeset index
-  probeSetIndexPos = iteratorReader.tellg();
-  // invalidate 
-  m_probeSetIndex_last_valid=0;
+	// remember the start of the probeset index
+	probeSetIndexPos = iteratorReader.tellg();
+	// invalidate 
+	m_probeSetIndex_last_valid=0;
 
 	return true;
 }
@@ -680,9 +701,11 @@ bool CCDFFileData::ReadTextFormat()
 	const int MAXLINELENGTH = 4096;
 	char str[MAXLINELENGTH];
 	char *subStr;
+	char *buffer = NULL;
 	const char *CDFVERSION1 = "GC1.0";
 	const char *CDFVERSION2 = "GC2.0";
 	const char *CDFVERSION3 = "GC3.0";
+	const char *CDFVERSION4 = "GC4.0";
 
 	// Get the CDF section.
 	ReadNextLine(instr, str, MAXLINELENGTH);
@@ -701,6 +724,8 @@ bool CCDFFileData::ReadTextFormat()
 		m_Header.m_Version = 2;
 	else if ( strncmp( subStr, CDFVERSION3, strlen(CDFVERSION3)) == 0)
 		m_Header.m_Version = 3;
+	else if ( strncmp( subStr, CDFVERSION4, strlen(CDFVERSION4)) == 0)
+		m_Header.m_Version = 4;
 
 
 	// Get the next section.
@@ -722,8 +747,8 @@ bool CCDFFileData::ReadTextFormat()
 		ReadNextLine(instr, str, MAXLINELENGTH); // #qc ProbeSets
 		subStr=strchr(str,'=')+1;
 		m_Header.m_NumQCProbeSets = atoi(subStr);
-		char strref[400000];
-		ReadNextLine(instr, strref, 400000);	// The reference string.
+		char strref[65000];
+		ReadNextLine(instr, strref, 65000);	// The reference string.
 		subStr=strchr(strref,'=')+1;
 		m_Header.m_Reference = subStr;
 	}
@@ -837,7 +862,8 @@ NextProbeSet:
 		UNIVERSAL_TILE,
         COPY_NUMBER_TILE,
         GENOTYPE_CONTROL_TILE,
-        EXPRESSION_CONTROL_TILE
+        EXPRESSION_CONTROL_TILE,
+		MARKER_TILE
 	} TilingTypes;
 
 	switch (ival)
@@ -872,6 +898,10 @@ NextProbeSet:
         pProbeSet->m_ProbeSetType = ExpressionControlProbeSetType;
         break;
 
+    case MARKER_TILE:
+        pProbeSet->m_ProbeSetType = MarkerProbeSetType;
+        break;
+
 	default:
 		pProbeSet->m_ProbeSetType = UnknownProbeSetType;
 		break;
@@ -884,43 +914,43 @@ NextProbeSet:
 	// Determine the number of cells per List if not specified
 	// in the CDF file.
 	if (pProbeSet->m_NumCellsPerList == 0)
-          {
-            if (pProbeSet->m_ProbeSetType == GenotypingProbeSetType || 
-                pProbeSet->m_ProbeSetType == ResequencingProbeSetType || 
-                pProbeSet->m_ProbeSetType == TagProbeSetType || 
-                pProbeSet->m_ProbeSetType == UnknownProbeSetType &&
-                (pProbeSet->m_NumLists != 0 && pProbeSet->m_NumCells / pProbeSet->m_NumLists == 4)) 
-              {
-                pProbeSet->m_NumCellsPerList = 4;
-              }
-            else if (pProbeSet->m_ProbeSetType == ExpressionProbeSetType ||
-                pProbeSet->m_ProbeSetType == CopyNumberProbeSetType ||
-                pProbeSet->m_ProbeSetType == GenotypeControlProbeSetType ||
-                pProbeSet->m_ProbeSetType == ExpressionControlProbeSetType) 
-              {
-                if(pProbeSet->m_NumLists != 0 && 
-                   pProbeSet->m_NumCells / pProbeSet->m_NumLists < 255) 
-                  pProbeSet->m_NumCellsPerList = pProbeSet->m_NumCells / pProbeSet->m_NumLists;
-                else
-                  pProbeSet->m_NumCellsPerList = 1;
-              }
-            else 
-              {
-                pProbeSet->m_NumCellsPerList = 1;
-              }
-          }
-        // Sanity check for relationship of m_NumCellsPerList, m_NumCells and m_NumLists
-        if(pProbeSet->m_NumLists != 0 && 
-           pProbeSet->m_NumCells / pProbeSet->m_NumLists < 255 &&
-           pProbeSet->m_NumCellsPerList != pProbeSet->m_NumCells / pProbeSet->m_NumLists) {
-          assert(0 && 
-                 "CCDFFileData::ReadTextFormat(): m_NumCellsPerList != pProbeSet->m_NumCells / pProbeSet->m_NumLists");
-        }
+	{
+		if (pProbeSet->m_ProbeSetType == GenotypingProbeSetType || 
+			pProbeSet->m_ProbeSetType == ResequencingProbeSetType || 
+			pProbeSet->m_ProbeSetType == TagProbeSetType || 
+			pProbeSet->m_ProbeSetType == UnknownProbeSetType &&
+			(pProbeSet->m_NumLists != 0 && pProbeSet->m_NumCells / pProbeSet->m_NumLists == 4)) 
+			{
+				pProbeSet->m_NumCellsPerList = 4;
+			}
+		else if (pProbeSet->m_ProbeSetType == ExpressionProbeSetType ||
+			pProbeSet->m_ProbeSetType == CopyNumberProbeSetType ||
+			pProbeSet->m_ProbeSetType == GenotypeControlProbeSetType ||
+			pProbeSet->m_ProbeSetType == ExpressionControlProbeSetType) 
+		{
+			if(pProbeSet->m_NumLists != 0 && 
+			   pProbeSet->m_NumCells / pProbeSet->m_NumLists < 255) 
+				pProbeSet->m_NumCellsPerList = pProbeSet->m_NumCells / pProbeSet->m_NumLists;
+			else
+				pProbeSet->m_NumCellsPerList = 1;
+		}
+		else 
+		{
+			pProbeSet->m_NumCellsPerList = 1;
+		}
+	}
+	// Sanity check for relationship of m_NumCellsPerList, m_NumCells and m_NumLists
+	if(pProbeSet->m_NumLists != 0 && 
+	   pProbeSet->m_NumCells / pProbeSet->m_NumLists < 255 &&
+	   pProbeSet->m_NumCellsPerList != pProbeSet->m_NumCells / pProbeSet->m_NumLists) {
+		assert(0 && 
+			 "CCDFFileData::ReadTextFormat(): m_NumCellsPerList != pProbeSet->m_NumCells / pProbeSet->m_NumLists");
+	}
 
-        // If this is an expression probe set and we have 2 cells per list set expectMisMatch flag.
-        if(pProbeSet->m_ProbeSetType == ExpressionProbeSetType &&
-           pProbeSet->m_NumCellsPerList == 2) 
-          expectMisMatch = true;
+	// If this is an expression probe set and we have 2 cells per list set expectMisMatch flag.
+	if(pProbeSet->m_ProbeSetType == ExpressionProbeSetType &&
+	   pProbeSet->m_NumCellsPerList == 2) 
+		expectMisMatch = true;
 
 	// Get the mutation type if block tile. ignore.
 	if (pProbeSet->m_ProbeSetType == GenotypingProbeSetType && m_Header.m_Version > 1)
@@ -945,6 +975,22 @@ NextProbeSet:
 			m_ProbeSetNames.SetName(iProbeSet, subStr);
 
 		ReadNextLine(instr, str, MAXLINELENGTH); // block number - ignore.
+		if (pProbeSet->m_ProbeSetType == MarkerProbeSetType && m_Header.m_Version > 3)
+		{
+			ReadNextLine(instr, str, MAXLINELENGTH);
+			subStr=strchr(str,'=')+1;
+			pBlk->m_WobbleSituation = (uint16_t) strtoul(subStr, &buffer, 10);
+			ReadNextLine(instr, str, MAXLINELENGTH);
+			subStr=strchr(str,'=')+1;
+			if (strlen(subStr) > 0)
+			{
+				pBlk->m_AlleleCode = (uint16_t)subStr[0];
+				if (pBlk->m_AlleleCode == '0')
+					pBlk->m_AlleleCode = 0;
+			}
+			else
+				pBlk->m_AlleleCode = 0;
+		}
 		ReadNextLine(instr, str, MAXLINELENGTH); // number of Lists.
 		subStr=strchr(str,'=')+1;
 		pBlk->m_NumLists = atoi(subStr);
@@ -958,7 +1004,8 @@ NextProbeSet:
 		subStr=strchr(str,'=')+1;
 		pBlk->m_Stop = atoi(subStr);
 		pBlk->m_NumCellsPerList = pProbeSet->m_NumCellsPerList;
-		if (pProbeSet->m_ProbeSetType == GenotypingProbeSetType && m_Header.m_Version > 2)
+		if ((pProbeSet->m_ProbeSetType == GenotypingProbeSetType && m_Header.m_Version > 2) ||
+			((pProbeSet->m_ProbeSetType == MarkerProbeSetType || pProbeSet->m_ProbeSetType == CopyNumberProbeSetType) && m_Header.m_Version > 3))
 		{
 			ReadNextLine(instr, str, MAXLINELENGTH);
 			subStr=strchr(str,'=')+1;
@@ -979,22 +1026,46 @@ NextProbeSet:
 		{
 			ReadNextLine(instr, str, MAXLINELENGTH);
 			subStr = strchr(str, '=')+1;
-                        int scanCount = 0;
-			scanCount = sscanf(subStr, "%d %d %s %s %s %d %d %*c %c %c %d",
-                                           &x,
-                                           &y,
-                                           unusedstr,
-                                           unusedstr,
-                                           unusedstr,
-                                           &cell.m_Expos,
-                                           &unusedint,
-                                           &cell.m_PBase,
-                                           &cell.m_TBase,
-                                           &cell.m_ListIndex);
-                        if(scanCount != 10) {
-                          m_strError = "Didn't get 10 entries in scan.";
-                          return false;
-                        }
+            int scanCount = 0;
+			if (m_Header.m_Version > 3)
+			{
+				scanCount = sscanf(subStr, "%d %d %s %s %s %d %hu %d %*c %c %c %d %d %hu",
+											   &x,
+											   &y,
+											   unusedstr,
+											   unusedstr,
+											   unusedstr,
+											   &cell.m_Expos,
+											   &cell.m_ProbeLength,
+											   &unusedint,
+											   &cell.m_PBase,
+											   &cell.m_TBase,
+											   &cell.m_ListIndex,
+											   &unusedint,
+											   &cell.m_ProbeGrouping);
+				if(scanCount != 13) {
+				  m_strError = "Didn't get 13 entries in scan.";
+				  return false;
+				}
+			}
+			else
+			{
+				scanCount = sscanf(subStr, "%d %d %s %s %s %d %d %*c %c %c %d",
+											   &x,
+											   &y,
+											   unusedstr,
+											   unusedstr,
+											   unusedstr,
+											   &cell.m_Expos,
+											   &unusedint,
+											   &cell.m_PBase,
+											   &cell.m_TBase,
+											   &cell.m_ListIndex);
+				if(scanCount != 10) {
+				  m_strError = "Didn't get 10 entries in scan.";
+				  return false;
+				}
+			}
 			cell.m_X = x;
 			cell.m_Y = y;
 
@@ -1012,10 +1083,10 @@ NextProbeSet:
 				cellIndex += (pProbeSet->m_NumCellsPerList - (iCell % pProbeSet->m_NumCellsPerList) - 1);
 			}
 
-                        if(cellIndex >= pBlk->m_Cells.size()) {
-                          assert(0 && 
-                                 "CCDFFileData::ReadTextFormat(): cellIndex cannot be larger that pBlk->m_Cells.size()" );
-                        }
+            if(cellIndex >= pBlk->m_Cells.size()) {
+              assert(0 && 
+                     "CCDFFileData::ReadTextFormat(): cellIndex cannot be larger that pBlk->m_Cells.size()" );
+            }
 			pBlk->m_Cells[cellIndex] = cell;
 
 			if (iCell==0)

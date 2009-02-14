@@ -18,13 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 //
-//
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-//
 
 //////////////////////////////////////////////////////////////////////
 
@@ -264,7 +261,10 @@ ReadUIntLenString_N(IFSTREAM& instr, std::string &s)
 void 
 ReadNextLine(IFSTREAM& instr,char* line,int len)
 {
+	// zero the buffer to make debugging a bit better.
+	memset(line,0,len);
 	strcpy(line,"");
+
 	while (!instr.eof())
 	{
 		instr.getline(line,len);

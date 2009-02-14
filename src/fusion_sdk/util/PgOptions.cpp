@@ -21,413 +21,866 @@
 
 /**
  * @file   PgOptions.cpp
- * @author Chuck Sugnet
+ * @author Chuck Sugnet & Harley Gorrell
  * @date   Tue May  3 14:30:35 2005
- *
  * @brief  Definitions for PgOptions class.
- *
  */
 
 //
-#include "PgOptions.h"
+#include "util/PgOptions.h"
+//
+#include "util/Convert.h"
+#include "util/Err.h"
+#include "util/Util.h"
+#include "util/AffxFile.h"
 //
 #include <iostream>
 #include <stdio.h>
-//
-#include "Convert.h"
-#include "Err.h"
-#include "Util.h"
+#include <stdlib.h>
+
+#define XML_LIBRARY
+#define XERCES_STATIC_LIBRARY
+//#include "../../external/xerces/src/xercesc/util/PlatformUtils.hpp"
+#include "../../external/xerces/src/xercesc/parsers/SAXParser.hpp"
+#include "../../external/xerces/src/xercesc/util/OutOfMemoryException.hpp"
+#include "../../external/xerces/src/xercesc/sax/HandlerBase.hpp"
+#include "../../external/xerces/src/xercesc/util/XMLUniDefs.hpp"
+#include "../../external/xerces/src/xercesc/util/XMLUni.hpp"
+#include "../../external/xerces/src/xercesc/sax/AttributeList.hpp"
+#include "../../external/xerces/src/xercesc/framework/XMLPScanToken.hpp"
+#include "../../external/xerces/src/xercesc/util/XMLString.hpp"
+
+class PgOptionsSAXHandler : public XERCES_CPP_NAMESPACE::HandlerBase
+{
+private:
+	PgOptions* m_pPgOptions;
+	std::vector<std::string>* m_pvFileNames;
+    unsigned int m_uiOptionCount;
+
+public :
+	PgOptionsSAXHandler(PgOptions* pPgOptions, std::vector<std::string>& vFileNames) : 
+		m_pPgOptions(pPgOptions), m_pvFileNames(&vFileNames), m_uiOptionCount(0) 
+	{
+		if (m_pPgOptions == NULL) {Err::errAbort("PgOptionsSAXHandler must be constructed with a valid PgOptions pointer.");}
+	}
+	~PgOptionsSAXHandler() {}
+
+    unsigned int getOptionCount() const {return m_uiOptionCount;}
+
+	void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exc) {Verbose::out(1, "WARNING: " + toString(exc.getMessage()));}
+	void error(const XERCES_CPP_NAMESPACE::SAXParseException& exc) {Err::errAbort(toString(exc.getMessage()));}
+	void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exc) {Err::errAbort(toString(exc.getMessage()));}
+
+	void startDocument() {m_uiOptionCount = 0;}
+	static std::string toString(const XMLCh* const in)
+	{
+		char* p = XERCES_CPP_NAMESPACE::XMLString::transcode(in);
+		std::string str = p;
+		XERCES_CPP_NAMESPACE::XMLString::release(&p);
+		return str;
+	}
+    void startElement(const XMLCh* const name, XERCES_CPP_NAMESPACE::AttributeList& attributes)
+	{
+		std::string strElementName = toString(name);
+//		Verbose::out(1, "Element=" + strElementName);
+		m_uiOptionCount++;
+		std::string strOptionName;
+		std::string strDescription;
+		std::string strCurrentValue;
+		std::string strGuid;
+		for (unsigned int iIndex = 0; (iIndex < attributes.getLength()); iIndex++)
+		{
+			std::string strAttributeName = toString(attributes.getName(iIndex));
+			std::string strAttributeType = toString(attributes.getType(iIndex));
+			std::string strAttributeValue = toString(attributes.getValue(iIndex));
+//			Verbose::out(1, "AttributeName=" + strAttributeName + ", AttributeType=" + strAttributeType + ", AttributeValue=" + strAttributeValue);
+			if ((strElementName == "ParameterFile") && (strAttributeName == "guid")) 
+			{
+				Verbose::out(1, "\tguid = " + strAttributeValue);
+				if (m_pPgOptions->getXMLParameterFileGuid() == "")
+				{
+					m_pPgOptions->m_strXMLParameterFileGuid = strAttributeValue; 
+				}
+				break;
+			}
+			else if (strAttributeName == "name") {strOptionName = strAttributeValue;}
+			else if (strAttributeName == "description") {strDescription = strAttributeValue;}
+			else if (strAttributeName == "currentValue") {strCurrentValue = strAttributeValue;}
+		}
+		if (strElementName == "Parameter")
+		{
+			if (m_pPgOptions->isOptDefined(strOptionName))
+			{
+				Verbose::out(1, "\t" + strOptionName + " = " + strCurrentValue);
+				if (strOptionName == "xml-file") {m_pPgOptions->setOptionsFromXMLFile(strCurrentValue, *m_pvFileNames);}
+				else 
+				{
+					if (m_pPgOptions->mustFindOpt(strOptionName)->m_allowMultiple)
+					{
+						m_pPgOptions->push(strOptionName, strCurrentValue);
+					}
+					else
+					{
+						m_pPgOptions->set(strOptionName, strCurrentValue);
+					}
+				}
+			}
+			else 
+			{
+				Verbose::out(1, "WARNING: Specified option is not defined. Name: " + strOptionName);
+			}
+		}
+	}
+};
 
 //
 using namespace std;
 
-/**
- * @brief Clear the value of this option, freeing memory if needed.
- */
-void PgOptions::PgOpt::clearValue()
+
+//////////
+
+PgOpt::PgOpt() {
+  // set to known starting values.
+  m_shortName="";
+  m_longName="";
+  m_help="";
+  m_type=PgOpt::INVALID_OPT;
+  m_defaultValue="";
+  m_values.resize(0);
+  // default is no multiples
+  m_allowMultiple=0;
+}
+
+PgOpt::PgOpt(const PgOpt* orig) {
+  m_shortName=    orig->m_shortName;
+  m_longName=     orig->m_longName;
+  m_help=         orig->m_help;
+  m_type=         orig->m_type;
+  m_defaultValue= orig->m_defaultValue;
+  m_values=       orig->m_values;
+  m_allowMultiple=orig->m_allowMultiple;
+}
+
+void PgOpt::clearValues() {
+  m_values.resize(0);
+}
+
+void PgOpt::allowMutipleValues(int val) {
+  m_allowMultiple=val;
+}
+
+std::string PgOpt::getDefaultValue() const {
+  return m_defaultValue;
+}
+void PgOpt::resetToDefault() {
+  clearValues();
+}
+
+bool PgOpt::isSet() {
+  return (m_values.size()!=0);
+}
+
+void PgOpt::pushValue(const std::string& new_value) {
+  m_values.push_back(new_value);
+  //if ((m_allowMultiple==0) && (m_values.size() > 1)
+}
+
+int PgOpt::getValueCount() const {
+  return m_values.size();
+}
+
+std::string PgOpt::getValue(size_t idx) const {
+  // off the end.
+  if (idx<0) {
+    Err::errAbort("Out of bounds. (idx<0)");
+  }
+  // No value is set, return the defaultValue.
+  if (m_values.size()==0) {
+    return getDefaultValue();
+  }
+  if (idx<m_values.size()) {
+    return m_values[idx];
+  }
+  // opps
+  Err::errAbort("Out of bounds. (idx>size)");
+  return string("internal error");
+}
+//
+bool PgOpt::getValueBool(int idx) const {
+  return Convert::toBool(getValue(idx));
+}
+int PgOpt::getValueInt(int idx) const {
+  return Convert::toInt(getValue(idx));
+}
+double PgOpt::getValueDouble(int idx) const {
+  return Convert::toDouble(getValue(idx));
+}
+
+void PgOpt::push_user_values_into(std::vector<std::string>& dest_vec)
 {
-  // free any malloced memory.
-  if (m_valueMalloced!=NULL) {
-    free(m_valueMalloced);
-    m_valueMalloced=NULL;
+  for (size_t i=0;i<m_values.size();i++) {
+    dest_vec.push_back(m_values[i]);
   }
-  m_value=NULL;
 }
 
-/**
- * @brief Reset this option to its default value.
- */
-void PgOptions::PgOpt::resetToDefault() {
-  clearValue();
-  // no need to copy,
-  setValue(m_defaultVal);
-}
-
-/**
- * @brief  Set the string value but dont copy it. (Dont free it either.)
- */
-void PgOptions::PgOpt::setValueNoCopy(char const * const newValue) {
-  clearValue();
-  m_value=newValue;
-}
-
-/**
- * @brief   Set the string value of the option.
- * @param   newValue the new string value.  (Duplicated if required.)
- * @remarks Note that we dont duplicate data we know to be static.
- */
-void PgOptions::PgOpt::setValue(char const * const newValue) {
-  clearValue();
-  // no new value
-  if (newValue==NULL) {
-    m_value=NULL;
+void PgOpt::dump() const
+{
+  printf("%-20s : ",m_longName.c_str());
+  if (getValueCount()==0) {
+    printf("<%s>",getValue(0).c_str());
   }
-  // no need to duplicate static data...
-  else if (newValue==m_defaultVal) {
-    // ... just copy the pointer.
-    m_value=m_defaultVal;
-  }
-  // ...duplicate the new value.
   else {
-    m_valueMalloced=strdup(newValue);
-    assert(m_valueMalloced!=NULL);
-    m_value=m_valueMalloced;
+    int cnt=getValueCount();
+    for (int i=0;i<cnt;i++) {
+      printf("'%s'",getValue(i).c_str());
+      if (i!=cnt-1) {
+        printf(",");
+      }
+    }
+  }
+  printf("\n");
+}
+
+int PgOpt::checkParseIsOk(const std::string& value) const {
+  bool success;
+
+  if (m_type == INT_OPT) {
+    Convert::toIntCheck(value, &success);
+    if(!success) {
+      Err::errAbort( "Argument for option: '" + m_longName + " (" + m_shortName + ") is not an integer: " + value);
+    }
+  }
+  else if (m_type == DOUBLE_OPT) {
+    Convert::toDoubleCheck(value, &success);
+    if(!success) {
+      Err::errAbort( "Argument for option: '" + m_longName + " (" + m_shortName + ") is not a double: " + value);
+    }
+  }
+  // yes.
+  return 1;
+}
+
+//////////////////////////////
+//////////////////////////////
+
+PgOptions::PgOptions() {
+  clear();
+}
+
+PgOptions::~PgOptions() {
+  clear();
+}
+
+void PgOptions::clear() {
+  //
+  m_progName = "";
+  m_usageMsg = "";
+  m_strXMLParameterFileName.clear();
+  m_strXMLParameterFileGuid.clear();
+  //
+  m_argv.clear();
+  m_args.clear();
+  //
+  for (size_t i=0;i<m_option_vec.size();i++) {
+    delete m_option_vec[i];
+  }
+  m_option_vec.clear();
+  m_option_section.clear();
+  m_option_map.clear();
+
+}
+
+PgOptions& PgOptions::operator=(const PgOptions &options) {
+  if(this == &options) return *this;
+
+  clear();
+
+  m_progName = options.m_progName;
+  m_argv = options.m_argv;
+  m_args = options.m_args;
+  m_usageMsg = options.m_usageMsg;
+  //
+  appendOptions(options);
+  //
+ return *this;
+}
+
+void PgOptions::appendOptions(const PgOptions &options)
+{
+  // where do our options end?
+  int initial_end=m_option_vec.size();
+  // add all the new options.
+  for(int i=0; i<options.m_option_vec.size(); i++) {
+    addPgOpt(options.m_option_vec[i]);
+  }
+  // now add the section headings, adjusted for end.
+  std::map<int,std::string>::const_iterator iter;
+  for(iter = options.m_option_section.begin(); iter != options.m_option_section.end(); iter++) {
+    m_option_section[initial_end+iter->first] = iter->second;
   }
 }
 
-/**
- * Get the pointer for an options by looking up its name.
- * return NULL if not found.
- *
- * @return NULL if not found PgOpt pointer otherwise.
- */
-PgOptions::PgOpt* PgOptions::findPgOpt(const std::string &longName) {
-  map<string, PgOptions::PgOpt *>::iterator i = optionMap.find(longName);
-  if(i == optionMap.end())
-    return NULL;
-  return i->second;
+PgOptions::PgOptions(const PgOptions &options) {
+  m_progName = options.m_progName;
+  m_argv = options.m_argv;
+  m_args = options.m_args;
+  m_usageMsg = options.m_usageMsg;
+  m_strXMLParameterFileName=options.m_strXMLParameterFileName;
+  m_strXMLParameterFileGuid=options.m_strXMLParameterFileGuid;
+
+  for(int i=0; i<options.m_option_vec.size(); i++) {
+      addPgOpt(options.m_option_vec[i]);
+  }
+
+  std::map<int,std::string>::const_iterator iter;
+  for(iter = options.m_option_section.begin(); iter != options.m_option_section.end(); iter++) {
+      m_option_section[iter->first] = iter->second;
+  }
 }
 
-/**
- * Get the pointer for an options by looking up its name.
- * Call errAbort if not found.
- *
- * @return NULL if not found PgOpt pointer otherwise.
- */
-PgOptions::PgOpt* PgOptions::mustFindPgOpt(const std::string &name) {
-  PgOpt *opt = findPgOpt(name);
-  if(opt == NULL)
-    Err::errAbort("Don't recognize option with name: '" +
-            string(name) + "'.");
+void PgOptions::setUsage(const std::string& msg) {
+  m_usageMsg=msg;
+}
+
+std::string PgOptions::getUsage() {
+  return m_usageMsg;
+}
+
+//////////
+
+std::vector<std::string> PgOptions::getArgVector() {
+  return m_args;
+}
+
+std::string PgOptions::getArg(int idx) {
+  return m_args[idx];
+}
+
+int PgOptions::getArgCount() {
+  return m_args.size();
+}
+
+std::string PgOptions::getProgName() {
+  return m_progName;
+}
+
+//
+void PgOptions::setArgv(const char * const * const argv) {
+  m_argv.clear();
+
+  for (const char* const * arg=argv;*arg!=NULL;arg++) {
+    m_argv.push_back(*arg);
+  }
+  //
+  if (0<m_argv.size()) {
+    m_progName=m_argv[0];
+  }
+}
+
+std::string PgOptions::commandLine() {
+  std::ostringstream stream;
+  int m_argv_size=m_argv.size();
+
+  if (0<m_argv_size) {
+    stream << m_argv[0];
+    for (int i=1;i<m_argv_size;i++) {
+      stream << " ";
+      stream << m_argv[i];
+    }
+  }
+  return stream.str();
+}
+
+//////////
+
+void PgOptions::clearValues() {
+  for(unsigned int i = 0; i<m_option_vec.size(); i++) {
+    m_option_vec[i]->clearValues();
+  }
+}
+
+void PgOptions::bind(const std::string& opt_name,PgOpt* opt)
+{
+  // dont add the null string.
+  if (opt_name!="") {
+    m_option_map[opt_name]=opt;
+  }
+}
+
+PgOpt* PgOptions::addPgOpt(const PgOpt* opt)
+{
+  // We didnt create this option so copy it.
+  PgOpt* opt_copy=new PgOpt(opt);
+  return addPgOpt_nocopy(opt_copy);
+}
+
+PgOpt* PgOptions::addPgOpt_nocopy(PgOpt* opt)
+{
+  //
+  opt->checkParseIsOk(opt->getDefaultValue());
+  //
+  optionMapIterator_t i = m_option_map.find(opt->m_longName);
+  if(i!=m_option_map.end()) {
+    Err::errAbort("Option '" + opt->m_longName + "' already defined.");
+  }
+  // we will eventually free every opt in this vector.
+  m_option_vec.push_back(opt);
+  //
+  bind(opt->m_longName,opt);
+  bind(opt->m_shortName,opt);
+  //
   return opt;
 }
 
-/**
- * Print a string wrapping at max width from the current
- * position.
- * @param str - The cstring to be printed.
- * @param prefix - How many spaces to put on begining of newline.
- * @param maxWidth - Where to wrap text at.
- * @param currentPos - What position in the line is
- *                      cursor currently at.
- */
-void PgOptions::printStringWidth(const char *str, int prefix,
-				 int currentPos, int maxWidth ) {
+void PgOptions::defineOptionSection(const std::string &sectionName) {
+    m_option_section[m_option_vec.size()] = sectionName;
+}
+
+PgOpt* PgOptions::defineOption(const std::string& shortName,
+                               const std::string& longName,
+                               PgOpt::PgOptType_t type,
+                               const std::string& help,
+                               const std::string& defaultValue)
+{
+  PgOpt* opt=new PgOpt;
+  // copy all the data
+  opt->m_shortName=shortName;
+  opt->m_longName=longName;
+  opt->m_type=type;
+  opt->m_help=help;
+  opt->m_defaultValue=defaultValue;
+  opt->m_values.resize(0);
+  // add
+  return addPgOpt_nocopy(opt);
+}
+
+PgOpt* PgOptions::defOpt(const std::string& shortName,
+                         const std::string& longName,
+                         PgOpt::PgOptType_t type,
+                         const std::string& help,
+                         const std::string& defaultValue)
+{
+  PgOpt* opt=defineOption(shortName,longName,type,help,defaultValue);
+  return opt;
+}
+
+PgOpt* PgOptions::defOptMult(const std::string& shortName,
+                             const std::string& longName,
+                             PgOpt::PgOptType_t type,
+                             const std::string& help,
+                             const std::string& defaultValue)
+{
+  PgOpt* opt=defineOption(shortName,longName,type,help,defaultValue);
+  opt->allowMutipleValues(1);
+  return opt;
+}
+
+PgOpt* PgOptions::findOpt(const std::string &longName) {
+  optionMapIterator_t i = m_option_map.find(longName);
+  if (i == m_option_map.end()) {
+    return NULL;
+  }
+  return i->second;
+}
+
+PgOpt* PgOptions::mustFindOpt(const std::string &name) {
+  PgOpt *opt = findOpt(name);
+  if(opt == NULL) {
+    Err::errAbort("Don't recognize option with name: '" + name + "'.");
+  }
+  return opt;
+}
+
+void PgOptions::printStringWidth(const std::string& str, int prefix,int currentPos, int maxWidth ) {
   Util::printStringWidth(cout, str, prefix, currentPos, maxWidth);
 }
 
-/**
- * Print out a litte ditty about program and its usage.
- * @param hiddenOpts - Set containing the long name of options to hide.
- * @param printOpts - Print out options and help for each one?
- */
 void PgOptions::usage(std::set<std::string> &hiddenOpts, bool printOpts) {
   PgOpt *opt = NULL;
   unsigned int maxLength = 0;
   unsigned int currentLength = 0;
-  int i = 0;
+  size_t i = 0;
   int extraChars = 6;
 
-  cout << usageMsg.c_str();
-  cout.put('\n');
+  cout << getUsage();
+  cout << "\n";
+
   if(printOpts == true) {
-    fprintf(stdout, "\noptions:\n");
+    cout << "\noptions:\n";
     /* find the length of the longest option name. */
-    for(i = 0; optSpec[i] != NULL; i++) {
-      opt = optSpec[i];
+    for (i = 0; i<m_option_vec.size(); i++) {
+      opt = m_option_vec[i];
       // check to see if we're hiding this option.
-      if(hiddenOpts.find(opt->longName) != hiddenOpts.end())
+      if(hiddenOpts.find(opt->m_longName) != hiddenOpts.end()) {
         continue;
-      // extraChars contains a padded space for options without a short flag,
+      }
       // subtract it off if there is a character.
-      unsigned int length = strlen(opt->longName) + extraChars;
+      size_t length = opt->m_longName.size();
       if(maxLength < length)
-	maxLength = length;
+        maxLength = length;
     }
-    maxLength += 4; // three ' ' at the beginning and one ' ' at end.
-    if(maxLength > 26)
+    // extraChars contains a padded space for options without a short flag,
+    // three ' ' at the beginning and one ' ' at end.
+    maxLength += 4 + extraChars;
+    // cap it
+    if(maxLength > 26) {
       maxLength = 26;
+    }
 
     /* Loop through and print out the help. */
-    for(i = 0; optSpec[i] != NULL; i++) {
-      opt = optSpec[i];
+    //for(i = 0; optSpec[i] != NULL; i++) {
+    for(i = 0; i<m_option_vec.size(); i++) {
+      // Do we have a section header to print?
+      if(m_option_section.find(i) != m_option_section.end())
+          cout << " " << m_option_section[i] << "\n";
+
+      // print out the option
+
+      opt = m_option_vec[i];
       // check to see if we're hiding this option.
-      if(hiddenOpts.find(opt->longName) != hiddenOpts.end())
+      if(hiddenOpts.find(opt->m_longName) != hiddenOpts.end()) {
         continue;
-      if(strlen(opt->shortName) > 0)
-	cout <<  "   -" << opt->shortName << ", --" << opt->longName << " ";
-      /* Treat the longName as the shortName if the shortName is null. */
-      else
-	/* Line up just the long name if no short name. */
-	cout <<  "       --" << opt->longName << " ";
-      currentLength = strlen(opt->longName) + 10;
+      }
+      // we might have a short name.
+      if(opt->m_shortName != "") {
+        cout <<  "   -" << opt->m_shortName << ", ";
+      }
+      else {
+        cout << "     ";
+      }
+      // we always have a long name.
+      cout << "--" << opt->m_longName << " ";
 
       while(currentLength < maxLength) {
-	cout.put(' ');
-	currentLength++;
+        cout.put(' ');
+        currentLength++;
       }
 
-      printStringWidth(opt->help, maxLength, currentLength);
-      cout.put('\n');
+      printStringWidth(opt->m_help + " [default '" + opt->m_defaultValue + "']", maxLength, currentLength);
+      cout << "\n";
     }
   }
 }
 
-/**
- * Add the option to the map maintained by PgOption after doing some error
- * checking
- *
- * @param option - Option to be added to PgOptions possibilities.
- */
-void PgOptions::addOnePgOpt(PgOpt *option) {
+int PgOptions::parseArgv(const char * const * const argv, int start) {
+  assert(argv!=NULL);
 
-  string longName(option->longName);
-  string shortName(option->shortName);
-  optionMapIterator_t iter;
+  resetToDefaults();
 
-  if(option->getValue() != NULL) {
-      Err::errAbort("Specify defaults as 'defaults', not initial values."
-            "(see: '" + ToStr(option->longName) + "'='" +
-            ToStr(option->getValue())+"')");
-  }
-
-  /* If option has been seen add to end of list. */
-  iter = optionMap.find(longName);
-  if(iter != optionMap.end()) {
-    Err::errAbort("Option '" + longName + "' already defined.");
-  }
-  else { /* new option. */
-    optionMap[longName] = option;
-    /* ignore a null shortName */
-    if (shortName != "")
-      optionMap[shortName] = option;
-  }
-}
-
-/**
- * Constructor Use individual PtOpts to populate create a PgOptions class.
- * Then match up the arguments to options that are possible using
- * parseOptions().
- *
- * @param usage - Message to the user printed in usage() call.
- * @param options - Array of valid options program can be called
- *                 with.
- * @param allowDupes - Is it ok to have duplicates of the same option?
- */
-PgOptions::PgOptions(const std::string &usage, PgOpt *options[], bool allowDupes) {
-  m_AllowDupes = allowDupes;
-  usageMsg = usage;
-  int optIx = 0;
-  optSpec = options;
-  for(optIx = 0; (options != NULL) && (options[optIx] != NULL); optIx++) {
-    if(options[optIx]->getDefaultVal() == NULL) {
-        Err::errAbort("Please specify default value for option '" +
-              string(options[optIx]->longName) + "'");
-    }
-    checkOptType(options[optIx], options[optIx]->getDefaultVal());
-    addOnePgOpt(options[optIx]);
-  }
-}
-
-/**
- * Check the value to make sure it is consistent with requested type of option.
- *
- * @param opt - Option to check.
- * @param value - Argument supplied on command line.
- */
-void PgOptions::checkOptType(PgOpt *opt, const char *value) {
-  bool success = true;
-
-  if(value == NULL) {
-    Err::errAbort("expecting a value to be associated with option: '" + ToStr(opt->longName) + "'");
-  }
-  if(opt->type == INT_OPT) {
-    Convert::toIntCheck(value, &success);
-    if(!success) {
-      Err::errAbort( "Argument for option: '" + string(opt->longName) +
-                       " (" + string(opt->shortName) + ") is not an integer: " +
-                       value);
-    }
-  }
-  else if(opt->type == FLOAT_OPT) {
-    Convert::toFloatCheck(value, &success);
-    if(!success) {
-      Err::errAbort( "Argument for option: '" + string(opt->longName) +
-                       " (" + string(opt->shortName) + ") is not an float: " +
-                       value);
-    }
-  }
-}
-
-/**
- * Make sure option requested is valid and type supplied (if any) matches data
- * supplied.
- *
- * @param name - Name of option to match (with or without '-'s on it);
- * @param argv - Arguments left to be parsed. argv[0] == s.
- * @param argIx - Argument index, increment as more command line
- *     arguments are used.
- */
-void PgOptions::matchOption(const char *name, const char * const argv[], int *argIx) {
-  PgOpt *opt = NULL;
-  const char *s = name;
-
-  while(s[0] == '-') // strip off any leading '-'s
-    s++;
-
-  opt = findPgOpt(string(s));
-  if(opt == NULL)
-    Err::errAbort("Don't recognize option: '" + string(name) + "'");
-  /* Have we already seen this option? if so put it at the end of the list. */
-  if(opt->getValue() != NULL) {
-    if(!m_AllowDupes) {
-      Err::errAbort("Option: " + ToStr(s) + " has already been specified with value: '" +
-                    ToStr(opt->getValue()) + "'.");
-    }
-    PgOpt *p = new PgOpt, *tail = opt;
-    /* Copy parent data. */
-    p->shortName = opt->shortName;
-    p->longName = opt->longName;
-    p->type = opt->type;
-    p->help = opt->help;
-    p->m_defaultVal = opt->m_defaultVal;
-    p->m_valueMalloced=NULL;
-    p->setValue(NULL);
-    p->next = NULL;
-
-    /* Find last argument. */
-    while(tail->next != NULL) {
-      tail = tail->next;
-    }
-    tail->next = p;
-    checkOptType(opt, argv[1]);
-    //p->value = argv[1];
-    p->setValue(argv[1]);
-    (*argIx)++;
-    m_ToFree.push_back(p);
-  }
-  else {
-    if(opt->type == BOOL_OPT) {
-      // bools are set to true when specified no more args needed.
-      //opt->value = (const char *)"true";
-      opt->setValue("true");
-    }
-    else { // Read in the next argument as being matched with option.
-      checkOptType(opt, argv[1]);
-      //opt->value = argv[1];
-      opt->setValue(argv[1]);
-      (*argIx)++;
-    }
-  }
-}
-
-/**
- * Match the command line arguments from
- * @param argc Number of arguments.
- * @param argv Arguments supplied to program.
- */
-void PgOptions::parseOptions(int argc, const char *const argv[]) {
-  int argIx = 0;
-
-  assert(argv);
-  assert(optSpec);
-  progName = string(argv[0]);
+  setArgv(argv);
 
   // Loop through and match options with arguments.
-  for(argIx = 1; argIx < argc; argIx++) {
-    const char *s = argv[argIx];
-    assert(s);
-    if(s[0] == '-') {
-      matchOption(s, argv+argIx, &argIx);
+  size_t arg_idx=start;
+  while (arg_idx<m_argv.size() && m_argv[arg_idx] != "--") {
+    matchOneArg(&arg_idx);
+  }
+
+  // dump the values at the end.
+  // dump(); // debug
+
+  return arg_idx;
+}
+
+void PgOptions::resetToDefaults() {
+  for (size_t i=0;i<m_option_vec.size();i++) {
+    m_option_vec[i]->resetToDefault();
+  }
+  m_argv.resize(0);
+  m_args.resize(0);
+}
+
+void PgOptions::dump() {
+  for (size_t i=0;i<m_option_vec.size();i++) {
+    m_option_vec[i]->dump();
+  }
+  printf("Args:\n");
+  for (size_t i=0;i<m_args.size();i++) {
+    printf("  %3d : %s\n",(int)i,m_args[i].c_str());
+  }
+}
+
+void PgOptions::matchOneArg(size_t* arg_idx)
+{
+  PgOpt *opt;
+  std::string arg_opt;
+  std::string arg_val;
+  int have_arg_val=0;
+  size_t idx;
+
+  if (!(*arg_idx<m_argv.size())) {
+    Err::errAbort("out of bounds");
+  }
+
+  //printf(">> %3d : %s\n",*arg_idx,m_argv[*arg_idx].c_str()); // debug
+  arg_opt=m_argv[*arg_idx];
+  *arg_idx+=1;
+
+  // No leading "-"; Add it to the args vec...
+  if (arg_opt[0]!='-') {
+    m_args.push_back(arg_opt);
+    return;
+  }
+
+  // "--" terminates options; Everything following "--" is an args.
+  if (arg_opt=="--") {
+    while (*arg_idx<m_argv.size()) {
+      m_args.push_back(m_argv[*arg_idx]);
+      *arg_idx+=1;
+    }
+    return;
+  }
+
+  // strip off "-" or "--"
+  if (arg_opt[0]=='-') {
+    if (arg_opt[1]=='-') {
+      arg_opt.erase(0,2); // "--"
     }
     else {
-      args.push_back(argv[argIx]);
+      arg_opt.erase(0,1); // "-"
+    }
+  }
+  else { // no "-" shouldnt happen.
+    Err::errAbort("Argument does not have a starting dash: '"+arg_opt+"'");
+  }
+
+  // split on "=" for 'opt=val'...
+  idx=arg_opt.find("=");
+  if (idx!=std::string::npos) {
+    have_arg_val=1;
+    arg_val.assign(arg_opt,idx+1,arg_opt.size()-(idx+1));
+    arg_opt.erase(idx); // erase "=..."
+  }
+
+  // should have something left
+  if (arg_opt=="") {
+    Err::errAbort("Shouldnt have a blank argument.");
+  }
+
+  // Might this be a negated arg? (like "--no-print"?)
+  if (arg_opt.find("no-")==0) {
+    string arg_opt_no=arg_opt;
+    arg_opt_no.erase(0,3);
+    opt=findOpt(arg_opt_no);
+    if (opt!=NULL) {
+      if (opt->m_type!=PgOpt::BOOL_OPT) {
+        Err::errAbort("Cant use '--no-' with '"+arg_opt_no+"': Not a boolean option.");
+      }
+      opt->setValue("false");
+      return;
+    }
+    // didnt find it, treat it as a normal option.
+  }
+
+  opt = findOpt(arg_opt);
+  if(opt == NULL) {
+    Err::errAbort("Don't recognize option: '" + arg_opt + "'");
+  }
+
+//  if (*arg_idx<m_argv.size()) {
+//    printf("   %3d : %s\n",*arg_idx,m_argv[*arg_idx].c_str()); // debug
+//  }
+
+  if (opt->m_type == PgOpt::BOOL_OPT) {
+    // --foo=bar
+    if (have_arg_val==1) {
+      opt->checkParseIsOk(arg_val);
+      opt->setValue(arg_val);
+    }
+    // we might have a following "true/false"...
+    // "--foo true"
+    else {
+      if (*arg_idx<m_argv.size()) {
+        bool success;
+        // printf("test: m_argv[%d] = '%s'\n",*arg_idx,m_argv[*arg_idx].c_str()); // debug
+        Convert::toBoolCheck(m_argv[*arg_idx], &success);
+        if (success) {
+          opt->setValue(m_argv[*arg_idx]);
+          *arg_idx+=1;
+        }
+        else {
+          // didnt look like a bool, use true
+          opt->setValue("true");
+        }
+      }
+      // just "program --foo"
+      else {
+        opt->setValue("true");
+      }
+    }
+    //
+    return;
+  }
+
+  // Do we take the next value?
+  if (have_arg_val==0) {
+    if (*arg_idx<m_argv.size()) {
+      arg_val=m_argv[*arg_idx];
+      *arg_idx+=1;
+    }
+    else {
+      arg_val="";
     }
   }
 
-  // Loop through options and set those that were not specified to default.
-  for(argIx = 0; optSpec[argIx] != NULL; argIx++) {
-    if (optSpec[argIx]->getValue() == NULL) {
-      optSpec[argIx]->resetToDefault();
+  // Add the value
+  if (opt->checkParseIsOk(arg_val)==1) {
+    if (opt->m_allowMultiple==1) {
+      opt->pushValue(arg_val);
+    }
+    else {
+	  if (opt->m_longName == "xml-file") {
+		if (opt->isSet()) {Err::errAbort("The xml-file option has already been set. Only one xml-file can be specified.");}
+		std::vector<std::string> vFileNames;
+		setOptionsFromXMLFile(arg_val, vFileNames);
+	  }
+      opt->setValue(arg_val);
     }
   }
-}
-
-/**
- * Look up the string value of an option.
- * @param name - Long name of option.
- * @return string value assocated with option.
- */
-const char *PgOptions::strOpt(const char *name) {
-  PgOpt *opt = mustFindPgOpt(name);
-  return opt->getValue();
-}
-
-/**
- * Look up an option and give float value for it.
- * @param name - Long name of option.
- * @return float - value of option.
- */
-float PgOptions::floatOpt(const char *name) {
-  PgOpt *opt = mustFindPgOpt(name);
-  return Convert::toFloat(opt->getValue());
-}
-
-/**
- * Look up an option and give integer value for it.
- * @param name - Long name of option.
- * @return int - value of option.
- */
-int PgOptions::intOpt(const char *name) {
-  PgOpt *opt = mustFindPgOpt(name);
-  return Convert::toInt(opt->getValue());
-}
-
-/**
- * Look up the boolean value of an option.
- * @param name - Long name of option.
- * @return true if option set to true false otherwise.
- */
-bool PgOptions::boolOpt(const char* name) {
-  PgOpt *opt = mustFindPgOpt(name);
-  return Convert::toBool(opt->getValue());
-}
-
-/**
- * @brief Set all the options to their default value.
- */
-void PgOptions::resetToDefaults() {
-  for(unsigned int i = 0; optSpec[i] != NULL; i++) {
-    optSpec[i]->resetToDefault();
+  else {
+    Err::errAbort("bad parse setting '" + arg_opt +"' to '" + arg_val + "'");
   }
 }
 
-void PgOptions::hack_resetOptionsList(PgOptions::PgOpt **optList)
+void PgOptions::clear(const std::string &name)
 {
-  while (*optList!=NULL) {
-    (*optList)->m_value=NULL;
-    (*optList)->m_valueMalloced=NULL;
-    (*optList)->next=NULL;
-    optList++;
-  }
+    mustFindOpt(name)->clearValues();
 }
+
+std::string PgOptions::get(const std::string& opt_name)
+{
+  PgOpt *opt = mustFindOpt(opt_name);
+  return opt->getValue(0);
+}
+bool PgOptions::getBool(const std::string& opt_name)
+{
+  PgOpt *opt = mustFindOpt(opt_name);
+  return opt->getValueBool(0);
+}
+double PgOptions::getDouble(const std::string& opt_name)
+{
+  PgOpt *opt = mustFindOpt(opt_name);
+  return opt->getValueDouble(0);
+}
+int PgOptions::getInt(const std::string& opt_name)
+{
+  PgOpt *opt = mustFindOpt(opt_name);
+  return opt->getValueInt(0);
+}
+
+//////////
+
+int PgOptions::argc() {
+  return m_argv.size();
+}
+std::string PgOptions::argv(int idx) {
+  return m_argv[idx];
+}
+
+/**
+ * Load parameters from an XML file.
+ * 
+ * @param strFileName - The name of the XML file to load parameters from.
+ */
+void PgOptions::setOptionsFromXMLFile(const std::string& strFileName, std::vector<std::string>& vFileNames)
+{
+	Verbose::out(1, "*");
+	Verbose::out(1, "Loading options from file: " + strFileName);
+		
+	if (vFileNames.size() > 7) {Err::errAbort("Possible run away recursion situation found in PgOptions::setOptionsFromXMLFile(...)");}
+	for (int iIndex = 0; (iIndex < (int)vFileNames.size()); iIndex++)
+	{
+		if (AffxFile::parseFileName(strFileName) == vFileNames[iIndex]) {Err::errAbort("Possible run away recursion situation found in PgOptions::setOptionsFromXMLFile(...)");}
+	}
+	vFileNames.push_back(AffxFile::parseFileName(strFileName));
+	
+	if (m_strXMLParameterFileName == "")
+	{
+		m_strXMLParameterFileName = strFileName;
+	}
+	// Initialize the XML4C system
+	try
+	{
+		XERCES_CPP_NAMESPACE::XMLPlatformUtils::Initialize();
+	}
+
+	catch (const XERCES_CPP_NAMESPACE::XMLException& toCatch)
+	{					
+		Err::errAbort("PgOptions::setParametersFromXMLFile() failed at XMLPlatformUtils::Initialize(). Msg: " + PgOptionsSAXHandler::toString(toCatch.getMessage()) + " FileName: " + strFileName);
+	}
+	
+	//
+	//  Create a SAX parser object to use and create our SAX event handlers
+	//  and plug them in.
+	//
+	XERCES_CPP_NAMESPACE::SAXParser* parser = new XERCES_CPP_NAMESPACE::SAXParser;
+	PgOptionsSAXHandler handler(this, vFileNames);
+	parser->setDocumentHandler(&handler);
+	parser->setErrorHandler(&handler);
+	parser->setValidationScheme(XERCES_CPP_NAMESPACE::SAXParser::Val_Auto);
+	parser->setDoNamespaces(false);
+	parser->setDoSchema(false);
+	parser->setValidationSchemaFullChecking(false);
+	
+	//
+	//  Ok, lets do the progressive parse loop. On each time around the
+	//  loop, we look and see if the handler has found what its looking
+	//  for. When it does, we fall out then.
+	//
+	unsigned long duration;
+    int errorCount = 0;
+	try
+	{
+		// Create a progressive scan token
+		XERCES_CPP_NAMESPACE::XMLPScanToken token;
+		const unsigned long startMillis = XERCES_CPP_NAMESPACE::XMLPlatformUtils::getCurrentMillis();
+		try
+		{
+			if (!parser->parseFirst(strFileName.c_str(), token))
+			{
+				Err::errAbort("PgOptions::setParametersFromXMLFile() failed at parser->parseFirst(). FileName: " + strFileName);
+			}
+		} catch(...) {Err::errAbort("PgOptions::setParametersFromXMLFile() failed at parser->parseFirst(). FileName: " + strFileName);}
+
+		//
+		//  We started ok, so lets call scanNext() until we find what we want
+		//  or hit the end.
+		//
+		bool gotMore = true;
+		while (gotMore && !parser->getErrorCount())
+		{
+			gotMore = parser->parseNext(token);
+		}
+
+		const unsigned long endMillis = XERCES_CPP_NAMESPACE::XMLPlatformUtils::getCurrentMillis();
+		duration = endMillis - startMillis;
+
+		errorCount = parser->getErrorCount();
+		//
+		//  Reset the parser-> In this simple progrma, since we just exit
+		//  now, its not technically required. But, in programs which
+		//  would remain open, you should reset after a progressive parse
+		//  in case you broke out before the end of the file. This insures
+		//  that all opened files, sockets, etc... are closed.
+		//
+		parser->parseReset(token);
+	}
+	catch (const XERCES_CPP_NAMESPACE::OutOfMemoryException&)
+	{		
+		delete parser;
+		XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();			
+		Err::errAbort("PgOptions::setParametersFromXMLFile() failed with an OutOfMemoryException. FileName: " + strFileName);
+	}
+	catch (const XERCES_CPP_NAMESPACE::XMLException& toCatch)
+	{
+		delete parser;
+		XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
+		Err::errAbort("PgOptions::setParametersFromXMLFile() failed with an XMLException. Msg: " + PgOptionsSAXHandler::toString(toCatch.getMessage()) + " FileName: " + strFileName);
+	}
+	
+//	Verbose::out(1, "XMLFileName = " + strFileName + ", OptionCount = " + ToStr(handler.getOptionCount()));
+	Verbose::out(1, "*");
+	delete parser;
+	XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
+	vFileNames.pop_back();
+}
+

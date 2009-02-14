@@ -27,6 +27,9 @@
 #include "GenericData.h"
 #include "AffymetrixBaseTypes.h"
 #include "ProbeSetMultiDataData.h"
+#include "ChromosomeSegmentMultiDataData.h"
+#include "ChromosomeMultiDataSummaryData.h"
+#include "FamilialMultiDataData.h"
 #include "ColumnInfo.h"
 
 namespace affymetrix_calvin_io
@@ -36,53 +39,155 @@ namespace affymetrix_calvin_io
 #define CHP_MULTI_DATA_TYPE "affymetrix-multi-data-type-analysis"
 
 /*! An enumerant to store the types of data stored in the file. */
-typedef enum MultiDataType { ExpressionMultiDataType, ExpressionControlMultiDataType, GenotypeMultiDataType, GenotypeControlMultiDataType, CopyNumberMultiDataType, CytoMultiDataType, CopyNumberVariationMultiDataType };
+typedef enum MultiDataType { 
+    ExpressionMultiDataType, 
+    ExpressionControlMultiDataType, 
+    GenotypeMultiDataType, 
+    GenotypeControlMultiDataType, 
+    CopyNumberMultiDataType, 
+    CytoMultiDataType, 
+    CopyNumberVariationMultiDataType,
+    DmetCopyNumberMultiDataType,
+    DmetMultiAllelicMultiDataType,
+    DmetBiAllelicMultiDataType,
+    ChromosomeSummaryMultiDataType,
+    SegmentCNMultiDataType,
+    SegmentLOHMultiDataType,
+    SegmentCNNeutralLOHMultiDataType,
+    SegmentNormalDiploidMultiDataType,
+    SegmentMosaicismMultiDataType,
+    SegmentNoCallMultiDataType,
+    FamilialSegmentOverlapsMultiDataType,
+    FamilialSamplesMultiDataType,
+    SegmentGenotypeConcordanceMultiDataType,
+    SegmentGenotypeDiscordanceMultiDataType,
+    SegmentCNLossLOHConcordanceMultiDataType,
+    SegmentCNNeutralLOHConcordanceMultiDataType,
+    SegmentHeteroUPDMultiDataType,
+    SegmentIsoUPDMultiDataType,
+    SegmentDenovoCopyNumberMultiDataType,
+    SegmentHemizygousParentOfOriginMultiDataType
+};
 
 /*! The data set name. */
 const static std::wstring MultiDataDataSetNames[] = 
 {
-    L"Expression",
-    L"ExpressionControl",
-    L"Genotype",
-    L"GenotypeControl",
-    L"CopyNumber",
-    L"Cyto",
-    L"CopyNumberVariation"
+	L"Expression",
+	L"ExpressionControl",
+	L"Genotype",
+	L"GenotypeControl",
+	L"CopyNumber",
+	L"Cyto",
+	L"CopyNumberVariation",
+	L"DmetCopyNumber",
+	L"DmetMultiAllelic",
+	L"DmetBiAllelic",
+    L"Summary",
+    L"CN",
+    L"LOH",
+    L"CNNeutralLOH",
+    L"NormalDiploid",
+    L"Mosaicism",
+    L"NoCall",
+    L"SegmentOverlaps",
+	L"Samples",
+    L"GenotypeConcordance",
+    L"GenotypeDiscordance",
+    L"CNLossLOHConcordance",
+    L"CNNeutralLOHConcordance",
+    L"HeteroUPD",
+    L"IsoUPD",
+    L"DenovoCopyNumber",
+    L"HemizygousParentOfOrigin"
 };
 
 /*! The data types. */
 const static MultiDataType MultiDataDataTypes[] = 
 {
-    ExpressionMultiDataType,
-    ExpressionControlMultiDataType,
-    GenotypeMultiDataType,
-    GenotypeControlMultiDataType,
-    CopyNumberMultiDataType,
-    CytoMultiDataType,
-    CopyNumberVariationMultiDataType
+	ExpressionMultiDataType,
+	ExpressionControlMultiDataType,
+	GenotypeMultiDataType,
+	GenotypeControlMultiDataType,
+	CopyNumberMultiDataType,
+	CytoMultiDataType,
+	CopyNumberVariationMultiDataType,
+	DmetCopyNumberMultiDataType,
+	DmetMultiAllelicMultiDataType,
+	DmetBiAllelicMultiDataType,
+    ChromosomeSummaryMultiDataType,
+    SegmentCNMultiDataType,
+    SegmentLOHMultiDataType,
+    SegmentCNNeutralLOHMultiDataType,
+    SegmentNormalDiploidMultiDataType,
+    SegmentMosaicismMultiDataType,
+    SegmentNoCallMultiDataType,
+    FamilialSegmentOverlapsMultiDataType,
+	FamilialSamplesMultiDataType,
+    SegmentGenotypeConcordanceMultiDataType,
+    SegmentGenotypeDiscordanceMultiDataType,
+    SegmentCNLossLOHConcordanceMultiDataType,
+    SegmentCNNeutralLOHConcordanceMultiDataType,
+    SegmentHeteroUPDMultiDataType,
+    SegmentIsoUPDMultiDataType,
+    SegmentDenovoCopyNumberMultiDataType,
+    SegmentHemizygousParentOfOriginMultiDataType
 };
 
 /*! Holds data set information. */
 class DataSetInfo
 {
 public:
-    /*! The data type. */
-    MultiDataType dataType;
+	/*! The data type. */
+	MultiDataType dataType;
 
-    /*! chp data sets */
-    DataSet* entries;
+	/*! chp data sets */
+	DataSet* entries;
 
-    /*! The maximum length of a probe set name. */
-    int maxProbeSetName;
+	/*! The maximum length of the name column. */
+	int maxName;
 
-    /*! The data set index. */
-    int dataSetIndex;
+    /*! The maximum length of the familial seg type column. */
+    int maxSegmentType;
 
-    /*! An array of extra metric columns. */
-    std::vector<ColumnInfo> metricColumns;
+    /*! The maximum length of the familial ref seg id column. */
+    int maxReferenceSegmentID;
 
-    /*! constructor */
-    DataSetInfo() { entries = NULL; maxProbeSetName = -1; dataSetIndex=-1; }
+    /*! The maximum length of the familial seg id column. */
+    int maxFamilialSegmentID;
+
+	/*! The maximum length of the familial sample ARR id */
+	int maxFamilialARRID;
+
+	/*! The maximum length of the familial sample CHP id */
+	int maxFamilialCHPID;
+
+	/*! The maximum length of the familial sample CHP file name */
+	int maxFamilialCHPFile;
+
+	/*! The maximum length of the familial sample role */
+	int maxFamilialRole;
+
+	/*! The data set index. */
+	int dataSetIndex;
+
+	/*! An array of extra metric columns. */
+	std::vector<ColumnInfo> metricColumns;
+
+	/*! constructor */
+	DataSetInfo()
+    {
+        entries = NULL;
+        maxName = -1;
+        maxSegmentType = -1;
+        maxReferenceSegmentID = -1;
+        maxFamilialSegmentID = -1;
+        maxFamilialARRID = -1;
+        maxFamilialCHPID = -1;
+        maxFamilialCHPFile = -1;
+        maxFamilialRole = -1;
+        maxFamilialCHPFile = -1;
+        dataSetIndex = -1;
+    }
 };
 
 /*! Holds data associated with genotype or expression CHP files. */
@@ -93,9 +198,10 @@ public:
 	CHPMultiDataData();
 
 	/*! Constructor with file name.
-	 * @param filename The name of the CHP file.
-	 */
-	CHPMultiDataData(const std::string& filename);
+	* @param filename The name of the CHP file.
+    * @param groupNames A list of names for the data groups.
+	*/
+    CHPMultiDataData(const std::string& filename, const std::list<std::wstring> *groupNames = NULL);
 
 	/*! Destructor */
 	~CHPMultiDataData();
@@ -106,30 +212,41 @@ private:
 	GenericData genericData;
 
 	/*! chp data sets */
-    std::map<MultiDataType, DataSetInfo> dataSetInfo;
+	std::map<MultiDataType, DataSetInfo> dataSetInfo;
+
+	/*! data groups */
+    std::map<MultiDataType, std::wstring> dataTypeGroupNames;
 
 public:
 
-    /*! The data set information */
-    std::map<MultiDataType, DataSetInfo> &GetDataSetInfo() { return dataSetInfo; }
+    std::wstring GetGroupName(MultiDataType dataType) { return dataTypeGroupNames[dataType]; }
+
+	/*! The data set information */
+	std::map<MultiDataType, DataSetInfo> &GetDataSetInfo() { return dataSetInfo; }
 
 	/*! The maximum length of a probe set name.
-     * @param dataType The data type
-     * @return The maximum probe set name length
-     */
+	* @param dataType The data type
+	* @return The maximum probe set name length
+	*/
 	int GetMaxProbeSetName(MultiDataType dataType);
+
+	/*! The maximum length of a segment id.
+	* @param dataType The data type
+	* @return The maximum length
+	*/
+    int GetMaxSegmentId(MultiDataType dataType);
 
 	/*! Clears the members. */
 	void Clear();
 
 	/*! Sets the file name.
-	 * @param p The name of the CHP file
-	 */
+	* @param p The name of the CHP file
+	*/
 	void SetFilename(const std::string &p);
 
 	/*! Gets the file name.
-	 * @return The file name.
-	 */
+	* @return The file name.
+	*/
 	std::string GetFilename() const;
 
 	/*! Sets the array type */
@@ -137,254 +254,343 @@ public:
 
 	/*! Sets the array type.  */
 	void SetArrayType(const std::wstring& value);
-	
-	/*! Sets the number of entries (probe sets).
-     * @param dataType The data type
-	 * @param ln The number of probe sets.
-	 * @param maxln The maximum length of a probe set name.
-	 * @param columns An array of metric columns
-	 */
-	void SetEntryCount(MultiDataType dataType, int32_t ln, int32_t maxln, const std::vector<ColumnInfo> &columns);
 
 	/*! Sets the number of entries (probe sets).
-     * @param dataType The data type
-	 * @param ln The number of probe sets.
-	 * @param maxln The maximum length of a probe set name.
-	 */
-	void SetEntryCount(MultiDataType dataType, int32_t ln, int32_t maxln);
+	* @param dataType The data type
+	* @param ln The number of probe sets.
+	* @param maxln The maximum length of a probe set name.
+	* @param columns An array of metric columns
+    * @param groupName The group name
+	*/
+    void SetEntryCount(MultiDataType dataType, int32_t ln, int32_t maxln, const std::vector<ColumnInfo> &columns, const std::wstring &groupName = L"");
+
+	/*! Sets the number of entries (probe sets).
+	* @param dataType The data type
+	* @param ln The number of probe sets.
+	* @param maxln The maximum length of a probe set name.
+    * @param groupName The group name
+	*/
+	void SetEntryCount(MultiDataType dataType, int32_t ln, int32_t maxln, const std::wstring &groupName = L"");
+
+	/*! Sets the number of entries specifically for the familial file.
+	* @param dataType The data type
+	* @param ln The number of probe sets.
+    * @param segmentTypeMax The maximum length of the familial seg type column
+    * @param referenceSegmentIDMax The maximum length of the familial ref seg id column
+    * @param familialSegmentIDMax The maximum length of the familial seg id column
+    * @param groupName The group name
+	*/
+    void SetEntryCount(MultiDataType dataType, int32_t ln, int segmentTypeMax, int referenceSegmentIDMax, int familialSegmentIDMax, const std::wstring &groupName = L"");
+
+    /*! Sets the number of entries specifically for the familial file.
+	* @param dataType The data type
+	* @param ln The number of probe sets.
+    * @param familialSegmentIDMax The maximum length of the familial seg id column.
+    * @param familialARRIDMax The maximum length of the familial sample ARR id.
+    * @param familialCHPIDMax The maximum length of the familial sample CHP id.
+    * @param familialCHPFile The maximum length of the familial sample CHP file name.
+    * @param familialRole The maximum length of the familial sample role
+    * @param groupName The group name
+	*/
+    void SetEntryCount(MultiDataType dataType, int32_t ln, int familialARRIDMax, int familialCHPIDMax, int familialCHPFileMax, int familialRoleMax, const std::wstring &groupName = L"");
 
 	/*! Gets the number of entries (probe sets) 
-     * @param dataType The data type
-     */
+	* @param dataType The data type
+	*/
 	int32_t GetEntryCount(MultiDataType dataType);
 
 	/*! Gets the name of the algorithm.
-	 * @return The algorithm name.
-	 */
+	* @return The algorithm name.
+	*/
 	std::wstring GetAlgName();
 
 	/*! Sets the name of the algorithm.
-	 * @param value The algorithm name.
-	 */
+	* @param value The algorithm name.
+	*/
 	void SetAlgName(const std::wstring& value);
 
 	/*! Gets the algorithm version.
-	 * @return The version.
-	 */
+	* @return The version.
+	*/
 	std::wstring GetAlgVersion();
 
 	/*! Sets the algorithm version.
-	 * @param value The version.
-	 */
+	* @param value The version.
+	*/
 	void SetAlgVersion(const std::wstring& value);
 
 	/*! Gets the algorithm parameters
-	 * @return The algoirhtm parameters.
-	 */
+	* @return The algoirhtm parameters.
+	*/
 	ParameterNameValueTypeList GetAlgParams();
 
 	/*! Adds the algorithm parameters.
-	 * @param params The algorithm parameters.
-	 */
+	* @param params The algorithm parameters.
+	*/
 	void AddAlgParams(const ParameterNameValueTypeList& params);
 
 	/*! Gets the summary parameters
-	 * @return The summary parameters.
-	 */
+	* @return The summary parameters.
+	*/
 	ParameterNameValueTypeList GetSummaryParams();
 
 	/*! Adds the summary parameters.
-	 * @param params The summary parameters.
-	 */
+	* @param params The summary parameters.
+	*/
 	void AddSummaryParams(const ParameterNameValueTypeList& params);
 
 	/*! Gets the file header.
-	 * @return The file header.
-	 */
+	* @return The file header.
+	*/
 	FileHeader* GetFileHeader() { return &genericData.Header(); }
 
 	/*! Gets the generic data object.
-	 * @return The data object.
-	 */
+	* @return The data object.
+	*/
 	GenericData& GetGenericData() { return genericData; }
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The genotype results.
-	 */
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The genotype results.
+	*/
 	void GetGenotypeEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry);
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The copy number results.
-	 */
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
 	void GetCopyNumberEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry);
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The copy number results.
-	 */
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
+	void GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::DmetCopyNumberData &entry);
+
+	/*! Gets the probe set data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
+	void GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::DmetMultiAllelicData &entry);
+
+	/*! Gets the probe set data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
+	void GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::DmetBiAllelicData &entry);
+
+	/*! Gets the probe set data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
 	void GetCopyNumberEntryLog2Ratio(MultiDataType dataType, int index, float *val);
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The cyto results.
-	 */
-    void GetCytoEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry);
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The cyto results.
+	*/
+	void GetCytoEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry);
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The expression results.
-	 */
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The expression results.
+	*/
 	void GetExpressionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry);
 
 	/*! Gets the call of the probe set.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @return The call.
-	 */
+	* @param dataType The data type
+	* @param index The row index.
+	* @return The call.
+	*/
 	u_int8_t GetGenoCall(MultiDataType dataType, int index);
 
 	/*! Gets the confidence in the call of the probe set.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @return The confidence.
-	 */
+	* @param dataType The data type
+	* @param index The row index.
+	* @return The confidence.
+	*/
 	float GetGenoConfidence(MultiDataType dataType, int index);
 
-    /*! Gets the quantification of the probe set.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @return The quantification.
-	 */
+	/*! Gets the quantification of the probe set.
+	* @param dataType The data type
+	* @param index The row index.
+	* @return The quantification.
+	*/
 	float GetExpressionQuantification(MultiDataType dataType, int index);
 
-    /*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The copy number variation results.
-	 */
-    void GetCopyNumberVariationEntry(MultiDataType dataType, int index, 
-        affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry);
+	/*! Gets the probe set data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number variation results.
+	*/
+	void GetCopyNumberVariationEntry(MultiDataType dataType, int index, 
+		affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry);
+
+	/*! Gets the chromosome segment data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetChromosomeSegmentEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ChromosomeSegmentData &entry);
+
+	/*! Gets the chromosome segment data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetChromosomeSegmentEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ChromosomeSegmentDataEx &entry);
+
+	/*! Gets the chromosome summary data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetChromosomeSummaryEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ChromosomeMultiDataSummaryData &entry);
+
+	/*! Gets the familial file entry.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetFamilialSegmentOverlapEntry(MultiDataType dataType, int index, affymetrix_calvin_data::FamilialSegmentOverlap &entry);
+	
+	/*! Gets the familial file entry.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetFamilialSampleEntry(MultiDataType dataType, int index, affymetrix_calvin_data::FamilialSample &entry);
 
 	/*! Get the probe set name.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @return The probe set name.
-	 */
+	* @param dataType The data type
+	* @param index The row index.
+	* @return The probe set name.
+	*/
 	std::string GetProbeSetName(MultiDataType dataType, int index);
 
-    /*! Returns the data set header.
-     * @param dataType The data type.
-     */
-    DataSetHeader *GetDataSetHeader(MultiDataType dataType);
+	/*! Returns the data set header.
+	* @param dataType The data type.
+	*/
+	DataSetHeader *GetDataSetHeader(MultiDataType dataType);
 
-    /*! Get the length of the metric columns.
-     * @param dataType The data type
-     * @param col The column index (of the metric columns)
-     * @return The length.
-     */
-    int32_t GetMetricColumnLength(MultiDataType dataType, int col);
+	/*! Returns the data group header.
+	* @param name The name of the group.
+	*/
+    DataGroupHeader *GetDataGroupHeader(const std::wstring &name);
 
-    /*! Get the length of the metric columns.
-     * @param dataType The data type
-     * @return The number of columns.
-     */
-    int32_t GetNumMetricColumns(MultiDataType dataType);
+	/*! Returns the data group index.
+	* @param dataType The data type.
+	*/
+    int GetDataGroupIndex(MultiDataType dataType);
 
-    /*! Get the metric column name.
-     * @param dataType The data type
-     * @param colIndex the metric column index
-     * @return The column name
-     */
-    std::wstring GetMetricColumnName(MultiDataType dataType, int colIndex);
+	/*! Get the length of the metric columns.
+	* @param dataType The data type
+	* @param col The column index (of the metric columns)
+	* @return The length.
+	*/
+	int32_t GetMetricColumnLength(MultiDataType dataType, int col);
+
+	/*! Get the length of the metric columns.
+	* @param dataType The data type
+	* @return The number of columns.
+	*/
+	int32_t GetNumMetricColumns(MultiDataType dataType);
+
+	/*! Get the metric column name.
+	* @param dataType The data type
+	* @param colIndex the metric column index
+	* @return The column name
+	*/
+	std::wstring GetMetricColumnName(MultiDataType dataType, int colIndex);
 
 private:
-    /*! Get the extra metric columns.
-     * @param ds The data set info.
-     * @param rowIndex The row index.
-     * @param colIndex The column index
-     * @param metrics The results.
-     */
-    void GetExtraMetricEntries(DataSetInfo *ds, int rowIndex, int colIndex, std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics);
-    /*! Get the extra metric columns.
-     * @param ds The data set info.
-     * @param rowIndex The row index.
-     * @param colIndex The column index
-     * @param metrics The results.
-     */
-    void GetExtraCopyNumberFloatTypeNoNameLog2Ratio(DataSetInfo *ds, int rowIndex, float *val);
+	/*! Get the extra metric columns.
+	* @param ds The data set info.
+	* @param rowIndex The row index.
+	* @param colIndex The column index
+	* @param metrics The results.
+	*/
+	void GetExtraMetricEntries(DataSetInfo *ds, int rowIndex, int colIndex, std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics);
+	/*! Get the extra metric columns.
+	* @param ds The data set info.
+	* @param rowIndex The row index.
+	* @param colIndex The column index
+	* @param metrics The results.
+	*/
+	void GetExtraCopyNumberFloatTypeNoNameLog2Ratio(DataSetInfo *ds, int rowIndex, float *val);
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The genotype results.
-	 */
-	void GetGenericGenotypeEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry);
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The genotype results.
+	*/
+	void GetGenericEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry);
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The copy number results.
-	 */
-	void GetGenericCopyNumberEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry);
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
+	void GetGenericEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberData &entry);
 
 	/*! Gets the probe set data (log2Ratio only).
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param val The copy number result (log2Ratio).
-	 */
+	* @param dataType The data type
+	* @param index The row index.
+	* @param val The copy number result (log2Ratio).
+	*/
 	void GetGenericCopyNumberEntryLog2Ratio(MultiDataType dataType, int index, float *val);
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The cyto region results.
-	 */
-	void GetGenericCytoRegionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry);
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The cyto region results.
+	*/
+	void GetGenericEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry);
 
 	/*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The expression results.
-	 */
-	void GetGenericExpressionEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry);
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The expression results.
+	*/
+	void GetGenericEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry);
 
-    /*! Gets the probe set data.
-     * @param dataType The data type
-	 * @param index The row index.
-	 * @param entry The copy number variation region results.
-	 */
-	void GetGenericCopyNumberVariationRegionEntry(MultiDataType dataType, int index, 
-        affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry);
+	/*! Gets the probe set data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number variation region results.
+	*/
+	void GetGenericEntry(MultiDataType dataType, int index, affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData &entry);
 
 	/*! Opens a group for reading.
-     * @param dataType The data type
-     */
+	* @param dataType The data type
+	*/
 	DataSetInfo *OpenMultiDataDataSet(MultiDataType dataType);
 
 	/*! Gets a parameter value as a string.
-	 * @param name The name of the parameter.
-	 * @return The string representation.
-	 */
+	* @param name The name of the parameter.
+	* @return The string representation.
+	*/
 	std::wstring GetWStringFromGenericHdr(const std::wstring& name);
 
 	/*! Adds a parameter name/value pair to the parameters section.
-	 * @param name The name of the parameter.
-	 * @param value The value of the parameter.
-	 * @param reserve The length of the string to reserve.
-	 */
+	* @param name The name of the parameter.
+	* @param value The value of the parameter.
+	* @param reserve The length of the string to reserve.
+	*/
 	void SetWStringToGenericHdr(const std::wstring& name, const std::wstring value, int32_t reserve=-1);
 
 	/*! Adds the columns to the data set.
-     * @param info The data info
-	 * @param hdr The data set header.
-	 */
+	* @param info The data info
+	* @param hdr The data set header.
+	*/
 	void AddColumns(DataSetInfo &info, DataSetHeader& hdr);
 
 };

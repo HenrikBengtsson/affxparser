@@ -50,13 +50,32 @@ private:
     /*! A map of data set index to data type */
     std::map<int, MultiDataType> indexToDataType; 
 
-    /*! The maximum probe set name. */
-    int maxProbeSetName;
+    /*! The maximum length of the name column. */
+    int maxName;
+
+    /*! The maximum length of the familial seg type column. */
+    int maxSegmentType;
+
+    /*! The maximum length of the familial ref seg id column. */
+    int maxReferenceSegmentID;
+
+    /*! The maximum length of the familial seg id column. */
+    int maxFamilialSegmentID;
+
+	/*! The maximum length of the familial sample ARR id */
+	int maxFamilialARRID;
+
+	/*! The maximum length of the familial sample CHP id */
+	int maxFamilialCHPID;
+
+	/*! The maximum length of the familial sample CHP file name */
+	int maxFamilialCHPFile;
+
+	/*! The maximum length of the familial sample role */
+	int maxFamilialRole;
 
     /*! The data type being written. */
     MultiDataType currentDataType;
-
-    bool seekPos;
 
     /*! The data. */
     CHPMultiDataData *data;
@@ -100,6 +119,46 @@ public:
 	 * @param p A pointer to a multi data entry.
 	 */
 	void WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+	void WriteEntry(const affymetrix_calvin_data::DmetBiAllelicData & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+	void WriteEntry(const affymetrix_calvin_data::DmetMultiAllelicData & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+	void WriteEntry(const affymetrix_calvin_data::DmetCopyNumberData & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+    void WriteEntry(const affymetrix_calvin_data::ChromosomeMultiDataSummaryData & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+    void WriteEntry(const affymetrix_calvin_data::ChromosomeSegmentData & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+    void WriteEntry(const affymetrix_calvin_data::ChromosomeSegmentDataEx & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+    void WriteEntry(const affymetrix_calvin_data::FamilialSample & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+    void WriteEntry(const affymetrix_calvin_data::FamilialSegmentOverlap & p);
 
 	/*! Seeks to the data set.
      * @param dataType The data type

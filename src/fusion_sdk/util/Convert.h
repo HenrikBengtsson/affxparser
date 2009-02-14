@@ -30,6 +30,7 @@
 #ifndef CONVERT_H
 #define CONVERT_H
 
+#include "portability/affy-base-types.h"
 #include <math.h>
 #include <sstream>
 #include <string>
@@ -113,6 +114,23 @@ class Convert {
    * @return - Unsigned Integer representation of num, 0 if success == false
    */
   static unsigned int toUnsignedIntCheck(const std::string& num, bool *success);
+
+  /** 
+   * Make an unsigned int from a c string or die trying.
+   * @param num - c string representation of number to be parsed.
+   * 
+   * @return - Unsigned Integer representation of num
+   */
+  static uint64_t toUnsignedInt64(const std::string& num);
+
+  /** 
+   * Make an unsigned int from a c string.
+   * @param num - c string representation of number to be parsed.
+   * @param success - If success != NULL set to true upon 
+   *   successful conversion and false upon failur.
+   * @return - Unsigned Integer representation of num, 0 if success == false
+   */
+  static uint64_t toUnsignedInt64Check(const std::string& num, bool *success);
 
   /** 
    * Make an float from a c string.
