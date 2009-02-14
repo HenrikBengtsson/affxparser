@@ -17,7 +17,7 @@
 //
 ////////////////////////////////////////////////////////////////
 
-
+#include "CHPMultiDataFileReader.h"
 #include "CalvinCHPFileUpdater.h"
 #include "FileOutput.h"
 #include "FileIO.h"
@@ -58,14 +58,20 @@ void CalvinCHPFileUpdater::Initialize(const char *file)
 {
     DataSetUpdater::Initialize(file);
     dataSetIndexMap.clear();
-    int nds=(int)dataSetNames[0].size();
-    int ndt=sizeof(MultiDataDataTypes) / sizeof(MultiDataType);
-    for (int ids=0; ids<nds; ids++)
+    dataGroupIndexMap.clear();
+    std::map<std::wstring, MultiDataType> nameTypeMap;
+    int nnames = sizeof(MultiDataDataSetNames) / sizeof(std::wstring);
+    for (int iname=0; iname<nnames; iname++)
+        nameTypeMap[MultiDataDataSetNames[iname]] = MultiDataDataTypes[iname];
+    int ng = (int)dataSetNames.size();
+    for (int ig=0; ig<ng; ig++)
     {
-        for (int idt=0; idt<ndt; idt++)
+        int ns = (int)dataSetNames[ig].size();
+        for (int is=0; is<ns; is++)
         {
-            if (dataSetNames[0][ids] == MultiDataDataSetNames[idt])
-            dataSetIndexMap[MultiDataDataTypes[idt]] = ids;
+            wstring &name = dataSetNames[ig][is];
+            dataSetIndexMap[nameTypeMap[name]] = is;
+            dataGroupIndexMap[nameTypeMap[name]] = ig;
         }
     }
 }
@@ -131,7 +137,8 @@ void CalvinCHPFileUpdater::UpdateGenotypeEntryBuffer(int row_start, const std::v
 void CalvinCHPFileUpdater::UpdateMultiDataGenotypeEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry)
 {
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row, ENTRY_COLUMN);
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row, ENTRY_COLUMN);
 	FileOutput::WriteUInt8(*m_CHPFile, entry.call);
 	FileOutput::WriteFloat(*m_CHPFile, entry.confidence);
     UpdateMetrics(entry.metrics);
@@ -242,6 +249,337 @@ static void CopyMetricToBuffer(const std::vector<affymetrix_calvin_parameter::Pa
 	}
 }
 
+void CalvinCHPFileUpdater::UpdateDmetBiAllelicEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetBiAllelicData &entry)
+{
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row, ENTRY_COLUMN);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.call);
+	FileOutput::WriteFloat(*m_CHPFile, entry.confidence);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.force);
+	FileOutput::WriteFloat(*m_CHPFile, entry.signalA);
+	FileOutput::WriteFloat(*m_CHPFile, entry.signalB);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.contextA);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.contextB);
+	UpdateMetrics(entry.metrics);
+}
+
+void CalvinCHPFileUpdater::UpdateDmetBiAllelicEntryBuffer(MultiDataType dataType, int rowStart, const std::vector<affymetrix_calvin_data::DmetBiAllelicData> &entryBuffer)
+{
+	if (entryBuffer.size() == 0)
+	{
+		return;
+	}
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Create a buffer for writing.
+	int iProbeSetNameColumnSize = colsizes[dgIndex][dsIndex][NAME_COLUMN];
+	int len = iProbeSetNameColumnSize - sizeof(int);
+	int bufferSize = iProbeSetNameColumnSize + 
+		sizeof(entryBuffer[0].call) + 
+		sizeof(entryBuffer[0].confidence) + 
+		sizeof(entryBuffer[0].force) + 
+		sizeof(entryBuffer[0].signalA) + 
+		sizeof(entryBuffer[0].signalB) + 
+		sizeof(entryBuffer[0].contextA) + 
+		sizeof(entryBuffer[0].contextB) + 
+		GetMetricBufferSize(entryBuffer[0].metrics);
+	bufferSize *= (int)entryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+
+	// Copy the data to the buffer
+	char *pbuffer = buffer;
+	for (int i = 0; i<(int)entryBuffer.size(); i++) 
+	{
+		MmSetUInt32_N((uint32_t*)pbuffer, len);
+		pbuffer += sizeof(int);
+		memcpy(pbuffer, entryBuffer[i].name.c_str(), entryBuffer[i].name.length());
+		pbuffer += len;
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].call);
+		pbuffer += sizeof(uint8_t);
+		MmSetFloat_N((float *)pbuffer, entryBuffer[i].confidence);
+		pbuffer += sizeof(float);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].force);
+		pbuffer += sizeof(uint8_t);
+		MmSetFloat_N((float *)pbuffer, entryBuffer[i].signalA);
+		pbuffer += sizeof(float);
+		MmSetFloat_N((float *)pbuffer, entryBuffer[i].signalB);
+		pbuffer += sizeof(float);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].contextA);
+		pbuffer += sizeof(uint8_t);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].contextB);
+		pbuffer += sizeof(uint8_t);
+		CopyMetricToBuffer(entryBuffer[i].metrics, pbuffer);
+	}
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateDmetBiAllelicEntryBuffer(MultiDataType dataType, int rowStart, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+	if (entryBuffer.size() == 0)
+	{
+		return;
+	}
+	// Copy the data to the buffer
+	int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+	char *pbuffer = buffer;
+	for (int i=0; i<(int)entryBuffer.size(); i++) 
+	{
+		memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+		pbuffer += bufferEntrySize;
+	}
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateDmetCopyNumberEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetCopyNumberData &entry)
+{
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row, ENTRY_COLUMN);
+	FileOutput::WriteInt16(*m_CHPFile, entry.call);
+	FileOutput::WriteFloat(*m_CHPFile, entry.confidence);
+	FileOutput::WriteInt16(*m_CHPFile, entry.force);
+	FileOutput::WriteFloat(*m_CHPFile, entry.estimate);
+	FileOutput::WriteFloat(*m_CHPFile, entry.lower);
+	FileOutput::WriteFloat(*m_CHPFile, entry.upper);
+	UpdateMetrics(entry.metrics);
+}
+
+void CalvinCHPFileUpdater::UpdateDmetCopyNumberEntryBuffer(MultiDataType dataType, int rowStart, const std::vector<affymetrix_calvin_data::DmetCopyNumberData> &entryBuffer)
+{
+	if (entryBuffer.size() == 0)
+	{
+		return;
+	}
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Create a buffer for writing.
+	int iProbeSetNameColumnSize = colsizes[dgIndex][dsIndex][NAME_COLUMN];
+	int len = iProbeSetNameColumnSize - sizeof(int);
+	int bufferSize = iProbeSetNameColumnSize + 
+		sizeof(entryBuffer[0].call) + 
+		sizeof(entryBuffer[0].confidence) + 
+		sizeof(entryBuffer[0].force) + 
+		sizeof(entryBuffer[0].estimate) + 
+		sizeof(entryBuffer[0].lower) + 
+		sizeof(entryBuffer[0].upper) + 
+		GetMetricBufferSize(entryBuffer[0].metrics);
+	bufferSize *= (int)entryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+
+	// Copy the data to the buffer
+	char *pbuffer = buffer;
+	for (int i = 0; i<(int)entryBuffer.size(); i++) 
+	{
+		MmSetUInt32_N((uint32_t*)pbuffer, len);
+		pbuffer += sizeof(int);
+		memcpy(pbuffer, entryBuffer[i].name.c_str(), entryBuffer[i].name.length());
+		pbuffer += len;
+		MmSetUInt16_N((uint16_t*)pbuffer, entryBuffer[i].call);
+		pbuffer += sizeof(uint16_t);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].confidence);
+		pbuffer += sizeof(float);
+		MmSetUInt16_N((uint16_t*)pbuffer, entryBuffer[i].force);
+		pbuffer += sizeof(uint16_t);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].estimate);
+		pbuffer += sizeof(float);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].lower);
+		pbuffer += sizeof(float);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].upper);
+		pbuffer += sizeof(float);
+		CopyMetricToBuffer(entryBuffer[i].metrics, pbuffer);
+	}
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateDmetCopyNumberEntryBuffer(MultiDataType dataType, int rowStart, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+	if (entryBuffer.size() == 0)
+	{
+		return;
+	}
+	// Copy the data to the buffer
+	int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+	char *pbuffer = buffer;
+	for (int i=0; i<(int)entryBuffer.size(); i++) 
+	{
+		memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+		pbuffer += bufferEntrySize;
+	}
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateDmetMultiAllelicEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetMultiAllelicData &entry)
+{
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row, ENTRY_COLUMN);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.call);
+	FileOutput::WriteFloat(*m_CHPFile, entry.confidence);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.force);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.alleleCount);
+	FileOutput::WriteFloat(*m_CHPFile, entry.signalA);
+	FileOutput::WriteFloat(*m_CHPFile, entry.signalB);
+	FileOutput::WriteFloat(*m_CHPFile, entry.signalC);
+	FileOutput::WriteFloat(*m_CHPFile, entry.signalD);
+	FileOutput::WriteFloat(*m_CHPFile, entry.signalE);
+	FileOutput::WriteFloat(*m_CHPFile, entry.signalF);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.contextA);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.contextB);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.contextC);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.contextD);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.contextE);
+	FileOutput::WriteUInt8(*m_CHPFile, entry.contextF);
+	UpdateMetrics(entry.metrics);
+}
+
+void CalvinCHPFileUpdater::UpdateDmetMultiAllelicEntryBuffer(MultiDataType dataType, int rowStart, const std::vector<affymetrix_calvin_data::DmetMultiAllelicData> &entryBuffer)
+{
+	if (entryBuffer.size() == 0)
+	{
+		return;
+	}
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Create a buffer for writing.
+	int iProbeSetNameColumnSize = colsizes[dgIndex][dsIndex][NAME_COLUMN];
+	int len = iProbeSetNameColumnSize - sizeof(int);
+	int bufferSize = iProbeSetNameColumnSize + 
+		sizeof(entryBuffer[0].call) + 
+		sizeof(entryBuffer[0].confidence) + 
+		sizeof(entryBuffer[0].force) + 
+		sizeof(entryBuffer[0].alleleCount) + 
+		sizeof(entryBuffer[0].signalA) + 
+		sizeof(entryBuffer[0].signalB) + 
+		sizeof(entryBuffer[0].signalC) + 
+		sizeof(entryBuffer[0].signalD) + 
+		sizeof(entryBuffer[0].signalE) + 
+		sizeof(entryBuffer[0].signalF) + 
+		sizeof(entryBuffer[0].contextA) + 
+		sizeof(entryBuffer[0].contextB) + 
+		sizeof(entryBuffer[0].contextC) + 
+		sizeof(entryBuffer[0].contextD) + 
+		sizeof(entryBuffer[0].contextE) + 
+		sizeof(entryBuffer[0].contextF) + 
+		GetMetricBufferSize(entryBuffer[0].metrics);
+	bufferSize *= (int)entryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+
+	// Copy the data to the buffer
+	char *pbuffer = buffer;
+	for (int i = 0; i<(int)entryBuffer.size(); i++) 
+	{
+		MmSetUInt32_N((uint32_t*)pbuffer, len);
+		pbuffer += sizeof(int);
+		memcpy(pbuffer, entryBuffer[i].name.c_str(), entryBuffer[i].name.length());
+		pbuffer += len;
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].call);
+		pbuffer += sizeof(uint8_t);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].confidence);
+		pbuffer += sizeof(float);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].force);
+		pbuffer += sizeof(uint8_t);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].alleleCount);
+		pbuffer += sizeof(uint8_t);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].signalA);
+		pbuffer += sizeof(float);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].signalB);
+		pbuffer += sizeof(float);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].signalC);
+		pbuffer += sizeof(float);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].signalD);
+		pbuffer += sizeof(float);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].signalE);
+		pbuffer += sizeof(float);
+		MmSetFloat_N((float*)pbuffer, entryBuffer[i].signalF);
+		pbuffer += sizeof(float);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].contextA);
+		pbuffer += sizeof(uint8_t);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].contextB);
+		pbuffer += sizeof(uint8_t);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].contextC);
+		pbuffer += sizeof(uint8_t);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].contextD);
+		pbuffer += sizeof(uint8_t);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].contextE);
+		pbuffer += sizeof(uint8_t);
+		MmSetUInt8((uint8_t*)pbuffer, entryBuffer[i].contextF);
+		pbuffer += sizeof(uint8_t);
+		CopyMetricToBuffer(entryBuffer[i].metrics, pbuffer);
+	}
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateDmetMultiAllelicEntryBuffer(MultiDataType dataType, int rowStart, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+	if (entryBuffer.size() == 0)
+		return;
+
+    // Copy the data to the buffer
+	int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+	char *pbuffer = buffer;
+	for (int i=0; i<(int)entryBuffer.size(); i++) 
+	{
+		memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+		pbuffer += bufferEntrySize;
+	}
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
+}
+
 void CalvinCHPFileUpdater::UpdateMultiDataGenotypeEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::ProbeSetMultiDataGenotypeData> &genotypeEntryBuffer)
 {
     if (genotypeEntryBuffer.size() == 0)
@@ -249,10 +587,11 @@ void CalvinCHPFileUpdater::UpdateMultiDataGenotypeEntryBuffer(MultiDataType data
 
 	// seek to start of update row (note NAME_COLUMN is 0)
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, NAME_COLUMN);
 
     // Create a buffer for writing.
-	int iProbeSetNameColumnSize = colsizes[ENTRY_DATA_GROUP][ENTRY_DATA_SET][NAME_COLUMN];
+	int iProbeSetNameColumnSize = colsizes[dgIndex][dsIndex][NAME_COLUMN];
     int len = iProbeSetNameColumnSize - sizeof(int);
     int bufferSize = iProbeSetNameColumnSize + sizeof(genotypeEntryBuffer[0].call) + sizeof(genotypeEntryBuffer[0].confidence) + GetMetricBufferSize(genotypeEntryBuffer[0].metrics);
     bufferSize *= (int)genotypeEntryBuffer.size();
@@ -298,7 +637,8 @@ void CalvinCHPFileUpdater::UpdateMultiDataGenotypeEntryBuffer(MultiDataType data
 
 	// seek to start of update row (note NAME_COLUMN is 0)
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, NAME_COLUMN);
 
     // Write the buffer.
     m_CHPFile->write(buffer, bufferSize);
@@ -324,7 +664,8 @@ void CalvinCHPFileUpdater::UpdateMultiDataCopyNumberEntryBuffer(MultiDataType da
 
 	// seek to start of update row (note NAME_COLUMN is 0)
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, NAME_COLUMN);
 
     // Write the buffer.
     m_CHPFile->write(buffer, bufferSize);
@@ -350,7 +691,8 @@ void CalvinCHPFileUpdater::UpdateMultiDataCytoRegionEntryBuffer(MultiDataType da
 
 	// seek to start of update row (note NAME_COLUMN is 0)
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, NAME_COLUMN);
 
     // Write the buffer.
     m_CHPFile->write(buffer, bufferSize);
@@ -378,7 +720,8 @@ void CalvinCHPFileUpdater::UpdateMultiDataCopyNumberVariationRegionEntryBuffer(M
 
 	// seek to start of update row (note NAME_COLUMN is 0)
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, NAME_COLUMN);
 
     // Write the buffer.
     m_CHPFile->write(buffer, bufferSize);
@@ -389,7 +732,8 @@ void CalvinCHPFileUpdater::UpdateMultiDataCopyNumberVariationRegionEntryBuffer(M
 void CalvinCHPFileUpdater::UpdateMultiDataExpressionEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataExpressionData &entry)
 {
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row, ENTRY_COLUMN);
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row, ENTRY_COLUMN);
 	FileOutput::WriteFloat(*m_CHPFile, entry.quantification);
     UpdateMetrics(entry.metrics);
 }
@@ -398,8 +742,9 @@ void CalvinCHPFileUpdater::UpdateMultiDataExpressionEntryBuffer(MultiDataType da
 {
 	// seek to start of update row (note NAME_COLUMN is 0)
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
-	int iProbeSetNameColumnSize = colsizes[ENTRY_DATA_GROUP][ENTRY_DATA_SET][NAME_COLUMN];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, NAME_COLUMN);
+	int iProbeSetNameColumnSize = colsizes[dgIndex][dsIndex][NAME_COLUMN];
 	for (int i=0; i<(int)expressionEntryBuffer.size(); i++) 
 	{
 		m_CHPFile->seekp(iProbeSetNameColumnSize, std::ios::cur);
@@ -426,7 +771,116 @@ void CalvinCHPFileUpdater::UpdateMultiDataExpressionEntryBuffer(MultiDataType da
 
 	// seek to start of update row (note NAME_COLUMN is 0)
     int dsIndex = dataSetIndexMap[dataType];
-	SeekToPosition(*m_CHPFile, ENTRY_DATA_GROUP, dsIndex, row_start, NAME_COLUMN);
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, NAME_COLUMN);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateChromosomeSegmentEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+    if (entryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)entryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row
+    int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, 0);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateChromosomeSummaryEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+    if (entryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)entryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row
+    int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, 0);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateFamilialSegmentOverlapEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+    if (entryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)entryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row
+    int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, 0);
+
+    // Write the buffer.
+    m_CHPFile->write(buffer, bufferSize);
+    delete[] buffer;
+    buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateFamilialSampleEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+    if (entryBuffer.size() == 0)
+        return;
+
+    // Copy the data to the buffer
+    int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+    char *buffer = new char[bufferSize];
+    memset(buffer, 0, bufferSize);
+    char *pbuffer = buffer;
+    for (int i=0; i<(int)entryBuffer.size(); i++) 
+    {
+        memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+        pbuffer += bufferEntrySize;
+    }
+
+	// seek to start of update row
+    int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, row_start, 0);
 
     // Write the buffer.
     m_CHPFile->write(buffer, bufferSize);
@@ -492,4 +946,6 @@ void CalvinCHPFileUpdater::CloseCHPFile()
 		delete m_CHPFile;
 		m_CHPFile = NULL;
 	}
+    dataSetIndexMap.clear();
+    dataGroupIndexMap.clear();
 }

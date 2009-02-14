@@ -37,4 +37,8 @@ cleanfusion :
 	${fusion}/calvin_files/fusion/swig-perl \
 	${fusion}/calvin_files/parsers/data \
 	${fusion}/calvin_files/utils/data \
-	${fusion}/calvin_files/writers/data
+	${fusion}/calvin_files/writers/data \
+	${fusion}/file/file.vcproj \
+	${fusion}/file/file.sln \
+	${fusion}/file/lib-file-apt.vcproj \
+	${fusion}/style.css

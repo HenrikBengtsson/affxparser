@@ -33,12 +33,13 @@
 
 //////////////////////////////////////////////////////////////////////
 
+//
 #include <fstream>
 #include <istream>
 #include <string>
 #include <vector>
 //
-#include "../portability/affy-base-types.h"
+#include "portability/affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -137,7 +138,10 @@ enum GeneChipProbeSetType
     GenotypeControlProbeSetType,
 
     /*! Expression control probe set. */
-    ExpressionControlProbeSetType
+    ExpressionControlProbeSetType,
+
+    /*! Polymorphic marker probe set. */
+    MarkerProbeSetType
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -190,6 +194,12 @@ protected:
 	/*! The targets base at the interrogation position */
 	char m_TBase;
 
+	/*! The probe length */
+	unsigned short m_ProbeLength;
+
+	/*! The probe grouping */
+	unsigned short m_ProbeGrouping;
+
 	/*! Friend to the parent */
 	friend class CCDFProbeGroupInformation;
 
@@ -238,12 +248,27 @@ public:
 	 */
 	char GetTBase() const { return m_TBase; }
 
+	/*! Returns the length of the probe.
+	 * @return The probe length.
+	 * This is not applicable to XDA CDF file version 1.
+	 */
+	unsigned short GetProbeLength() const { return m_ProbeLength; }
+
+	/*! Returns the grouping of the probe in the physical array.
+	 * @return The probe grouping.
+	 * This is not applicable to XDA CDF file version 1.
+	 */
+	unsigned short GetProbeGrouping() const { return m_ProbeGrouping; }
+
 	/*! Constructor */
 	CCDFProbeInformation();
 };
 
-/*! The size of the probe object as stored in the XDA CDF file. */
+/*! The size of the probe object as stored in the XDA CDF file version 1. */
 #define PROBE_SIZE (4+4+2+2+1+1)
+
+/*! The size of the probe object as stored in the XDA CDF file version 2. */
+#define PROBE_SIZE_V2 (4+4+2+2+1+1+2+2)
 
 ////////////////////////////////////////////////////////////////////
 
@@ -271,6 +296,12 @@ protected:
 
 	/*! The name of the group. */
 	std::string m_Name;
+
+	/*! The wobble situation. */
+	unsigned short m_WobbleSituation;
+
+	/*! The allele code. */
+	unsigned short m_AlleleCode;
 
 	/*! The number of cells per list (1 or 2 for expression and genotyping, 4 for resequencing). */
 	unsigned char m_NumCellsPerList;
@@ -342,6 +373,18 @@ public:
 	 */
 	std::string GetName() { return m_Name; }
 
+	/*! Gets the wobble situation.
+	 * @return The wobble situation.
+	 * This is not applicable to XDA CDF file version 1.
+	 */
+	unsigned short GetWobbleSituation() const { return m_WobbleSituation; }
+
+	/*! Gets the allele code.
+	 * @return The allele code.
+	 * This is not applicable to XDA CDF file version 1.
+	 */
+	unsigned short GetAlleleCode() const { return m_AlleleCode; }
+
 	/*! Retrieves the probe object given a zero-based index.
 	 * @param cell_index zero-based index in the probe group to the probe of interest.
 	 * @param info The returned probe data.
@@ -356,8 +399,11 @@ public:
 	~CCDFProbeGroupInformation();
 };
 
-/*! This is the size of the object in a binary CDF file. */
+/*! This is the size of the object in a binary CDF file version 1. */
 #define PROBE_GROUP_SIZE (MAX_PROBE_SET_NAME_LENGTH+4+4+4+4+1+1)
+
+/*! This is the size of the object in a binary CDF file version 2. */
+#define PROBE_GROUP_SIZE_V2 (MAX_PROBE_SET_NAME_LENGTH+4+4+4+4+1+1+2+2)
 
 ////////////////////////////////////////////////////////////////////
 
@@ -692,29 +738,34 @@ protected:
 
 	/*! The position of the probe set index array in the XDA file. */
 	std::ios::pos_type probeSetIndexPos;
-  /*! What was the last probesetindex read? 
-    This state allows us to handle sequential reads quickly. (no seeking.) */
-  uint32_t m_probeSetIndex_last;
-  /*! 1 if like m_probeSetIndex_last is valid. 
-   The seekg method clears this. 
-  */
-  uint32_t m_probeSetIndex_last_valid;
 
-  /*! Use this seekg method when seeking with the iteratorReader.
-    It updates the state needed for sequenial reads. */
-  void seekg(uint32_t pos,const std::ios_base::seekdir& dir) {
-    // invalidate the last probe state
-    m_probeSetIndex_last_valid=0;
-    // m_probeSetIndex_last=0; // we dont need to clear this as we just cleared "_valid"
-    // and do the seek
-    iteratorReader.seekg(pos,dir);
-  }
+	/*! What was the last probesetindex read? 
+	 *  This state allows us to handle sequential reads quickly. (no seeking.) 
+	 */
+	uint32_t m_probeSetIndex_last;
+
+	/*! 1 if like m_probeSetIndex_last is valid. 
+	 *  The seekg method clears this. 
+	 */
+	uint32_t m_probeSetIndex_last_valid;
+
+	/*! Use this seekg method when seeking with the iteratorReader.
+     *  It updates the state needed for sequenial reads. 
+	 */
+	void seekg(uint32_t pos, const std::ios_base::seekdir& dir) 
+	{
+		// invalidate the last probe state
+		m_probeSetIndex_last_valid=0;
+		// m_probeSetIndex_last=0; // we dont need to clear this as we just cleared "_valid"
+		// and do the seek
+		iteratorReader.seekg(pos,dir);
+	}
 
 	/*! The file stream for the probe set information iterator. */
 	std::ifstream iteratorReader;
 
-  /*! Flag to indicate that only the header part of the file is to be read. */
-  bool readHeaderOnly;
+	/*! Flag to indicate that only the header part of the file is to be read. */
+	bool readHeaderOnly;
 
 	/*! The file header object. */
 	CCDFFileHeader m_Header;

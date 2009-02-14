@@ -436,6 +436,32 @@ char FusionCDFProbeInformation::GetTBase() const
 }
 
 /*
+ * Return the probe length.
+ */
+unsigned short FusionCDFProbeInformation::GetProbeLength() const
+{
+	if (gcosProbe)
+		return gcosProbe->GetProbeLength();
+	else if (calvinProbe)
+		return calvinProbe->GetProbeLength();
+	else
+		return 0;
+}
+
+/*
+ * Return the probe grouping.
+ */
+unsigned short FusionCDFProbeInformation::GetProbeGrouping() const
+{
+	if (gcosProbe)
+		return gcosProbe->GetProbeGrouping();
+	else if (calvinProbe)
+		return calvinProbe->GetProbeGrouping();
+	else
+		return 0;
+}
+
+/*
  * Initialize the class members.
  */
 FusionCDFProbeInformation::FusionCDFProbeInformation()
@@ -606,6 +632,32 @@ std::string FusionCDFProbeGroupInformation::GetName() const
 		return StringUtils::ConvertWCSToMBS(calvinGroup->GetName());
 	else
 		return "";
+}
+
+/*
+ * Get the wobble situation.
+ */
+unsigned short FusionCDFProbeGroupInformation::GetWobbleSituation() const
+{
+	if (gcosGroup)
+		return gcosGroup->GetWobbleSituation();
+	else if (calvinGroup)
+		return calvinGroup->GetWobbleSituation();
+	else
+		return 0;
+}
+
+/*
+ * Get the allele code.
+ */
+unsigned short FusionCDFProbeGroupInformation::GetAlleleCode() const
+{
+	if (gcosGroup)
+		return gcosGroup->GetAlleleCode();
+	else if (calvinGroup)
+		return calvinGroup->GetAlleleCode();
+	else
+		return 0;
 }
 
 /*

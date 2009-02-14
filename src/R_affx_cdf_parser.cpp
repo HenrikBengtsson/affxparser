@@ -1129,8 +1129,8 @@ extern "C" {
     SET_STRING_ELT(cell_list_names, 0, mkChar("indices"));
 
     /* Same for all unit elements */
-    PROTECT(r_probe_set_names = NEW_LIST(1));
-    SET_VECTOR_ELT(r_probe_set_names, 0, mkChar("groups"));
+    PROTECT(r_probe_set_names = NEW_STRING(1));
+    SET_STRING_ELT(r_probe_set_names, 0, mkChar("groups"));
 
 
 
@@ -1418,20 +1418,20 @@ extern "C" {
 
 
     /* Same for all unit elements */
-    PROTECT(r_probe_set_names = NEW_LIST(nbrOfUnitElements));
+    PROTECT(r_probe_set_names = NEW_STRING(nbrOfUnitElements));
     int rpsi = 0;
     if (i_readType) {
       /* get the type */
-      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("type"));
+      SET_STRING_ELT(r_probe_set_names, rpsi++, mkChar("type"));
     }
 
     if (i_readDirection) {
       /* get the direction */
-      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("direction"));
+      SET_STRING_ELT(r_probe_set_names, rpsi++, mkChar("direction"));
     }
 
     if (i_readGroups) {
-      SET_VECTOR_ELT(r_probe_set_names, rpsi++, mkChar("groups"));
+      SET_STRING_ELT(r_probe_set_names, rpsi++, mkChar("groups"));
     }
 
 

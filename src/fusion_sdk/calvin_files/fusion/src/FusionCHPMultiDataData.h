@@ -170,6 +170,46 @@ public:
 	 */
     float GetExpressionQuantification(affymetrix_calvin_io::MultiDataType dataType, int index) { return chpData.GetExpressionQuantification(dataType, index); }
 
+	/*! Gets the chromosome segment data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetChromosomeSegmentEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::ChromosomeSegmentData &entry)
+    { chpData.GetChromosomeSegmentEntry(dataType, index, entry); }
+
+	/*! Gets the chromosome segment data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetChromosomeSegmentEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::ChromosomeSegmentDataEx &entry)
+    { chpData.GetChromosomeSegmentEntry(dataType, index, entry); }
+
+	/*! Gets the chromosome summary data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetChromosomeSummaryEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::ChromosomeMultiDataSummaryData &entry)
+    { chpData.GetChromosomeSummaryEntry(dataType, index, entry); }
+    
+	/*! Gets the familial file entry.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetFamilialSegmentOverlapEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::FamilialSegmentOverlap &entry)
+    { chpData.GetFamilialSegmentOverlapEntry(dataType, index, entry); }
+
+	/*! Gets the familial file entry.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetFamilialSampleEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::FamilialSample &entry)
+	{ chpData.GetFamilialSampleEntry(dataType, index, entry); }
+
 	/*! Get the probe set name.
      * @param dataType The data type
 	 * @param index The row index.

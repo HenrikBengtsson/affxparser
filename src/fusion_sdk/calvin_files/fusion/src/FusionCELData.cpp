@@ -164,6 +164,15 @@ std::wstring FusionCELData::GetAlg()
 }
 
 /*
+ * Retrieve algorithm version.
+ */
+std::wstring FusionCELData::GetAlgVer()
+{
+	CheckAdapter();
+	return adapter->GetAlgVer();
+}
+
+/*
  * Retrieve algorithm parameters.
  */
 std::wstring FusionCELData::GetParams()

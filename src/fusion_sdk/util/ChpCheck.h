@@ -61,7 +61,8 @@ public:
   /// @return    diffAllowed the number of differences allowed (default 0)
   /// @return    epsPvalue epsilon for pValue (default to epsilon)
   ChpCheck(std::vector<std::string> &generated, std::vector<std::string> &gold, 
-           int diffAllowed=0, const std::string &prefix="apt-", double eps=0.0001) {
+           int diffAllowed=0, const std::string &prefix="apt-", double eps=0.0001,
+           bool bCheckHeaders = true) {
     m_Generated = generated;
     m_Gold = gold;
     m_Eps_confidence = eps;
@@ -69,6 +70,7 @@ public:
     m_Eps_signal = eps;
     m_DiffAllowed = diffAllowed;
     m_Prefix = prefix;
+    m_CheckHeaders = bCheckHeaders;
 
     fillInToIgnore(m_IgnoreMap, prefix); // things know to change like user, time, etc.
 
@@ -89,7 +91,7 @@ public:
         try {
             m_Generated[i] = Util::getPathName(m_Generated[i].c_str());
             m_Gold[i] = Util::getPathName(m_Gold[i].c_str());
-            if(!headersSame(m_Generated[i], m_Gold[i], msg))
+            if (m_CheckHeaders && !headersSame(m_Generated[i], m_Gold[i], msg))
                 success = false;
             if(!dataSame(m_Generated[i], m_Gold[i], msg)) {
                 success = false;
@@ -128,14 +130,16 @@ private:
   // Header entries to ignore
   static void fillInToIgnore(std::set<std::string> &ignoreMap, const std::string &prefix) {
     ignoreMap.clear();
+    ignoreMap.insert("program-version");
     ignoreMap.insert(prefix + "exec-guid");
     ignoreMap.insert(prefix + "analysis-guid");
     ignoreMap.insert(prefix + "time-str"); 
     ignoreMap.insert(prefix + "free-mem");    
     ignoreMap.insert(prefix + "cvs-id");
     ignoreMap.insert(prefix + "version");
-    ignoreMap.insert(prefix + "opt-block-size");
-    ignoreMap.insert(prefix + "opt-out-dir");
+    //ignoreMap.insert(prefix + "opt-block-size");
+    //ignoreMap.insert(prefix + "opt-out-dir");
+    ignoreMap.insert(prefix + "opt-analysis-spec");
   }
 
   /** 
@@ -321,6 +325,7 @@ private:
   double m_Eps_confidence;
   double m_Eps_pvalue;
   double m_Eps_signal;
+  bool m_CheckHeaders;
   /// How many differences will we tolerate?
   int m_DiffAllowed;
   /// What is the expected prefix for parameter names?

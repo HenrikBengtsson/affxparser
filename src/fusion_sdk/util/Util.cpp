@@ -42,6 +42,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <vector>
+
 //
 #include "util/Convert.h"
 #include "util/Err.h"
@@ -56,9 +57,10 @@
 
 #ifdef WIN32
 #include <direct.h>
-#include <io.h>
-#include <windows.h>
 #include <float.h>
+#include <io.h>
+#include <malloc.h>
+#include <windows.h>
 #define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
 
 #ifndef __MINGW32__
@@ -92,6 +94,7 @@ using namespace std;
  * @param s - c-string to be copied.
  * @return char * newly allocated c-string.
  */
+
 char *Util::cloneString(const char *s) {
   char *copy = NULL;
   if(s == NULL)
@@ -105,9 +108,24 @@ char *Util::cloneString(const char *s) {
   memcpy(copy,s,length+1);
   return copy;
 }
+/*
+//todo vliber version
+char *Util::cloneString(const string &s) {
+  char *copy = NULL;
+  if(s.c_str() == NULL)
+    return NULL;
+  size_t length = strlen(s.c_str());
+  copy = new char[length + 1];
+  //  strcpy(copy,length+1,s.c_str());
+  strcpy(copy,s.c_str());
+  //malloc(s.length()+1);
+  //strcpy(copy,s.length()+1,s.c_str());
+  return copy;
+}
+*/
 
-bool
-Util::stringEndsWith(const std::string& str,const std::string& end)
+
+bool Util::stringEndsWith(const std::string& str,const std::string& end)
 {
   std::string::const_reverse_iterator s_i=str.rbegin();
   std::string::const_reverse_iterator s_end=str.rend();
@@ -135,11 +153,11 @@ Util::stringEndsWith(const std::string& str,const std::string& end)
  * @param out - stream to be opened.
  * @param fileName - name of file to be opened.
  */
-void Util::mustOpenToWrite(std::ofstream &out, const char *fileName) {
-  assert(fileName);
-  out.open(fileName);
+void Util::mustOpenToWrite(std::ofstream &out, const std::string &fileName) {
+  assert(fileName.c_str());
+  out.open(fileName.c_str());
   if(!out.is_open() || !out.good()) {
-    Err::errAbort("Couldn't open file: " + string(fileName) + " to write.");
+    Err::errAbort("Couldn't open file: " + fileName + " to write.");
   }
   // Set to throw an exception if something bad happens rather than silently fail.
   out.exceptions(ofstream::eofbit | ofstream::failbit | ofstream::badbit );
@@ -177,13 +195,42 @@ void Util::carefulClose(std::fstream &out) {
  * Return true if file is readable, false otherwise.
  * @param fileName 
  */
-bool Util::fileReadable(const char *fileName) {
+bool Util::fileReadable(const std::string &fileName) {
   int f;
-  f = POSIX_OPEN(fileName, O_RDONLY);
+  f = POSIX_OPEN(fileName.c_str(), O_RDONLY);
   if(f < 0) 
     return false;
   POSIX_CLOSE(f);
   return true;
+}
+
+/** 
+ * Return true if file exists, false otherwise.
+ * @param fileName 
+ */
+bool Util::fileExists(const std::string &fileName) {
+  struct stat st;
+  return ((stat(fileName.c_str(), &st) == 0)? true: false);
+}
+
+/** 
+ * Return true if file removed or does not exist, false otherwise.
+ * @param fileName 
+ */
+bool Util::fileRemove(const std::string &fileName, bool throwOnError) {
+    bool success = true;
+    if(fileExists(fileName)) {
+#ifdef WIN32
+	    if (DeleteFile(fileName.c_str()) == false)
+		    success = false;
+#else
+	    if (remove(fileName.c_str()) != 0)
+		    success = false;
+#endif
+    }
+    if(throwOnError && !success)
+        Err::errAbort("Unable to remove file '" + fileName + "'");
+    return success;
 }
 
 /**
@@ -191,25 +238,44 @@ bool Util::fileReadable(const char *fileName) {
  * @param in - file to copy
  * @param out - name of the new file
  */
-bool Util::fileCopy(const char *in, const char *out) {
+bool Util::fileCopy(const std::string &in, const std::string &out, bool throwOnError) {
   ///@todo there is probably a better way to copy files and check for errors
-  bool result = true;
+  bool success = true;
 
-  std::ifstream is (in,ios::binary);
-  std::ofstream os (out,ios::binary);
+  std::ifstream is (in.c_str(),ios::binary);
+  std::ofstream os (out.c_str(),ios::binary);
   if(!is.good() || !os.good())
-      result = false;
+      success = false;
 
   os << is.rdbuf();
   if(!is.good() || !os.good())
-      result = false;
+      success = false;
 
   is.close();
   os.close();
   if(!is.good() || !os.good())
-      result = false;
+      success = false;
 
-  return true;
+  if(throwOnError && !success)
+      Err::errAbort("Unable to copy file '" + in + "' to '" + out + "'");
+  return success;
+}
+
+/**
+ * Return true on success. False otherwise
+ * @param in - file to move
+ * @param out - name of the new file
+ */
+bool Util::fileRename(const std::string &in, const std::string &out, bool throwOnError) {
+    bool success = true;
+#ifdef WIN32
+	success = (MoveFile(in.c_str(), out.c_str()) == TRUE);
+#else
+	success = (rename(in.c_str(), out.c_str()) == 0);
+#endif
+  if(throwOnError && !success)
+      Err::errAbort("Unable to rename file '" + in + "' to '" + out + "'");
+  return success;
 }
 
 /** 
@@ -245,8 +311,8 @@ void Util::chompLastIfSep(std::string &s) {
  * Return true if directory exists and is readable, false otherwise.
  * @param dirName 
  */
-bool Util::directoryReadable(const char *dirName) {
-  string dirString(dirName);
+bool Util::directoryReadable(const std::string &dirName) {
+  string dirString=dirName;
   chompLastIfSep(dirString); // Windows doesn't like the trailing '\'
   struct stat s;
   int val = 0;
@@ -282,7 +348,7 @@ bool Util::directoryReadable(const char *dirName) {
  * @brief return true if directory exists and is readable, false otherwise
  * @param dirname The dir to test for write-ability
  */
-bool Util::directoryWritable(const char* dirname) {
+bool Util::directoryWritable(const std::string &dirname) {
   std::string dirname_tmp;
   struct stat s;
   bool writable = false;
@@ -332,12 +398,12 @@ bool Util::directoryWritable(const char* dirname) {
  * @param dirName - Directory name to be made.
  * @return - true if created sucessfully, false if already exists.
  */
-bool Util::makeDir(const char *dirName) {
+bool Util::makeDir(const std::string &dirName) {
   int error;
 #ifdef WIN32
-  error = POSIX_MKDIR(dirName);
+  error = POSIX_MKDIR(dirName.c_str());
 #else
-  error = POSIX_MKDIR(dirName, 0777);
+  error = POSIX_MKDIR(dirName.c_str(), 0777);
 #endif
   if(error != 0 && errno == EEXIST) 
     return false;
@@ -357,14 +423,14 @@ bool Util::makeDir(const char *dirName) {
  * @param dirName - Directory name to be made.
  * @return - Pointer to error message, if any, else zero.
  */
-std::string* Util::createDir(const char *dirName) {
+std::string* Util::createDir(const std::string &dirName) {
 #ifdef WIN32
   // Windows: use ISO C++ conformants; POSIX functions are deprecated.
   struct _stat outDirStat;
-  const int statError = _stat (dirName, &outDirStat);
+  const int statError = _stat (dirName.c_str(), &outDirStat);
 #else
   struct stat outDirStat;
-  const int statError = stat (dirName, &outDirStat);
+  const int statError = stat (dirName.c_str(), &outDirStat);
 #endif
 
   // Error return from fstat - requested output directory
@@ -373,7 +439,7 @@ std::string* Util::createDir(const char *dirName) {
   if (statError != 0) {
   #ifdef WIN32
     // Windows: use ISO C++ _mkdir; umask is deprecated.
-    const int mkdirError = _mkdir (dirName);
+    const int mkdirError = _mkdir (dirName.c_str());
   #else
     const mode_t Umask = umask (0);
 
@@ -384,7 +450,7 @@ std::string* Util::createDir(const char *dirName) {
       Mode |= S_IXGRP;
     if (Mode & (S_IROTH | S_IWOTH))
       Mode |= S_IXOTH;
-    const int mkdirError = POSIX_MKDIR (dirName, Mode);
+    const int mkdirError = POSIX_MKDIR (dirName.c_str(), Mode);
 
     // Restore caller's umask.
     umask (Umask);
@@ -436,24 +502,35 @@ void Util::chopString(const std::string &s, char delim, std::vector<std::string>
  * @param s - File name to find root of.
  * @return - Root of string.
  */
-string Util::fileRoot(const std::string &s) {
-  if(s.empty()) 
-    return s;
+std::string Util::fileRoot(const std::string& filename) {
+  if(filename.empty()) 
+    return filename;
   string::size_type pos = 0;
   string name;
-  pos = s.rfind(PATH_SEPARATOR);
+  pos = filename.rfind(PATH_SEPARATOR);
 #ifdef WIN32
   // accept the unix path separator on windows for cygwin and sanity.
-  string::size_type unixPos = s.rfind("/");
-  if(unixPos != string::npos) {
-    pos = unixPos;
-  }
+  string::size_type unixPos = filename.rfind("/");  
+  if ((unixPos != string::npos)&&(pos != string::npos)) {pos = Max(unixPos, pos);}
+  else if ((unixPos != string::npos)&&(pos == string::npos)) {pos = unixPos;}
 #endif
   if(pos != string::npos)
-    name = s.substr(pos+1);
+    name = filename.substr(pos+1);
   else 
-    name = s;
+    name = filename;
   return name;
+}
+
+/// @brief     Preform the fileRoot on a vector of filenames.
+/// @param     filename_vec     the vector files to 'fileRoot'
+/// @return    
+std::vector<std::string> Util::fileRoot(const std::vector<std::string>& filename_vec)
+{
+  std::vector<std::string> rootname_vec;
+  for (int i=0;i<filename_vec.size();i++) {
+    rootname_vec.push_back(fileRoot(filename_vec[i]));
+  }
+  return rootname_vec;
 }
 
 /** 
@@ -472,9 +549,10 @@ string Util::fileRoot(const std::string &s) {
  * 
  * @return - Number of differences >= epsilon found.
  */
-int Util::matrixDifferences(const char *targetFile, const char *queryFile, 
-                      int colSkip, int rowSkip, double epsilon, bool printMismatch,
-                      bool matchRows) {
+int Util::matrixDifferences(const std::string& targetFile,
+                            const std::string& queryFile, 
+                            int colSkip, int rowSkip, double epsilon, bool printMismatch,
+                            bool matchRows) {
   vector< vector<double> > qMatrix, tMatrix;
   unsigned int rowIx = 0, colIx = 0;
   unsigned int numCol = 0, numRow = 0;
@@ -569,10 +647,10 @@ int Util::matrixDifferences(const char *targetFile, const char *queryFile,
  * 
  * @return converted filename for that platform.
  */
-std::string Util::getPathName(const char *path) {
-  std::string s(path);
+std::string Util::getPathName(const std::string &path) {
+  std::string s = path;
   if(s.find(':') != std::string::npos)
-    Err::errAbort("Can't convert " + ToStr(path) + " as it contains a ':' character");
+    Err::errAbort("Can't convert " + path + " as it contains a ':' character");
   // 92 is the ascii code for '\'
 #if defined (WIN32)
   subChar(s, '/', 92);
@@ -854,40 +932,45 @@ bool Util::memInfo(uint64_t &free, uint64_t &total,
                    uint64_t &swapAvail, uint64_t& memAvail, 
                    bool cap32bit) {
   bool success = false;
-  bool is32bit = false;
+  bool is32bit = true;
   free=total=swapAvail=memAvail=0;
 
   // One of these should be defined.
+  ///@todo is there a more robust way to determine 32 vs 64 bitness?
 #ifdef WIN32
+#ifdef _WIN64
+  is32bit = false;
+#else
   is32bit = true;
+#endif
   success=memInfo_win32(free,total,swapAvail,memAvail);
-#endif
+#endif //WIN32
+
 #ifdef __linux__
+#ifdef __LP64__
+  is32bit = false;
+#else
+  is32bit = true;
+#endif
   success=memInfo_linux("/proc/meminfo",free,total,swapAvail,memAvail);
-#endif
+#endif //__linux__
+
 #ifdef __APPLE__
-  is32bit = true; // Until 10.5 OS X can't address big mem even on G5, what a bummer
-  success=memInfo_darwin(free,total,swapAvail,memAvail);
+#ifdef __LP64__
+  is32bit = false;
+#else
+  is32bit = true;
 #endif
+  success=memInfo_darwin(free,total,swapAvail,memAvail);
+#endif //__APPLE__
+
 #ifdef __sun__
   success=memInfo_solaris(free,total,swapAvail,memAvail);
-#endif
-#ifdef __i386__
-  is32bit = true;
-#endif
+#endif // __sun__
 
-  // The catch all clause
-  //#ifndef memInfo_defined
-  //#error memInfo is not defined for this platform
-  //#endif
-
-  //#ifdef __i386__ ||
-  // we test for __i386__ as these systems cant map more than 2GB of space
-  // even if they have more RAM in the system.
   if (memAvail>MEMINFO_2GB_MAX && is32bit && cap32bit) {
     memAvail=MEMINFO_2GB_MAX;
   }
-  //#endif
 
   return success;
 }
@@ -916,13 +999,14 @@ const char *Util::nextWhiteSpace(const char *s) {
  * @param currentPos - What position in the line is 
  *                      cursor currently at.
  */
-void Util::printStringWidth(std::ostream &out, const char *str, int prefix,
+void Util::printStringWidth(std::ostream &out,const std::string& str,
+                            int prefix,
                             int currentPos, int maxWidth ) {
   const char *wStart = NULL, *wEnd = NULL; /* Start and end of word pointers. */
   int position = currentPos;
   int nextSize = 0;
   int i = 0;
-  wStart = str;
+  wStart = str.c_str();
 
   /* While there are still characters to be printed. */
   while(*wStart != '\0') {
@@ -931,8 +1015,8 @@ void Util::printStringWidth(std::ostream &out, const char *str, int prefix,
     while(isspace(*wStart) && *wStart != '\0') {
       if(*wStart == '\n') {
         out.put('\n');
-	for(i = 0; i < prefix; i++) 
-	  out.put(' ');
+        for(i = 0; i < prefix; i++) 
+          out.put(' ');
         fflush(stdout);
         position = prefix;
       }
@@ -1029,4 +1113,19 @@ std::string Util::getTimeStamp()
   }
   std::string timess = timeStr;
   return timess;
+}
+
+
+void Util::changeEnd(std::string& str,const std::string& from,const std::string& to)
+{
+  size_t pos=str.rfind(from);
+  if (pos!=string::npos) {
+    str=str.substr(0,pos)+to;
+  }
+}
+void Util::changeEnd(std::vector<std::string>& str_vec,const std::string& from,const std::string& to)
+{
+  for (int i=0;i<str_vec.size();i++) {
+    changeEnd(str_vec[i],from,to);
+  }
 }

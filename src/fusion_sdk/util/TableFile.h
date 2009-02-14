@@ -69,7 +69,7 @@ public:
    * @param fileName - file to be read.
    * @return - true if successful.
    */
-  bool open(const char *fileName);
+  bool open(const std::string& fileName);
 
   /** 
    * Read data from file specified.
@@ -77,14 +77,14 @@ public:
    * @param requiredCols - column names that must be present.
    * @return - true if successful.
    */
-  bool open(const char *fileName, const std::vector<std::string> &requiredCols);
+  bool open(const std::string& fileName, const std::vector<std::string> &requiredCols);
 
   /** 
    * Write data to file specified.
    * @param fileName - name of file to write to.
    * @return - true if successful.
    */
-  bool write(const char *fileName);
+  bool write(const std::string& fileName);
 
   /** 
    * Return number of columns in data.
@@ -103,14 +103,14 @@ public:
    * @param colName - Name of column of interest.
    * @return - npos if not found, column index otherwise.
    */
-  unsigned int colIndex(const char *colName);
+  unsigned int colIndex(const std::string& colName);
 
   /** 
    * Look up the index of row with name specified.
    * @param rowName - Name of row of interest.
    * @return - npos if not found, row index otherwise.
    */
-  unsigned int rowIndex(const char *rowName);
+  unsigned int rowIndex(const std::string& rowName);
 
   /** 
    * Return data at the position specified in table.
@@ -155,8 +155,10 @@ public:
    * 
    * @return true if successful false otherwise.
    */
-  static bool columnFromFile(const char *fileName, std::vector<std::string> &colVec, 
-                                        const char *colName, unsigned int skipCols, bool unique=false);
+  static bool columnFromFile(const std::string& fileName,
+                             std::vector<std::string> &colVec, 
+                             const std::string& colName,
+                             unsigned int skipCols, bool unique=false);
 
   /** 
    * Rip the column out of a file by index filling in the data in colVec.
@@ -169,8 +171,9 @@ public:
    * 
    * @return true if successful false otherwise.
    */
-  static bool columnFromFile(const char *fileName, std::vector<std::string> &colVec, 
-                                        unsigned int colIx, unsigned int skipCols, bool unique=false);
+  static bool columnFromFile(const std::string& fileName,
+                             std::vector<std::string> &colVec, 
+                             unsigned int colIx, unsigned int skipCols, bool unique=false);
   
   /** 
    * Rip a column out of an open RowFile.
@@ -239,14 +242,14 @@ private:
   std::vector< std::vector<std::string> > m_Data;      
 
   /** Iterator to walk through the map. */
-  typedef std::map<char *, unsigned int, Util::ltstr>::iterator TMapIter;
+  typedef std::map<std::string, unsigned int, Util::ltstring>::iterator TMapIter;
   /** Iterator to walk through the map. */
-  typedef const std::map<char *, unsigned int, Util::ltstr>::iterator TMapConstIter;
+  typedef const std::map<std::string, unsigned int, Util::ltstring>::iterator TMapConstIter;
 
   /** Used as hash of column names. */
-  std::map<char *, unsigned int, Util::ltstr> m_ColNameMap;
+  std::map<std::string, unsigned int, Util::ltstring> m_ColNameMap;
   /** Used as hash of row names. */
-  std::map<char *, unsigned int, Util::ltstr> m_RowNameMap;
+  std::map<std::string, unsigned int, Util::ltstring> m_RowNameMap;
   /** Way to quickly free up memory in hash. */
   std::vector<char *> m_MemToFree; 
 };

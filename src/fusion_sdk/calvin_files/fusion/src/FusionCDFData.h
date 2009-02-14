@@ -149,6 +149,16 @@ public:
 	 */
 	char GetTBase() const;
 
+	/*! Returns the probe length.
+	 * @return The probe length.
+	 */
+	unsigned short GetProbeLength() const;
+
+	/*! Returns the probe grouping.
+	 * @return The probe grouping.
+	 */
+	unsigned short GetProbeGrouping() const;
+
 	/*! Constructor */
 	FusionCDFProbeInformation();
 
@@ -219,6 +229,16 @@ public:
 	 * @return The group name.
 	 */
 	std::string GetName() const;
+
+	/*! Gets the wobble situation.
+	 * @return The wobble situation.
+	 */
+	unsigned short GetWobbleSituation() const;
+
+	/*! Gets the allele code.
+	 * @return The allele code.
+	 */
+	unsigned short GetAlleleCode() const;
 
 	/*! Retrieves the probe object given an index.
 	 * @param cell_index Index to the probe of interest.

@@ -19,9 +19,8 @@
 
 #include <sstream>
 #include <iomanip>
-//
-#include "StringUtils.h"
 #include <stdlib.h>
+#include "StringUtils.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // ignore deprecated functions warning

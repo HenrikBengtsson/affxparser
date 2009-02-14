@@ -30,15 +30,17 @@
 #ifndef _VERBOSE_H
 #define _VERBOSE_H
 
+//
+#include "util/MsgHandler.h"
+#include "util/MsgStream.h"
+#include "util/ProgressDot.h"
+#include "util/ProgressHandler.h"
+//
 #include <assert.h>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
-#include "ProgressHandler.h"
-#include "ProgressDot.h"
-#include "MsgHandler.h"
-#include "MsgStream.h"
 
 /**
  *  Verbose
@@ -58,6 +60,7 @@ public:
       m_DotMod = 10;
       m_DotCount = 0;
       m_NewLine = true;
+      m_Output = true;
       m_ProHandler.push_back(progHandler);
       m_MsgHandler.push_back(msgHandler);
       m_WarnHandler.push_back(warnHandler);
@@ -67,6 +70,7 @@ public:
     std::vector<MsgHandler *> m_MsgHandler; ///< Vector of handlers for messages (i.e. log files, consoles, dialogs).
     std::vector<MsgHandler *> m_WarnHandler; ///< Vector of handlers for warnings
     bool m_NewLine;   ///< Was a new line outputted after last message?
+    bool m_Output;    ///< Do we report messages
     int m_Verbosity;  ///< What level of messages is wanted, larger num == more msgs
     int m_DotMod;     ///< How often do we print a dot when dot() is called?
     int m_DotCount;   ///< How many times has dot() been called?
@@ -143,6 +147,17 @@ public:
   }
 
   /** 
+   * @brief Set whether or not output messages are logged
+   *        useful to turn off output when catching expected errors
+   *
+   * @param output - true or false
+   */  
+  static void setOutput(bool output) {
+    Param &p = getParam();
+    p.m_Output = output;
+  }
+
+  /** 
    * @brief Set the level of verbosity desired. 0 == no messages
    * 1 == normal messages, 2,3,4, etc. == more verbose.
    * @param level - level of verbosity desired.
@@ -165,8 +180,10 @@ public:
    */
   static void out(int level, const std::string &s, bool nl = true) {
     Param &p = getParam();
-    for(unsigned int i = 0; i < p.m_MsgHandler.size(); i++) {
-      p.m_MsgHandler[i]->message(level, s, nl);
+    if(p.m_Output) {
+        for(unsigned int i = 0; i < p.m_MsgHandler.size(); i++) {
+            p.m_MsgHandler[i]->message(level, s, nl);
+        }
     }
   }
 
@@ -178,8 +195,10 @@ public:
    */
   static void warn(int level, const std::string &s, bool nl = true, const std::string prefix = "\nWARNING: ") {
     Param &p = getParam();
-    for(unsigned int i = 0; i < p.m_WarnHandler.size(); i++) {
-      p.m_WarnHandler[i]->message(level, prefix + s, nl);
+    if(p.m_Output) {
+        for(unsigned int i = 0; i < p.m_WarnHandler.size(); i++) {
+            p.m_WarnHandler[i]->message(level, prefix + s, nl);
+        }
     }
   }
 

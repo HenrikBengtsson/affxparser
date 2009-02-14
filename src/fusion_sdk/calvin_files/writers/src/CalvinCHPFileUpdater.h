@@ -160,6 +160,107 @@ public:
 	 */
 	void UpdateMultiDataExpressionEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &expressionEntryBuffer);
 
+	/*! Seek to appropriate file position and update genotype entry
+   * @param dataType The data type.
+	 * @param row The row index.
+	 * @param call CHP call representation.
+	 * @param confidence CHP confidence value.
+	 */
+	void UpdateDmetBiAllelicEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetBiAllelicData &entry);
+
+	/*! Seek to appropriate file position and update genotype entry vector
+   * @param dataType The data type.
+	 * @param row_start The start row for updating.
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateDmetBiAllelicEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::DmetBiAllelicData> &entryBuffer);
+
+	/*! Seek to appropriate file position and update genotype entry vector
+   * @param dataType The data type.
+	 * @param row_start The start row for updating.
+   * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateDmetBiAllelicEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
+	/*! Seek to appropriate file position and update genotype entry
+   * @param dataType The data type.
+	 * @param row The row index.
+	 * @param call CHP call representation.
+	 * @param confidence CHP confidence value.
+	 */
+	void UpdateDmetCopyNumberEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetCopyNumberData &entry);
+
+	/*! Seek to appropriate file position and update genotype entry vector
+   * @param dataType The data type.
+	 * @param row_start The start row for updating.
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateDmetCopyNumberEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::DmetCopyNumberData> &entryBuffer);
+
+	/*! Seek to appropriate file position and update genotype entry vector
+   * @param dataType The data type.
+	 * @param row_start The start row for updating.
+   * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateDmetCopyNumberEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
+	/*! Seek to appropriate file position and update genotype entry
+   * @param dataType The data type.
+	 * @param row The row index.
+	 * @param call CHP call representation.
+	 * @param confidence CHP confidence value.
+	 */
+	void UpdateDmetMultiAllelicEntry(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetMultiAllelicData &entry);
+
+	/*! Seek to appropriate file position and update genotype entry vector
+   * @param dataType The data type.
+	 * @param row_start The start row for updating.
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateDmetMultiAllelicEntryBuffer(MultiDataType dataType, int row_start, const std::vector<affymetrix_calvin_data::DmetMultiAllelicData> &entryBuffer);
+
+	/*! Seek to appropriate file position and update genotype entry vector
+   * @param dataType The data type.
+	 * @param row_start The start row for updating.
+   * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param genotypeBufferEntry The vector contain all buffered entries to be updated.
+	 */
+	void UpdateDmetMultiAllelicEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
+	/*! Seek to appropriate file position and update the segment entry vector
+     * @param dataType The data type.
+     * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+     * @param entryBuffer The vector contain all buffered entries to be updated.
+	 */
+    void UpdateChromosomeSegmentEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
+	/*! Seek to appropriate file position and update the summary entry vector
+     * @param dataType The data type.
+     * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+     * @param entryBuffer The vector contain all buffered entries to be updated.
+	 */
+    void UpdateChromosomeSummaryEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
+	/*! Seek to appropriate file position and update the summary entry vector
+     * @param dataType The data type.
+     * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+     * @param entryBuffer The vector contain all buffered entries to be updated.
+	 */
+    void UpdateFamilialSegmentOverlapEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
+	/*! Seek to appropriate file position and update the sample entry vector
+     * @param dataType The data type.
+     * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+     * @param entryBuffer The vector contain all buffered entries to be updated.
+	 */
+    void UpdateFamilialSampleEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
 	/*! Close CHP signal file. */
 	void CloseCHPFile();
 
@@ -169,6 +270,9 @@ private:
     
     /*! Map of data type to index. */
     std::map<MultiDataType, int> dataSetIndexMap;
+     
+    /*! Map of data type to data group index. */
+    std::map<MultiDataType, int> dataGroupIndexMap;
 
     /*! Update the metrics */
     void UpdateMetrics(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics);

@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <sstream>
 
-#ifdef WIN32
+#ifdef _MSC_VER
 #pragma warning(disable: 4996) // ignore deprecated functions warning
 #define snprintf _snprintf
 //need to include winsock2 before windows.h (pulled in by affy-base-types)

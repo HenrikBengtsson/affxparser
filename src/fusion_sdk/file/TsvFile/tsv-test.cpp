@@ -23,7 +23,6 @@
  *         This program checks that TsvFile is working as expected.
  */
 
-#include <sstream>
 //
 #include "file/TsvFile/TsvFile.h"
 // include these to check them for parsing errors.
@@ -31,6 +30,8 @@
 #include "file/TsvFile/ClfFile.h"
 #include "file/TsvFile/PgfFile.h"
 #include "file/TsvFile/SnpTable.h"
+//
+#include <sstream>
 
 //
 using namespace std;
@@ -190,6 +191,27 @@ check_field_name()
   delete tsv;
 }
 
+void
+check_empty()
+{
+  affx::TsvFileField col;
+  
+  //
+  col.clear();
+  assert(col.isNull()==true);
+  assert(col.isEmpty()==true);
+
+  //
+  col.setBuffer("");
+  assert(col.isNull()==false);
+  assert(col.isEmpty()==true);
+
+  //
+  col.setBuffer("abc");
+  assert(col.isNull()==false);
+  assert(col.isEmpty()==false);
+}
+
 /// @brief     Check the conversion of a field buffer
 void
 check_field_convert()
@@ -223,6 +245,7 @@ check_field_convert()
   rv=col.get(&val_int);
   assert((rv==TSV_ERR_CONVERSION)&&(val_int==-1));
 
+
   // a good double conversion
   col.clear();
   col.setBuffer("123.5");
@@ -253,6 +276,7 @@ check_field_convert()
   assert((rv==TSV_ERR_CONVERSION)&&(val_double==-1));
   rv=col.get(&val_double);
   assert((rv==TSV_ERR_CONVERSION)&&(val_double==-1));
+
 
   /*
   for (int p=0;p<5;p++) {
@@ -443,6 +467,13 @@ check_headers_1()
   //tsv.dump_headers();
 
   //
+  assert(tsv.hasHeaderEqualTo("a","1")==TSV_OK);
+  assert(tsv.hasHeaderEqualTo("c","1")==TSV_OK);
+  //
+  assert(tsv.hasHeaderEqualTo("a","99")==TSV_ERR_NOTFOUND);
+  assert(tsv.hasHeaderEqualTo("d","1")==TSV_ERR_NOTFOUND);
+
+  //
   tsv.headersBegin();
   for (int i=0;i<10;i++) {
     tsv.headersFindNext("b",val);
@@ -562,12 +593,12 @@ void
 check_comment_1()
 {
   affx::TsvFile tsv;
-  std::string filename="check-comment.tsv";
+  std::string filename="./check-comment.tsv";
   std::string comment="comment for testing";
 
   //
-  tsv.writeTsv(filename);
-  tsv.writeFileComment(comment);
+  assert(tsv.writeTsv(filename)==affx::TSV_OK);
+  assert(tsv.writeFileComment(comment)==affx::TSV_OK);
   tsv.close();
   //
   tsv.open(filename);
@@ -618,6 +649,45 @@ check_headers_3()
   assert(rv==TSV_OK);
 }
 
+void
+check_headers_4()
+{
+  affx::TsvFile tsv;
+  int rv;
+
+  // add some headers "abc" and "ghi" are bookends.
+  tsv.addHeader("abc",0);
+  for (int i=0;i<5;i++) {
+    tsv.addHeader("def",i);
+  }
+  tsv.addHeader("ghi",11);
+
+  //tsv.dump_headers();
+
+  // get rid of the middle ones.
+  tsv.deleteHeaders("def");
+  //tsv.dump_headers();
+  rv=tsv.headersCount();
+  assert(rv==2);
+  // tsv.dump_headers();
+  
+  // shouldnt crash
+  tsv.deleteHeaders("def");
+  rv=tsv.headersCount();
+  assert(rv==2);
+
+  //
+  tsv.deleteHeaders("abc");
+  rv=tsv.headersCount();
+  assert(rv==1);
+
+  //
+  tsv.deleteHeaders("ghi");
+  rv=tsv.headersCount();
+  assert(rv==0);
+}
+
+
 //////////
 
 /// @brief     Check the reading of a Comma Seperated Value file
@@ -648,6 +718,11 @@ check_csv_1()
     rv=tsv.get(0,1,tmpdbl); assert((rv==TSV_OK) && (tmpdbl==2.0));
     rv=tsv.get(0,2,tmpstr); assert((rv==TSV_OK) && (tmpstr=="3"));
     rv=tsv.get(0,2,tmpdbl); assert((rv==TSV_OK) && (tmpdbl==3.0));
+    //
+    assert(tsv.isNull(0,2)==false);
+    assert(tsv.isNull(0,"header-03")==false);
+    assert(tsv.isEmpty(0,2)==false);
+    assert(tsv.isEmpty(0,"header-03")==false);
   }
 
   for (int i=0;i<2;i++) {
@@ -904,12 +979,14 @@ main(int argc,char* argv[])
   check_dequote();
   //
   check_field_name();
+  check_empty();
   check_field_convert();
   check_field_vec_convert();
   //
   check_headers_1();
   check_headers_2();
   check_headers_3();
+  check_headers_4();
   //
   check_read_table_1();
   //

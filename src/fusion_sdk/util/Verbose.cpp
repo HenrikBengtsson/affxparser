@@ -27,7 +27,7 @@
  * @brief  Class for doing logging and some command line ui.
  */
 
-#include "Verbose.h"
+#include "util/Verbose.h"
 
 using namespace std;
 

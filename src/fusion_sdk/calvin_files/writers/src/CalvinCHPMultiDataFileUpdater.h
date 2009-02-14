@@ -60,6 +60,12 @@ public:
 	 */
 	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry, const std::vector<ColumnInfo> &metricColumns);
 
+	/*! Update only the call and confidence for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry);
+
 	/*! Update the entry for the given row
 	 * @param row The row index.
 	 * @param entry The new MultiData value.
@@ -72,12 +78,6 @@ public:
 	 * @param entry The new MultiData value.
 	 */
 	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData &entry, const std::vector<ColumnInfo> &metricColumns);
-
-	/*! Update only the call and confidence for the given row
-	 * @param row The row index.
-	 * @param entry The new MultiData value.
-	 */
-	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataGenotypeData &entry);
 
 	/*! Update the entry for the given row
 	 * @param row The row index.
@@ -98,6 +98,45 @@ public:
 	 */
 	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::ProbeSetMultiDataCopyNumberVariationRegionData
          &entry, const std::vector<ColumnInfo> &metricColumns);
+
+	/*! Update the entry for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+     * @param metricColumns The column information.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetBiAllelicData &entry, const std::vector<ColumnInfo> &metricColumns);
+
+	/*! Update only the call and confidence for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetBiAllelicData &entry);
+
+	/*! Update the entry for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+     * @param metricColumns The column information.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetCopyNumberData &entry, const std::vector<ColumnInfo> &metricColumns);
+
+	/*! Update only the call and confidence for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetCopyNumberData &entry);
+
+	/*! Update the entry for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+     * @param metricColumns The column information.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetMultiAllelicData &entry, const std::vector<ColumnInfo> &metricColumns);
+
+	/*! Update only the call and confidence for the given row
+	 * @param row The row index.
+	 * @param entry The new MultiData value.
+	 */
+	void UpdateMultiData(MultiDataType dataType, int row, const affymetrix_calvin_data::DmetMultiAllelicData &entry);
 
 private:
     std::map<MultiDataType, int> dataSetIndexMap;

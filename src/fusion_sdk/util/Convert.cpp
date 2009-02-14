@@ -38,7 +38,6 @@
 #include <stdlib.h>
 #include <string>
 #include <string.h>
-
 //
 #include "Convert.h"
 #include "util/Err.h"
@@ -154,6 +153,14 @@ unsigned int Convert::toUnsignedInt(const std::string& num) {
   return i;
 }
 
+uint64_t Convert::toUnsignedInt64(const std::string& num) {
+  bool success = true;
+  unsigned int i = Convert::toUnsignedInt64Check(num, &success);
+  if(success != true)
+    Err::errAbort("Could not convert '" + std::string(num) + "' to an unsigned int64.");
+  return i;
+}
+
 /** 
  * Make an unsigned int from a c string.
  * @param num - c string representation of number to be parsed.
@@ -178,6 +185,35 @@ unsigned int Convert::toUnsignedIntCheck(const std::string& num, bool *success) 
   // cast to unsigned int and make sure that we didn't overflow
   i = (unsigned int)l;
   if(errno != 0 || (long unsigned int)i != l || l >= UINT_MAX) 
+    ok = false;
+
+  // if we had a problem set to 0 for consistency.
+  if(!ok)
+    i = 0;
+
+  if(success != NULL)
+    (*success) = ok;
+
+  return i;
+}
+
+uint64_t Convert::toUnsignedInt64Check(const std::string& num, bool *success) {
+  long unsigned int l = 0;
+  uint64_t i = 0;
+  bool ok = true;
+  char *end = NULL;
+  const char* num_c_str=num.c_str();
+
+  assert(num_c_str); 
+  errno = 0;
+  l = strtoul(num_c_str, &end, 10);
+
+  // end will be NULL if entire string converted.
+  ok = (*end != '\0' || end == num_c_str) ? false : true;
+
+  // cast to unsigned int and make sure that we didn't overflow
+  i = (uint64_t)l;
+  if(errno != 0 || (long unsigned int)i != l || l >= ULONG_MAX) 
     ok = false;
 
   // if we had a problem set to 0 for consistency.

@@ -52,6 +52,10 @@ public:
 	u_int8_t GetNumCellsPerList() const { return (u_int8_t)cellsPerList; }
 	/*! Get the probe group name = DataPlane name */
 	std::wstring GetName() const { if (dataSet) return dataSet->Header().GetName(); else return L""; }
+	/*! Get the wobble situation */
+	u_int16_t GetWobbleSituation() const { return wobbleSituation; }
+	/*! Get the allele */
+	u_int16_t GetAlleleCode() const { return alleleCode; }
 	/*! Get information for the probe by index */
 	void GetCell(int32_t cell_index, CDFProbeInformation& info);
 
@@ -70,6 +74,10 @@ protected:
 	u_int32_t listCnt;
 	/*! Number of cells in the probe group */
 	u_int32_t cellCnt;
+	/*! Wobble situation */
+	u_int16_t wobbleSituation;
+	/*! Allele */
+	u_int16_t alleleCode;
 	/*! Probe set number - same as ProbeSetNumber in C++ */
 	u_int32_t probeSetNumber;
 	/*! Cells per list (atom) - same as NumCellsPerList in C++ */
