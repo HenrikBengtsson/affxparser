@@ -110,7 +110,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   if (!is.null(newChipType)) {
     if (verbose) {
       cat("Updating chip type from '", hdr$chiptype, "' to '", 
-                                                newChipType, "'.", sep="");
+                                              newChipType, "'.\n", sep="");
     }
 
     # Updating v3 header
