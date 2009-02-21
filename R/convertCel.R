@@ -18,6 +18,8 @@
 #   \item{readMap}{An optional read map for the input CEL file.}
 #   \item{writeMap}{An optional write map for the output CEL file.}
 #   \item{version}{The version of the output file format.}
+#   \item{newChipType}{An optional string for overriding the chip type
+#      in the CEL file header.}
 #   \item{...}{Not used.}
 #   \item{.validate}{If @TRUE, a consistency test between the generated 
 #     and the original CEL is performed.}
@@ -48,7 +50,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, version="4", ..., .validate=FALSE, verbose=FALSE) {
+convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, version="4", newChipType=NULL, ..., .validate=FALSE, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,6 +78,14 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
     stop("Cannot convert CEL. Currently only version 4 (binary/XDA) can be written: ", version);
   }
 
+  # Argument 'newChipType':
+  if (!is.null(newChipType)) {
+    newChipType <- as.character(newChipType);
+    if (nchar(newChipType) == 0) {
+      stop("Argument 'newChipType' cannot be a empty string.");
+    }
+  }
+
   # Argument 'verbose':
   verbose <- as.integer(verbose);
 
@@ -89,10 +99,35 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   if (verbose)
     cat("Reading CEL file...\n");
   cel <- readCel(filename, readHeader=TRUE, readXY=TRUE, readIntensities=TRUE, readStdvs=TRUE, readPixels=TRUE, readOutliers=FALSE, readMasked=FALSE, readMap=readMap);
-  gc();  
   if (verbose)
     cat("Reading CEL file...done\n");
 
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Changing chip type?
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  hdr <- cel$header;
+  if (!is.null(newChipType)) {
+    if (verbose) {
+      cat("Updating chip type from '", hdr$chiptype, "' to '", 
+                                                newChipType, "'.", sep="");
+    }
+
+    # Updating chip type field (this is actually read only, because
+    # the chip type is always inferred from the v3 header).
+    hdr$chiptype <- newChipType;
+
+    # Updating v3 header
+    header <- hdr$header;
+    pattern <- sprintf("%s.1sq", hdr$chiptype);
+    target <- sprintf("%s.1sq", newChipType);
+    header <- gsub(pattern, target, header, fixed=TRUE);
+
+    # Updating CEL header
+    hdr$header <- header;
+
+    rm(pattern, target, header);
+  }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Creating new CEL file
@@ -102,8 +137,9 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   suppressWarnings({
     # createCel() will generate a warning if the CDF file could not be
     # located, but that is all right.
-    pathname <- createCel(outFilename, header=cel$header, overwrite=FALSE, verbose=verbose2);
+    pathname <- createCel(outFilename, header=hdr, overwrite=FALSE, verbose=verbose2);
   });
+  rm(hdr);
   if (verbose)
     cat("Creating empty CEL file...done\n");
 
@@ -115,7 +151,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
     cat("Updating CEL file...\n");
   updateCel(outFilename, intensities=cel, verbose=verbose2, writeMap=writeMap);
   rm(cel);
-  gc();
+
   if (verbose)
     cat("Updating CEL file...done\n");
 
@@ -127,7 +163,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
     } else {
       otherReadMap <- invertMap(writeMap);
     }
-    gc();
+
     compareCels(filename, outFilename, readMap=readMap, 
                                 otherReadMap=otherReadMap, verbose=verbose);
     if (verbose)
@@ -140,6 +176,10 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
 
 ############################################################################
 # HISTORY:
+# 2009-02-20
+# o Removed all gc() in convertCel().
+# o Added optional argument 'newChipType' to convertCel() for overriding
+#   the default chip type.
 # 2007-09-12
 # o Help page was refering to the "CDF" and not the "CEL" files.
 # o Now convertCel() will not give a warning if the CDF file is not found.

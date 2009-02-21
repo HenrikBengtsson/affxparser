@@ -1,6 +1,13 @@
 Package: affxparser
 ===================
 
+Version: 1.15.6 [2009-02-20]
+o Added optional argument 'newChipType' to convertCel() for overriding
+  the default chip type.  Useful for updating the formal chip type 
+  of old CEL files.
+o Removed all gc() calls in convertCel().
+
+
 Version: 1.15.5 [2009-02-14]
 o Fixed a bug related to SET_VECTOR_ELT/SET_ELEMENR used on strings.
   Affected readChp.
