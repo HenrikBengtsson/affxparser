@@ -38,6 +38,10 @@ readCelHeader(filename)
   \item{chiptype}{the type of the chip.}
   \item{header}{the entire header of the CEL file. Only available for
     non-calvin format files.}
+  \item{datheader}{the entire dat header of the CEL file. This contains
+  for example a date.}
+  \item{librarypackage}{the library package name of the file. Empty for
+  older versions.}
   \item{cellmargin}{a parameter used to generate the CEL file. According
   to Affymetrix, it designates the number of pixels to ignore around the
   feature border when calculating the intensity value (the number of
