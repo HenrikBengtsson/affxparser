@@ -28,8 +28,8 @@ extern "C" {
     int str_length; 
     char* cstr; 
 
-    PROTECT(names = NEW_CHARACTER(12));
-    PROTECT(vals  = NEW_LIST(12));
+    PROTECT(names = NEW_CHARACTER(14));
+    PROTECT(vals  = NEW_LIST(14));
 
     SET_STRING_ELT(names, kk, mkChar("filename"));
     str = cel.GetFileName();
@@ -98,6 +98,22 @@ extern "C" {
     SET_VECTOR_ELT(vals, kk++, mkString(cstr));
     Free(cstr);
 
+    str_length = cel.GetDatHeader().size();
+    cstr = Calloc(str_length+1, char);
+    wcstombs(cstr, cel.GetDatHeader().c_str(), str_length);
+    cstr[str_length] = '\0';
+    SET_STRING_ELT(names, kk, mkChar("datheader"));
+    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
+    Free(cstr);
+
+    str_length = cel.GetLibraryPackageName().size();
+    cstr = Calloc(str_length+1, char);
+    wcstombs(cstr, cel.GetLibraryPackageName().c_str(), str_length);
+    cstr[str_length] = '\0';
+    SET_STRING_ELT(names, kk, mkChar("librarypackage"));
+    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
+    Free(cstr);
+
 #else
 
     SET_STRING_ELT(names, kk, mkChar("algorithm"));
@@ -110,6 +126,12 @@ extern "C" {
     SET_VECTOR_ELT(vals, kk++, R_NilValue);
 
     SET_STRING_ELT(names, kk, mkChar("header"));
+    SET_VECTOR_ELT(vals, kk++, R_NilValue);
+
+    SET_STRING_ELT(names, kk, mkChar("datheader"));
+    SET_VECTOR_ELT(vals, kk++, R_NilValue);
+
+    SET_STRING_ELT(names, kk, mkChar("librarypackage"));
     SET_VECTOR_ELT(vals, kk++, R_NilValue);
 
 #endif    
