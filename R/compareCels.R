@@ -3,12 +3,12 @@
 #
 # @title "Compares the contents of two CEL files"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #   @get "title".
 # }
-# 
+#
 # \arguments{
 #   \item{pathname}{The pathname of the first CEL file.}
 #   \item{other}{The pathname of the seconds CEL file.}
@@ -17,11 +17,11 @@
 #   \item{verbose}{An @integer. The larger the more details are printed.}
 #   \item{...}{Not used.}
 # }
-# 
+#
 # \value{
 #   Returns @TRUE if the two CELs are equal, otherwise @FALSE.  If @FALSE,
-#   the attribute \code{reason} contains a string explaining what 
-#   difference was detected, and the attributes \code{value1} and 
+#   the attribute \code{reason} contains a string explaining what
+#   difference was detected, and the attributes \code{value1} and
 #   \code{value2} contain the two objects/values that differs.
 # }
 #
@@ -35,9 +35,9 @@
 # @keyword "IO"
 #*/#########################################################################
 compareCels <- function(pathname, other, readMap=NULL, otherReadMap=NULL, verbose=0, ...) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   different <- function(fmtstr, ..., value1=NULL, value2=NULL) {
     res <- FALSE;
     attr(res, "reason") <- sprintf(fmtstr, ...);
@@ -46,9 +46,9 @@ compareCels <- function(pathname, other, readMap=NULL, otherReadMap=NULL, verbos
     res;
   }
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'pathname':
   # Expand any '~' in the pathname.
   pathname <- file.path(dirname(pathname), basename(pathname));
@@ -87,7 +87,7 @@ compareCels <- function(pathname, other, readMap=NULL, otherReadMap=NULL, verbos
   # Compare headers
   if (verbose >= 1)
     cat("  Comparing CEL headers...\n");
-  excl <- c("filename", "version", "header");
+  excl <- c("filename", "version", "header", "datheader", "librarypackage");
   for (ff in setdiff(names(cel1$header), excl)) {
     h1 <- cel1$header[[ff]];
     h2 <- cel2$header[[ff]];
@@ -98,7 +98,7 @@ compareCels <- function(pathname, other, readMap=NULL, otherReadMap=NULL, verbos
   if (verbose >= 1)
     cat("  Comparing CEL headers...done\n");
 
-  # Compare data  
+  # Compare data
   if (verbose >= 1)
     cat("  Comparing CEL data...\n");
   for (ff in c("intensities", "stdvs", "pixels")) {
