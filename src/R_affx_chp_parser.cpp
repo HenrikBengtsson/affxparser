@@ -24,15 +24,33 @@ using namespace affymetrix_calvin_parameter;
   SET_ELEMENT(lst, index, val); \
   SET_STRING_ELT(nameLst, index, mkChar(nameVal))
 
-const char *
+// const char *
+// wcs_to_cstr(std::wstring wstr)
+// {
+// #ifdef SUPPORT_MBCS
+//   return StringUtils::ConvertWCSToMBS(wstr).c_str();
+// #else
+//   return "\0";
+// #endif
+// }
+
+char *
 wcs_to_cstr(std::wstring wstr)
 {
 #ifdef SUPPORT_MBCS
-  return StringUtils::ConvertWCSToMBS(wstr).c_str();
+  string str;
+  int str_length; 
+  char* cstr; 
+  str_length = wstr.size();
+  cstr = Calloc(str_length+1, char);
+  wcstombs(cstr, wstr.c_str(), str_length);
+  cstr[str_length] = '\0';
+  return cstr;
 #else
   return "\0";
 #endif
 }
+
 
 int
 R_affx_AddCHPMeta(AffymetrixGuidType fileId, 
@@ -40,13 +58,17 @@ R_affx_AddCHPMeta(AffymetrixGuidType fileId,
 		  wstring arrayType, 
 		  SEXP lst, SEXP nms, int lstIdx)
 {
+  char* cstr;
   SET_NAMED_ELT(lst, lstIdx, mkString(fileId.c_str()), nms, "FileId");
-  SET_NAMED_ELT(lst, lstIdx+1, mkString(wcs_to_cstr(algName)),
-		nms, "AlgorithmName"); 
-  SET_NAMED_ELT(lst, lstIdx+2, mkString(wcs_to_cstr(algVersion)),
+  SET_NAMED_ELT(lst, lstIdx+1, mkString(cstr = wcs_to_cstr(algName)),
+		nms, "AlgorithmName");
+  Free(cstr);
+  SET_NAMED_ELT(lst, lstIdx+2, mkString(cstr = wcs_to_cstr(algVersion)),
 		nms, "AlgorithmVersion");
-  SET_NAMED_ELT(lst, lstIdx+3, mkString(wcs_to_cstr(arrayType)),
+  Free(cstr);
+  SET_NAMED_ELT(lst, lstIdx+3, mkString(cstr = wcs_to_cstr(arrayType)),
 		nms, "ArrayType");
+  Free(cstr);
   return lstIdx+4;
 }
 
@@ -55,11 +77,14 @@ R_affx_AddCHPTileMeta(AffymetrixGuidType fileId,
 		  wstring algName, wstring algVersion, 
 		  SEXP lst, SEXP nms, int lstIdx)
 {
+  char* cstr;
   SET_NAMED_ELT(lst, lstIdx, mkString(fileId.c_str()), nms, "FileId");
-  SET_NAMED_ELT(lst, lstIdx+1, mkString(wcs_to_cstr(algName)),
+  SET_NAMED_ELT(lst, lstIdx+1, mkString(cstr = wcs_to_cstr(algName)),
 		nms, "AlgorithmName"); 
-  SET_NAMED_ELT(lst, lstIdx+2, mkString(wcs_to_cstr(algVersion)),
+  Free(cstr);
+  SET_NAMED_ELT(lst, lstIdx+2, mkString(cstr = wcs_to_cstr(algVersion)),
 		nms, "AlgorithmVersion");
+  Free(cstr);
   return lstIdx+3;
 }
 
@@ -68,14 +93,17 @@ R_affx_GetList(FusionTagValuePairTypeList& params)
 {
   SEXP pLst, pNms, pVal;
   int pIdx = 0, pNbr = params.size();
+  char* cstr;
   PROTECT(pLst = NEW_LIST(pNbr));
   PROTECT(pNms = NEW_CHARACTER(pNbr));
       
   for(FusionTagValuePairTypeList::iterator param=params.begin();
       param != params.end(); ++pIdx, ++param) {
-    PROTECT(pVal = mkString(wcs_to_cstr(param->Value)));
+    PROTECT(pVal = mkString(cstr = wcs_to_cstr(param->Value)));
+    Free(cstr);
     SET_NAMED_ELT(pLst, pIdx, pVal, pNms, 
-		  wcs_to_cstr(param->Tag));
+		  cstr = wcs_to_cstr(param->Tag));
+    Free(cstr);
     UNPROTECT(1);
   }
   SET_NAMES(pLst, pNms);
@@ -89,6 +117,7 @@ R_affx_GetList(ParameterNameValueTypeList params)
 {
   SEXP pLst, pNms, pVal, pName;
   int pIdx=0, pNbr = params.size();
+  char* cstr;
   PROTECT(pLst = NEW_LIST(pNbr));
   PROTECT(pNms = NEW_CHARACTER(pNbr));
   
@@ -96,7 +125,8 @@ R_affx_GetList(ParameterNameValueTypeList params)
      but the former works and the latter does not */    
   for(ParameterNameValueTypeList::iterator param=params.begin();
       param != params.end(); ++pIdx, ++param) {
-    PROTECT(pName = mkString(wcs_to_cstr(param->GetName())));
+    PROTECT(pName = mkString(cstr = wcs_to_cstr(param->GetName())));
+    Free(cstr);
     switch(param->GetParameterType()) 
       {
       case ParameterNameValueType::Int8Type:
@@ -119,13 +149,14 @@ R_affx_GetList(ParameterNameValueTypeList params)
 	PROTECT(pVal = ScalarReal(param->GetValueFloat()));
 	break;
       case ParameterNameValueType::TextType:
-	PROTECT(pVal = mkString(wcs_to_cstr(param->GetValueText())));
+	PROTECT(pVal = mkString(cstr = wcs_to_cstr(param->GetValueText())));
+        Free(cstr);
 	break;
       case ParameterNameValueType::AsciiType:
 	PROTECT(pVal = mkString(param->GetValueAscii().c_str()));
 	break;
       default:
-	Rf_warning("unhandled type for parameter '%s'", pName);
+	Rf_warning("unhandled type for parameter '%s'", CHAR(pName));
 	PROTECT(pVal = ScalarString(R_NaString));
       }
     SET_NAMED_ELT(pLst, pIdx, pVal, pNms, CHAR(STRING_ELT(pName,0)));
@@ -287,6 +318,7 @@ R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
   SEXP rval, ras1, ras2, aa, ab, bb, nocall, call, conf, callstr, alg;
   int qNbr = chp->GetHeader().GetNumProbeSets(), i, nprotect=0, nelt;
   bool bWholeGenome = false, bDynamicModel = false;
+  char* cstr;
 
   PROTECT(call = NEW_INTEGER(qNbr));
   PROTECT(conf = NEW_NUMERIC(qNbr));
@@ -295,7 +327,8 @@ R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
 
   //FIXME: I did not think AlgName could be "", it is, so we are stuck
   //with that
-  PROTECT(alg = mkString(wcs_to_cstr(chp->GetHeader().GetAlgName())));
+  PROTECT(alg = mkString(cstr = wcs_to_cstr(chp->GetHeader().GetAlgName())));
+  Free(cstr);
   nprotect++;
 
   if(chp->GetHeader().GetAlgName() == L"WholeGenome") {
@@ -610,18 +643,22 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
 
 SEXP R_affx_ReadTilingDataSeqHeader(TilingSequenceData seq)
 {
-  SEXP rval, header, hnames;
+  SEXP header, hnames;
   int numParams;
+  char* cstr;
   
   //read in the header/params
   numParams = seq.parameters.size();
   PROTECT(header = NEW_LIST(4));
   PROTECT(hnames = NEW_CHARACTER(4));
-  SET_NAMED_ELT(header, 0, mkString(wcs_to_cstr(seq.name)), hnames, "name");
-  SET_NAMED_ELT(header, 1, mkString(wcs_to_cstr(seq.groupName)), hnames,
+  SET_NAMED_ELT(header, 0, mkString(cstr = wcs_to_cstr(seq.name)), hnames, "name");
+  Free(cstr);
+  SET_NAMED_ELT(header, 1, mkString(cstr = wcs_to_cstr(seq.groupName)), hnames,
 		"groupName"); 
-  SET_NAMED_ELT(header, 2, mkString(wcs_to_cstr(seq.version)), hnames,
+  Free(cstr);
+  SET_NAMED_ELT(header, 2, mkString(cstr = wcs_to_cstr(seq.version)), hnames,
 		"version");
+  Free(cstr);
   SET_NAMED_ELT(header, 3,
 		R_affx_GetList(seq.parameters),
 		hnames, "parameters");
@@ -748,8 +785,8 @@ SEXP
 R_affx_ReadCHP(FusionCHPMultiDataData *chp, bool isBrief)
 {
   SEXP lst, nms, cts, conf, call, probenames, genodata, gnms;
-  int lstIdx = 0, lstNbr, nExpr, nExprC, nGeno, nGenoC, nCopy,
-    nCyto, nprotect = 0, i, nDataTypes;
+  int lstIdx = 0, lstNbr, nExpr, nExprC, nGeno, nGenoC,
+    nprotect = 0, i, nDataTypes;
 
   PROTECT(cts = NEW_INTEGER(4)); //FIXME: change if enum changes
   nprotect++;
