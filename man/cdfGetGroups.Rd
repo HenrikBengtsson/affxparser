@@ -15,8 +15,7 @@
 \description{
  Gets a subset of groups in a CDF structure.
 
- This \code{\link[base]{function}} is design to be used with \code{\link{applyCdfGroups}}()
- on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
+ This \code{\link[base]{function}} is designed to be used with \code{\link{applyCdfGroups}}().
 }
 
 \usage{cdfGetGroups(groups, which, ...)}
