@@ -6,8 +6,7 @@
 # \description{
 #  @get "title".
 #
-#  This @function is design to be used with @see "applyCdfGroups"
-#  on an Affymetrix Mapping (SNP) CDF @list structure.
+#  This @function is designed to be used with @see "applyCdfGroups".
 # }
 #
 # @synopsis

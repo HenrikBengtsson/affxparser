@@ -12,7 +12,7 @@
 
  \title{Converts a CEL into the same CEL but with another format}
 
- \usage{convertCel(filename, outFilename, readMap=NULL, writeMap=NULL, version="4", newChipType = NULL, ..., .validate=FALSE, verbose=FALSE)}
+ \usage{convertCel(filename, outFilename, readMap=NULL, writeMap=NULL, version="4", newChipType=NULL, ..., .validate=FALSE, verbose=FALSE)}
 
  \description{
    Converts a CEL into the same CEL but with another format.
@@ -28,7 +28,7 @@
    \item{writeMap}{An optional write map for the output CEL file.}
    \item{version}{The version of the output file format.}
    \item{newChipType}{An optional string for overriding the chip type
-     in the CEL file header.}
+      in the CEL file header.}
    \item{...}{Not used.}
    \item{.validate}{If \code{\link[base:logical]{TRUE}}, a consistency test between the generated
      and the original CEL is performed.}
