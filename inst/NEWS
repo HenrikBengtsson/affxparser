@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version: 1.17.4 [2009-09-21]
+o Added parseDatHeaderString(), which in combination with 
+  readCelHeader() can be used to infer the timestamp in the
+  header of a CEL file.
+
+
 Version: 1.17.3 [2009-05-29]
 o Added applyCdfGroupFields() and cdfSetDimension().
 
@@ -309,11 +315,13 @@ o In addition to optimizing IO time, read maps can be used to
 o BUG FIX: Using read maps for readCel() would give an error saying
   the read map is invalid even when it is not.
 
+
 Version: 1.7.2 [2006-12-10]
 o BUG FIX: readCdfUnits() and readCdfCellIndices() with stratifyBy="mm"
   would return the same as stratifyBy="pm".  Options "pm" and "pmmm" 
   are unaffected by this fix.
 o Added argument 'isPm' to readCdf().
+
 
 Version: 1.7.1 [2006-11-03]
 o Updated to Fusion SDK v1.0.8.
@@ -335,6 +343,7 @@ o Windows build change: The Windows version is building against
   leaves us only having to patch one single file in the Fusion
   release instead of 10-20. Hopefully there are no other side effects.
 
+
 Version: 1.7.0 [2006-10-25]
 o BUG FIX: writeCdf() would create an invalid CDF file if there were
   no QC units.  This would in turn make readCdfUnits() etc core dump.
@@ -352,8 +361,10 @@ o Made readCelUnits() a bit more clever if a 'cdf' structure with only
   call unlist immediately.  This speeds things up a bit.
 o The devel version number was bumped up with the Bioconductor release.
 
+
 Version: 1.6.0 [2006-10-03]
 o The version number was bumped up with the Bioconductor release.
+
 
 Version: 1.5.x [2006-09-21]
 o Now the package passes R CMD check without warnings.
@@ -368,6 +379,7 @@ o Added convertCdf() utilizing the new writeCdf().
 o Added trial version of createCel().
 o Added trial version of updateCelUnits().
 
+
 Version: 1.5.4 [2006-08-18]
 o Updated Fusion SDK to version 1.0.7.
 o BUG FIX: The new implementation of updateCel() utilizing raw vectors
@@ -375,6 +387,7 @@ o BUG FIX: The new implementation of updateCel() utilizing raw vectors
   updateCel reveals such errors much easier now.
 o BUG FIX: updateCel() would in some cases give "Error: subscript out of 
   bounds" when writing the last chunk.
+
 
 Version: 1.5.3 [2006-07-24]
 o Improved the speed of updateCel() substantially by first working with
@@ -390,14 +403,17 @@ o Added functional prototype of updateCel() to *update* binary (v4) CEL
   say, normalized probe intensities to a CEL file.  Note that this is
   only a first prototype and functions may change in a future release.
 
+
 Version: 1.5.2 [2006-05-31]
 o Updated Fusion SDK to version 1.0.6.
+
 
 Version: 1.5.1 [2006-05-15]
 o Updated Fusion SDK to version 1.0.5.
 o BUG FIX; Made small changes to the SDK to allow it to compile 
   under Mac OS X with GCC-4.0.3 shipping with R-2.3.0
 o Made changes to the Makevars, _Makefile and cmd_line scripts.
+
 
 Version: 1.5.0 [2006-05-12]
 o Cleaned up and restructured the help pages; several Rd pages are
@@ -415,8 +431,10 @@ o BUG FIX: When argument 'cdf' was a CDF list structure with elements
   because the values of 'type' and 'direction' would be included in the
   extracted list of cell indices.
 
+
 Version: 1.4.0 [2006-04-27]
 o The stable version for Bioconductor 1.8.
+
 
 Version: 1.3.3 [2006-04-15]
 o Updated the Fusion SDK to version 1.0.5 (an unofficial release).
@@ -433,6 +451,7 @@ o KNOWN BUGS: The weird bug as in v1.3.2 remains with the new
   Fusion SDK, R v2.3.0 beta (2006-04-10 r37715) on WinXP.
   Internally readCdfCellIndices() replaces readCdfUnits(),
   but the error is still the same.
+
 
 Version: 1.3.2 [2006-03-28]
 o All cell and unit indices are now starting from one and not
@@ -451,5 +470,6 @@ o KNOWN BUGS: At least on WinXP, heavy use of readCelUnits()
   the crash won't happen so it might be that readCel() does 
   something.  Have not tried on other platforms.
 
+
 Version: 1.3.1
-o
+o ...

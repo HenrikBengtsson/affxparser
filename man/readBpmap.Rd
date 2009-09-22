@@ -50,14 +50,12 @@ readBpmapSeqinfo(filename, seqIndices = NULL, verbose = 0)
   \code{numSequences}. For \code{readBpmapSeqinfo} a list of lists
   containing the sequence info.
 }
-\references{}
+
 \author{Kasper Daniel Hansen <khansen@stat.berkeley.edu>}
-\note{
-}
+
 \seealso{\code{\link{tpmap2bpmap}} for information on how to write
   Bpmap files.}
-\examples{
-}
+
 \keyword{file}
 \keyword{IO}
 

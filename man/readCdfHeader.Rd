@@ -50,7 +50,5 @@ print(header)
   \code{\link{readCdfUnits}()}.
 }
 
-\references{}
-
 \keyword{file}
 \keyword{IO}
