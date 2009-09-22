@@ -29,9 +29,6 @@
 #   An NxK @data.frame or a @vector of length N.
 # }
 #
-# \author{
-# }
-# 
 # @examples "../incl/readCdfDataFrame.Rex"
 # 
 # \seealso{

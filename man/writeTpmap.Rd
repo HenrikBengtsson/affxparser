@@ -28,11 +28,10 @@ tpmap2bpmap(tpmapname, bpmapname, verbose = 0)
 \value{
   These functions are called for their side effects (creating files).
 }
-\references{}
+
 \author{Kasper Daniel Hansen <khansen@stat.berkeley.edu>}
-\note{}
+
 \seealso{\code{\link{readBpmap}}}
-\examples{
-}
+
 \keyword{file}
 \keyword{IO}

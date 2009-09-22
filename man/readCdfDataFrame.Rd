@@ -38,9 +38,6 @@
    An NxK \code{\link[base]{data.frame}} or a \code{\link[base]{vector}} of length N.
  }
 
- \author{
- }
-
  \examples{
 ##############################################################
 if (require("AffymetrixDataTestFiles")) {            # START #
