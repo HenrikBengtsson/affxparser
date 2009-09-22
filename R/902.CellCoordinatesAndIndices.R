@@ -48,8 +48,8 @@
 # 
 #   Although not needed to use the methods in this package, to get the 
 #   cell indices for the cell coordinates or vice versa, see 
-#   @see "affy::xy2indices" and \code{indices2xy()} in the
-#   \pkg{affy} package.
+#   \code{\link[affy::xy2indices]{xy2indices}()} and \code{indices2xy()} 
+#   in the \pkg{affy} package.
 # }
 #
 # @author
