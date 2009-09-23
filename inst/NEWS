@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.17.5 [2009-09-22]
+o Fixed broken link in an Rd file.
+
+
 Version: 1.17.4 [2009-09-21]
 o Added parseDatHeaderString(), which in combination with 
   readCelHeader() can be used to infer the timestamp in the
