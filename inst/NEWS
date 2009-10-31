@@ -1,6 +1,14 @@
 Package: affxparser
 ===================
 
+Version: 1.19.0 [2009-10-27]
+o Devel version bumped because of the new Bioconductor release.
+
+
+Version: 1.18.0 [2009-10-27]
+o Release version bumped because of the new Bioconductor release.
+
+
 Version: 1.17.5 [2009-09-22]
 o Fixed broken link in an Rd file.
 
