@@ -24,7 +24,8 @@
 /*! \file FusionBARData.h This file defines the Fusion BAR Data classes
  */
 
-#include "BARFileData.h"
+#include "file/BARFileData.h"
+//
 using namespace affxbar;
 
 namespace affymetrix_fusion_io

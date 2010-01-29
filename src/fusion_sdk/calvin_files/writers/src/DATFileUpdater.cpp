@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DATFileUpdater.h"
+#include "calvin_files/writers/src/DATFileUpdater.h"
+//
 
 using namespace affymetrix_calvin_io;
 

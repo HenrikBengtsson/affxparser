@@ -24,7 +24,8 @@
 /*! \file AuditFileReader.h This file provides interfaces to read an audit file.
  */
 
-#include "ArrayAudit.h"
+#include "calvin_files/array/src/ArrayAudit.h"
+//
 
 namespace affymetrix_calvin_io
 {

@@ -19,7 +19,8 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "DotProgress.h"
+#include "util/DotProgress.h"
+//
 
 using namespace std;
 

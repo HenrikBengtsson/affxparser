@@ -24,8 +24,13 @@
 /*! \file FileHeaderUpdater.h This file defines a class that updates the FileHeader of an existing file.
  */
 
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/writers/src/DataGroupHeaderUpdater.h"
+#include "calvin_files/writers/src/DataGroupWriter.h"
+//
 #include <fstream>
-#include "FileHeader.h"
+//
+
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
@@ -42,6 +47,8 @@ public:
 
 	/*! Constructor */
 	FileHeaderUpdater();
+		/*! Constructor */
+	FileHeaderUpdater(std::ofstream& ostrm, FileHeader& fileHdr);
 	/*! Destructor */
 	~FileHeaderUpdater();
 
@@ -51,7 +58,27 @@ public:
 	 *	@param currentHdr A FileHeader with information current in the file.
 	 *	@return Returns true if successful.
 	 */
-	bool Update(std::ofstream& os, FileHeader& updateHdr, FileHeader& currentHdr);
+	bool Update(std::ofstream& ostrm, FileHeader& updateHdr, FileHeader& currentHdr);
+
+	void AppendDataGroupHeader(DataGroupHeader& grpHdr);
+
+	void UpdateDataGroupCount(int32_t count);
+
+	void UpdateLeadDataGroupOffset(u_int32_t pos);
+
+
+private:
+	/*! Open output filestream */
+	std::ofstream* os;
+
+	/*! The data set header */
+	FileHeader* fileHdr;
+
+	void SeekDataGrpCntPosition();
+
+	void SeekLeadDataGrpPosition();
+
+	void SeekVersionPosition();
 
 };
 

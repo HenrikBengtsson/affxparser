@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "checksum.h"
+#include "calvin_files/utils/src/checksum.h"
+//
 
 using namespace affymetrix_calvin_utilities;
 

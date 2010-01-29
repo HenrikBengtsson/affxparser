@@ -19,8 +19,10 @@
 #ifndef _DataGroupHeaderWriter_HEADER_
 #define _DataGroupHeaderWriter_HEADER_
 
+#include "calvin_files/data/src/DataGroupHeader.h"
+//
 #include <fstream>
-#include "DataGroupHeader.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

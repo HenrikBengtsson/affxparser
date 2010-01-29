@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "MMDataSetDataWriter.h"
-#include "DataSetHeaderWriter.h"
-#include "FileOutput.h"
-#include "FileWriteException.h"
+#include "calvin_files/writers/src/MMDataSetDataWriter.h"
+//
+#include "calvin_files/writers/src/DataSetHeaderWriter.h"
+#include "calvin_files/writers/src/FileOutput.h"
+#include "calvin_files/writers/src/FileWriteException.h"
+//
 
 using namespace affymetrix_calvin_io;
 

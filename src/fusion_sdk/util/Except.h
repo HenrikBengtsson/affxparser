@@ -30,8 +30,10 @@
 #ifndef EXCEPT_H
 #define EXCEPT_H
 
+#include <cstring>
 #include<stdexcept>
 #include<string>
+//
 
 /**
  * @brief General purpose exception error for error handling.

@@ -24,13 +24,17 @@
 
 //////////////////////////////////////////////////////////////////////
 
+#include "file/GridCoordinates.h"
+//
 #include "portability/affy-base-types.h"
+//
+#include <cstring>
+#include <fstream>
+#include <string>
+//
 #ifdef sun
 #include <stdint.h>
 #endif
-#include "GridCoordinates.h"
-#include <fstream>
-#include <string>
 
 //////////////////////////////////////////////////////////////////////
 

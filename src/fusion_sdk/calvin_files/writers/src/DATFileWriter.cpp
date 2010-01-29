@@ -16,8 +16,10 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "DATFileWriter.h"
-#include "DATData.h"
+#include "calvin_files/writers/src/DATFileWriter.h"
+//
+#include "calvin_files/data/src/DATData.h"
+//
 
 using namespace affymetrix_calvin_io;
 

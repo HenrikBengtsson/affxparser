@@ -21,11 +21,14 @@
 #ifndef _CHPQuantificationDetectionData_HEADER_
 #define _CHPQuantificationDetectionData_HEADER_
 
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/data/src/ProbeSetQuantificationDetectionData.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <string>
-#include "FileHeader.h"
-#include "GenericData.h"
-#include "AffymetrixBaseTypes.h"
-#include "ProbeSetQuantificationDetectionData.h"
+//
 
 namespace affymetrix_calvin_io
 {

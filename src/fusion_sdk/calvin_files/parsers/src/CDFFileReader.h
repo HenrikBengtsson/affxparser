@@ -25,10 +25,13 @@
  */
 
 //#include "FileException.h"
-#include "CDFData.h"
 //#include "DataGroupReader.h"
-#include <string>
+#include "calvin_files/data/src/CDFData.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // dont show warnings about throw keyword on function declarations.

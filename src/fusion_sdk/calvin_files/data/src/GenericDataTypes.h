@@ -24,12 +24,16 @@
 /*! \file GenericDataTypes.h Defines constants for each specific data file type.
  */
 
-#include "AffymetrixGuid.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
 
 namespace affymetrix_calvin_data
 {
 /*! Defines an identifier for the scan acquisition data file. */
 #define SCAN_ACQUISITION_DATA_TYPE affymetrix_calvin_utilities::AffymetrixGuidType("affymetrix-calvin-scan-acquisition")
+
+/*! Defines an identifier for the scan acquisition data file. */
+#define MULTI_SCAN_ACQUISITION_DATA_TYPE affymetrix_calvin_utilities::AffymetrixGuidType("affymetrix-calvin-multi-scan-acquisition")
 
 /*! Defines an identifier for the intensity data file. */
 #define INTENSITY_DATA_TYPE affymetrix_calvin_utilities::AffymetrixGuidType("affymetrix-calvin-intensity")

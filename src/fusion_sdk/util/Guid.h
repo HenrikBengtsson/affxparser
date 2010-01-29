@@ -19,17 +19,41 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#ifndef _Guid_HEADER_
-#define _Guid_HEADER_
+#ifndef _UTIL_GUID_H_
+#define _UTIL_GUID_H_
 
-/*! \file Guid.h This file provides functions for creating globally unique identifiers.
- */
+/// @file Guid.h This file provides functions for creating globally unique identifiers.
 
-#include <string>
+#include "apt/apt.h"
+//
+#include <cstring>
 #include <list>
+#include <string>
+//
+
+///
+/// RFC4122 v4  Guid => 09fdee5a-b19e-4101-0668-0840519ad701
+/// Classic APT Guid => 0000007361-1232759575-1336980168-0774759233-0407464966
+///
+/// The format of the guids affxutil::GenerateNewGuid() will make.
+/// Comment it out for the old format.
+#define AFFY_GUID_FORMAT_RFC4122 1
+
+/// The env var to read the seed to srand from on unix.
+/// This is handy for debugging.
+#define AFFY_DEBUG_SRAND_SEED_ENVVAR "APT_DEBUG_SRAND_SEED"
+
 
 namespace affxutil
 {
+  /// @brief     Ensure that srand has been seeded.
+  ///            Safe to call multiple times.
+  void ensure_srand_seeded();
+  
+  /// @brief     Seed srand with data from the system env
+  ///            Or from 'APT_DEBUG_SRAND_SEED' on unix.
+  ///            It will always set the srand seed when called.
+  void affy_seed_srand();
 
 /*! The GUID type */
 typedef std::string GuidType;
@@ -38,7 +62,8 @@ typedef std::string GuidType;
 typedef std::list<GuidType> GuidTypeList;
 
 /*! This class provides functions for creating globally unique identifiers. */
-class Guid
+/// @todo: Why do we need GuidType and this class?
+class APTLIB_API Guid
 {
 public:
 	/*! Constructor */
@@ -56,4 +81,4 @@ public:
 
 };
 
-#endif // _Guid_HEADER_
+#endif // _UTIL_GUID_H_

@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionSMDData.h"
+#include "calvin_files/fusion/src/FusionSMDData.h"
+//
 
 using namespace affymetrix_fusion_io;
 

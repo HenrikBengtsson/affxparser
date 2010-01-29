@@ -24,8 +24,10 @@
 /*! \file ParameterFileData.h This file provides definitions for data in a parameter file.
  */
 
-#include <string>
+#include <cstring>
 #include <list>
+#include <string>
+//
 
 namespace affymetrix_calvin_parameter
 {

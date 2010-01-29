@@ -22,15 +22,18 @@
 
 /*! \file CopyNumberResultWriter.h Defines classes which provides a wrapper to writing a single copy number file of the Command Console format. */
 
-#include "ProbeSetMultiDataData.h"
-#include "ParameterNameValueType.h"
-#include "FusionCELData.h"
-#include "CalvinCHPMultiDataFileWriter.h"
-#include "CalvinCHPMultiDataFileBufferWriter.h"
-#include "ColumnInfo.h"
+#include "calvin_files/data/src/ColumnInfo.h"
+#include "calvin_files/data/src/ProbeSetMultiDataData.h"
+#include "calvin_files/fusion/src/FusionCELData.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/writers/src/CalvinCHPMultiDataFileBufferWriter.h"
+#include "calvin_files/writers/src/CalvinCHPMultiDataFileWriter.h"
+//
+#include <cstring>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
+//
 
 /*! This class provides a wrapper to writing a single copy number file of the Command Console format. */
 class CopyNumberResultWriter

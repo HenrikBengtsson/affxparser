@@ -24,9 +24,11 @@
 /*! \file FileUtils.h This file provides file utilities.
  */
 
-#include <string>
-#include <list>
+#include <cstring>
 #include <fstream>
+#include <list>
+#include <string>
+//
 
 namespace affymetrix_calvin_utilities
 {
@@ -73,6 +75,12 @@ public:
 	 * @return True if the file was deleted.
 	 */
 	static bool RemoveFile(const char *fileName);
+
+	/*! Deletes a file.
+	 * @param path The name of the path to delete.
+	 * @return True if the path was deleted.
+	 */
+	static void RemovePath(const char *path);
 };
 
 };

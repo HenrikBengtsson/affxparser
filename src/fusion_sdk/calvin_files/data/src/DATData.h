@@ -22,11 +22,14 @@
 /*! \file DATData.h This file defines a data container class for DAT data.
  */
 
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/Coords.h"
+//
+#include <cstring>
 #include <string>
-#include "FileHeader.h"
-#include "GenericData.h"
-#include "Coords.h"
-#include "AffymetrixBaseTypes.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

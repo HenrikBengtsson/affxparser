@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionBPMAPData.h"
+#include "calvin_files/fusion/src/FusionBPMAPData.h"
+//
 
 using namespace affymetrix_fusion_io;
 

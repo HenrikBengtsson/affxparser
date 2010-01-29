@@ -23,12 +23,16 @@
 /*! \file SAXDttArrayHandlers.h This file provides SAX parsing handles for array files.
  */
 
-#include "DttArrayFileReader.h"
-#include <string>
-#include <map>
-#include <xercesc/sax/SAXException.hpp>
-#include <xercesc/sax/HandlerBase.hpp>
+#include "file/DttArrayFileReader.h"
+//
 #include <xercesc/sax/AttributeList.hpp>
+#include <xercesc/sax/HandlerBase.hpp>
+#include <xercesc/sax/SAXException.hpp>
+//
+#include <cstring>
+#include <map>
+#include <string>
+//
 
 namespace affymetrix_dttarray
 {

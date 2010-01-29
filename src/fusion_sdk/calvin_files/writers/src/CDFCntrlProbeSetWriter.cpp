@@ -16,7 +16,8 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "CDFCntrlProbeSetWriter.h"
+#include "calvin_files/writers/src/CDFCntrlProbeSetWriter.h"
+//
 
 using namespace affymetrix_calvin_io;
 

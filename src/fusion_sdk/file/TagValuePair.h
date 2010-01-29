@@ -24,9 +24,11 @@
  */
 
 
+#include <cstring>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
+//
 
 /*! Defines a name/value parameter. */
 typedef struct _TagValuePairType

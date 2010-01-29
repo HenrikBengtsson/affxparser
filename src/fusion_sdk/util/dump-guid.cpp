@@ -19,16 +19,24 @@
 //
 ////////////////////////////////////////////////////////////////
 
+//
+#include "util/Guid.h"
+//
+#include <cstdlib>
+//
+#ifndef WIN32
 #include <unistd.h>
-#include "Guid.h"
+#endif
 
 int
 main(int argc,char* argv[])
 {
   //
+#ifndef WIN32
   printf("time =%10d\n",(int)time(NULL) );
   printf("pid  =%10d\n",(int)getpid()   );
   printf("host =%10d\n",(int)gethostid());
+#endif
   affxutil::Guid guidmaker;
   affxutil::GuidType guid;  
 
@@ -41,5 +49,3 @@ main(int argc,char* argv[])
     printf("%2d : %s\n",i,guid.c_str());
   }
 }
-
-  

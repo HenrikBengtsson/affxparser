@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionPSIData.h"
+#include "calvin_files/fusion/src/FusionPSIData.h"
+//
 
 using namespace affymetrix_fusion_io;
 

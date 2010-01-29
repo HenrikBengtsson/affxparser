@@ -19,9 +19,11 @@
 #ifndef _CelFileWriter_HEADER_
 #define _CelFileWriter_HEADER_
 
+#include "calvin_files/data/src/CELData.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
 #include <fstream>
-#include "CELData.h"
-#include "GenericFileWriter.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

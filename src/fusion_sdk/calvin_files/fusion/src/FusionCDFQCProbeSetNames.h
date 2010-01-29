@@ -23,8 +23,11 @@
 
 /*! \file FusionCDFQCProbeSetNames.h This file defines the QC probe set names for the GCOS QC probe sets. */
 
+#include "file/CDFFileData.h"
+//
+#include <cstring>
 #include <string>
-#include "CDFFileData.h"
+//
 
 namespace affymetrix_fusion_io
 {

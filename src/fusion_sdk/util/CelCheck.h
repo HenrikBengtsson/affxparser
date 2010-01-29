@@ -29,19 +29,23 @@
 #ifndef CELCHECK_H
 #define CELCHECK_H
 
-#include <string>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <math.h>
+#include "util/RegressionCheck.h"
+#include "util/Util.h"
+#include "util/Verbose.h"
+//
+#include "calvin_files/fusion/src/FusionCELData.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
 #include <algorithm>
-#include <vector>
-#include <set>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
 #include <map>
-#include "Util.h"
-#include "Verbose.h"
-#include "RegressionCheck.h"
-#include "FusionCELData.h"
-#include "StringUtils.h"
+#include <set>
+#include <string>
+#include <sys/stat.h>
+#include <vector>
+//
 
 using namespace std;
 using namespace affymetrix_fusion_io;
@@ -64,35 +68,49 @@ public:
    * @param     diffAllowed
    * @return    
    */
-  CelCheck(std::vector<std::string> &generated,
+  CelCheck(
+           std::vector<std::string> &generated,
            std::vector<std::string> &gold, 
            double eps, 
            const std::string &prefix="affymetrix-", 
            int diffAllowed=0) {
+    m_Name = "CEL-Check";
     m_Generated = generated;
     m_Gold = gold;
     m_Eps = eps;
     m_Prefix = prefix;
     m_DiffAllowed = diffAllowed;
   }
+  CelCheck(std::string &generated,
+	   std::string &gold,
+	   double eps,
+	   const std::string &prefix ="affymetrix-",
+	   int diffAllowed = 0)
+    {
+      m_Generated.push_back(generated);
+      m_Gold.push_back(gold);
+      m_Eps = eps;
+      m_Prefix = prefix;
+      m_DiffAllowed = diffAllowed;
+    }
 
   /** 
    * Check to make sure that two files are the same +/- some epsilon. 
    * @param msg - Fills in an error message if test fails, empty string otherwise.
    * @return - Returns true if files are close enough, false otherwise.
    */
-  bool check(std::string &msg) {
+
+  bool checkFilePair(int genIdx, int goldIdx, std::string &msg)
+  {
     bool success = true;
-    if(m_Generated.size() != m_Gold.size()) {
-      return checkMsg(false, "CelCheck::check() - generated and gold vectors must be same size.",msg);
-    }
-    for(unsigned int i = 0; i < m_Generated.size(); i++) {
-        try {
-            m_Generated[i] = Util::getPathName(m_Generated[i].c_str());
-            m_Gold[i] = Util::getPathName(m_Gold[i].c_str());
-            if(!headersSame(m_Generated[i], m_Gold[i], msg))
+    try {
+			// currently the cel file readers do not appear to like the "\\?\" trick to 
+		    // deal with long paths/filenames. So we set singleFile to false to disable this.
+            m_Generated[genIdx] = Util::convertPathName(m_Generated[genIdx].c_str(),false);
+            m_Gold[goldIdx] = Util::convertPathName(m_Gold[goldIdx].c_str(),false);
+            if(!headersSame(m_Generated[genIdx], m_Gold[goldIdx], msg))
                 success = false;
-            if(!dataSame(m_Generated[i], m_Gold[i], msg)) {
+            if(!dataSame(m_Generated[genIdx], m_Gold[goldIdx], msg)) {
                 success = false;
             }
         } // end try
@@ -109,7 +127,26 @@ public:
         catch(...) {
             success &= checkMsg(false, "Error: Uncaught Exception.",msg);
         }
+
+	return success;
+  }
+
+  bool check(std::string &msg) {
+    bool success = true;
+    if(m_Generated.size() != m_Gold.size()) {
+      return checkMsg(false, "CelCheck::check() - generated and gold vectors must be same size.",msg);
     }
+
+    if(m_Generated.size() == 1 && m_Gold.size() == 1)
+      {
+	success = checkFilePair(0, 0, msg);
+      }
+    else
+      {
+	for(unsigned int i = 0; i < m_Generated.size(); i++) {
+	  success = checkFilePair(i, i, msg);
+	}
+      }
     return success;
   }
 

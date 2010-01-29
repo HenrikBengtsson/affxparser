@@ -17,17 +17,21 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "CELFileWriter.h"
-#include "FileIO.h"
-#include "FileWriter.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
-#include <fstream>
-#include <string.h>
-#include <assert.h>
+#include "file/CELFileWriter.h"
+//
+#include "file/FileIO.h"
+#include "file/FileWriter.h"
+//
 #include <algorithm>
+#include <cassert>
+#include <cstring>
+#include <fstream>
 #include <iostream>
+#include <istream>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
@@ -247,6 +251,20 @@ bool CCELFileWriter::WriteTextCel()
 		length = snprintf(szBuffer,sizeof(szBuffer), "%d\t%d%s", IndexToX(pos->first), IndexToY(pos->first), LINE_SEPARATOR);
 		newCelFile.write(szBuffer, length);
 	}
+
+	// Write the blank modified section.
+	length = snprintf(szBuffer,sizeof(szBuffer), "%s", LINE_SEPARATOR);
+	newCelFile.write(szBuffer, length);
+	length = snprintf(szBuffer,sizeof(szBuffer), "[MODIFIED]%s", LINE_SEPARATOR);
+	newCelFile.write(szBuffer, length);
+	length = snprintf(szBuffer,sizeof(szBuffer), "NumberCells=0%s", LINE_SEPARATOR);
+	newCelFile.write(szBuffer, length);	
+	length = snprintf(szBuffer,sizeof(szBuffer), "CellHeader=X\tY\tORIGMEAN%s", LINE_SEPARATOR);
+	newCelFile.write(szBuffer, length);
+	length = snprintf(szBuffer,sizeof(szBuffer), "%s", LINE_SEPARATOR);
+	newCelFile.write(szBuffer, length);
+
+
 
 	// Close the file and check the status.
 	newCelFile.close();

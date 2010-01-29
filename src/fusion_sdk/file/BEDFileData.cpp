@@ -17,25 +17,25 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "BEDFileData.h"
+//
+#include "file/BEDFileData.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string.h>
+#include <string>
+//
 
 #ifdef _MSC_VER
 #define snprintf _snprintf
+#pragma warning(disable: 4996)
 #endif
-
 
 using namespace std;
 using namespace affxbed;
 
-#ifdef _MSC_VER
-#pragma warning(disable: 4996)
-#endif
-
-
 /*! The tab character. */
 #define TAB "\t"
-
 
 /*
  * Clears any used memory.

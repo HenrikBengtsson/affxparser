@@ -24,7 +24,9 @@
 #ifndef _MessageStream_HEADER_
 #define _MessageStream_HEADER_
 
+#include <cstring>
 #include <string>
+//
 
 /*! Provides a base class definition for streaming back messages to the parent process. */
 class MessageStream

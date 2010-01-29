@@ -29,8 +29,10 @@
 #ifndef _CHPQUANTIFICATIONFILEBUFFERWRITER_HEADER_
 #define _CHPQUANTIFICATIONFILEBUFFERWRITER_HEADER_
 
+#include <cstring>
 #include <string>
 #include <vector>
+//
 
 #define MAX_BUFFER_SIZE				5242880		// 5 MB
 

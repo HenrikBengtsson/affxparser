@@ -24,7 +24,8 @@
 /*! \file AuditFileWriter.h This file provides interfaces to write an audit file.
  */
 
-#include "ArrayAudit.h"
+#include "calvin_files/array/src/ArrayAudit.h"
+//
 
 namespace affymetrix_calvin_io
 {

@@ -16,8 +16,10 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "CalvinCelFileWriter.h"
-#include "CELData.h"
+#include "calvin_files/writers/src/CalvinCelFileWriter.h"
+//
+#include "calvin_files/data/src/CELData.h"
+//
 
 using namespace affymetrix_calvin_io;
 

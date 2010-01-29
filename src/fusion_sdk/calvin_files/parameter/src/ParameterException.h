@@ -21,7 +21,8 @@
 #ifndef _ParameterException_HEADER_
 #define _ParameterException_HEADER_
 
-#include "ExceptionBase.h"
+#include "calvin_files/exception/src/ExceptionBase.h"
+//
 
 /*! \file ParameterException.h This file defines parameter exceptions.
 */

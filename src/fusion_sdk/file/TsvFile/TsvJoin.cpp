@@ -21,11 +21,12 @@
 /// @brief  Class for merging multiple tab separated text files.
 
 //
-#include <algorithm>
+#include "file/TsvFile/TsvJoin.h"
 //
-#include "TsvJoin.h"
 #include "util/Guid.h"
 #include "util/Util.h"
+//
+#include <algorithm>
 
 using namespace std;
 using namespace affx;
@@ -63,7 +64,10 @@ void define_tsvjoin_options(PgOptions* opts)
  *
  *  Errors: throw exception to display help messages, if too few input files.
 */
-tsvJoin::tsvJoin (int argc, char* argv[], const std::string& version, const std::string& cvsId)
+tsvJoin::tsvJoin (int argc,
+                  const char* argv[],
+                  const std::string& version,
+                  const std::string& cvsId)
   : m_Version (version), m_CvsId (cvsId),
   m_CommentLine ("############################################################\n")
 {

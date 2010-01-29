@@ -21,10 +21,12 @@
 #ifndef _CDFCntrlFileWriter_HEADER_
 #define _CDFCntrlFileWriter_HEADER_
 
+#include "calvin_files/data/src/CDFData.h"
+#include "calvin_files/writers/src/CDFCntrlProbeSetWriter.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
 #include <fstream>
-#include "CDFData.h"
-#include "GenericFileWriter.h"
-#include "CDFCntrlProbeSetWriter.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

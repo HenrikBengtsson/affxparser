@@ -23,15 +23,19 @@
 
 /*! \file CalvinCHPDataAdapter.h This file defines the GCOS Fusion CHP Data adapter classes. */
 
-#include "FusionCHPDataAdapterInterface.h"
-#include "CHPData.h"
+#include "calvin_files/data/src/CHPData.h"
+#include "calvin_files/data/src/CHPExpressionEntry.h"
+#include "calvin_files/data/src/CHPGenotypeEntry.h"
+#include "calvin_files/data/src/CHPUniversalEntry.h"
+#include "calvin_files/fusion/src/FusionCHPDataAdapterInterface.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/parsers/src/CHPFileReader.h"
+//
+#include "file/CHPFileData.h"	
+//
+#include <cstring>
 #include <string>
-#include "CHPFileData.h"	
-#include "CHPFileReader.h"
-#include "ParameterNameValueType.h"
-#include "CHPExpressionEntry.h"
-#include "CHPGenotypeEntry.h"
-#include "CHPUniversalEntry.h"
+//
 
 using namespace affymetrix_calvin_io;
 

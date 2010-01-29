@@ -17,8 +17,13 @@
 //
 ////////////////////////////////////////////////////////////////
 
-
-#include "TextFileReader.h"
+//
+#include "calvin_files/parsers/src/TextFileReader.h"
+//
+#include <cstring>
+#include <string.h>
+#include <string>
+//
 
 using namespace affymetrix_calvin_io;
 

@@ -18,9 +18,11 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionCHPGenericData.h"
-#include "FileException.h"
-#include "GenericFileReader.h"
+#include "calvin_files/fusion/src/FusionCHPGenericData.h"
+//
+#include "calvin_files/parsers/src/FileException.h"
+#include "calvin_files/parsers/src/GenericFileReader.h"
+//
 
 
 using namespace affymetrix_fusion_io;

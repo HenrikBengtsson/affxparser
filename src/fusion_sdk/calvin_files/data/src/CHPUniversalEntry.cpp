@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CHPUniversalEntry.h"
+#include "calvin_files/data/src/CHPUniversalEntry.h"
+//
 
 using namespace affymetrix_calvin_io;
 

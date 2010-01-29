@@ -26,8 +26,10 @@
  * @brief  Class for writing signals to a buffer before writing to CHP files.
  */
 
-#include "CHPFileUpdater.h"
-#include "CHPFileBufferWriter.h"
+#include "file/CHPFileBufferWriter.h"
+//
+#include "file/CHPFileUpdater.h"
+//
 
 using namespace affxchpwriter;
 

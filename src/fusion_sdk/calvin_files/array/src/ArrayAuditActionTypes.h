@@ -24,7 +24,8 @@
 /*! \file ArrayAuditActionTypes.h Defines constants for various array file audit actions.
  */
 
-#include "AffymetrixBaseTypes.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
 
 namespace affymetrix_calvin_array
 {

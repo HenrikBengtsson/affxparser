@@ -18,11 +18,14 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataSetHeaderReader.h"
-#include "DataGroupHeader.h"
-#include "FileInput.h"
+#include "calvin_files/parsers/src/DataSetHeaderReader.h"
+//
+#include "calvin_files/data/src/DataGroupHeader.h"
+#include "calvin_files/parsers/src/FileInput.h"
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 using namespace affymetrix_calvin_io;
 

@@ -19,9 +19,10 @@
 #ifndef _DataGroupWriter_HEADER_
 #define _DataGroupWriter_HEADER_
 
-#include "DataGroupHeader.h"
-#include "DataGroupHeaderWriter.h"
-#include "DataSetWriter.h"
+#include "calvin_files/data/src/DataGroupHeader.h"
+#include "calvin_files/writers/src/DataGroupHeaderWriter.h"
+#include "calvin_files/writers/src/DataSetWriter.h"
+//
 
 
 #ifdef _MSC_VER
@@ -45,6 +46,8 @@ public:
 	DataGroupWriter(std::ofstream* o, DataGroupHeader* p);
 
 	~DataGroupWriter();
+
+	std::wstring GetName();
 
 	void WriteHeader();
 

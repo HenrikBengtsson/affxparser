@@ -18,13 +18,16 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionCDFData.h"
-#include "CDFFileReader.h"
-#include "GenericFileReader.h"
-#include "StringUtils.h"
-#include "FileUtils.h"
-#include "FusionCDFQCProbeSetNames.h"
-#include <assert.h>
+#include "calvin_files/fusion/src/FusionCDFData.h"
+//
+#include "calvin_files/fusion/src/FusionCDFQCProbeSetNames.h"
+#include "calvin_files/parsers/src/CDFFileReader.h"
+#include "calvin_files/parsers/src/GenericFileReader.h"
+#include "calvin_files/utils/src/FileUtils.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cassert>
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;
@@ -661,6 +664,56 @@ unsigned short FusionCDFProbeGroupInformation::GetAlleleCode() const
 }
 
 /*
+ * Get the channel.
+ */
+unsigned char FusionCDFProbeGroupInformation::GetChannel() const
+{
+	if (gcosGroup)
+		return gcosGroup->GetChannel();
+	else if (calvinGroup)
+		return calvinGroup->GetChannel();
+	else
+		return 0;
+}
+
+/*
+ * Get the probe replication type.
+ */
+affxcdf::ReplicationType FusionCDFProbeGroupInformation::GetRepType() const
+{
+	if (gcosGroup)
+		return gcosGroup->GetRepType();
+	else if (calvinGroup)
+	{
+		ReplicationType rep = calvinGroup->GetRepType();
+		switch (rep)
+		{
+		case UnknownProbeRepType:
+			return affxcdf::UnknownRepType;
+			break;
+
+		case DifferentProbeRepType:
+			return affxcdf::DifferentRepType;
+			break;
+
+		case MixedProbeRepType:
+			return affxcdf::MixedRepType;
+			break;
+
+		case IdenticalProbeRepType:
+			return affxcdf::IdenticalRepType;
+			break;
+
+		default:
+			return affxcdf::UnknownRepType;
+			break;
+		}
+	}
+	else
+		return affxcdf::UnknownRepType;
+}
+
+/*
  * Retrieve the probe object given the index.
  */
 void FusionCDFProbeGroupInformation::GetCell(int cell_index, FusionCDFProbeInformation & info)
@@ -809,6 +862,14 @@ affxcdf::GeneChipProbeSetType FusionCDFProbeSetInformation::GetProbeSetType()
 
         case ExpressionControl:
             return affxcdf::ExpressionControlProbeSetType;
+            break;
+
+        case Marker:
+			return affxcdf::MarkerProbeSetType;
+            break;
+
+        case MultichannelMarker:
+			return affxcdf::MultichannelMarkerProbeSetType;
             break;
 
 		default:

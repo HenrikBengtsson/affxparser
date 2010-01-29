@@ -24,11 +24,14 @@
 /*! \file ArrayFileWriter.h This file provides interfaces to write an array file.
  */
 
-#include "FileWriteException.h"
-#include "AffymetrixBaseTypes.h"
-#include "ArrayData.h"
-#include <string>
+#include "calvin_files/array/src/ArrayData.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/writers/src/FileWriteException.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {

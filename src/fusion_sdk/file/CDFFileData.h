@@ -34,12 +34,14 @@
 //////////////////////////////////////////////////////////////////////
 
 //
+#include "portability/affy-base-types.h"
+//
+#include <cstring>
 #include <fstream>
 #include <istream>
 #include <string>
 #include <vector>
 //
-#include "portability/affy-base-types.h"
 
 //////////////////////////////////////////////////////////////////////
 
@@ -141,7 +143,10 @@ enum GeneChipProbeSetType
     ExpressionControlProbeSetType,
 
     /*! Polymorphic marker probe set. */
-    MarkerProbeSetType
+    MarkerProbeSetType,
+
+	/*! Multichannel marker probe set. */
+	MultichannelMarkerProbeSetType
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -167,6 +172,30 @@ enum DirectionType
 	 * others have sense direction
 	 */
 	EitherDirection
+};
+
+////////////////////////////////////////////////////////////////////
+
+/*! Defines the type of probe replication of a group   */
+enum ReplicationType
+{
+	/*! Unspecified replication type */
+	UnknownRepType,
+
+	/*! Different
+	 * All probes in the probe group have different sequences 
+	 */
+	DifferentRepType,
+
+	/*! Mixed
+	 * Some probes in the probe group have identical sequences
+	 */
+	MixedRepType,
+
+	/* Identical
+	 * All probes in the probe group have identical sequences
+	 */
+	IdenticalRepType
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -303,6 +332,12 @@ protected:
 	/*! The allele code. */
 	unsigned short m_AlleleCode;
 
+	/*! The channel. */
+	unsigned char m_Channel;
+
+	/*! The probe replication type. */
+	unsigned char m_RepType;
+
 	/*! The number of cells per list (1 or 2 for expression and genotyping, 4 for resequencing). */
 	unsigned char m_NumCellsPerList;
 
@@ -385,6 +420,19 @@ public:
 	 */
 	unsigned short GetAlleleCode() const { return m_AlleleCode; }
 
+	/*! Gets the channel.
+	 * @return The channel.
+	 * This is not applicable to XDA CDF file version 1 and 2.
+	 */
+	unsigned char GetChannel() const { return m_Channel; }
+
+	/*! Gets the probe replication type.
+	 * @return The probe replication type.
+	 * See the ReplicationType enumeration for details
+	 * This is not applicable to XDA CDF file version 1 and 2.
+	 */
+	ReplicationType GetRepType() const { return (ReplicationType) m_RepType; }
+
 	/*! Retrieves the probe object given a zero-based index.
 	 * @param cell_index zero-based index in the probe group to the probe of interest.
 	 * @param info The returned probe data.
@@ -404,6 +452,9 @@ public:
 
 /*! This is the size of the object in a binary CDF file version 2. */
 #define PROBE_GROUP_SIZE_V2 (MAX_PROBE_SET_NAME_LENGTH+4+4+4+4+1+1+2+2)
+
+/*! This is the size of the object in a binary CDF file version 3. */
+#define PROBE_GROUP_SIZE_V3 (MAX_PROBE_SET_NAME_LENGTH+4+4+4+4+1+1+2+2+1+1)
 
 ////////////////////////////////////////////////////////////////////
 

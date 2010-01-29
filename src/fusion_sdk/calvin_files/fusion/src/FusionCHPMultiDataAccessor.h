@@ -20,10 +20,13 @@
 #ifndef _FusionCHPMultiDataAccessor_HEADER_
 #define _FusionCHPMultiDataAccessor_HEADER_
 
+#include <calvin_files/portability/src/AffymetrixBaseTypes.h>
+//
+#include <cstring>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include <AffymetrixBaseTypes.h>
+//
 
 namespace affymetrix_fusion_io
 {

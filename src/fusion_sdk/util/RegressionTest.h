@@ -29,14 +29,19 @@
 #ifndef REGRESSION_TEST_H
 #define REGRESSION_TEST_H
 
-#include <assert.h>
+#include "util/MatrixCheck.h"
+#include "util/MixedFileCheck.h"
+#include "util/RegressionCheck.h"
+#include "util/Util.h"
+#include "util/Verbose.h"
+//
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 #include <string>
-#include <stdlib.h>
-#include "Util.h"
-#include "Verbose.h"
-#include "RegressionCheck.h"
-#include "MatrixCheck.h"
-#include "MixedFileCheck.h"
+//
 
 /**
  * Utility class for helping to do regression testing.
@@ -46,26 +51,42 @@ class RegressionTest {
 public:
 
   /** Constructor. */
-  RegressionTest(const char *generatedFile, const char *goldFile,
-                 double epsilon, const char *command, int rowSkip,
-                 int colSkip, bool matchNames,
-                 int allowedMisMatch) {
+  RegressionTest(const std::string& name,
+                 const std::string& generatedFile, 
+                 const std::string& goldFile,
+                 double epsilon, 
+                 const std::string& command,
+                 int rowSkip,
+                 int colSkip,
+                 bool matchNames,
+                 int allowedMisMatch,
+                 bool negTest = false)
+  {
+    m_Name = name;
     m_Checks.push_back(new MatrixCheck(generatedFile, goldFile, epsilon,
                                        rowSkip, colSkip, matchNames, allowedMisMatch));
     m_CommandStr = command;
-    m_CommandStr = Util::getPathName(m_CommandStr.c_str());
+    m_CommandStr = Util::convertPathName(m_CommandStr,false);
     m_Delete = true;
+    m_NegTest = negTest;
   }
   
-  RegressionTest(const char *command, const std::vector<RegressionCheck *> &fileChecks, bool doDelete=true) {
+  RegressionTest(const std::string& name,
+                 const std::string& command, 
+                 const std::vector<RegressionCheck *>& fileChecks,
+                 bool doDelete=true,
+                 bool negTest = false)
+  {
+    m_Name = name;
     m_CommandStr = command;
-    m_CommandStr = Util::getPathName(m_CommandStr.c_str());
+    m_CommandStr = Util::convertPathName(m_CommandStr,false);
     m_Checks = fileChecks;
     m_Delete = doDelete;
+    m_NegTest = negTest;
   }
 
   ~RegressionTest() {
-    if(m_Delete) {
+    if (m_Delete) {
       for(uint32_t i = 0; i < m_Checks.size(); i++) {
         delete m_Checks[i];
       }
@@ -79,7 +100,11 @@ public:
   bool run() {
     bool success = true;
     assert(m_CommandStr != "");
+
+    time_t startTime = time(NULL);
     int retVal = system(m_CommandStr.c_str());
+    time_t endTime = time(NULL);
+    m_RunTime = endTime - startTime; // convert to ms
     if(retVal == -1) {
       m_Error += ToStr(" Failed to run command: ") + m_CommandStr;
       success = false;
@@ -97,22 +122,90 @@ public:
    */
   bool pass() {
     bool success = true;
+    std::string xmlFile = "JUnitTestResults." + m_Name + ".xml";
+    std::ofstream xmlOut;
+    std::vector<std::string> m_Results(m_Checks.size() + 1);
+
+    if(Util::fileExists(xmlFile))
+        Util::fileRemove(xmlFile);
+
+    int numFailed = 0;
+    int numSkipped = 0;
+    int numPassed = 0;
+
     if(run()) {
+      numPassed++;
+      m_Results[0] = "  <testcase classname=\"" + m_Name + "\" name=\""+ m_Name +".run\" time=\""+ToStr(m_RunTime)+"\"/>\n";
       for(unsigned int i = 0; i < m_Checks.size(); i++) {
         std::string msg;
-        bool currentPass = m_Checks[i]->check(msg);
+        bool currentPass;
+        try {
+            currentPass = m_Checks[i]->check(msg);
+            if(m_Checks[i]->m_NegTest) {
+                currentPass = !currentPass;
+                msg = "test passed, but was not expected to pass";
+            }
+        } 
+        catch(...) {
+            currentPass = false;
+            msg = "unexpected exception thrown";
+        }
         if(!currentPass) {
           m_Error += msg;
           success = false;
+          numFailed++;
+          m_Results[i+1] = 
+                     "  <testcase classname=\"" + m_Name + "\" name=\""+ m_Name + "." + m_Checks[i]->m_Name +"\">\n" +
+                     "      <error message=\"check failed\">\n" + msg +
+                     "      </error>\n" +
+                     "  </testcase>\n";
+        } else {
+          numPassed++;
+          m_Results[i+1] = "  <testcase classname=\"" + m_Name + "\" name=\""+ m_Name + "." + m_Checks[i]->m_Name +"\"/>\n";
         }
       }
     }
     /* failed just running the test. */
     else {
-      success = false;
+      std::string reportMsg;
+      numSkipped = m_Checks.size();
+      if(m_NegTest) {
+        numFailed = 0;
+        numPassed = 1;
+        reportMsg = "test skipped because of expected execution failure -- this test should probably not exist";
+        success = true;
+        m_Results[0] = "  <testcase classname=\"" + m_Name + "\" name=\""+ m_Name +".run\"/>\n";
+      } else {
+        numFailed = 1;
+        numPassed = 0;
+        reportMsg = "test skipped because of unexpected execution failure";
+        success = false;
+        m_Results[0] = "  <testcase classname=\"" + m_Name + "\" name=\""+ m_Name +".run\">\n" +
+                     "      <error message=\"execution failed\">\n" + m_Error + "\n" +
+                     "      </error>\n" +
+                     "  </testcase>\n";
+      }
+      for(int i = 0; i < m_Checks.size(); i++) {
+          m_Results[i+1] = 
+                     "  <testcase classname=\"" + m_Name + "\" name=\""+ m_Name + "." + m_Checks[i]->m_Name +"\">\n" +
+                     "      <skipped message=\"" + reportMsg + "\"/>\n" + 
+                     "  </testcase>\n";
+      }
+
     }
+
+    // Generate xml Junit file
+    xmlOut.open(xmlFile.c_str());
+    xmlOut << "<?xml version=\"1.0\"?>\n";
+    xmlOut << "<testsuite errors=\"0\" skipped=\"" + ToStr(numSkipped) + "\" failures=\"" + ToStr(numFailed) + "\" tests=\"" + ToStr(m_Checks.size() + 1) + "\" name=\"" + m_Name + "\">\n";
+    for(int i=0; i< m_Results.size(); i++)
+        xmlOut << m_Results[i];
+    xmlOut << "</testsuite>\n";
+    xmlOut.close();
+
     return success;
   }
+
 
   /** 
    * Get whatever message was reported. 
@@ -135,14 +228,14 @@ public:
                             const char *hostUrl, std::string &errorMsg) {
     std::string targetPath(targetName);
     std::string localPath(localName);
-    targetPath = Util::getPathName(targetPath.c_str());
-    localPath = Util::getPathName(localPath.c_str());
+    targetPath = Util::convertPathName(targetPath);
+    localPath = Util::convertPathName(localPath);
 #if defined (WIN32)
     errorMsg = "Please copy data in" + targetPath + " to " + localPath;
     return false;
 #else
     /* On unix, if possible try to just link the data as this is quick. */
-    if(Util::directoryReadable(targetPath.c_str())) {
+    if(Util::directoryReadable(targetPath)) {
       int retVal = 0;
       std::string command = ToStr("ln -s ") + targetPath + "  " + localPath;
       retVal = system(command.c_str());
@@ -173,12 +266,17 @@ public:
     return false;
   }
 
+public:
+  std::string m_Name;
+  bool m_NegTest;
+
 private:
   RegressionTest() {}
   std::vector<RegressionCheck *> m_Checks;
   std::string m_CommandStr;     ///< Command that generates the generated file, platform adjusted.
   std::string m_Error;          ///< Any errors generated are stored here.
   bool m_Delete;
+  int64_t m_RunTime;
 };
 
 #endif /* REGRESSIONTEST_H */

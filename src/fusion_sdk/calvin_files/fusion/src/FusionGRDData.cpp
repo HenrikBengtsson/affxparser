@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionGRDData.h"
+#include "calvin_files/fusion/src/FusionGRDData.h"
+//
 
 using namespace affymetrix_fusion_io;
 

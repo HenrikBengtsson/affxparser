@@ -19,19 +19,25 @@
 
 
 
-#include "ArrayFileWriter.h"
-#include "ArrayId.h"
-#include "SAXArrayHandlers.h"
-#include "AffymetrixGuid.h"
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <xercesc/util/PlatformUtils.hpp>
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/framework/LocalFileFormatTarget.hpp>
+#include "calvin_files/writers/src/ArrayFileWriter.h"
+//
+#include "calvin_files/array/src/ArrayId.h"
+#include "calvin_files/parsers/src/SAXArrayHandlers.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/dom/DOMImplementation.hpp>
 #include <xercesc/dom/DOMImplementationLS.hpp>
-#include <xercesc/dom/DOMWriter.hpp>
+#include <xercesc/framework/LocalFileFormatTarget.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/util/XMLString.hpp>
+//
+#include <cstring>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
+//#include <xercesc/dom/DOMWriter.hpp>
 
 using namespace affymetrix_calvin_array;
 using namespace affymetrix_calvin_io;
@@ -123,7 +129,7 @@ public:
 	/*! Destructor */
 	~XMLChConversion() { clear(); }
 	/*! Returns the XML string.
-	 * @Return The XML string.
+	 * @return The XML string.
 	 */
 	const XMLCh *String() const { return str; }
 
@@ -289,12 +295,14 @@ bool ArrayFileWriter::Write(const std::string &fileName, affymetrix_calvin_array
 	DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ToXMLCh(L"LS"));
 	//DOMDocumentType* dt  = impl->createDocumentType(ToXMLCh(ARRAY_FILE_ELEMENT), 0, ToXMLCh(ARRAY_FILE_DTD));
 	DOMDocument* doc = impl->createDocument();
-	doc->setStandalone(true);
+	//doc->setStandalone(true);
 	//doc->appendChild(dt);
 
 	// Create the serializer.
-	DOMWriter *theSerializer = ((DOMImplementationLS*)impl)->createDOMWriter();
-	theSerializer->setEncoding(ToXMLCh(ARRAY_FILE_ENCODING));
+	DOMLSSerializer *theSerializer = ((DOMImplementationLS*)impl)->createLSSerializer();
+	DOMLSOutput     *theOutputDesc = ((DOMImplementationLS*)impl)->createLSOutput();
+	//theSerializer->setEncoding(ToXMLCh(ARRAY_FILE_ENCODING));
+	theOutputDesc->setEncoding(ToXMLCh(ARRAY_FILE_ENCODING));
 
 	// ArrayFile element
 	DOMElement* arrayElement = CreateArrayElement(arrayData, doc, dataTypeIdentifier);
@@ -311,9 +319,10 @@ bool ArrayFileWriter::Write(const std::string &fileName, affymetrix_calvin_array
 	// Write the file.
 	bool status = false;
 	XMLFormatTarget *myFormTarget = new LocalFileFormatTarget(fileName.c_str());
+	theOutputDesc->setByteStream(myFormTarget);
 	try
 	{
-		theSerializer->writeNode(myFormTarget, *doc);
+		theSerializer->write(doc, theOutputDesc);
 		status = true;
 	}
 	catch (...)
@@ -323,6 +332,7 @@ bool ArrayFileWriter::Write(const std::string &fileName, affymetrix_calvin_array
 
 	// Clean up
 	doc->release();
+	theOutputDesc->release();
 	theSerializer->release();
 	delete myFormTarget;
 	XMLPlatformUtils::Terminate();

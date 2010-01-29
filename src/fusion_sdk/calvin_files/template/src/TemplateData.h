@@ -24,10 +24,13 @@
 /*! \file TemplateData.h This file provides interfaces to store information in a template file.
  */
 
-#include "AffymetrixBaseTypes.h"
-#include "AffymetrixGuid.h"
-#include "ParameterNameValueType.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
 #include <string>
+//
 
 namespace affymetrix_calvin_template
 {

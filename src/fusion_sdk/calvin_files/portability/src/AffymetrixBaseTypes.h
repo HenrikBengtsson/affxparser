@@ -67,7 +67,7 @@ typedef unsigned int u_int32_t;
 /*! A 64 bit unsigned number */
 typedef unsigned long long int u_int64_t;
 
-#endif
+#endif // __MINGW32__
 
 #else // WIN32
 
@@ -75,10 +75,8 @@ typedef unsigned long long int u_int64_t;
 #include <sys/types.h>
 
 #ifndef sun
-
 #include <stdint.h>
-
-#else
+#else // sun
 
 /*! An 8 bit unsigned number */
 typedef unsigned char u_int8_t;
@@ -94,7 +92,7 @@ typedef unsigned long long int u_int64_t;
 
 #endif // sun
 
-#endif
+#endif //WIN32
 
 //////////
 

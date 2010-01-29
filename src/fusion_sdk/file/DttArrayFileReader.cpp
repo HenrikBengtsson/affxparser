@@ -17,12 +17,16 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "DttArrayFileReader.h"
-#include "SAXDttArrayHandlers.h"
-#include <xercesc/util/PlatformUtils.hpp>
+#include "file/DttArrayFileReader.h"
+//
+#include "file/SAXDttArrayHandlers.h"
+//
 #include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 using namespace affymetrix_dttarray;
 XERCES_CPP_NAMESPACE_USE;

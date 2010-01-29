@@ -18,12 +18,16 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "ParameterFileReader.h"
-#include "SAXParameterFileHandlers.h"
-#include <xercesc/util/PlatformUtils.hpp>
+#include "calvin_files/parsers/src/ParameterFileReader.h"
+//
+#include "calvin_files/parsers/src/SAXParameterFileHandlers.h"
+//
 #include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;

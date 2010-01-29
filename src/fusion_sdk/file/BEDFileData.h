@@ -22,10 +22,13 @@
 #ifndef _BEDFileData_HEADER_
 #define _BEDFileData_HEADER_
 
-#include "IntervalEntry.h"
-#include "TagValuePair.h"
-#include <string>
+#include "file/IntervalEntry.h"
+#include "file/TagValuePair.h"
+//
+#include <cstring>
 #include <list>
+#include <string>
+//
 
 namespace affxbed
 {

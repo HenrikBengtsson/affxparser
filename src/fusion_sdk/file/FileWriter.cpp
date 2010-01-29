@@ -17,24 +17,25 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-//
-
 //////////////////////////////////////////////////////////////////////
-
 #ifdef _MSC_VER
-#include <winsock2.h>
-#else
+#include "windows.h"
+#endif
+//
+#include "file/FileWriter.h"
+//
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string.h>
+#include <string>
+//
+#ifndef _MSC_VER
 #include <inttypes.h>
 #include <netinet/in.h>
 #include <sys/types.h>
 #endif
-
-// Need to include winsock2.h first, then this
-#include "FileWriter.h"
 
 using namespace std;
 

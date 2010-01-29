@@ -19,11 +19,8 @@
 //
 ////////////////////////////////////////////////////////////////
 
-// 
-// sdk/util/util-meminfo.cpp ---
-// 
-// $Id: util-meminfo.cpp,v 1.8 2008/06/07 00:20:26 awilli Exp $
-// 
+/// @file  util-meminfo.cpp
+/// @brief prints the results of our meminfo functions for testing.
 
 #include "util/Util.h"
 

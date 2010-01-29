@@ -24,8 +24,11 @@
 /*! \file DateTime.h This file provides data structures for holding a date and time.
  */
 
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <string>
-#include "AffymetrixBaseTypes.h"
+//
 
 namespace affymetrix_calvin_utilities
 {

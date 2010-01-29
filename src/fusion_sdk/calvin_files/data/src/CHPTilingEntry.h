@@ -19,9 +19,12 @@
 #ifndef _CHPTilingEntry_HEADER_
 #define _CHPTilingEntry_HEADER_
 
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <string>
 #include <vector>
-#include "AffymetrixBaseTypes.h"
+//
 
 namespace affymetrix_calvin_io
 {

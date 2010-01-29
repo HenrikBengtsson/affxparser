@@ -24,7 +24,9 @@
 /*! \file PATAssignment.h This file provides a type to define the method the probe array type was assigned.
  */
 
+#include <cstring>
 #include <string>
+//
 
 namespace affymetrix_calvin_array
 {

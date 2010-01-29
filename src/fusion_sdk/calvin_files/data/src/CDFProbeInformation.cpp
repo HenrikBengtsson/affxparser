@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CDFProbeInformation.h"
+#include "calvin_files/data/src/CDFProbeInformation.h"
+//
 
 using namespace affymetrix_calvin_io;
 

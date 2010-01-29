@@ -23,14 +23,17 @@
 #ifndef _CDFData_HEADER_
 #define _CDFData_HEADER_
 
-#include <string>
-#include "FileHeader.h"
-#include "GenericData.h"
-#include "CDFProbeSetInformation.h"
-#include "CDFQCProbeSetInformation.h"
-#include "AffymetrixBaseTypes.h"
-#include "AffymetrixParameterConsts.h"
+#include "calvin_files/data/src/CDFProbeSetInformation.h"
+#include "calvin_files/data/src/CDFQCProbeSetInformation.h"
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/parameter/src/AffymetrixParameterConsts.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <map>
+#include <string>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

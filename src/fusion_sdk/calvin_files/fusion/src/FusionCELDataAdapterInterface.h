@@ -21,13 +21,16 @@
 #ifndef _AffymetrixFusionCELDataInterface_HEADER_
 #define _AffymetrixFusionCELDataInterface_HEADER_
 
-#include "FusionTagValuePairType.h"
-#include "ParameterNameValueType.h"
-#include "FusionCoords.h"
-#include "AffymetrixGuid.h"
-#include "GenericData.h"
-#include <string>
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/fusion/src/FusionCoords.h"
+#include "calvin_files/fusion/src/FusionTagValuePairType.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
 #include <list>
+#include <string>
+//
 
 /*! \file FusionCELDataAdapterInterface.h This file defines the interface between
  *	the FusionCELData class and the Calvin and GCOS adapter classes.
@@ -208,6 +211,14 @@ public:
 	 *	\return The intensity value.
 	 */
 	virtual float GetIntensity(int index) = 0;
+
+	/*! @brief  Get a vector of intensities
+   *  @param    index       index of the starting intensity.
+	 *	@param    intensities vector to fill, its size is the count.
+	 *	@return   non-zero on error.
+	 */
+	virtual int GetIntensities(int index, std::vector<float>& intensities) = 0;
+
 	/*! \brief Get intensity by x, y position.
 	 *	\param x X position.
 	 *	\param y Y position.
@@ -294,6 +305,25 @@ public:
 
 	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
 	virtual affymetrix_calvin_io::GenericData *GetGenericData() = 0;
+
+	/*! Returns the list of parameters associated with a data set, empty for GCOS files
+	 * @param setName The data set name
+	 * @return The list of parameters
+	 */
+	virtual affymetrix_calvin_parameter::ParameterNameValueTypeList GetDataSetParameters(const std::wstring &setName) = 0;
+
+	/*! Sets the active data group for a multi-group CEL file. Default is the first group. */
+	virtual void SetActiveDataGroup(const std::wstring &groupName) = 0;
+
+	/*! Is this a multi-color CEL file?
+	 *  @return True if it is multi-color
+	 */
+	virtual bool IsMultiColor() = 0;
+
+	/*! Returns a list of the channel (ie data group) names
+	 *	@return list of channel names
+	 */
+	virtual WStringVector GetChannels() = 0;
 };
 
 }

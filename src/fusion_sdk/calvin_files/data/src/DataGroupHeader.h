@@ -21,9 +21,12 @@
 #ifndef _DataGroupHeader_HEADER_
 #define _DataGroupHeader_HEADER_
 
-#include <string>
+#include "calvin_files/data/src/DataSetHeader.h"
+//
+#include <cstring>
 #include <list>
-#include "DataSetHeader.h"
+#include <string>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
@@ -48,6 +51,8 @@ private:
 	u_int32_t dataSetPos;
 	/*! file position of the next dataGroup */
 	u_int32_t nextGrpPos;
+	/*! file position of the start of the data group header */
+	u_int32_t headerStartFilePos;
 	/*! data dataSets in this dataGroup */
 	DataSetHdrVector dataSetHdrs;
 
@@ -63,12 +68,26 @@ public:
 	int32_t GetDataSetCnt() const;
 	/*!  */
 	void AddDataSetHdr(const DataSetHeader &p);
+
+	/*!Replace a data set header with a new data set header of the same name.
+	 * @param new data set header with the same name as the header it replaces.
+	*/
+	void ReplaceDataSetHdr(const DataSetHeader &p);
+
 	/*!  */
 	DataSetHeader& GetDataSet(int32_t index);
 	/*!  */
 	const DataSetHeader& GetDataSetConst(int32_t index) const;
 	/*!  */
 	void GetDataSetIterators(DataSetHdrIt &begin, DataSetHdrIt &end);
+
+	/*! Set the file position of the start of the DataSet header.
+	 *	The value set here is not written to the file.
+	 */
+	void SetHeaderStartFilePos(u_int32_t pos) { headerStartFilePos = pos; }
+
+	/*! Get the file position of the start of the DataSet header. */
+	u_int32_t GetHeaderStartFilePos() const { return headerStartFilePos; }
 
 /*! Set the file position of the DataSet header.
 *  The value set here is not necessarily the value written to the file.

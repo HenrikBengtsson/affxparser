@@ -18,13 +18,16 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "GenericFileReader.h"
-#include "FileHeaderReader.h"
-#include "DataGroupHeaderReader.h"
-#include "DevelopmentException.h"
-#include "FileInput.h"
+#include "calvin_files/parsers/src/GenericFileReader.h"
+//
+#include "calvin_files/exception/src/DevelopmentException.h"
+#include "calvin_files/parsers/src/DataGroupHeaderReader.h"
+#include "calvin_files/parsers/src/FileHeaderReader.h"
+#include "calvin_files/parsers/src/FileInput.h"
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;

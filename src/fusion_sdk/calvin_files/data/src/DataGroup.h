@@ -24,16 +24,20 @@
 /*! \file DataGroup.h This file provides access to the DataSets in a DataGroup.
  */
 
-#include "AffymetrixBaseTypes.h"
-#include "DataGroupHeader.h"
-#include "DataSet.h"
-#include "DataException.h"
-#include <string>
-#include <fstream>
-
 #ifdef _MSC_VER
 #include <windows.h>
 #endif
+
+#include "calvin_files/data/src/DataException.h"
+#include "calvin_files/data/src/DataGroupHeader.h"
+#include "calvin_files/data/src/DataSet.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
+#include <fstream>
+#include <string>
+//
+
 
 namespace affymetrix_calvin_io
 {

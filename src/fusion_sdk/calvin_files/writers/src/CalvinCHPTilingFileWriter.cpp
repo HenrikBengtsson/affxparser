@@ -16,8 +16,10 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "CalvinCHPTilingFileWriter.h"
-#include "CHPTilingData.h"
+#include "calvin_files/writers/src/CalvinCHPTilingFileWriter.h"
+//
+#include "calvin_files/data/src/CHPTilingData.h"
+//
 
 using namespace affymetrix_calvin_io;
 

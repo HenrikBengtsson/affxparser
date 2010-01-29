@@ -21,7 +21,8 @@
 #ifndef _InterpretationException_HEADER_
 #define _InterpretationException_HEADER_
 
-#include "ExceptionBase.h"
+#include "calvin_files/exception/src/ExceptionBase.h"
+//
 
 /*! \file InterpretationException.h This file defines exceptions that are the result 
  *  of the system not being able to interpret input.

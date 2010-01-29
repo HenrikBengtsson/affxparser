@@ -18,11 +18,14 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionArrayFileReader.h"
-#include "EXPFileData.h"
-#include "ArrayFileReader.h"
-#include "DttArrayFileReader.h"
-#include "StringUtils.h"
+#include "calvin_files/fusion/src/FusionArrayFileReader.h"
+//
+#include "calvin_files/parsers/src/ArrayFileReader.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include "file/DttArrayFileReader.h"
+#include "file/EXPFileData.h"
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_array;

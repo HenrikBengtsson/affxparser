@@ -31,10 +31,13 @@
 #ifndef VERBOSEERRHANDLER_H
 #define VERBOSEERRHANDLER_H
 
+#include "util/ErrHandler.h"
+#include "util/Except.h"
+#include "util/Verbose.h"
+//
+#include <cstring>
 #include <string>
-#include "ErrHandler.h"
-#include "Verbose.h"
-#include "Except.h"
+//
 
 /**
  * @brief Basic error handler that prints to cerr and dies by either throwing an

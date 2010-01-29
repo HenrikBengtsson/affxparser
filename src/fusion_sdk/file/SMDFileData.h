@@ -23,9 +23,12 @@
 #ifndef _SMDFILEDATA_H_
 #define _SMDFILEDATA_H_
 
-#include "IniFile.h"
-#include <vector>
+#include "file/IniFile.h"
+//
+#include <cstring>
 #include <string>
+#include <vector>
+//
 
 
 namespace affxsmd

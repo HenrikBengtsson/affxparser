@@ -18,9 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataSetHeader.h"
-#include "FileHeader.h"
+#include "calvin_files/data/src/DataSetHeader.h"
+//
+#include "calvin_files/data/src/FileHeader.h"
+//
 #include <algorithm>
+//
 
 using namespace affymetrix_calvin_io;
 
@@ -38,11 +41,16 @@ void DataSetHeader::Clear()
 {
 	rowCount = 0;
 	name.clear();
-	nameValParams.clear();
+	ClearNameValueParameters();
 	columnTypes.clear();
 	headerStartFilePos = 0;
 	dataStartFilePos = 0;
 	nextSetFilePos = 0;
+}
+
+void DataSetHeader::ClearNameValueParameters()
+{
+	nameValParams.clear();
 }
 
 int32_t DataSetHeader::GetDataSize() const
@@ -82,6 +90,12 @@ void DataSetHeader::AddNameValParam(const ParameterNameValueType &p)
 }
 
 void DataSetHeader::GetNameValIterators(ParameterNameValueTypeConstIt &begin, ParameterNameValueTypeConstIt &end) const
+{
+	begin = nameValParams.begin();
+	end = nameValParams.end();
+}
+
+void DataSetHeader::GetNameValIterators(ParameterNameValueTypeIt &begin, ParameterNameValueTypeIt &end)
 {
 	begin = nameValParams.begin();
 	end = nameValParams.end();
@@ -176,7 +190,6 @@ ParameterNameValueTypeConstIt DataSetHeader::FindNameValParam(const ParameterNam
 	ParameterNameValueTypeConstIt begin, end;
 	begin = nameValParams.begin();
 	end = nameValParams.end();
-
 	ParameterNameValueTypeConstIt ii = std::find(begin, end, p);
 	if (ii != end)
 	{

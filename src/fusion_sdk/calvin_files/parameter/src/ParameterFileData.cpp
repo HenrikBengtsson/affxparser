@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "ParameterFileData.h"
+#include "calvin_files/parameter/src/ParameterFileData.h"
+//
 
 using namespace affymetrix_calvin_parameter;
 

@@ -24,9 +24,12 @@
 /*! \file FileInput.h This file provides functions for reading atom data items from a file or stream.
  */
 
-#include "AffymetrixBaseTypes.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <fstream>
 #include <string>
+//
 
 namespace affymetrix_calvin_io
 {

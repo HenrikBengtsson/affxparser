@@ -23,7 +23,8 @@
 /*! \file CELFileWriter.h This file provides CEL file writing capabilities.
  */
 
-#include "CELFileData.h"
+#include "file/CELFileData.h"
+//
 
 namespace affxcel
 {

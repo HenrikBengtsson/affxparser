@@ -24,10 +24,12 @@
 /*! \file MMDataSetDataWriter.h This file defines a class that writes the data section of a DataSet using Windows memory-mapping.
  */
 
+#include "calvin_files/data/src/DataSetHeader.h"
+#include "calvin_files/data/src/MemMapFile.h"
+#include "calvin_files/writers/src/DataSetHeaderWriter.h"
+//
 #include <fstream>
-#include "MemMapFile.h"
-#include "DataSetHeader.h"
-#include "DataSetHeaderWriter.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FileOutput.h"
-#include "FileHeaderUpdater.h"
-#include "GenericDataHeaderUpdater.h"
-#include "ParameterNameValueType.h"
+#include "calvin_files/writers/src/GenericDataHeaderUpdater.h"
+//
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/writers/src/FileHeaderUpdater.h"
+#include "calvin_files/writers/src/FileOutput.h"
+//
 
 using namespace std;
 using namespace affymetrix_calvin_io;

@@ -24,9 +24,11 @@
 #ifndef _OutputMessageStream_HEADER_
 #define _OutputMessageStream_HEADER_
 
-#include "MessageStream.h"
-#include <ostream>
+#include "util/MessageStream.h"
+//
 #include <iostream>
+#include <ostream>
+//
 
 /*! Provides a base class definition for streaming back messages to the parent process. */
 class OutputMessageStream : public MessageStream

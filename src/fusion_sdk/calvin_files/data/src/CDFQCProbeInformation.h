@@ -24,8 +24,9 @@
 /*! \file CDFQCProbeInformation.h This file defines the CDFQCProbeInformation class.
  */
 
-#include "DataSet.h"
-#include "AffymetrixBaseTypes.h"
+#include "calvin_files/data/src/DataSet.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
 
 namespace affymetrix_calvin_io
 {

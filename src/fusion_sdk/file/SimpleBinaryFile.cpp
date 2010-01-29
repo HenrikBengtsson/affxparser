@@ -17,9 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "SimpleBinaryFile.h"
-#include "FileWriter.h"
-#include "FileIO.h"
+#include "file/SimpleBinaryFile.h"
+//
+#include "file/FileIO.h"
+#include "file/FileWriter.h"
+//
 
 SimpleBinaryFile::SimpleBinaryFile()
 {

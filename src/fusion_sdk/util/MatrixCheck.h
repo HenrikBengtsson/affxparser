@@ -28,12 +28,15 @@
 #ifndef MATRIXCHECK_H
 #define MATRIXCHECK_H
 
-#include <assert.h>
+#include "util/RegressionCheck.h"
+#include "util/Util.h"
+#include "util/Verbose.h"
+//
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <string>
-#include <stdlib.h>
-#include "Util.h"
-#include "Verbose.h"
-#include "RegressionCheck.h"
+//
 
 /**
  * Class for testing that two files are the same +/- some
@@ -49,7 +52,7 @@ public:
    * 
    * @param generated - File created by application being tested.
    * @param gold - File believed to be "truth"
-   * @param eps - Maximum abosolute difference from truth acceptable.
+   * @param eps - Maximum absolute difference from truth acceptable.
    * @param rowSkip - Number of rows to skip before comparing.
    * @param colSkip - Number of columns to skip before comparing.
    * @param matchNames - Should we try to match the names using
@@ -57,24 +60,32 @@ public:
    *                     necessarily in same order.
    * @param allowedMisMatch - How many can we get wrong before failing?
    */
-  MatrixCheck(const std::string &generated, const std::string &gold, double eps, 
-            int rowSkip, int colSkip, bool matchNames, unsigned int allowedMisMatch) :
+  MatrixCheck(
+                const std::string &generated, 
+                const std::string &gold, 
+                double eps, 
+                int rowSkip, 
+                int colSkip, 
+                bool matchNames, 
+                unsigned int allowedMisMatch) :
     m_Generated(generated), m_Gold(gold), m_Epsilon(eps),
     m_RowSkip(rowSkip), m_ColSkip(colSkip), m_MatchNames(matchNames),
-    m_AllowedMisMatch(allowedMisMatch) {}
+    m_AllowedMisMatch(allowedMisMatch) { 
+        m_Name = Util::fileRoot(generated);
+    }
 
   /** 
    * Check to make sure that two files are the same +/- some epsilon. 
    * @param msg - Fills in an error message if test fails, empty string otherwise.
    * @return - Returns true if files are close enough, false otherwise.
    */
-  bool check(std::string &msg) {
+    bool check(std::string &msg) {
     std::string generated(m_Generated), gold(m_Gold);
     msg = "";
     bool success = true;
     // Fix pathnames to work for this platform.
-    generated = Util::getPathName(generated.c_str());
-    gold = Util::getPathName(gold.c_str());
+    generated = Util::convertPathName(generated.c_str());
+    gold = Util::convertPathName(gold.c_str());
     /* Santiy checks. */
     if(!Util::fileReadable(generated.c_str())) {
       msg += "Can't open file: " + ToStr(generated.c_str()) + " to read.";

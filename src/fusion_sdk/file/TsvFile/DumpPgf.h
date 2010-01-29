@@ -21,16 +21,19 @@
 #define DUMP_PGF_H
 
 //
-#include <assert.h>
+#include "file/TsvFile/SequentialClfFile.h"
+#include "file/TsvFile/TsvFile.h"
+//
+#include "util/Err.h"
+#include "util/PgOptions.h"
+#include "util/Util.h"
+//
+#include <cassert>
+#include <cstring>
 #include <ostream>
 #include <string>
 #include <vector>
 //
-#include "file/TsvFile/SequentialClfFile.h"
-#include "file/TsvFile/TsvFile.h"
-#include "util/Err.h"
-#include "util/PgOptions.h"
-#include "util/Util.h"
 
 /**
  * @file  DumpPgf.h
@@ -46,7 +49,9 @@ public:
    * @param cvsId CVS id string.
    */
 
-  dumpPgf (char* argv[], const std::string& version, const std::string& cvsId);
+  dumpPgf (const char* argv[],
+           const std::string& version, 
+           const std::string& cvsId);
 
   /** Destructor.
    */

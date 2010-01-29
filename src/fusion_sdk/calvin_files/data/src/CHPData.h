@@ -21,16 +21,19 @@
 
 /*! \file CHPData.h Defines a class to use as a base class for older CHP file data (expression, genotyping, reseq, universal). */
 
+#include "calvin_files/data/src/CHPBackgroundZone.h"
+#include "calvin_files/data/src/CHPExpressionEntry.h"
+#include "calvin_files/data/src/CHPGenotypeEntry.h"
+#include "calvin_files/data/src/CHPReseqEntry.h"
+#include "calvin_files/data/src/CHPUniversalEntry.h"
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/Coords.h"
+//
+#include <cstring>
 #include <string>
-#include "FileHeader.h"
-#include "GenericData.h"
-#include "Coords.h"
-#include "AffymetrixBaseTypes.h"
-#include "CHPBackgroundZone.h"
-#include "CHPUniversalEntry.h"
-#include "CHPExpressionEntry.h"
-#include "CHPGenotypeEntry.h"
-#include "CHPReseqEntry.h"
+//
 
 namespace affymetrix_calvin_io
 {

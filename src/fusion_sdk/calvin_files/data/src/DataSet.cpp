@@ -18,11 +18,14 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataSet.h"
-#include "GenericData.h"
-#include "FileInput.h"
-#include <sys/types.h>
+#include "calvin_files/data/src/DataSet.h"
+//
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/parsers/src/FileInput.h"
+//
 #include <sys/stat.h>
+#include <sys/types.h>
+//
 
 using namespace affymetrix_calvin_io;
 
@@ -172,7 +175,7 @@ void DataSet::ReadDataSetUsingStream()
 void DataSet::Close()
 {
 	if (useMemoryMapping)
-		UnmapFile ();
+		UnmapFile();
 	else
 		ClearStreamData();
 }

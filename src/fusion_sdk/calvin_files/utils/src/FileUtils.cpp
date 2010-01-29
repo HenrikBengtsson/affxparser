@@ -17,16 +17,23 @@
 //
 ////////////////////////////////////////////////////////////////
 
+#ifdef _MSC_VER
+#include "windows.h"
+#endif
 
-#include "FileUtils.h"
+#include "calvin_files/utils/src/FileUtils.h"
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 #ifdef _MSC_VER
-#include <windows.h>
+#include <direct.h>
+#define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
 #else
 #include <dirent.h>
 #endif
+
 
 using namespace affymetrix_calvin_utilities;
 using namespace std;
@@ -38,6 +45,9 @@ static string LockFileExtension = ".lock";
  */
 bool FileUtils::Exists(const char *fileName)
 {
+    ///@todo will not correctly handle long names passed in
+    ///      with leading "\\?\". Such files can exist, but
+    ///      will fail this check.
 	struct stat st;
 	return (stat(fileName, &st) == 0);
 }
@@ -156,3 +166,81 @@ list<string> FileUtils::ListFiles(const char *pathName, const char *ext)
 
 	return files;
 }
+
+/* Deletes a file. */
+void FileUtils::RemovePath(const char *path)
+{
+	list<string> files;
+	string basePath = path;
+	if (basePath.length() > 0)
+	{
+		if (basePath[basePath.length()-1] != '\\' && basePath[basePath.length()-1] != '/')
+		{
+			basePath += "/";
+		}
+	}
+
+#ifdef _MSC_VER
+
+	WIN32_FIND_DATA findData;
+	string search = basePath + "*.*";
+	HANDLE hHandle = FindFirstFile(search.c_str(), &findData);
+	BOOL bFound = (hHandle != INVALID_HANDLE_VALUE);
+	while (bFound)
+	{
+		string fileName = findData.cFileName;
+		if (fileName != "." && fileName != "..")
+		{
+			string filePath = basePath + findData.cFileName;
+			if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+			{
+				FileUtils::RemoveFile(filePath.c_str());
+			}
+			else
+			{
+				FileUtils::RemovePath(filePath.c_str());
+			}
+		}
+
+		// Find the next file.
+		bFound = ::FindNextFile(hHandle, &findData);
+	}
+	::FindClose(hHandle);
+	_rmdir(path);
+
+#else
+
+	struct stat st;
+	DIR *dirp = opendir(path);
+	struct dirent *dp;
+	bool cont = (dirp != NULL);
+	while (cont)
+	{
+		dp = readdir(dirp);
+		if (dp)
+		{
+			string fileName = dp->d_name;
+			if (fileName != "." && fileName != "..")
+			{
+				string filePath = basePath + dp->d_name;
+				stat(filePath.c_str(), &st);
+				if ((st.st_mode & S_IFDIR) != S_IFDIR)
+				{
+					FileUtils::RemoveFile(filePath.c_str());
+				}
+				else
+				{
+					FileUtils::RemovePath(filePath.c_str());
+				}
+			}
+		}
+		cont = (dp != NULL && dirp != NULL);
+	}
+	if (dirp)
+		closedir(dirp);
+	rmdir(path);
+
+#endif
+
+}
+

@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionCDFQCProbeSetNames.h"
+#include "calvin_files/fusion/src/FusionCDFQCProbeSetNames.h"
+//
 
 using namespace affxcdf;
 using namespace affymetrix_fusion_io;

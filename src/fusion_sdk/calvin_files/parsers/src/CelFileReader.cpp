@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CelFileReader.h"
-#include "GenericFileReader.h"
+#include "calvin_files/parsers/src/CelFileReader.h"
+//
+#include "calvin_files/parsers/src/GenericFileReader.h"
+//
 
 using namespace affymetrix_calvin_io;
 

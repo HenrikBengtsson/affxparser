@@ -18,13 +18,17 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "GenericData.h"
-#include "DataGroupHeaderReader.h"
-#include "DataSetHeaderReader.h"
-#include "ArrayId.h"
-#include <string>
-#include <iterator>
+#include "calvin_files/data/src/GenericData.h"
+//
+#include "calvin_files/array/src/ArrayId.h"
+#include "calvin_files/parsers/src/DataGroupHeaderReader.h"
+#include "calvin_files/parsers/src/DataSetHeaderReader.h"
+//
 #include <algorithm>
+#include <cstring>
+#include <iterator>
+#include <string>
+//
 
 using namespace affymetrix_calvin_io;
 

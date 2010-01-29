@@ -24,8 +24,10 @@
 /*! \file GenericDataHeaderReader.h This file provides methods to read a generic data file header.
  */
 
-#include "GenericDataHeader.h"
+#include "calvin_files/data/src/GenericDataHeader.h"
+//
 #include <fstream>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // dont show warnings about throw keyword on function declarations.

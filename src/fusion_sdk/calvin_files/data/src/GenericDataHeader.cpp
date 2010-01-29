@@ -18,9 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "AffymetrixParameterConsts.h"
-#include "GenericDataHeader.h"
+#include "calvin_files/data/src/GenericDataHeader.h"
+//
+#include "calvin_files/parameter/src/AffymetrixParameterConsts.h"
+//
 #include <algorithm>
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;

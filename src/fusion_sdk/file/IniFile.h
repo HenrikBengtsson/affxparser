@@ -29,12 +29,14 @@
 #pragma warning(disable: 4786) // identifier was truncated in the debug information
 #endif
 
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <functional>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
-#include <fstream>
-#include <algorithm>
-#include <functional>
+//
 
 /*! This class provides storages and parsing capabilities of INI files. */
 class CIniFile

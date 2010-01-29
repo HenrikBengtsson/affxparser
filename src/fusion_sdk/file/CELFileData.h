@@ -28,22 +28,23 @@
 #define CELFILE_USE_STDSTREAM 1
 #endif
 
+//////////
+// uint32_t and friends
 #include "file/FileIO.h"
-
+#include "file/GridCoordinates.h"
+#include "file/TagValuePair.h"
+//
+#include "portability/affy-base-types.h"
+//
+#include <cstring>
+#include <map>
+#include <string>
+//
 #ifdef CELFILE_USE_ZLIB
 #ifndef FILEIO_WITH_ZLIB
 #error CELFILE_USE_ZLIB requires FILEIO_WITH_ZLIB
 #endif
 #endif
-
-//////////
-
-#include <map>
-#include <string>
-//
-#include "TagValuePair.h"
-#include "GridCoordinates.h"
-
 #if defined (__CYGWIN__)
 #include <stdio.h>
 #include <unistd.h>
@@ -56,24 +57,20 @@
 #define PAGE_SIZE	(1UL << PAGE_SHIFT)
 ///  Set page mask value for memory mapping used under CYGWIN
 #define PAGE_MASK	(~(PAGE_SIZE-1))
-
 #elif defined (_MSC_VER)
 #include <windows.h>
 ///  Structure alignment requirement for g++
 ///  @remark Structure alignment for Visual C++ is included in #pragma
 #define STRUCT_ALIGNMENT
-
 #elif defined (__APPLE__)
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/user.h>
-
 ///  Structure alignment requirement for g++
 ///  @remark Structure alignment for Mac OS X is included in #pragma
 #define STRUCT_ALIGNMENT
-
 #else // UNIX 
 #include <stdio.h>
 #include <unistd.h>
@@ -83,9 +80,6 @@
 ///  Structure alignment requirement for g++
 #define STRUCT_ALIGNMENT __attribute__ ((packed))
 #endif
-
-// uint32_t and friends
-#include "portability/affy-base-types.h"
 
 namespace affxcel
 {
@@ -895,6 +889,12 @@ public:
 	 * @return The CEL file intensity.
 	 */
 	float GetIntensity(int index);
+
+  /// @brief     Get a vector of intensities with one call.
+  /// @param     index         starting index
+  /// @param     intensities   vector to fill.
+  /// @return    non-zero on error
+	int GetIntensities(int index,std::vector<float>& intensities);
 
 	/*! Retrieves a CEL file intensity.
 	 * @param x The X coordinate.

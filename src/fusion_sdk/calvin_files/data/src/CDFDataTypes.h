@@ -37,6 +37,8 @@ enum CDFDataTypeIds {
     CopyNumber,     /*! A copy number probe set. */
     GenotypeControl,   /*! A genotype control probe set. */
     ExpressionControl, /*! An expression control probe set. */
+    Marker,			/*! A polymorphic marker probe set. */
+	MultichannelMarker	/*! A multichannel marker probe set. */
 
 };
 
@@ -54,6 +56,28 @@ enum DirectionType
 
     /*! Either */
     ProbeEitherDirection
+};
+
+/*! Defines the type of probe replication of a group   */
+enum ReplicationType
+{
+	/*! Unspecified replication type */
+	UnknownProbeRepType,
+
+	/*! Different
+	 * All probes in the probe group have different sequences 
+	 */
+	DifferentProbeRepType,
+
+	/*! Mixed
+	 * Some probes in the probe group have identical sequences
+	 */
+	MixedProbeRepType,
+
+	/* Identical
+	 * All probes in the probe group have identical sequences
+	 */
+	IdenticalProbeRepType
 };
 
 }

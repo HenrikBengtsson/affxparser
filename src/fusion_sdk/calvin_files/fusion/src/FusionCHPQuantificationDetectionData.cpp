@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionCHPQuantificationDetectionData.h"
-#include "CHPQuantificationDetectionFileReader.h"
+#include "calvin_files/fusion/src/FusionCHPQuantificationDetectionData.h"
+//
+#include "calvin_files/parsers/src/CHPQuantificationDetectionFileReader.h"
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_exceptions;

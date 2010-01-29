@@ -16,9 +16,11 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "DataGroupWriter.h"
-#include "DataGroupHeaderWriter.h"
-#include "FileWriteException.h"
+#include "calvin_files/writers/src/DataGroupWriter.h"
+//
+#include "calvin_files/writers/src/DataGroupHeaderWriter.h"
+#include "calvin_files/writers/src/FileWriteException.h"
+//
 
 using namespace affymetrix_calvin_io;
 
@@ -31,6 +33,11 @@ DataGroupWriter::DataGroupWriter(std::ofstream* o, DataGroupHeader* p)
 DataGroupWriter::~DataGroupWriter() 
 { 
 	writers.clear();
+}
+
+std::wstring DataGroupWriter::GetName() 
+{ 
+	return dataGroupHdr->GetName();
 }
 
 void DataGroupWriter::WriteHeader()

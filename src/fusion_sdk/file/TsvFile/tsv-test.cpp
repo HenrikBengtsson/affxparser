@@ -3,17 +3,17 @@
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License
+// it under the terms of the GNU Lesser General Public License 
 // (version 2.1) as published by the Free Software Foundation.
-//
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -24,14 +24,15 @@
  */
 
 //
-#include "file/TsvFile/TsvFile.h"
 // include these to check them for parsing errors.
 #include "file/TsvFile/BgpFile.h"
 #include "file/TsvFile/ClfFile.h"
 #include "file/TsvFile/PgfFile.h"
 #include "file/TsvFile/SnpTable.h"
+#include "file/TsvFile/TsvFile.h"
 //
 #include <sstream>
+//
 
 //
 using namespace std;
@@ -137,6 +138,29 @@ check_splitstr()
   assert(strvec.size()==2);
 }
 
+void
+check_escapeString()
+{
+  //printf("check_escapeString()\n");
+
+  // negative controls
+  assert(escapeChar('A')==0);
+  assert(escapeChar('Z')==0);
+  assert(escapeChar('a')==0);
+  assert(escapeChar('z')==0);
+  //
+  assert(escapeChar('\n')=='n');
+  assert(escapeChar('\r')=='r');
+  assert(escapeChar('#')=='#');
+
+  // 
+  assert(escapeString("A",'\\')=="A");
+  assert(escapeString("Z",'\\')=="Z");
+  assert(escapeString("",'\\')=="");
+  assert(escapeString("abc",'\\')=="abc");
+  // postive
+  assert(escapeString("#",'\\')=="\\#");
+}
 
 /// @brief     Check that the column name functions work.
 void
@@ -500,6 +524,8 @@ check_read_table_1()
 
   tsv.openTable("data-table-1.txt");
 
+  assert(tsv.countTotalDataLines()==10);
+
   while (tsv.nextLevel(0)==TSV_OK) {
     int cidx=0;
     //printf("num=%3d: lvl=%3d:",tsv.lineNumber(),tsv.lineLevel());
@@ -703,6 +729,9 @@ check_csv_1()
   rv=tsv.open("./data-test-2.csv");
   assert(rv==TSV_OK);
 
+  //printf("check_csv_1: lines=%d\n",tsv.countTotalDataLines());
+  assert(tsv.countTotalDataLines()==10);
+
   //tsv.dump();
 
   // The first four lines are all variations of "1,2,3"
@@ -894,6 +923,9 @@ void check_write_10()
   for (int i=0;i<10;i++) {
     tsv.set(0,0,i);
     tsv.writeLevel(0);
+    // if you are debugging, you might want to explictly flush the output.
+    // it is not required. Be warned that this slows down the IO.
+    tsv.flush();
   }
   tsv.close();
 }
@@ -962,7 +994,28 @@ void check_read_colvec_1()
   assert(colvec[3]=="404");
   assert(colvec[8]=="909");
 }
- 
+
+void check_read_pgf_1()
+{
+  affx::PgfFile pgf;
+  std::string pgf_file="data-test-1.pgf";
+
+  pgf.open(pgf_file);
+  pgf.rewind();
+  
+  int probe_cnt=0;
+  while (pgf.next_probeset()==affx::TSV_OK) {
+    while (pgf.next_atom()==affx::TSV_OK) {
+      while (pgf.next_probe()==affx::TSV_OK) {
+        probe_cnt++;
+      }
+    }
+  }
+  printf("Pgf file '%s' has %d probes.\n",pgf_file.c_str(),probe_cnt);
+
+  pgf.close();
+}
+
 
 //////////
 
@@ -977,6 +1030,7 @@ main(int argc,char* argv[])
   check_trim();
   check_splitstr();
   check_dequote();
+  check_escapeString();
   //
   check_field_name();
   check_empty();
@@ -1004,6 +1058,8 @@ main(int argc,char* argv[])
   check_write_vec_1();
   //
   check_read_colvec_1();
+  //
+  check_read_pgf_1();
   //
   printf("ok.\n");
 }

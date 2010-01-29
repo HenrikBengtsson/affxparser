@@ -20,7 +20,7 @@
 // 
 // cvs:affy/sdk/file/test-fileio.cpp ---
 // 
-// $Id: test-fileio.cpp,v 1.11 2008/09/17 22:02:18 harley Exp $
+// $Id: test-fileio.cpp,v 1.14 2009/09/25 17:49:00 mspald Exp $
 // 
 // Commentary:
 // * Run the FileIO.cpp though some tests.
@@ -29,17 +29,20 @@
 
 
 //
-#include <fstream>
-#include <iostream>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <sys/types.h>
-//
-#include "portability/affy-base-types.h"
-
 // NOTE: These are cast into "std::fstream"
 #include "file/FileIO.h"
 #include "file/FileWriter.h"
+//
+#include "portability/affy-base-types.h"
+//
+#include <cstdio>
+#include <cstring>
+#include <fstream>
+#include <iostream>
+#include <netinet/in.h>
+#include <string.h>
+#include <sys/types.h>
+//
 
 using namespace std;
 

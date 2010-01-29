@@ -21,9 +21,10 @@
 #ifndef _FusionException_HEADER_
 #define _FusionException_HEADER_
 
-#include "ExceptionBase.h"
+#include "calvin_files/exception/src/ExceptionBase.h"
+//
 
-/*! \file FusionException.h This file defines exceptions from the fusion layer.
+/*! \file fusionexception.h This file defines exceptions from the fusion layer.
  */
 
 namespace affymetrix_fusion_exceptions

@@ -18,10 +18,13 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "GridControlFileReader.h"
-#include "GridControlData.h"
-#include "GenericFileReader.h"
-#include "Parameter.h"
+#include "calvin_files/parsers/src/GridControlFileReader.h"
+//
+#include "calvin_files/parameter/src/Parameter.h"
+#include "calvin_files/parsers/src/GenericFileReader.h"
+//
+#include "file/GridControlData.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_grid_control;

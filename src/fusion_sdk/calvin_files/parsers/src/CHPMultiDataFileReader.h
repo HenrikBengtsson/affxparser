@@ -24,10 +24,13 @@
 /*! \file CHPMultiDataFileReader.h This file provides methods to read a multi data CHP data file.
  */
 
-#include "CHPMultiDataData.h"
-#include "DataGroupReader.h"
-#include <string>
+#include "calvin_files/data/src/CHPMultiDataData.h"
+#include "calvin_files/parsers/src/DataGroupReader.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {

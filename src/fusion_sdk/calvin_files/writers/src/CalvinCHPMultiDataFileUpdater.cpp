@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CalvinCHPMultiDataFileUpdater.h"
+#include "calvin_files/writers/src/CalvinCHPMultiDataFileUpdater.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;

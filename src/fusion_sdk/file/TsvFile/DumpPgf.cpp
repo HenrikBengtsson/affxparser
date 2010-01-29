@@ -3,29 +3,30 @@
 // Copyright (C) 2006 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License
+// it under the terms of the GNU Lesser General Public License 
 // (version 2.1) as published by the Free Software Foundation.
-//
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
 /// @file   DumpPgf.cpp
 /// @brief  Class for dumping information from a pgf and clf file.
 
-#include "DumpPgf.h"
-//
-#include <algorithm>
+#include "file/TsvFile/DumpPgf.h"
 //
 #include "util/Guid.h"
 #include "util/Util.h"
+//
+#include <algorithm>
+//
 
 using namespace std;
 using namespace affx;
@@ -91,7 +92,9 @@ void define_dumppgf_options(PgOptions* opts) {
  *  Errors: throw exception to display help messages, if unsupported
  *  option choices were made.
 */
-dumpPgf::dumpPgf (char* argv[], const std::string& version, const std::string& cvsId)
+dumpPgf::dumpPgf (const char* argv[], 
+                  const std::string& version,
+                  const std::string& cvsId)
   : m_Version (version), m_CvsId (cvsId), m_GetProbeCoordinates (0)
 {
   // Prefer throw() to exit().

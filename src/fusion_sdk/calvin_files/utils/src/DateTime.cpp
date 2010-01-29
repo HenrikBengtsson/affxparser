@@ -18,10 +18,13 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DateTime.h"
-#include "InterpretationException.h"
-#include "StringUtils.h"
-#include <time.h>
+#include "calvin_files/utils/src/DateTime.h"
+//
+#include "calvin_files/exception/src/InterpretationException.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <ctime>
+//
 
 using namespace affymetrix_calvin_utilities;
 using namespace affymetrix_calvin_exceptions;

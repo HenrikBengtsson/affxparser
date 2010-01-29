@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataSetHeaderUpdater.h"
-#include "FileOutput.h"
+#include "calvin_files/writers/src/DataSetHeaderUpdater.h"
+//
+#include "calvin_files/writers/src/FileOutput.h"
+//
 
 using namespace std;
 using namespace affymetrix_calvin_io;
@@ -34,37 +36,36 @@ using namespace affymetrix_calvin_parameter;
 DataSetHeaderUpdater::DataSetHeaderUpdater(std::ofstream& fileStream, DataSetHeader &hdr)
 {
 	os = &fileStream;
-    dsh = &hdr;
+	setHdr = &hdr;
 
-    filePos = hdr.GetHeaderStartFilePos();
-    filePos += sizeof(u_int32_t); // data position
-    filePos += sizeof(u_int32_t); // next data set position
-    filePos += sizeof(int32_t); // name length
-    filePos += (u_int32_t)(WCHAR_T_SIZE*hdr.GetName().length()); // data set name
-    filePos += sizeof(u_int32_t); // #parameters
+	filePos = hdr.GetHeaderStartFilePos();
+	filePos += sizeof(u_int32_t); // data position
+	filePos += sizeof(u_int32_t); // next data set position
+	filePos += sizeof(int32_t); // name length
+	filePos += (u_int32_t)(WCHAR_T_SIZE*hdr.GetName().length()); // data set name
+	filePos += sizeof(u_int32_t); // #parameters
 }
 
 /*
- * Destructor
- */
+* Destructor
+*/
 DataSetHeaderUpdater::~DataSetHeaderUpdater()
 {
 }
 
 /*
- * Update the parameter list.
- */
+* Update the parameter list.
+*/
 bool DataSetHeaderUpdater::UpdateParameter(ParameterNameValueType &nvt)
 {
-    u_int32_t pos = filePos;
-
-	affymetrix_calvin_parameter::ParameterNameValueType param;
-    ParameterNameValueTypeConstIt b;
-    ParameterNameValueTypeConstIt e;
-    dsh->GetNameValIterators(b, e);
-    while (b != e)
-    {
-        param = *b;
+	u_int32_t pos = filePos;
+	ParameterNameValueType param;
+	ParameterNameValueTypeConstIt b;
+	ParameterNameValueTypeConstIt e;
+	setHdr->GetNameValIterators(b, e);
+	while (b != e)
+	{
+		param = *b;
 
 		pos += sizeof(int32_t) + (int32_t)param.GetName().length()*WCHAR_T_SIZE;
 
@@ -72,20 +73,34 @@ bool DataSetHeaderUpdater::UpdateParameter(ParameterNameValueType &nvt)
 		MIMEValue paramMIME = param.GetMIMEValue();
 		MIMEValue nvtMINE = nvt.GetMIMEValue();
 		if (nvt.GetName() == param.GetName() &&
-            nvt.GetParameterType() == param.GetParameterType() &&
-            nvtMINE.Size() == paramMIME.Size())
+			nvt.GetParameterType() == param.GetParameterType() &&
+			nvtMINE.Size() == paramMIME.Size())
 		{
 			os->seekp(pos, std::ios::beg);
 			u_int32_t sz;
 			const void* ptr = nvtMINE.GetValue(sz);
 			FileOutput::WriteBlob(*os, ptr, sz);
-            return true;
+			return true;
 		}
 
-        pos += sizeof(int32_t) + paramMIME.Size();
+		pos += sizeof(int32_t) + paramMIME.Size();
 		pos += sizeof(int32_t) + (int32_t)param.GetMIMEType().size()*WCHAR_T_SIZE;
-        ++b;
+		++b;
 	}
-    return false;
+	return false;
 }
 
+void DataSetHeaderUpdater::SeekNextDataSetPosition()
+{
+	u_int32_t pos = setHdr->GetHeaderStartFilePos();
+	pos += sizeof(u_int32_t); // data position
+	os->seekp(pos, std::ios::beg);
+}
+
+void DataSetHeaderUpdater::UpdateNextDataSetPosition(u_int32_t position)
+{
+	u_int32_t pos = os->tellp();
+	SeekNextDataSetPosition();
+	FileOutput::WriteUInt32(*os, position);
+	os->seekp(pos, std::ios::beg);
+}

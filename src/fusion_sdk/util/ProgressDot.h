@@ -32,12 +32,14 @@
 #define PROGRESSDOT_H
 
 //
+#include "util/ProgressHandler.h"
+//
+#include <cstdio>
+#include <cstring>
 #include <fstream>
 #include <iostream>
-#include <stdio.h>
 #include <string>
 //
-#include "ProgressHandler.h"
 
 /**
  * @brief Prints dots as progress is made.

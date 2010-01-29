@@ -23,9 +23,9 @@
 
 /*! \file FusionCHPTilingData.h This file provides tiling CHP file reading capabilities.*/
 
-#include "FusionCHPData.h"
-#include "CHPTilingData.h"
-#include "CHPTilingData.h"
+#include "calvin_files/data/src/CHPTilingData.h"
+#include "calvin_files/fusion/src/FusionCHPData.h"
+//
 
 namespace affymetrix_fusion_io
 {

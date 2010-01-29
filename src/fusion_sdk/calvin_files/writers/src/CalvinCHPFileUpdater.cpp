@@ -17,12 +17,18 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "CHPMultiDataFileReader.h"
-#include "CalvinCHPFileUpdater.h"
-#include "FileOutput.h"
-#include "FileIO.h"
+#include "calvin_files/writers/src/CalvinCHPFileUpdater.h"
+//
+#include "calvin_files/parsers/src/CHPMultiDataFileReader.h"
+#include "calvin_files/writers/src/FileOutput.h"
+//
+#include "file/FileIO.h"
 #include "util/Err.h"
 #include "util/Util.h"
+//
+#include <cstring>
+#include <string.h>
+//
 
 using namespace std;
 using namespace affymetrix_calvin_io;
@@ -886,6 +892,62 @@ void CalvinCHPFileUpdater::UpdateFamilialSampleEntryBuffer(MultiDataType dataTyp
     m_CHPFile->write(buffer, bufferSize);
     delete[] buffer;
     buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateMultiDataAllelePeaksEntryBuffer(MultiDataType dataType, int rowStart, int bufferEntrySize, const std::vector<char*> &allelePeakEntryBuffer)
+{
+	if (allelePeakEntryBuffer.size() == 0)
+	{
+		return;
+	}
+	// Copy the data to the buffer
+	int bufferSize = bufferEntrySize * (int)allelePeakEntryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+	char *pbuffer = buffer;
+	for (int i=0; i<(int)allelePeakEntryBuffer.size(); i++) 
+	{
+		memcpy(pbuffer, allelePeakEntryBuffer[i], bufferEntrySize);
+		pbuffer += bufferEntrySize;
+	}
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
+}
+
+void CalvinCHPFileUpdater::UpdateMultiDataMarkerABSignalsEntryBuffer(MultiDataType dataType, int rowStart, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+	if (entryBuffer.size() == 0)
+	{
+		return;
+	}
+	// Copy the data to the buffer
+	int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+	char *pbuffer = buffer;
+	for (int i=0; i<(int)entryBuffer.size(); i++) 
+	{
+		memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+		pbuffer += bufferEntrySize;
+	}
+
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
 }
 
 void CalvinCHPFileUpdater::UpdateMetrics(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics)

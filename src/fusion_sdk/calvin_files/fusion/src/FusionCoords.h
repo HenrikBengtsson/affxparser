@@ -24,8 +24,11 @@
 /*! \file FusionCoords.h This file defines the fusion coordinate classes.
  */
 
-#include <string>
+#include <cstring>
 #include <list>
+#include <string>
+#include <vector>
+//
 
 namespace affymetrix_fusion_io
 {

@@ -25,11 +25,15 @@
 
 //////////////////////////////////////////////////////////////////////
 
-#include <string>
-#include <list>
-#include <fstream>
+#include "file/GridControlData.h"
+//
 #include "portability/affy-base-types.h"
-#include "GridControlData.h"
+//
+#include <cstring>
+#include <fstream>
+#include <list>
+#include <string>
+//
 
 //////////////////////////////////////////////////////////////////////
 

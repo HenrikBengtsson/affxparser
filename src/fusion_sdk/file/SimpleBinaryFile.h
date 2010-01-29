@@ -25,9 +25,11 @@
  */
 
 //
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <vector>
+//
 
 /*! Used to create a simple binary file storing a table of data. */
 class SimpleBinaryFile

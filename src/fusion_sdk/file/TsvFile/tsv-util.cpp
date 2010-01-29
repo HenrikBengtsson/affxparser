@@ -3,33 +3,108 @@
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License
+// it under the terms of the GNU Lesser General Public License 
 // (version 2.1) as published by the Free Software Foundation.
-//
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
 /// @file   tsv-util.cpp
 /// @brief  collection of utilities for working with tsv-format files.
 
+/**
+\page tsv-util MANUAL: tsv-tuil (NON-OFFICIAL-RELEASE)
+
+<a name="options">
+\section manualOptions Options:
+
+<!-- Do not edit this verbatim section.
+     It will be replaced automatically w/ the results
+     of running this program with the -h option
+     --->
+\verbatim
+Utility functions for tsv files.
+
+
+
+options:
+   -h, --help                           This message. [default 'false'] 
+   -v, --verbose verbose level [default '0'] 
+     --headers INFILE = Display the headers of the CSV/TSV
+                          file. [default 'false'] 
+     --linecount INFILE = count the lines of data in the
+                          file. [default 'false'] 
+     --to-csv INFILE OUTFILE = Covert the file to CVS
+                          format. [default 'false'] 
+     --to-tsv INFILE OUTFILE = Convert the file to TSV
+                          format. [default 'false'] 
+     --paste OUTFILE FILELIST = Paste the files of
+                          filelist into outfile. [default ''] 
+     --seg-lines Segment size [default '0'] 
+     --key-col COLUMN_NAME = Column name which must be
+                          present and equal in all inputs files, if
+                          set. [default ''] 
+     --max-paste-fh CNT = Max number of files to paste in one
+                          pass. [default '900'] 
+     --benchmark Number of doubles to write for benchmarking
+                          output. [default '0'] 
+     --output Output file for some operations. [default
+                          ''] 
+     --diff Compare headers and data of two tsv
+                          formatted files. There are a number of
+                          options to control printing of the diff.
+                          [default 'false'] 
+     --diff-headers BOOL = Compare the headers of the files.
+                          [default 'true'] 
+     --diff-data BOOL = Compare the data in the files.
+                          [default 'true'] 
+     --diff-print-linenums BOOL = Print line numbers from where the
+                          lines are from (file1:file2). [default
+                          'true'] 
+     --diff-print-same BOOL = Print lines which are the same.
+                          (otherwise only changed lines.) [default
+                          'false'] 
+     --diff-print-max NUM = Max number of lines to print. (-1=>
+                          all) [default '-1'] 
+     --diff-print-format [1 or 2] = Select the format of the
+                          displayed diffs, one or two lines. [default
+                          '1'] 
+     --diff-max-diff NUM = Numerical differences smaller than
+                          than this are ignored. [default '0.00001'] 
+     --diff-residuals FILENAME = File to output residuals to.
+                          (file1-file2) [default ''] 
+     --print-duplicate-headerkeys Print the duplicate headers. [default '0'] 
+\endverbatim
+
+*/
+
 //
 #include "file/TsvFile/TsvFile.h"
 #include "file/TsvFile/TsvFileDiff.h"
 //
-#include <string>
-#include <vector>
-//
 #include "util/Convert.h"
 #include "util/Err.h"
 #include "util/PgOptions.h"
+#include "util/Util.h"
+//
+#include <cstring>
+#include <string>
+#include <vector>
+//
+
+#ifdef WIN32
+#define SNPRINTF _snprintf
+#else
+#define SNPRINTF snprintf
+#endif
 
 //////////
 
@@ -78,6 +153,7 @@ tsv_util_headers(const std::string& fileName)
 
   if (rv!=affx::TSV_OK) {
     printf("%s: ERR=%d\n",fileName.c_str(),rv);
+    delete tsv;
     return;
   }
 
@@ -87,6 +163,32 @@ tsv_util_headers(const std::string& fileName)
     printf("#%%%s=%s\n",key.c_str(),val.c_str());
   }
   tsv->close();
+  delete tsv;
+}
+
+//////////
+
+int
+tsv_util_print_duplicate_headerkeys(const std::string& fileName)
+{
+  int rv;
+  affx::TsvFile* tsv;
+
+  tsv=new affx::TsvFile();
+  rv=tsv->open(fileName);
+
+  if (rv!=affx::TSV_OK) {
+    printf("%s: ERR=%d\n",fileName.c_str(),rv);
+    delete tsv;
+    return 1;
+  }
+
+  int cnt=tsv->printDuplicateHeaders();
+
+  tsv->close();
+  delete tsv;
+
+  return (cnt==0)?0:1;
 }
 
 //////////
@@ -94,7 +196,7 @@ tsv_util_headers(const std::string& fileName)
 /// @brief     Copy contents from one tsvfile to another.
 /// @param     f_fileName   filename of the "from/source" tsvfile
 /// @param     t_fileName   filename of the "to/destination" tsvfile
-/// @param     fmt       
+/// @param     fmt
 void
 tsv_util_copy(const std::string& f_fileName,const std::string& t_fileName,int fmt)
 {
@@ -127,17 +229,27 @@ tsv_util_copy(const std::string& f_fileName,const std::string& t_fileName,int fm
 
 //////////
 
-/// @brief     Paste the columns of several tsvFiles into one tsvfile
+/// The limit of filehandles we can paste at one time.
+// #define TSV_PASTE_FH_LIMIT 900
+// for testing
+#define TSV_PASTE_FH_LIMIT 900
+
+/// @brief     Paste the columns of several tsvFiles into one tsvfile in one pass.
+///            Cant to more than the limit in one pass.
 /// @param     out_fileName       filename of the output tsvfile.
 /// @param     in_tsv_fileNames   vector of input tsvfile names.
+/// @param     in_header_fileNames   vector of names to put in header.
+///                                  (This is needed for the final multi-pass case.)
 /// @param     seg_max_lines      If non-zero, split the output file into segments. (0=>no segments.)
 /// @param     key_col_name       Key column name to match while pasting. (""=> no key column.)
+/// @param     verbose            The verbosity level
 void
-tsv_util_paste(const std::string& out_fileName,
-               const std::vector<std::string> in_tsv_fileNames,
-               int seg_max_lines,
-               const std::string& key_col_name,
-               int verbose)
+tsv_util_paste_basic(const std::string& out_fileName,
+                     const std::vector<std::string> in_tsv_fileNames,
+                     const std::vector<std::string> in_header_fileNames,
+                     int seg_max_lines,
+                     const std::string& key_col_name,
+                     int verbose)
 {
   std::vector<affx::TsvFile*> in_tsv;
   std::vector<int> in_tsv_key_cidx;
@@ -147,13 +259,23 @@ tsv_util_paste(const std::string& out_fileName,
   int out_tsv_lines=0;
 
   //
-  if (in_tsv_fileNames.size()>1000) {
-    Err::errAbort("tsv-paste: Can only paste 1000 tsv files at at time. (unix fh limit.)");
+  if (in_tsv_fileNames.size()>TSV_PASTE_FH_LIMIT) {
+    // @todo: why doesnt '#TSV_PASTE_FH_LIMIT' work here?
+    Err::errAbort("tsv-paste: Can only paste " +ToStr(TSV_PASTE_FH_LIMIT)+
+                  " tsv files at at time. (unix fh limit.)");
   }
 
   //
   if (seg_max_lines<0) {
     Err::errAbort("tsv-paste: seg_max_lines must be 0 (disabled) a postive number.");
+  }
+
+  // some output for the user
+  if (verbose>=2) {
+    for (int i=0;i<in_tsv_fileNames.size();i++) {
+      printf("# %3d : %s\n",i,in_tsv_fileNames[i].c_str());
+    }
+    printf("# === > %s\n",out_fileName.c_str());
   }
 
   // the key_col_name might be numeric.
@@ -172,7 +294,7 @@ tsv_util_paste(const std::string& out_fileName,
     tsvp->open(in_tsv_fileNames[i]);
     in_tsv.push_back(tsvp);
     //
-    if (verbose>=1) { 
+    if (verbose>=3) {
       printf("tsv_paste: open '%s'\n",in_tsv_fileNames[i].c_str());
     }
     // ...check for key name.
@@ -193,13 +315,16 @@ tsv_util_paste(const std::string& out_fileName,
       }
       in_tsv_key_cidx.push_back(key_cidx);
     }
-    // ...add header info about the input files.
-    char hdr_buf[100];
-    sprintf(hdr_buf,"paste-input-%05d",i);
-    out_tsv.addHeader(hdr_buf,in_tsv_fileNames[i]);
   }
 
-  // paste the column defs
+  // ...add header info describing the input files used.
+  for (int i=0;i<in_header_fileNames.size();i++) {
+    char hdr_buf[100];
+    SNPRINTF(hdr_buf,sizeof(hdr_buf),"paste-input-%05d",i);
+    out_tsv.addHeader(hdr_buf,in_header_fileNames[i]);
+  }
+
+  // paste the column defs into the output tsv
   o_cidx=0;;
   for (int i=0;i<in_tsv.size();i++) {
     for (int c_idx=0;c_idx<in_tsv[i]->getColumnCount(0);c_idx++) {
@@ -215,7 +340,7 @@ tsv_util_paste(const std::string& out_fileName,
     out_tsv.writeTsv_v1(out_fileName);
   }
 
-  // paste the columns
+  // paste the column while we have rows.
   while (1) {
     // open a segmented output file as needed
     if ((seg_max_lines>0) && // have segments?
@@ -239,7 +364,8 @@ tsv_util_paste(const std::string& out_fileName,
     if (!more_lines) {
       break;
     }
-    // copy to out
+
+    // copy row data to the output tsv.
     o_cidx=0;
     for (int i=0;i<in_tsv.size();i++) {
       for (int i_cidx=0;i_cidx<in_tsv[i]->getColumnCount(0);i_cidx++) {
@@ -259,14 +385,18 @@ tsv_util_paste(const std::string& out_fileName,
           }
           else {
             if (tmp!=key_col_value) {
-              Err::errAbort("tsv-paste: Check column mismatch.  ref='"+key_col_value+"'  val='"+tmp+"'");
+              Err::errAbort("tsv-paste: Check column mismatch.  "
+                            "file='"+in_tsv_fileNames[i]+"' "
+                            "line="+ToStr(in_tsv[i]->lineNum())+" "
+                            "ref='"+key_col_value+"' "
+                            "val='"+tmp+"'");
             }
           }
         }
         // a normal column
         else {
           out_tsv.set(0,o_cidx++,tmp);
-        }          
+        }
       }
     }
     //
@@ -282,6 +412,105 @@ tsv_util_paste(const std::string& out_fileName,
     in_tsv[i]->close();
     delete in_tsv[i];
   }
+}
+
+/// @brief     Paste the columns of the input tsv files into a big tsv file.
+///            If there are too many inputs, do the work in several passes.
+///            Also splits the output into seg_max_line size files if requested.
+/// @param     out_fileName
+/// @param     in_tsv_fileNames
+/// @param     seg_max_lines
+/// @param     key_col_name
+/// @param     verbose
+/// @param     tsv_paste_fh_limit
+void
+tsv_util_paste(const std::string& out_fileName,
+               const std::vector<std::string> in_tsv_fileNames,
+               int seg_max_lines,
+               const std::string& key_col_name,
+               int verbose,
+               int tsv_paste_fh_limit)
+{
+  // the simple case, no passes needed...
+  if (in_tsv_fileNames.size()<=tsv_paste_fh_limit) {
+    // ...so just do it.
+    tsv_util_paste_basic(out_fileName,
+                         in_tsv_fileNames,in_tsv_fileNames,
+                         seg_max_lines,key_col_name,verbose);
+    // and we are done.
+    return;
+  }
+
+  // complex case, passes are needed.
+  if (verbose>=1) {
+    printf("tsv_util_paste: multiple passes needed to process '%d' inputs.\n",
+           int(in_tsv_fileNames.size()));
+  }
+
+  // we have to be able to open at least two files at a time.
+  if (tsv_paste_fh_limit<=1) {
+    Err::errAbort("tsv_paste_fh_limit must be bigger than 2.");
+  }
+
+  //
+  std::vector<std::string> copy_fileNames=in_tsv_fileNames;
+  //
+  int pass_cnt=0;
+  std::string pass0_out_name;
+  std::string pass1_out_name;
+  std::vector<std::string> pass_out_names;
+  std::vector<std::string> pass1_fileNames;
+
+  // while we have more than the limit, we need to use a temp file.
+  while (copy_fileNames.size()>tsv_paste_fh_limit) {
+    pass1_fileNames.clear();
+    // tack on the prior tmp file.
+    if (pass0_out_name!="") {
+      pass1_fileNames.push_back(pass0_out_name);
+    }
+    // add some more input files.
+    // dont adjust the length for the file we pushed on.
+    int len=tsv_paste_fh_limit;
+    pass1_fileNames.insert(pass1_fileNames.end(),
+                           copy_fileNames.begin(),copy_fileNames.begin()+len);
+    copy_fileNames.erase(copy_fileNames.begin(),copy_fileNames.begin()+len);
+    // gen the name for the new temp file.
+    char buf[100];
+    SNPRINTF(buf,sizeof(buf),"-%05d.tmp",pass_cnt);
+    pass1_out_name=out_fileName+buf;
+    pass_out_names.push_back(pass1_out_name);
+    //
+    if (verbose>=1) {
+      printf("pass: %d : '%s'...\n",pass_cnt,pass1_out_name.c_str());
+    }
+    // paste what we have into the new tmp file.
+    tsv_util_paste_basic(pass1_out_name,
+                         pass1_fileNames,
+                         pass1_fileNames, // the filenames in this pass
+                         0, // dont segment.
+                         key_col_name,verbose);
+    // get rid of the old tmp file.
+    if (pass0_out_name!="") {
+      //printf("rm %s\n",pass0_out_name.c_str());
+      Util::fileRemove(pass0_out_name);
+    }
+    // the current is now the old.
+    pass_cnt++;
+    pass0_out_name=pass1_out_name;
+  }
+  // now do the last pass into the official output file.
+  pass1_fileNames.clear();
+  if (pass0_out_name!="") {
+    pass1_fileNames.push_back(pass0_out_name);
+  }
+  pass1_fileNames.insert(pass1_fileNames.end(),copy_fileNames.begin(),copy_fileNames.end());
+  tsv_util_paste_basic(out_fileName, // the final output file
+                       pass1_fileNames,
+                       in_tsv_fileNames, // the filenames for all the inputs.
+                       seg_max_lines, // do segment if needed.
+                       key_col_name,verbose);
+  // and get rid of it.
+  Util::fileRemove(pass0_out_name);
 }
 
 //////////
@@ -302,7 +531,7 @@ tsv_util_benchmark(int benchmark_cnt,const std::string& filename)
 
   int rv;
   affx::TsvFile* tsv;
-  
+
   tsv=new affx::TsvFile();
 
   tsv->addHeader("benchmark-cnt",benchmark_cnt);
@@ -313,7 +542,7 @@ tsv_util_benchmark(int benchmark_cnt,const std::string& filename)
     sprintf(buf,"col-%04d",col);
     tsv->defineColumn(0,col,buf);
   }
-  
+
   rv=tsv->writeTsv_v1(filename);
 
   int cnt=0;
@@ -330,12 +559,13 @@ tsv_util_benchmark(int benchmark_cnt,const std::string& filename)
 //////////
 
 /// @brief     entry point for tsv-util
-/// @param     argc      
-/// @param     argv      
-/// @return    
+/// @param     argc
+/// @param     argv
+/// @return
 int
-main(int argc,char* argv[])
+main(int argc,const char* argv[])
 {
+  int rv=0;
   PgOptions* opts=new PgOptions();
   //
   opts->setUsage("Utility functions for tsv files."
@@ -344,46 +574,49 @@ main(int argc,char* argv[])
                  );
   //
   opts->defineOption("h","help", PgOpt::BOOL_OPT,
-                    "This message.",
-                    "false");
+                     "This message.",
+                     "false");
   opts->defineOption("v","verbose",PgOpt::INT_OPT,
                      "verbose level",
                      "0");
 
   opts->defineOption("","headers", PgOpt::BOOL_OPT,
-                    "INFILE = Display the headers of the CSV/TSV file.",
-                    "false");
+                     "INFILE = Display the headers of the CSV/TSV file.",
+                     "false");
   opts->defineOption("","linecount", PgOpt::BOOL_OPT,
-                    "INFILE = count the lines of data in the file.",
-                    "false");
+                     "INFILE = count the lines of data in the file.",
+                     "false");
   opts->defineOption("","to-csv", PgOpt::BOOL_OPT,
-                    "INFILE OUTFILE = Covert the file to CVS format.",
-                    "false");
+                     "INFILE OUTFILE = Covert the file to CVS format.",
+                     "false");
   opts->defineOption("","to-tsv", PgOpt::BOOL_OPT,
-                    "INFILE OUTFILE = Convert the file to TSV format.",
-                    "false");
+                     "INFILE OUTFILE = Convert the file to TSV format.",
+                     "false");
   //
   opts->defineOption("","paste", PgOpt::STRING_OPT,
-                    "OUTFILE  FILELIST = Paste the files of filelist into outfile.",
-                    "");
+                     "OUTFILE  FILELIST = Paste the files of filelist into outfile.",
+                     "");
   opts->defineOption("","seg-lines",PgOpt::INT_OPT,
                      "Segment size",
                      "0");
   opts->defineOption("","key-col", PgOpt::STRING_OPT,
-                    "COLUMN_NAME = Column name which must be present and equal in all inputs files, if set.",
-                    "");
+                     "COLUMN_NAME = Column name which must be present and equal in all inputs files, if set.",
+                     "");
+  opts->defineOption("","max-paste-fh", PgOpt::INT_OPT,
+                     "CNT = Max number of files to paste in one pass.",
+                     "900");
   //
   opts->defineOption("","benchmark", PgOpt::INT_OPT,
                      "Number of doubles to write for benchmarking output.",
                      "0");
   opts->defineOption("","output", PgOpt::STRING_OPT,
                      "Output file for some operations.",
-                    "");
+                     "");
   //
   opts->defineOption("","diff",PgOpt::BOOL_OPT,
-                     "Compare two tsv formatted files. "
+                     "Compare headers and data of two tsv formatted files. "
                      "There are a number of options to control printing of the diff.",
-                     "");
+                     "false");
   //
   opts->defineOption("","diff-headers",PgOpt::BOOL_OPT,
                      "BOOL = Compare the headers of the files.",
@@ -412,9 +645,13 @@ main(int argc,char* argv[])
                      "FILENAME = File to output residuals to. (file1-file2)",
                      "");
 
+  opts->defineOption("","print-duplicate-headerkeys",PgOpt::BOOL_OPT,
+                     "Print the duplicate headers.",
+                     "0");
+  
   //
   opts->parseArgv(argv);
-  
+
   //
   if (opts->getBool("help")||(argc==1)) {
     opts->usage();
@@ -447,22 +684,33 @@ main(int argc,char* argv[])
     }
     tsv_util_copy(opts->getArg(0),opts->getArg(1),2);
   }
-  
+
   //
   else if (opts->get("paste")!="") {
     tsv_util_paste(opts->get("paste"),
                    opts->getArgVector(),
                    opts->getInt("seg-lines"),
                    opts->get("key-col"),
-                   opts->getInt("verbose"));
+                   opts->getInt("verbose"),
+                   opts->getInt("max-paste-fh"));
   }
   //
-  else if (opts->getBool("diff")) {
+  else if (opts->getBool("diff")||opts->getBool("diff-headers")||opts->getBool("diff-data")) {
     if (opts->getArgCount()!=2) {
       printf("Need exactly two args.");
       opts->usage();
     }
     else {
+      // --diff implies both headers and data
+      if (opts->getBool("diff")) {
+        if (!opts->mustFindOpt("diff-headers")->isSet()) {
+          opts->mustFindOpt("diff-headers")->setValue("1");
+        }
+        if (!opts->mustFindOpt("diff-data")->isSet()) {
+          opts->mustFindOpt("diff-data")->setValue("1");
+        }
+      }
+      //
       affx::TsvFileDiff diff;
       // set our options
       diff.m_opt_do_headers=opts->getBool("diff-headers");
@@ -484,10 +732,22 @@ main(int argc,char* argv[])
     }
   }
   //
+  else if (opts->getBool("print-duplicate-headerkeys")) {
+    int cnt=0;
+    for (int i=0;i<opts->getArgCount();i++) {
+      if (tsv_util_print_duplicate_headerkeys(opts->getArg(i))) {
+        cnt++;
+      }
+    }
+    // dont fiddle with the exit value.
+    // rv=(cnt==0)?0:1;
+  }
+  //
   else if (opts->getInt("benchmark")!=0) {
     tsv_util_benchmark(opts->getInt("benchmark"),opts->get("output"));
   }
 
   //
   delete opts;
+  return rv;
 }

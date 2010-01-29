@@ -16,8 +16,10 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "DataGroupHeaderWriter.h"
-#include "FileOutput.h"
+#include "calvin_files/writers/src/DataGroupHeaderWriter.h"
+//
+#include "calvin_files/writers/src/FileOutput.h"
+//
 
 using namespace affymetrix_calvin_io;
 

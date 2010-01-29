@@ -23,7 +23,8 @@
 #ifndef _CalvinCHPQuantificationDetectionFileUpdater_HEADER_
 #define _CalvinCHPQuantificationDetectionFileUpdater_HEADER_
 
-#include "DataSetUpdater.h"
+#include "calvin_files/writers/src/DataSetUpdater.h"
+//
 
 namespace affymetrix_calvin_io
 {

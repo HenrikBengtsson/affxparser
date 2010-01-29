@@ -24,10 +24,14 @@
 /*! \file GCOSCELDataAdapter.h This file defines the GCOS Fusion CEL Data adapter classes
  */
 
-#include "FusionCELDataAdapterInterface.h"
-#include "CELFileData.h"
-#include "StringUtils.h"
+#include "calvin_files/fusion/src/FusionCELDataAdapterInterface.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include "file/CELFileData.h"
+//
+#include <cstring>
 #include <string>
+//
 
 namespace affymetrix_fusion_io
 {
@@ -47,184 +51,189 @@ public:
 	/*! \brief Can this object read the file 
 	 *	\return If the cell file can be read.
 	 */
-	virtual bool CanReadFile();
+	bool CanReadFile();
 
 	/*! Set the cell file name. 
 	 *	\param value The cell file name to be set
 	 */
-	virtual void SetFileName(const std::string& value);
+	void SetFileName(const std::string& value);
 	/*! \brief Get the cell file name. 
 	 *	\return The currently set cell file name.
 	 */
-	virtual std::string GetFileName() const;
+	std::string GetFileName() const;
 	/*! \brief Get the id of the file (only valid for Command Console "calvin" files)
 	 * \return The unique file id.
 	 */
-	virtual affymetrix_calvin_utilities::AffymetrixGuidType GetFileId() { return ""; }
+	affymetrix_calvin_utilities::AffymetrixGuidType GetFileId() { return ""; }
 	/*! \brief Set the error message.
 	 *	\param value The error message to be set.
 	 */
-	virtual void SetError(const wchar_t* value);
+	void SetError(const wchar_t* value);
 	/*! \brief Get the currently set error message string. 
 	 * \return The error message.
 	 */
-	virtual std::wstring GetError();
+	std::wstring GetError();
 
 	/*! \brief Get the header key.
 	 *  \return The header key.
 	 */
-	virtual std::wstring GetHeaderKey(const wchar_t* key);
+	std::wstring GetHeaderKey(const wchar_t* key);
 	/*! \brief Get the version of the cell file.
 	 *	\return The cell file version.
 	 */
-	virtual int GetVersion() { return gcosCel.GetVersion(); }
+	int GetVersion() { return gcosCel.GetVersion(); }
 	/*! \brief Get the number of columns.
 	 *	\return The number of columns
 	 */
-	virtual int GetCols() { return gcosCel.GetCols(); }
+	int GetCols() { return gcosCel.GetCols(); }
 	/*! \brief Get the number of rows.
 	 *	\return The number of rows.
 	 */
-	virtual int GetRows() { return gcosCel.GetRows(); }
+	int GetRows() { return gcosCel.GetRows(); }
 	/*! \brief Get number of cells
 	 *	\return The number of cells
 	 */
-	virtual int GetNumCells() { return gcosCel.GetNumCells(); }
+	int GetNumCells() { return gcosCel.GetNumCells(); }
 	/*! \brief Get the header string.
 	 *	\return The header as a string.
 	 */
-	virtual std::wstring GetHeader();
+	std::wstring GetHeader();
 	/*! \brief Get the algorithm name.
 	 *	\return The algorithm name.
 	 */
-	virtual std::wstring GetAlg();
+	std::wstring GetAlg();
 	/*! \brief Get the algorithm version.
 	 *	\return The algorithm version.
 	 */
-	virtual std::wstring GetAlgVer();
+	std::wstring GetAlgVer();
 
 	/*! \brief Get the parameters.
 	 *	\return The parameters used for creating the cell file.
 	 */
-	virtual std::wstring GetParams();
+	std::wstring GetParams();
 	/*!	\brief Get a parameter.
 	 *	\param tag Parameter name associated with a parameter value.
 	 *	\return The parameter value.
 	 */
-	virtual std::wstring GetAlgorithmParameter(const wchar_t *tag);
+	std::wstring GetAlgorithmParameter(const wchar_t *tag);
 	/*! \brief Get a parameter.
 	 *	\param index The index to the parameter.
 	 *	\return The parameter value.
 	 */
-	virtual std::wstring GetAlgorithmParameterTag(int index);
+	std::wstring GetAlgorithmParameterTag(int index);
 	/*! \brief Get number of parameters.
 	 *	\return The number of parameters.
 	 */
-	virtual int GetNumberAlgorithmParameters() { return gcosCel.GetNumberAlgorithmParameters(); }
+	int GetNumberAlgorithmParameters() { return gcosCel.GetNumberAlgorithmParameters(); }
 	/*! \brief Get the number of parameters.
 	 *	\return The parameters.
 	*/
-	virtual std::wstring GetAlgorithmParameters();
+	std::wstring GetAlgorithmParameters();
 	/*! \brief Get parameters.
 	 *	\param values Collection of name/value type parameter list.
 	 */
-	virtual void GetParameters(FusionTagValuePairTypeList& values);
+	void GetParameters(FusionTagValuePairTypeList& values);
 	/*! \brief Get the DatHeader string.
 	 *	\return The DatHeader string.
 	 */
-	virtual std::wstring GetDatHeader() { return affymetrix_calvin_utilities::StringUtils::ConvertMBSToWCS(gcosCel.GetDatHeader()); }
+	std::wstring GetDatHeader() { return affymetrix_calvin_utilities::StringUtils::ConvertMBSToWCS(gcosCel.GetDatHeader()); }
 	/*! \brief Get chip type.
 	 *	\return The chip type of the cell.
 	 */
-	virtual std::wstring GetChipType();
+	std::wstring GetChipType();
 	/*! \brief Get the library package
 	 *	\return blank value
 	 */
-    virtual std::wstring GetLibraryPackageName() { return L""; }
+    std::wstring GetLibraryPackageName() { return L""; }
 	/*! \brief Get the master file
 	 *	\return blank value
 	 */
-	virtual std::wstring GetMasterFileName() { return L""; }
+	std::wstring GetMasterFileName() { return L""; }
 	/*! \brief Get cell margin.
 		\return The cell margin.
 	 */
-	virtual int GetCellMargin() { return gcosCel.GetCellMargin(); }
+	int GetCellMargin() { return gcosCel.GetCellMargin(); }
 	/*! \brief Get number of outliers.
 	 *	\return The number of outliers.
 	 */
-	virtual unsigned int GetNumOutliers() { return gcosCel.GetNumOutliers(); }
+	unsigned int GetNumOutliers() { return gcosCel.GetNumOutliers(); }
 	/*! \brief Get number of masked cells.
 	 *	\return The number of masked cells.
 	 */
-	virtual unsigned int GetNumMasked() { return gcosCel.GetNumMasked(); }
+	unsigned int GetNumMasked() { return gcosCel.GetNumMasked(); }
 	/*! \brief Get the grid coordinates.
 	 *  \return Returns the grid coordinates.
 	 */
-	virtual FGridCoords GetGridCorners();
+	FGridCoords GetGridCorners();
 
 	// Index/position conversions
 	/*! \brief Translate index to X.
 	 *	\param index The index to translate for x.
 	 *	\return The translated index to x value.
 	 */
-	virtual int IndexToX(int index);
+	int IndexToX(int index);
 	/*! \brief Translate index to Y.
 	 *	\param index The index to translate for y.
 	 *	\return The translated index to y value.
 	 */
-	virtual int IndexToY(int index);
+	int IndexToY(int index);
 	/*! \brief Translate X and Y to an index.
 	 *	\param x X coordinate.
 	 *	\param y Y coordinate.
 	 *	\return The translated index from x and y.
 	 */
-	virtual int XYToIndex(int x, int y);
+	int XYToIndex(int x, int y);
 	
 	// Accessors for intensity information.
 	/*! \brief Get entry by index.
 	 *	\param index Entry index.
 	 *	\param entry Entry to be filled from index.
 	 */
-	virtual void GetEntry(int index, FusionCELFileEntryType &entry);
+	void GetEntry(int index, FusionCELFileEntryType &entry);
 	/*! \brief Get entry by x and y.
 	 *	\param x X position.
 	 *	\param y Y position.
 	 *	\param entry Entry to be filled from x and y.
 	 */
-	virtual void GetEntry(int x, int y, FusionCELFileEntryType &entry);
+	void GetEntry(int x, int y, FusionCELFileEntryType &entry);
 	/*! \brief Get intensity by index position.
 	 *	\param index Location of intensity
 	 *	\return The intensity value.
 	 */
-	virtual float GetIntensity(int index);
+	float GetIntensity(int index);
+  /// @brief     a vector of intensities
+  /// @param     index        index of first intensity
+  /// @param     intensities  vector to fill
+  /// @return    non-zero on error.
+	int GetIntensities(int index,std::vector<float>& intensities);
 	/*! \brief Get intensity by x, y position.
 	 *	\param x X position.
 	 *	\param y Y position.
 	 *	\return The intensity value.
 	 */
-	virtual float GetIntensity(int x, int y);
+	float GetIntensity(int x, int y);
 	/*! \brief Get standard deviation by index position.
 	 *	\param index Location of stdv.
 	 *	\return The standard deviation value.
 	 */
-	virtual float GetStdv(int index);
+	float GetStdv(int index);
 	/*! \brief Get standard deviation by x, y position.
 	 *	\param x X position.
 	 *	\param y Y position.
 	 *	\return The standard deviation value.
 	 */
-	virtual float GetStdv(int x, int y);
+	float GetStdv(int x, int y);
 	/*! \brief Get pixel by index position.
 	 *	\param index Location of pixel.
 	 *	\return The pixel value.
 	 */
-	virtual short GetPixels(int index);
+	short GetPixels(int index);
 	/*! \brief Get pixel x, y position.
 	 *	\param x X position.
 	 *	\param y Y position.
 	 *	\return The pixel value.
 	 */
-	virtual short GetPixels(int x, int y);
+	short GetPixels(int x, int y);
 
 	// Accessors for the mask/outlier flags
 	/*! \brief Get masked x, y position.
@@ -232,34 +241,34 @@ public:
 	 *	\param y Y position.
 	 *	\return Is index position masked.
 	 */
-	virtual bool IsMasked(int x, int y);
+	bool IsMasked(int x, int y);
 	/*! \brief Check if masked by index position.
 	 *	\param index Location to check.
 	 *	\return Is index position masked.
 	 */
-	virtual bool IsMasked(int index);
+	bool IsMasked(int index);
 	/*! \brief Check if outlier by index position.
 	 *	\param x X position.
 	 *	\param y Y position.
 	 *	\return Is index position an outlier.
 	 */
-	virtual bool IsOutlier(int x, int y);
+	bool IsOutlier(int x, int y);
 	/*! \brief Check if outlier by index position.
 	 *	\param index Location to check.
 	 *	\return Is index position an outlier.
 	 */
-	virtual bool IsOutlier(int index);
+	bool IsOutlier(int index);
 
 	// For reading a file.
 	/*! Close the cell file. */
-	virtual void Close();
+	void Close();
 	/*! \brief Close cell file. */
-	virtual bool ReadHeader();
+	bool ReadHeader();
 	/*! \brief Read the cell file.
 	 *	\param bIncludeMaskAndOutlier Flag indicates whether to include in the read, the reading of outliers and masked items.
 	 *	\return If the read completed successfully.
 	 */
-	virtual bool Read(bool bIncludeMaskAndOutlier);
+	bool Read(bool bIncludeMaskAndOutlier);
 	/*! \brief read cell file.
 	 *
 	 *	The state flag is used for GCOS files only.
@@ -274,16 +283,35 @@ public:
 	 *			CEL_MASK     Read header, intensities and masked cells\n\n
 
 	*/
-	virtual bool ReadEx(const char *filename, int state) { return gcosCel.ReadEx(filename, state); }
+	bool ReadEx(const char *filename, int state) { return gcosCel.ReadEx(filename, state); }
 	/*! \brief Get the reading state 
 	 *	\return The reading state.
 	 */
-	virtual int GetReadState() { return gcosCel.GetReadState(); }
+	int GetReadState() { return gcosCel.GetReadState(); }
 	/*! \brief clears the members. */
-	virtual void Clear();
+	void Clear();
 
 	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
-	virtual affymetrix_calvin_io::GenericData *GetGenericData() { return NULL; }
+	affymetrix_calvin_io::GenericData *GetGenericData() { return NULL; }
+
+	/*! Returns the list of parameters associated with a data set, empty for GCOS files
+	 * @param setName The data set name
+	 * @return The list of parameters
+	 */
+	affymetrix_calvin_parameter::ParameterNameValueTypeList GetDataSetParameters(const std::wstring &setName);
+
+	/*! Sets the active data group for a multi-group CEL file. Default is the first group. */
+	void SetActiveDataGroup(const std::wstring &groupName) { };
+
+	/*! Is this a multi-color CEL file?
+	 *  @return True if it is multi-color
+	 */
+	bool IsMultiColor() { return false; }
+
+	/*! Returns a list of the channel (ie data group) names
+	 *	@return list of channel names
+	 */
+	WStringVector GetChannels() { WStringVector empty; return empty; }
 
 	/*! \brief Sets the name of the algorithm used to create the CEL file. 
 	 *	\param str The algorithm name.

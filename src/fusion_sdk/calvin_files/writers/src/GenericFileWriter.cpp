@@ -16,7 +16,8 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "GenericFileWriter.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
 
 using namespace affymetrix_calvin_io;
 

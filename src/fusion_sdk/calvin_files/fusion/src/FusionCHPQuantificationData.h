@@ -23,8 +23,9 @@
 
 /*! \file FusionCHPQuantificationData.h This file provides CHP file reading capabilities for CHP files with a single quantification value.*/
 
-#include "FusionCHPData.h"
-#include "CHPQuantificationData.h"
+#include "calvin_files/data/src/CHPQuantificationData.h"
+#include "calvin_files/fusion/src/FusionCHPData.h"
+//
 
 namespace affymetrix_fusion_io
 {
@@ -103,6 +104,7 @@ private:
 	 */
 	bool ReadHeader();
 
+public:
 	/*! A class to register the quantification CHP reader. */
 	class Reg : public FusionCHPDataReg
 	{
