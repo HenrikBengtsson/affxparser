@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2006 Affymetrix, Inc.
+// Copyright (C) 2008 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -24,9 +24,11 @@
 /*! \file DataSetHeaderUpdater.h This file defines a class that updates the data set header of an existing file.
  */
 
-#include "ParameterNameValueType.h"
-#include "DataSetHeader.h"
+#include "calvin_files/data/src/DataSetHeader.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+//
 #include <fstream>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
@@ -51,14 +53,18 @@ public:
 	 */
     bool UpdateParameter(affymetrix_calvin_parameter::ParameterNameValueType &nvt);
 
+		void UpdateNextDataSetPosition(u_int32_t position);
+
 private:
 	/*! Open output filestream */
 	std::ofstream* os;
 
     /*! The data set header */
-    DataSetHeader* dsh;
+    DataSetHeader* setHdr;
 
     u_int32_t filePos;
+
+		void SeekNextDataSetPosition();
 
 };
 

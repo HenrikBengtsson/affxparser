@@ -24,7 +24,8 @@
 /*! \file FusionBEDData.h This file defines the Fusion BED Data classes
  */
 
-#include "BEDFileData.h"
+#include "file/BEDFileData.h"
+//
 using namespace affxbed;
 
 namespace affymetrix_fusion_io

@@ -21,10 +21,12 @@
 #ifndef _ExceptionBase_HEADER_
 #define _ExceptionBase_HEADER_
 
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/DateTime.h"
+//
+#include <cstring>
 #include <string>
-
-#include "AffymetrixBaseTypes.h"
-#include "DateTime.h"
+//
 
 
 /*! \file ExceptionBase.h This file provides base class definition for the exception class.

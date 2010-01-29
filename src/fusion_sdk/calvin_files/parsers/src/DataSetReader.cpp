@@ -18,16 +18,17 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataSetReader.h"
-#include "FileInput.h"
+#include "calvin_files/parsers/src/DataSetReader.h"
+//
+#include "calvin_files/parsers/src/FileInput.h"
+//
 
 using namespace affymetrix_calvin_io;
 
 /*
  * Constructor
  */
-DataSetReader::DataSetReader(std::ifstream& is, DataSetHeader& dph)
-: fileStream(is), dataSetHdr(dph)
+DataSetReader::DataSetReader(std::ifstream& is, DataSetHeader& dph) : fileStream(is), dataSetHdr(dph)
 {
 	// Position the file stream to the start of the DataSet
 	fileStream.seekg(dataSetHdr.GetDataStartFilePos());
@@ -46,6 +47,15 @@ DataSetReader::~DataSetReader()
 std::wstring DataSetReader::GetDataSetName() const
 {
 	return dataSetHdr.GetName();
+}
+
+/*
+ * Read int8_t from the DataSet.  File stream position is incremented
+ */
+int32_t DataSetReader::ReadBuffer(char* buffer, int32_t count)
+{
+	fileStream.read(buffer, count);
+	return fileStream.gcount();
 }
 
 /*

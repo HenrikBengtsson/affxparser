@@ -18,13 +18,19 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CELData.h"
-#include "DataSetHeader.h"
-#include "ExceptionBase.h"
-#include "GenericDataTypes.h"
+#include "calvin_files/data/src/CELData.h"
+//
+#include "calvin_files/data/src/DataSetHeader.h"
+#include "calvin_files/data/src/GenericDataTypes.h"
+#include "calvin_files/exception/src/ExceptionBase.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <sys/stat.h>
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;
+using namespace affymetrix_calvin_parameter;
 
 /*
  * Default constructor
@@ -72,17 +78,66 @@ void CelFileData::Clear()
 	setPixelMetaData = false;
 	setOutlierMetaData = false;
 	setMaskMetaData = false;
+	CloseDataSets();
+	ResetMaskAndOutliers();
+	cachedRows = -1;
+	cachedCols = -1;
+	intensityColumnType = -1;
+	activeChannel = CelDataGroupName;
+}
 
-	if (dpInten){ dpInten->Delete(); dpInten = 0; }
-	if (dpStdev) { dpStdev->Delete(); dpStdev = 0; }
-	if (dpPixels) { dpPixels->Delete(); dpPixels = 0; }
+void CelFileData::CloseDataSets()
+{
+	if (dpInten)
+	{ 
+		dpInten->Delete(); 
+		dpInten = 0; 
+	}
+	if (dpStdev) 
+	{ 
+		dpStdev->Delete(); 
+		dpStdev = 0; 
+	}
+	if (dpPixels) 
+	{ 
+		dpPixels->Delete(); 
+		dpPixels = 0; 
+	}
+}
+
+void CelFileData::ResetMaskAndOutliers()
+{
 	outlierPlaneRead = false;
 	outliers.clear();
 	maskPlaneRead = false;
 	masked.clear();
-	cachedRows = -1;
-	cachedCols = -1;
-	intensityColumnType = -1;
+}
+
+void CelFileData::SetActiveChannel(const std::wstring &channel)
+{
+	if(activeChannel != channel)
+	{
+		activeChannel = channel;
+		CloseDataSets();
+		ResetMaskAndOutliers();
+	}
+}
+
+/*
+ * Check if the file exists.
+ */
+bool CelFileData::Exists()
+{
+	std::string filename = genericData.Header().GetFilename();
+
+	if (filename != "")
+	{
+		// Find the file stats.
+		struct stat st;
+		return ((stat(filename.c_str(), &st) == 0)? true: false);
+	}
+
+	return false;
 }
 
 /*
@@ -103,99 +158,99 @@ std::string CelFileData::GetFilename() const
 
 void CelFileData::SetIntensityCount(int32_t ln)
 {
-	DataSetHeader dpHdr;
-	dpHdr.SetRowCnt(ln);
-	dpHdr.SetName(CelIntensityLabel);
-	dpHdr.AddFloatColumn(CelIntensityLabel);
+	DataSetHeader setHdr;
+	setHdr.SetRowCnt(ln);
+	setHdr.SetName(CelIntensityLabel);
+	setHdr.AddFloatColumn(CelIntensityLabel);
 	if(setIntensityMetaData)
 	{
-		UpdateDataSetRowCount(dpHdr);
+		UpdateDataSetRowCount(setHdr);
 	}
 	else
 	{
-		InsertDataSetHeader(dpHdr);
+		InsertDataSetHeader(setHdr);
 		setIntensityMetaData = true;
 	}
 }
 
 void CelFileData::SetStdDevCount(int32_t ln)
 {
-	DataSetHeader dpHdr;
-	dpHdr.SetRowCnt(ln);
-	dpHdr.SetName(CelStdDevLabel);
-	dpHdr.AddFloatColumn(CelStdDevLabel);
+	DataSetHeader setHdr;
+	setHdr.SetRowCnt(ln);
+	setHdr.SetName(CelStdDevLabel);
+	setHdr.AddFloatColumn(CelStdDevLabel);
 	if(setStdDevMetaData)
 	{
-		UpdateDataSetRowCount(dpHdr);
+		UpdateDataSetRowCount(setHdr);
 	}
 	else
 	{
-		InsertDataSetHeader(dpHdr);
+		InsertDataSetHeader(setHdr);
 		setStdDevMetaData = true;
 	}
 }
 
 void CelFileData::SetPixelCount(int32_t ln)
 {
-	DataSetHeader dpHdr;
-	dpHdr.SetRowCnt(ln);
-	dpHdr.SetName(CelPixelLabel);
-	dpHdr.AddShortColumn(CelPixelLabel);
+	DataSetHeader setHdr;
+	setHdr.SetRowCnt(ln);
+	setHdr.SetName(CelPixelLabel);
+	setHdr.AddShortColumn(CelPixelLabel);
 	if(setPixelMetaData)
 	{
-		UpdateDataSetRowCount(dpHdr);
+		UpdateDataSetRowCount(setHdr);
 	}
 	else
 	{
-		InsertDataSetHeader(dpHdr);
+		InsertDataSetHeader(setHdr);
 		setPixelMetaData = true;
 	}
 }
 
 void CelFileData::SetOutlierCount(int32_t ln)
 {
-	DataSetHeader dpHdr;
-	dpHdr.SetRowCnt(ln);
-	dpHdr.SetName(CelOutlierLabel);
-	dpHdr.AddShortColumn(L"X");
-	dpHdr.AddShortColumn(L"Y");
+	DataSetHeader setHdr;
+	setHdr.SetRowCnt(ln);
+	setHdr.SetName(CelOutlierLabel);
+	setHdr.AddShortColumn(L"X");
+	setHdr.AddShortColumn(L"Y");
 	if(setOutlierMetaData)
 	{
-		UpdateDataSetRowCount(dpHdr);
+		UpdateDataSetRowCount(setHdr);
 	}
 	else
 	{
-		InsertDataSetHeader(dpHdr);
+		InsertDataSetHeader(setHdr);
 		setOutlierMetaData = true;
 	}
 }
 
 void CelFileData::SetMaskCount(int32_t ln)
 {
-	DataSetHeader dpHdr;
-	dpHdr.SetRowCnt(ln);
-	dpHdr.SetName(CelMaskLabel);
-	dpHdr.AddShortColumn(L"X");
-	dpHdr.AddShortColumn(L"Y");
+	DataSetHeader setHdr;
+	setHdr.SetRowCnt(ln);
+	setHdr.SetName(CelMaskLabel);
+	setHdr.AddShortColumn(L"X");
+	setHdr.AddShortColumn(L"Y");
 	if(setMaskMetaData)
 	{
-		UpdateDataSetRowCount(dpHdr);
+		UpdateDataSetRowCount(setHdr);
 	}
 	else
 	{
-		InsertDataSetHeader(dpHdr);
+		InsertDataSetHeader(setHdr);
 		setMaskMetaData = true;
 	}
 }
 
 void CelFileData::UpdateDataSetRowCount(const DataSetHeader &hdr)
 {
-	DataGroupHeader* dcHdr = &genericData.Header().GetDataGroup(0);
+	DataGroupHeader* grpHdr = &genericData.Header().GetDataGroup(0);
 	bool found = false;
-	int sz = dcHdr->GetDataSetCnt();
+	int sz = grpHdr->GetDataSetCnt();
 	for(int i = 0; i < sz; i++)
 	{
-		DataSetHeader* dpHdr = &dcHdr->GetDataSet(i);
+		DataSetHeader* dpHdr = &grpHdr->GetDataSet(i);
 		if(dpHdr->GetName() == hdr.GetName())
 		{
 			dpHdr->SetRowCnt(hdr.GetRowCnt());
@@ -242,7 +297,7 @@ void CelFileData::PrepareIntensityPlane()
 {
 	if (dpInten == 0)
 	{
-		dpInten = genericData.DataSet(CelDataGroupName, CelIntensityLabel);
+		dpInten = genericData.DataSet(activeChannel, CelIntensityLabel);
 		if (dpInten)
 		{
 			dpInten->Open();
@@ -258,9 +313,11 @@ void CelFileData::PrepareStdevPlane()
 {
 	if (dpStdev == 0)
 	{
-		dpStdev = genericData.DataSet(CelDataGroupName, CelStdDevLabel);
+		dpStdev = genericData.DataSet(activeChannel, CelStdDevLabel);
 		if (dpStdev)
+		{
 			dpStdev->Open();
+		}
 	}
 }
 
@@ -271,9 +328,11 @@ void CelFileData::PrepareNumPixelPlane()
 {
 	if (dpPixels == 0)
 	{
-		dpPixels = genericData.DataSet(CelDataGroupName, CelPixelLabel);
+		dpPixels = genericData.DataSet(activeChannel, CelPixelLabel);
 		if (dpPixels)
+		{
 			dpPixels->Open();
+		}
 	}
 }
 
@@ -283,28 +342,34 @@ void CelFileData::PrepareNumPixelPlane()
 void CelFileData::PrepareOutlierPlane()
 {
 	if (outlierPlaneRead)
+	{
 		return;
-
+	}
 	outlierPlaneRead = true;	// Read attempted
 
-	DataSet* dpOutlier = genericData.DataSet(CelDataGroupName, CelOutlierLabel);
-	if (dpOutlier)
-	{
-		if (dpOutlier->Open())
-		{
-			int32_t rows = dpOutlier->Rows();
-
-			for (int32_t row = 0; row < rows; ++row)
-			{
-				int16_t x = 0, y = 0;
-				dpOutlier->GetData(row, 0, x);
-				dpOutlier->GetData(row, 1, y);
-				XYCoord xy(x,y);
-				outliers.insert(xy);
-			}
-		}
-		dpOutlier->Delete();
-	}
+    try {
+	    DataSet* dpOutlier = genericData.DataSet(activeChannel, CelOutlierLabel);
+	    if (dpOutlier)
+	    {
+		    if (dpOutlier->Open())
+		    {
+			    int32_t rows = dpOutlier->Rows();
+    
+			    for (int32_t row = 0; row < rows; ++row)
+			    {
+				    int16_t x = 0, y = 0;
+				    dpOutlier->GetData(row, 0, x);
+				    dpOutlier->GetData(row, 1, y);
+				    XYCoord xy(x,y);
+				    outliers.insert(xy);
+			    }
+		    }
+		    dpOutlier->Delete();
+		    dpOutlier = 0;
+	    }
+    }
+    catch(affymetrix_calvin_exceptions::DataSetNotFoundException) {
+    }
 }
 
 /*
@@ -313,28 +378,34 @@ void CelFileData::PrepareOutlierPlane()
 void CelFileData::PrepareMaskedPlane()
 {
 	if (maskPlaneRead)
+	{
 		return;
-
+	}
 	maskPlaneRead = true;	// Read attempted
 
-	DataSet* dpMasked = genericData.DataSet(CelDataGroupName, CelMaskLabel);
-	if (dpMasked)
-	{
-		if (dpMasked->Open())
-		{
-			int32_t rows = dpMasked->Rows();
-
-			for (int32_t row = 0; row < rows; ++row)
-			{
-				int16_t x = 0, y = 0;
-				dpMasked->GetData(row, 0, x);
-				dpMasked->GetData(row, 1, y);
-				XYCoord xy(x,y);
-				masked.insert(xy);
-			}
-		}
-		dpMasked->Delete();
-	}
+    try {
+	    DataSet* dpMasked = genericData.DataSet(activeChannel, CelMaskLabel);
+	    if (dpMasked)
+	    {
+		    if (dpMasked->Open())
+		    {
+			    int32_t rows = dpMasked->Rows();
+    
+			    for (int32_t row = 0; row < rows; ++row)
+			    {
+				    int16_t x = 0, y = 0;
+				    dpMasked->GetData(row, 0, x);
+				    dpMasked->GetData(row, 1, y);
+				    XYCoord xy(x,y);
+				    masked.insert(xy);
+			    }
+		    }
+		    dpMasked->Delete();
+		    dpMasked = 0;
+	    }
+    }
+    catch(affymetrix_calvin_exceptions::DataSetNotFoundException) {
+    }
 }
 
 /*
@@ -410,6 +481,18 @@ void CelFileData::GetData(int32_t cellIdx, float& intensity, float& stdev, int16
 }
 
 /*
+ * Get the intensity as used in FusionCELData
+ */
+float CelFileData::GetIntensity(int index)
+{
+  // allocate a vector, fill it with one item
+	FloatVector v;
+	this->GetIntensities(index, 1, v);
+  // and return that one item.
+	return v.at(0);
+}
+
+/*
  * Get the intensities for a range of cell indexes.
  */
 bool CelFileData::GetIntensities(int32_t cellIdxStart, int32_t count, FloatVector& values)
@@ -424,7 +507,7 @@ bool CelFileData::GetIntensities(int32_t cellIdxStart, int32_t count, FloatVecto
 			Uint16Vector uint16Vector;
 			dpInten->GetData(0, cellIdxStart, count, uint16Vector);
 			values.resize(uint16Vector.size());
-			for (int32_t i = 0; i < uint16Vector.size(); ++i)
+			for (u_int32_t i = 0; i < uint16Vector.size(); ++i)
 				values[i] = (float)uint16Vector[i];
 		}
 
@@ -503,8 +586,6 @@ bool CelFileData::GetMasked(int32_t cellIdxStart, int32_t count, BoolVector& val
 void CelFileData::GetOutlierCoords(XYCoordVector& coords)
 {
 	PrepareOutlierPlane();
-	//std::set<XYCoord>::iterator begin = outliers.begin();
-	//std::set<XYCoord>::iterator end = outliers.end();
 	for (std::set<XYCoord>::iterator ii = outliers.begin(); ii != outliers.end(); ++ii)
 	{
 		XYCoord xy(ii->xCoord, ii->yCoord);
@@ -518,8 +599,6 @@ void CelFileData::GetOutlierCoords(XYCoordVector& coords)
 void CelFileData::GetMaskedCoords(XYCoordVector& coords)
 {
 	PrepareMaskedPlane();
-	//std::set<XYCoord>::iterator begin = masked.begin();
-	//std::set<XYCoord>::iterator end = masked.end();
 	for (std::set<XYCoord>::iterator ii = masked.begin(); ii != masked.end(); ++ii)
 	{
 		XYCoord xy(ii->xCoord, ii->yCoord);
@@ -684,6 +763,48 @@ void CelFileData::SetCols(int32_t value)
 	cachedCols = value;
 }
 
+bool CelFileData::IsMultiColor()
+{
+	return (GetChannels().size() > 1);
+}
+
+WStringVector CelFileData::GetChannels()
+{
+	// look for tag - "affymetrix-channel-wavelength"
+	// if not found then set the channel to "Default Group"
+	// else parse and return.
+	WStringVector result;
+	GenericDataHeader* gdh = this->GetFileHeader()->GetGenericDataHdr()->FindParent(MULTI_SCAN_ACQUISITION_DATA_TYPE);
+	if (gdh == NULL)
+	{
+		result.push_back(CelDataGroupName);
+	}
+	else
+	{
+		// found the right header, now look for the parameter
+		ParameterNameValueType nvt;
+		if (gdh->FindNameValParam(L"affymetrix-channel-wavelength", nvt))
+		{
+			std::wstring channels = nvt.ToString();
+			std::wstring::size_type idx = channels.find_first_of(L";", 0);
+			while (idx != std::wstring::npos)
+			{
+				result.push_back(channels.substr(0, idx));
+				channels = channels.substr(idx+1);
+				idx = channels.find_first_of(L";", 0);
+			}
+			result.push_back(channels);
+		}
+		// Only one channel is found, this is the case when MC scanner operates in single channel mode.
+		if (result.size() == 1)
+		{
+			result.clear();
+			result.push_back(CelDataGroupName);
+		}
+	}
+	return result;
+}
+
 /*
  * Get the number of cols of cells
  */
@@ -782,16 +903,67 @@ void CelFileData::ComputeXY(int32_t cellIdx, int16_t& x, int16_t& y)
 }
 
 /*
+ */
+std::wstring CelFileData::GetDatHeader()
+{
+	std::wstring datHeader;
+
+	//GenDataHdrVectorIt begin, end; 
+	GenericDataHeader* gdh = this->GetFileHeader()->GetGenericDataHdr()->FindParent(MULTI_SCAN_ACQUISITION_DATA_TYPE);
+	if (gdh)
+	{
+		// found the right header, now look for the parameter
+		ParameterNameValueType nvt;
+		if (gdh->FindNameValParam(DAT_HEADER_PARAM_NAME, nvt))
+		{
+			if (nvt.GetParameterType() == ParameterNameValueType::TextType)
+				datHeader = nvt.GetValueText();
+		}
+		else if (gdh->FindNameValParam(PARTIAL_DAT_HEADER_PARAM_NAME, nvt))
+		{
+			if (nvt.GetParameterType() == ParameterNameValueType::TextType)
+			{
+				std::wstring partialDatHeader = nvt.GetValueText();
+
+				u_int16_t min = 0;
+				u_int16_t max = 0;
+
+				// Find the max and min parameters and append to the string.
+				if (gdh->FindNameValParam(MAX_PIXEL_INTENSITY_PARAM_NAME, nvt))
+				{
+					if (nvt.GetParameterType() == ParameterNameValueType::UInt16Type)
+						max = nvt.GetValueUInt16();
+				}
+
+				if (gdh->FindNameValParam(MIN_PIXEL_INTENSITY_PARAM_NAME, nvt))
+				{
+					if (nvt.GetParameterType() == ParameterNameValueType::UInt16Type)
+						min = nvt.GetValueUInt16();
+				}
+
+				wchar_t buf[30]=L"";
+				FormatString2(buf, 30, L"[%d..%d]", min, max);
+				datHeader = buf;
+				datHeader += partialDatHeader;
+			}
+		}
+	}
+	return datHeader;
+}
+
+/*
  * Find a DataSetHeader by name.
  */
 DataSetHeader* CelFileData::FindDataSetHeader(const std::wstring& name)
 {
-	DataGroupHeader* dch = genericData.FindDataGroupHeader(CelDataGroupName);
-	if (dch)
+	DataGroupHeader* grpHdr = genericData.FindDataGroupHeader(activeChannel);
+	if (grpHdr)
 	{
-		DataSetHeader* dph = genericData.FindDataSetHeader(dch, name);
-		if (dph)
-			return dph;
+		DataSetHeader* setHdr = genericData.FindDataSetHeader(grpHdr, name);
+		if (setHdr)
+		{
+			return setHdr;
+		}
 	}
 	return 0;
 }
@@ -845,3 +1017,28 @@ bool CelFileData::FindAlgorithmParameter(const std::wstring& name, ParameterName
 	}
 	return false;
 }
+
+
+/*
+ * Returns the list of parameters associated with a data set.
+ */
+ParameterNameValueTypeList CelFileData::GetDataSetParameters(const std::wstring &setName)
+{
+	ParameterNameValueTypeList params;
+	DataSet *set = genericData.DataSet(activeChannel, setName);
+	if (set != NULL)
+	{
+		ParameterNameValueTypeConstIt b;
+		ParameterNameValueTypeConstIt e;
+		ParameterNameValueTypeConstIt it;
+		set->Header().GetNameValIterators(b, e);
+		for (it=b; it!=e; it++)
+		{
+			params.push_back(*it);
+		}
+		set->Delete();
+		set = NULL;
+	}
+	return params;
+}
+

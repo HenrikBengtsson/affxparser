@@ -24,7 +24,8 @@
 /*! \file FileException.h This file provides class definition for the file exceptions.
  */
 
-#include "ExceptionBase.h"
+#include "calvin_files/exception/src/ExceptionBase.h"
+//
 
 namespace affymetrix_calvin_exceptions
 {

@@ -18,9 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "GCOSCHPDataAdapter.h"
-#include "StringUtils.h"
-#include "TagValuePair.h"
+#include "calvin_files/fusion/src/GCOSAdapter/GCOSCHPDataAdapter.h"
+//
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include "file/TagValuePair.h"
+//
 
 using namespace affxchp;
 using namespace affymetrix_fusion_io;

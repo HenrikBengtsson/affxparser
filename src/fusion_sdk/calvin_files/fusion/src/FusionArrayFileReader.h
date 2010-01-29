@@ -23,8 +23,11 @@
 
 /*! \file FusionArrayFileReader.h This file provides fusion classes for reading array files. */
 
+#include "calvin_files/array/src/ArrayData.h"
+//
+#include <cstring>
 #include <string>
-#include "ArrayData.h"
+//
 
 namespace affymetrix_fusion_io
 {

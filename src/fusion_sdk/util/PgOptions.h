@@ -2,19 +2,19 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License (version 2) as
+// This program is free software; you can redistribute it and/or modify 
+// it under the terms of the GNU General Public License (version 2) as 
 // published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// 
+// This program is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
 // General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program;if not, write to the
-//
-// Free Software Foundation, Inc.,
+// 
+// You should have received a copy of the GNU General Public License 
+// along with this program;if not, write to the 
+// 
+// Free Software Foundation, Inc., 
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
@@ -90,17 +90,26 @@ int main (int argc,char* argv[]) {
 #ifndef PGOPTIONS_H
 #define PGOPTIONS_H
 
+// "APT_PGOPTIONS_NO_XERCES" is used to remove the use of
+// Xerces XML functions in PgOptions.
+// affy/exact uses PgOptions, but has no need of XML.
+// providing an option to disable
+
 //
 #include "util/Err.h"
 //
+#include "apt/apt.h"
+//
+#include <cstring>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+//
 
 /// @class PgOpt
 /// @brief The definition of this option and the values.
-class PgOpt {
+class APTLIB_API PgOpt {
 public:
   /** Types of allowed options. */
   typedef enum PgOptType {
@@ -170,6 +179,8 @@ public:
   /// @brief     same as clearValues()
   void resetToDefault();
 
+  std::vector<std::string> getValueVector() const;
+
   /// @brief     Check to see if the parse of the string is ok for this option.
   /// @param     value     string to parse.
   /// @return    1 if ok.
@@ -187,14 +198,17 @@ public:
 //////////
 //////////
 
+#ifndef APT_PGOPTIONS_NO_XERCES
 class PgOptionsSAXHandler;
-class BaseEngine;
+#endif
 
 /// @brief
-class PgOptions {
+class APTLIB_API PgOptions {
 
+#ifndef APT_PGOPTIONS_NO_XERCES
 	friend class PgOptionsSAXHandler;
-	friend class BaseEngine;
+#endif
+
 public:
   typedef std::map<std::string, PgOpt *> optionMap_t;
   typedef optionMap_t::iterator optionMapIterator_t;
@@ -254,39 +268,39 @@ public:
   /// @param     longName     full length option name.
   /// @param     type         the type of option (string,int,bool,double)
   /// @param     help         help text.
-  /// @param     m_defaultVal Default value to use if not set.
+  /// @param     defaultVal Default value to use if not set.
   /// @return    pointer to the PgOpt created.
   /// @remarks   This calls addPgOpt to add the created option to the option state.
   PgOpt* defineOption(const std::string& shortName,
                       const std::string& longName,
                       PgOpt::PgOptType_t type,
                       const std::string& help,
-                      const std::string& m_defaultVal);
+                      const std::string& defaultVal);
 
   /// @brief     Short form of defineOption
   /// @param     shortName
   /// @param     longName
   /// @param     type
   /// @param     help
-  /// @param     m_defaultVal
+  /// @param     defaultVal
   /// @return
   PgOpt* defOpt(const std::string& shortName,
                 const std::string& longName,
                 PgOpt::PgOptType_t type,
                 const std::string& help,
-                const std::string& m_defaultVal);
+                const std::string& defaultVal);
   /// @brief     Short for to define an option with multiple values.
   /// @param     shortName
   /// @param     longName
   /// @param     type
   /// @param     help
-  /// @param     m_defaultVal
+  /// @param     defaultVal
   /// @return
   PgOpt* defOptMult(const std::string& shortName,
                     const std::string& longName,
                     PgOpt::PgOptType_t type,
                     const std::string& help,
-                    const std::string& m_defaultVal);
+                    const std::string& defaultVal);
 
   /// @brief     Define a new section for options
   /// @param     sectionName name for the section
@@ -355,17 +369,19 @@ public:
   void set(const std::string &name, const std::string &new_value) {
       if ((isOptDefined("xml-file")) && (name == "xml-file"))
       {
-        if (mustFindOpt(name)->isSet()) {Err::errAbort("The xml-file option has already been set. Only one xml-file can be specified.");}
-		std::vector<std::string> vFileNames;
+        if (mustFindOpt(name)->isSet()) {
+          Err::errAbort("The xml-file option has already been set. Only one xml-file can be specified.");
+        }
+        std::vector<std::string> vFileNames;
         setOptionsFromXMLFile(new_value, vFileNames);
-	  }
+      }
       mustFindOpt(name)->setValue(new_value);
   }
   /// @brief     Add a value to an option vector
   /// @param     name       the name of the option
   /// @param     value      the value to push
   void push(const std::string &name, const std::string &value) {
-      mustFindOpt(name)->pushValue(value);
+    mustFindOpt(name)->pushValue(value);
   }
   /// @brief     Get the value of the option as a string.
   /// @param     opt_name  option name (short or long)

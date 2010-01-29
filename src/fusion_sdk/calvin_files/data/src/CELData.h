@@ -23,12 +23,14 @@
 /*! \file CELData.h This file provides methods to access CEL data.
  */
 
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/Coords.h"
+//
+#include <cstring>
 #include <set>
 #include <string>
 //
-#include "AffymetrixBaseTypes.h"
-#include "Coords.h"
-#include "GenericData.h"
 
 
 #ifdef _MSC_VER
@@ -86,6 +88,9 @@ private:
 	bool setMaskMetaData;
 	int32_t intensityColumnType;
 
+	/*! current wavelength which is the datagroup in this file */
+	std::wstring activeChannel;
+
 	// DataSet cache - initialized on first use and Delete in destructor
 	/*! Intensity DataSet */
 	DataSet* dpInten;
@@ -111,6 +116,13 @@ public:
 	/*! Clear the object members
 	 */
 	void Clear();
+
+	/*! Check if the file exists
+	 */
+	bool Exists();
+
+	/*! Sets the active channel for a multi-channel CEL file.  Default is single channel. */
+	void SetActiveChannel(const std::wstring &channel);
 
 	/*! Set the file name
 	 *	@param p file name
@@ -252,6 +264,12 @@ public:
 	 */
 	bool HasNumPixels();
 
+	/*! Get the intensity for a cell index.
+	 *	@param cell index of the intensity to retrieve.
+	 *	@return float of a particular intensity value.
+	 */
+	float GetIntensity(int index);
+
 	/*! Get the intensities for a range of cell indexes.
 	 *	@param cellIdxStart Cell index of the first intensity to retrieve.
 	 *	@param count Number of intensities to retrieve.
@@ -307,12 +325,41 @@ public:
 	 */
 	GenericData& GetGenericData() { return genericData; }
 
+	/*! Return a wstring for DatHeader
+	 *	@return DatHeader
+	 */
+	std::wstring GetDatHeader();
+
 	/*! Determine the x-y coordinate given a cell index.
 	 *	@param cellIdx Cell index
 	 *	@param x Cell x-coordinate
 	 *	@param y Cell y-coordinate
 	 */
 	void ComputeXY(int32_t cellIdx, int16_t& x, int16_t& y);
+
+	/*! Returns the list of parameters associated with a data set.
+	 * @param setName The data set name
+	 * @return The list of parameters
+	 */
+	ParameterNameValueTypeList GetDataSetParameters(const std::wstring &setName);
+
+	/*! Is this a multi-color CEL file?
+	 *  @return True if it is multi-color
+	 */
+	bool IsMultiColor();
+
+	/*! Returns a list of the channel (ie data group) names
+	 *	@return list of channel names
+	 */
+	WStringVector GetChannels();
+
+	protected:
+
+	/* Close the data set pointers. Used when switching channels. */
+	void CloseDataSets();
+
+	/* Clear the mask and outlier lists and reset to unread state.  Used when switching channels. */
+	void ResetMaskAndOutliers();
 
 private:
 	/*!  */
@@ -379,6 +426,7 @@ private:
 
 	friend class CelFileReader;
 	friend class CelFileWriter;
+	friend class MultiChannelCelFileWriter;
 };
 
 }

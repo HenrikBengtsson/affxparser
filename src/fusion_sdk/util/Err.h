@@ -28,27 +28,39 @@
  * 
  */
 
-#ifndef ERR_H
-#define ERR_H
+#ifndef _UTIL_ERR_H_
+#define _UTIL_ERR_H_
 
-
-#include <assert.h>
+//
+#include "util/Convert.h"
+#include "util/ErrHandler.h"
+#include "util/Except.h"
+#include "util/Verbose.h"
+#include "util/VerboseErrHandler.h"
+//
+#include "apt/apt.h"
+//
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <new>
-#include <stdlib.h>
 #include <string>
 #include <vector>
+//
 
-#include "Except.h"
-#include "Verbose.h"
-#include "ErrHandler.h"
-#include "VerboseErrHandler.h"
+/// Calls Err::apt_err_abort with the filename and linenumber set.
+#define APT_ERR_ABORT(_Why) { Err::apt_err_abort(__FILE__,__LINE__,_Why); }
+/// Calls Err::apt_err_assert with the filename and linenumber set.
+/// We want to avoid evaluating the message unless the condition is false.
+// this could be cleaned up to avoid the "0".
+#define APT_ERR_ASSERT(_Cond,_Msg) { if (!(_Cond)) { Err::apt_err_assert(__FILE__,__LINE__,#_Cond,0,_Msg); } }
 
 /**
  *  Err
  * @brief Common abort with message function for programs to call.
  */
-class Err {
+class APTLIB_API Err {
 
  public: 
   /** Utility class for having static parameters across all instances. */
@@ -77,48 +89,26 @@ class Err {
    * initialization as local static variables work more consistently.
    * @return Param - Our static parameters for this class.
    */
-  static Param &getParam() {
-    static Param m_Param;
-    return m_Param;
-  }
+  static Param &getParam();
 
   /** 
    * Print the message supplied and abort program.
    * @param msg - Message for user about what went wrong.
    * @param prefix - Prefix to add to the error message.
    */
-  static void errAbort(const std::string &msg, const std::string prefix = "FATAL ERROR: "){ // throw (Except) {
-    unsigned int size = getParam().m_ErrHandlers.size();
-    assert(size > 0);
-    std::string errMsg = prefix + msg;;
-    // GUI's do not like the newline
-    if(getParam().m_NewLineOnError) {
-        errMsg = "\n" + errMsg;
-    }
-    getParam().m_ErrHandlers[size - 1]->handleError(errMsg);
-  }
+  static void errAbort(const std::string &msg, const std::string prefix = "FATAL ERROR: ");
 
   /** 
    * Add a new handler for errors.
    * @param handler - Pointer to handler to call when things go wrong.
    */
-  static void pushHandler(ErrHandler *handler) {
-    getParam().m_ErrHandlers.push_back(handler);
-  }
+  static void pushHandler(ErrHandler *handler);
 
   /** 
    * Pop off the current handler and return it for cleanup, etc.
    * @return - last handler pushed onto the stack.
    */
-  static ErrHandler *popHandler() {
-    unsigned int count = getParam().m_ErrHandlers.size();
-    if(count < 1) {
-      Err::errAbort("Err::popHandler() - can't pop error handler when there aren't any left.");
-    }
-    ErrHandler *handler = getParam().m_ErrHandlers[count - 1];
-    getParam().m_ErrHandlers.pop_back();
-    return handler;
-  }
+  static ErrHandler *popHandler();
 
   /** 
    * errAbort based version of assert with an error message. Try to
@@ -152,10 +142,7 @@ class Err {
    * 
    * @param doThrow - if true exceptions will be thrown, if false exit(1) called.
    */
-  static void setThrowStatus(bool doThrow) {
-    VerboseErrHandler *handler = new VerboseErrHandler(doThrow);
-    pushHandler(handler);
-  }
+  static void setThrowStatus(bool doThrow);
 
   /** 
    * Configure new error handler
@@ -163,20 +150,32 @@ class Err {
    * @param doThrow - should an exception be thrown, or call exit
    * @param verbose - should the error handler call verbose methods
    */
-  static void configureErrHandler(bool doThrow, bool verbose) {
-    VerboseErrHandler *handler = new VerboseErrHandler(doThrow, verbose);
-    pushHandler(handler);
-  }
+  static void configureErrHandler(bool doThrow, bool verbose);
 
   /** 
    * Toggle whether we are throwing exceptions or exiting on errors.
    * 
    * @param doThrow - if true exceptions will be thrown, if false exit(1) called.
    */
-  static void setNewLineOnError(bool newline) {
-    getParam().m_NewLineOnError = newline;
-  }
+  static void setNewLineOnError(bool newline);
 
+  /// @brief     The function called by the APT_ERR_ASSERT macro
+  /// @param     file      Filled in from __FILE__
+  /// @param     line      Filled in from __LINE__
+  /// @param     condstr   The string form of the conditional
+  /// @param     cond      The evaluated conditional
+  /// @param     msg       The message to report on an error
+  static void apt_err_assert(const std::string& file,int line,
+                             const std::string& condstr,
+                             bool cond,
+                             const std::string& msg);
+
+  /// @brief     The function called by the APT_ERR_ABORT macro.
+  /// @param     file      Filled in from __FILE__
+  /// @param     line      Filled in from __LINE__
+  /// @param     msg       The message to abort with
+  static void apt_err_abort(const std::string& file,int line,
+                            const std::string& msg);
 };
 
-#endif /* ERR_H */
+#endif /* _UTIL_ERR_H_ */

@@ -17,13 +17,21 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "ParameterNameValueType.h"
-#include "StringUtils.h"
+#ifdef _MSC_VER
+#include "windows.h"
+#endif
+
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+//
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cstring>
 #include <string.h>
+#include <string>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
-#include <winsock2.h>
 #else
 #include <sys/types.h>
 #include <netinet/in.h>

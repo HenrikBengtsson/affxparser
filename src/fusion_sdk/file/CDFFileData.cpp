@@ -18,18 +18,23 @@
 ////////////////////////////////////////////////////////////////
 
 //
-#include <assert.h>
+#include "file/CDFFileData.h"
+//
+#include "file/FileIO.h"
+//
+#include "portability/affy-base-types.h"
+//
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <istream>
-#include <stdio.h>
+#include <string.h>
+#include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <string.h>
-#include <stdlib.h>
-
-#include "CDFFileData.h"
-#include "FileIO.h"
-#include "../portability/affy-base-types.h"
+//
 
 #ifndef _MSC_VER
 #include <sys/mman.h>
@@ -48,7 +53,7 @@ using namespace affxcdf;
 //////////////////////////////////////////////////////////////////////
 
 #define CDF_FILE_MAGIC_NUMBER 67
-#define CDF_FILE_VERSION_NUMBER 2
+#define CDF_FILE_VERSION_NUMBER 3
 
 //////////////////////////////////////////////////////////////////////
 
@@ -100,6 +105,8 @@ CCDFProbeGroupInformation::CCDFProbeGroupInformation() :
 	m_GroupIndex(0),
 	m_WobbleSituation(0),
 	m_AlleleCode(0),
+	m_Channel(0),
+	m_RepType(0),
 	m_NumCellsPerList(0),
 	m_Direction(0),
 	m_pCells(NULL)
@@ -128,6 +135,8 @@ void CCDFProbeGroupInformation::MakeShallowCopy(CCDFProbeGroupInformation &orig)
 	m_Direction = orig.m_Direction;
 	m_WobbleSituation = orig.m_WobbleSituation;
 	m_AlleleCode = orig.m_AlleleCode;
+	m_Channel = orig.m_Channel;
+	m_RepType = orig.m_RepType;
 	m_pCells = &orig.m_Cells;
 }
 
@@ -485,6 +494,13 @@ void CCDFFileData::GetProbeSetInformation(int index, CCDFProbeSetInformation & i
 				ReadUInt16_I(iteratorReader, usval);
 				pBlk->m_AlleleCode = usval;
 			}
+			if (m_Header.m_Version >= 3)
+			{
+				ReadUInt8(iteratorReader, ucval);
+				pBlk->m_Channel = ucval;
+				ReadUInt8(iteratorReader, ucval);
+				pBlk->m_RepType = ucval;
+			}
 
 			// Read the cells
 			CCDFProbeInformation *pCell;
@@ -547,24 +563,24 @@ void CCDFFileData::GetQCProbeSetInformation(int index, CCDFQCProbeSetInformation
 		info.MakeShallowCopy(m_QCProbeSets[index]);
 	else
 	{
-    // Get the QC position from the index part of the file then seek to it.
-    int32_t pos = (int32_t)qcSetIndexPos + (index*sizeof(int32_t));
-    seekg(pos, std::ios::beg);
-    ReadInt32_I(iteratorReader, pos);
-    seekg(pos, std::ios::beg);
+		// Get the QC position from the index part of the file then seek to it.
+		int32_t pos = (int32_t)qcSetIndexPos + (index*sizeof(int32_t));
+		seekg(pos, std::ios::beg);
+		ReadInt32_I(iteratorReader, pos);
+		seekg(pos, std::ios::beg);
 
-    // Read the data
-    uint16_t usval;
-    int32_t ival;
-    unsigned char ucval;
-    
+		// Read the data
+		uint16_t usval;
+		int32_t ival;
+		unsigned char ucval;
+	    
 		ReadUInt16_I(iteratorReader, usval);
 		ReadInt32_I(iteratorReader, ival);
 
-    info.m_NumCells = ival;
+		info.m_NumCells = ival;
 		info.m_QCProbeSetType = usval;
-    info.m_Cells.resize(info.m_NumCells);
-    info.m_pCells = &info.m_Cells;
+		info.m_Cells.resize(info.m_NumCells);
+		info.m_pCells = &info.m_Cells;
 
 		// Read the cells
 		for (int j=0; j<info.m_NumCells; j++)
@@ -706,6 +722,7 @@ bool CCDFFileData::ReadTextFormat()
 	const char *CDFVERSION2 = "GC2.0";
 	const char *CDFVERSION3 = "GC3.0";
 	const char *CDFVERSION4 = "GC4.0";
+	const char *CDFVERSION5 = "GC5.0";
 
 	// Get the CDF section.
 	ReadNextLine(instr, str, MAXLINELENGTH);
@@ -726,6 +743,8 @@ bool CCDFFileData::ReadTextFormat()
 		m_Header.m_Version = 3;
 	else if ( strncmp( subStr, CDFVERSION4, strlen(CDFVERSION4)) == 0)
 		m_Header.m_Version = 4;
+	else if ( strncmp( subStr, CDFVERSION5, strlen(CDFVERSION5)) == 0)
+		m_Header.m_Version = 5;
 
 
 	// Get the next section.
@@ -747,8 +766,8 @@ bool CCDFFileData::ReadTextFormat()
 		ReadNextLine(instr, str, MAXLINELENGTH); // #qc ProbeSets
 		subStr=strchr(str,'=')+1;
 		m_Header.m_NumQCProbeSets = atoi(subStr);
-		char strref[65000];
-		ReadNextLine(instr, strref, 65000);	// The reference string.
+		char strref[400000];
+		ReadNextLine(instr, strref, 400000);	// The reference string.
 		subStr=strchr(strref,'=')+1;
 		m_Header.m_Reference = subStr;
 	}
@@ -863,7 +882,8 @@ NextProbeSet:
         COPY_NUMBER_TILE,
         GENOTYPE_CONTROL_TILE,
         EXPRESSION_CONTROL_TILE,
-		MARKER_TILE
+		MARKER_TILE,
+		MULTICHANNEL_MARKER_TILE
 	} TilingTypes;
 
 	switch (ival)
@@ -902,6 +922,10 @@ NextProbeSet:
         pProbeSet->m_ProbeSetType = MarkerProbeSetType;
         break;
 
+	case MULTICHANNEL_MARKER_TILE:
+        pProbeSet->m_ProbeSetType = MultichannelMarkerProbeSetType;
+        break;
+
 	default:
 		pProbeSet->m_ProbeSetType = UnknownProbeSetType;
 		break;
@@ -915,11 +939,11 @@ NextProbeSet:
 	// in the CDF file.
 	if (pProbeSet->m_NumCellsPerList == 0)
 	{
-		if (pProbeSet->m_ProbeSetType == GenotypingProbeSetType || 
-			pProbeSet->m_ProbeSetType == ResequencingProbeSetType || 
-			pProbeSet->m_ProbeSetType == TagProbeSetType || 
-			pProbeSet->m_ProbeSetType == UnknownProbeSetType &&
-			(pProbeSet->m_NumLists != 0 && pProbeSet->m_NumCells / pProbeSet->m_NumLists == 4)) 
+		if ((pProbeSet->m_ProbeSetType == GenotypingProbeSetType) || 
+			(pProbeSet->m_ProbeSetType == ResequencingProbeSetType) || 
+			(pProbeSet->m_ProbeSetType == TagProbeSetType) || 
+			((pProbeSet->m_ProbeSetType == UnknownProbeSetType) &&
+			((pProbeSet->m_NumLists != 0) && ((pProbeSet->m_NumCells / pProbeSet->m_NumLists) == 4))) )
 			{
 				pProbeSet->m_NumCellsPerList = 4;
 			}
@@ -982,14 +1006,22 @@ NextProbeSet:
 			pBlk->m_WobbleSituation = (uint16_t) strtoul(subStr, &buffer, 10);
 			ReadNextLine(instr, str, MAXLINELENGTH);
 			subStr=strchr(str,'=')+1;
-			if (strlen(subStr) > 0)
-			{
-				pBlk->m_AlleleCode = (uint16_t)subStr[0];
-				if (pBlk->m_AlleleCode == '0')
-					pBlk->m_AlleleCode = 0;
-			}
-			else
-				pBlk->m_AlleleCode = 0;
+			pBlk->m_AlleleCode = (uint16_t) strtoul(subStr, &buffer, 10);
+		}
+		if (pProbeSet->m_ProbeSetType == MultichannelMarkerProbeSetType && m_Header.m_Version > 4)
+		{
+			ReadNextLine(instr, str, MAXLINELENGTH);
+			subStr=strchr(str,'=')+1;
+			pBlk->m_WobbleSituation = (uint16_t) strtoul(subStr, &buffer, 10);
+			ReadNextLine(instr, str, MAXLINELENGTH);
+			subStr=strchr(str,'=')+1;
+			pBlk->m_AlleleCode = (uint16_t) strtoul(subStr, &buffer, 10);
+			ReadNextLine(instr, str, MAXLINELENGTH);
+			subStr=strchr(str,'=')+1;
+			pBlk->m_Channel = (uint8_t) strtoul(subStr, &buffer, 10);
+			ReadNextLine(instr, str, MAXLINELENGTH);
+			subStr=strchr(str,'=')+1;
+			pBlk->m_RepType = (uint8_t) strtoul(subStr, &buffer, 10);
 		}
 		ReadNextLine(instr, str, MAXLINELENGTH); // number of Lists.
 		subStr=strchr(str,'=')+1;
@@ -1005,7 +1037,8 @@ NextProbeSet:
 		pBlk->m_Stop = atoi(subStr);
 		pBlk->m_NumCellsPerList = pProbeSet->m_NumCellsPerList;
 		if ((pProbeSet->m_ProbeSetType == GenotypingProbeSetType && m_Header.m_Version > 2) ||
-			((pProbeSet->m_ProbeSetType == MarkerProbeSetType || pProbeSet->m_ProbeSetType == CopyNumberProbeSetType) && m_Header.m_Version > 3))
+			((pProbeSet->m_ProbeSetType == MarkerProbeSetType || pProbeSet->m_ProbeSetType == CopyNumberProbeSetType) && m_Header.m_Version > 3) ||
+			(pProbeSet->m_ProbeSetType == MultichannelMarkerProbeSetType && m_Header.m_Version > 4))
 		{
 			ReadNextLine(instr, str, MAXLINELENGTH);
 			subStr=strchr(str,'=')+1;

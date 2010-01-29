@@ -24,7 +24,9 @@
 /*! \file CreateStep.h This file provides a type for definining a step that created an array object.
  */
 
+#include <cstring>
 #include <string>
+//
 
 namespace affymetrix_calvin_array
 {

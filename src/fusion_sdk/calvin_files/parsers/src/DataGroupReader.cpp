@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataGroupReader.h"
-#include "DataSetReader.h"
-#include "FileException.h"
-#include "DataException.h"
+#include "calvin_files/parsers/src/DataGroupReader.h"
+//
+#include "calvin_files/data/src/DataException.h"
+#include "calvin_files/parsers/src/DataSetReader.h"
+#include "calvin_files/parsers/src/FileException.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;

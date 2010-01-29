@@ -18,10 +18,13 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CHPFileUpdater.h"
-#include "FileWriter.h"
+#include "file/CHPFileUpdater.h"
+//
+#include "file/FileWriter.h"
+//
 #include "util/Err.h"
 #include "util/Util.h"
+//
 
 using namespace std;
 using namespace affxchp;

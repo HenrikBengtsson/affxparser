@@ -28,6 +28,10 @@
 #include <windows.h>
 #endif
 
+#include "calvin_files/data/src/CDFProbeSetInformation.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+
 namespace affymetrix_calvin_io
 {
 
@@ -56,6 +60,10 @@ public:
 	u_int16_t GetWobbleSituation() const { return wobbleSituation; }
 	/*! Get the allele */
 	u_int16_t GetAlleleCode() const { return alleleCode; }
+	/*! Get the channel */
+	u_int8_t GetChannel() const { return channel; }
+	/*! Get the probe replication type */
+	ReplicationType GetRepType() const { return (ReplicationType)repType; }
 	/*! Get information for the probe by index */
 	void GetCell(int32_t cell_index, CDFProbeInformation& info);
 
@@ -78,6 +86,10 @@ protected:
 	u_int16_t wobbleSituation;
 	/*! Allele */
 	u_int16_t alleleCode;
+	/*! Channel */
+	u_int8_t channel;
+	/*! Probe replication type */
+	u_int8_t repType;
 	/*! Probe set number - same as ProbeSetNumber in C++ */
 	u_int32_t probeSetNumber;
 	/*! Cells per list (atom) - same as NumCellsPerList in C++ */

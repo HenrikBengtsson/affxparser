@@ -24,7 +24,8 @@
 /*! \file FusionSMDData.h This file defines the Fusion SMD Data classes
  */
 
-#include "SMDFileData.h"
+#include "file/SMDFileData.h"
+//
 using namespace affxsmd;
 
 namespace affymetrix_fusion_io

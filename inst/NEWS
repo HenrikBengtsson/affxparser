@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.19.1 [2010-01-29]
+o Updated Fusion SDK to 1.1.0
+
 Version: 1.19.0 [2009-10-27]
 o Devel version bumped because of the new Bioconductor release.
 

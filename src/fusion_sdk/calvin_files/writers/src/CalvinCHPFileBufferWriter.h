@@ -29,9 +29,12 @@
 #ifndef _CHPFILEBUFFERWRITER_HEADER_
 #define _CHPFILEBUFFERWRITER_HEADER_
 
+#include "calvin_files/data/src/CHPGenotypeEntry.h"
+//
+#include <cstring>
 #include <string>
 #include <vector>
-#include "CHPGenotypeEntry.h"
+//
 
 #define MAX_BUFFER_SIZE				5242880		// 5 MB
 

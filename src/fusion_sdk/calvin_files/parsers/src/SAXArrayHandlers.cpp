@@ -18,10 +18,14 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "SAXArrayHandlers.h"
-#include "StringUtils.h"
-#include <string>
+#include "calvin_files/parsers/src/SAXArrayHandlers.h"
+//
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cstring>
 #include <map>
+#include <string>
+//
 
 using namespace affymetrix_calvin_array;
 using namespace affymetrix_calvin_io;
@@ -98,8 +102,8 @@ static bool operator==(const XMLCh* const &c1, wstring c2)
  */
 SAXArrayHandlers::SAXArrayHandlers(ArrayData *data, bool headerOnly) :
 	arrayData(data),
-	currentElement(ARRAY_FILE),
-	readHeaderOnly(headerOnly)
+	readHeaderOnly(headerOnly),
+	currentElement(ARRAY_FILE)
 {
 }
 
@@ -263,7 +267,7 @@ void SAXArrayHandlers::startElement(const XMLCh* const name, AttributeList&  att
 /*
  * Based on the current element, assign the value.
  */
-void SAXArrayHandlers::characters(const XMLCh *const chars, const unsigned int length)
+void SAXArrayHandlers::characters(const XMLCh *const chars, const XMLSize_t length)
 {
 	wstring str = XMLChToWString(chars);
 	if (currentElement == PHYSICAL_ARRAY_ATTRIBUTES)

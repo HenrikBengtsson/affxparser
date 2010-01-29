@@ -24,9 +24,12 @@
 /*! \file FileOutput.h This file provides functions for writing atomic data items to a file.
  */
 
-#include "AffymetrixBaseTypes.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <fstream>
 #include <string>
+//
 
 namespace affymetrix_calvin_io
 {

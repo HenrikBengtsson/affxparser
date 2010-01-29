@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "ArrayAudit.h"
+#include "calvin_files/array/src/ArrayAudit.h"
+//
 
 using namespace affymetrix_calvin_array;
 

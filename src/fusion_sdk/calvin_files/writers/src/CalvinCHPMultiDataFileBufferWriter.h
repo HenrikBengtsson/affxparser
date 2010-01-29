@@ -26,12 +26,15 @@
 #ifndef _CalvinCHPMultiDataFileBufferWriter_HEADER_
 #define _CalvinCHPMultiDataFileBufferWriter_HEADER_
 
+#include "calvin_files/data/src/CHPMultiDataData.h"
+#include "calvin_files/data/src/ProbeSetMultiDataData.h"
+//
+#include <cassert>
+#include <cstring>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include "ProbeSetMultiDataData.h"
-#include "CHPMultiDataData.h"
-#include <assert.h>
+//
 
 #define MAX_BUFFER_SIZE				5242880		// 5 MB
 
@@ -159,6 +162,16 @@ public:
 	 * @param entry A pointer to a multi data entry.
 	 */
 	void WriteEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::FamilialSample & entry);
+
+	/*! Write an entry.
+	 * @param entry A pointer to a multi data entry.
+	 */
+	void WriteEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::AllelePeaks &entry);
+
+	/*! Write an entry.
+	 * @param entry A pointer to a multi data entry.
+	 */
+	void WriteEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::MarkerABSignals &entry);
 
 	/*! Write the content of the buffer to CHP files. */
 	void FlushBuffer();

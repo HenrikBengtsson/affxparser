@@ -20,12 +20,14 @@
 // 
 // affy/sdk/file/TsvFile/TsvFileDiff.h ---
 // 
-// $Id: TsvFileDiff.h,v 1.2 2008/07/10 04:47:26 awilli Exp $
+// $Id: TsvFileDiff.h,v 1.3 2009/09/25 17:49:02 mspald Exp $
 // 
 
 #include "file/TsvFile/TsvFile.h"
 //
+#include <cstring>
 #include <string>
+//
 
 namespace affx {
   class TsvFileDiff;

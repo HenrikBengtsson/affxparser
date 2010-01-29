@@ -24,16 +24,19 @@
 #ifndef TSV_JOIN_H
 #define TSV_JOIN_H
 
-#include <assert.h>
-#include <string>
-#include <ostream>
-#include <vector>
+#include "file/TsvFile/TsvFile.h"
 //
 #include "util/Err.h"
 #include "util/PgOptions.h"
 #include "util/Util.h"
 #include "util/Verbose.h"
-#include "file/TsvFile/TsvFile.h"
+//
+#include <cassert>
+#include <cstring>
+#include <ostream>
+#include <string>
+#include <vector>
+//
 
 class tsvJoin
 {
@@ -45,7 +48,10 @@ public:
    * @param cvsId CVS id string.
    */
 
-  tsvJoin (int argc, char* argv[], const std::string& version, const std::string& cvsId);
+  tsvJoin (int argc,
+           const char* argv[],
+           const std::string& version,
+           const std::string& cvsId);
 
   /** Destructor.
    */

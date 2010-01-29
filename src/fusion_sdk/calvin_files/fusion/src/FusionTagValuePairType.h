@@ -24,9 +24,12 @@
 /*! \file FusionTagValuePairType.h This file defines a fusion tag-value pair class
  */
 
-#include "ParameterNameValueType.h"
-#include <string>
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+//
+#include <cstring>
 #include <list>
+#include <string>
+//
 
 namespace affymetrix_fusion_io
 {

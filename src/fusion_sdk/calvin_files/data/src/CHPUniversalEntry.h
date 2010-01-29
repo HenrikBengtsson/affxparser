@@ -19,9 +19,12 @@
 #ifndef _CHPUniversalEntry_HEADER_
 #define _CHPUniversalEntry_HEADER_
 
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <string>
 #include <vector>
-#include "AffymetrixBaseTypes.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

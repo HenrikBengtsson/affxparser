@@ -31,10 +31,12 @@
 #ifndef MSGSTREAM_H
 #define MSGSTREAM_H
 
-#include <string>
-#include <iostream>
+#include "util/MsgHandler.h"
 //
-#include "MsgHandler.h"
+#include <cstring>
+#include <iostream>
+#include <string>
+//
 
 /**
  * @brief An output stream for messages.

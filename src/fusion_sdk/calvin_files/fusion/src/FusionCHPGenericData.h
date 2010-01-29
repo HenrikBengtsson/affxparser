@@ -22,10 +22,13 @@
 #define _FusionCHPGenericData_HEADER_
 
 
-#include <string>
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/fusion/src/FusionCHPData.h"
+//
+#include <cstring>
 #include <list>
-#include "FusionCHPData.h"
-#include "GenericData.h"
+#include <string>
+//
 
 //////////////////////////////////////////////////////////////////////
 

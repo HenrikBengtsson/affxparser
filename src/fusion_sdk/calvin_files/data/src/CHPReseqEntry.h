@@ -21,8 +21,11 @@
 
 /*! \file CHPReseqEntry.h Defines a class to store the resequencing analyis results. */
 
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <string>
-#include "AffymetrixBaseTypes.h"
+//
 
 namespace affymetrix_calvin_io
 {

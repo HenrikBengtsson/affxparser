@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CalvinCHPDataAdapter.h"
-#include "StringUtils.h"
+#include "calvin_files/fusion/src/CalvinAdapter/CalvinCHPDataAdapter.h"
+//
+#include "calvin_files/utils/src/StringUtils.h"
+//
 
 using namespace affxchp;
 using namespace affymetrix_fusion_io;

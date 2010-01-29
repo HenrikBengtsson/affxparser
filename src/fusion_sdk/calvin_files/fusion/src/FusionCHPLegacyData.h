@@ -25,13 +25,15 @@
 
 //////////////////////////////////////////////////////////////////////
 
+#include "calvin_files/fusion/src/FusionCHPData.h"
+#include "calvin_files/fusion/src/FusionCHPDataAdapterInterface.h"
+//
+#include <cstring>
+#include <fstream>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
-#include <fstream>
-
-#include "FusionCHPData.h"
-#include "FusionCHPDataAdapterInterface.h"
+//
 
 //////////////////////////////////////////////////////////////////////
 
@@ -269,6 +271,7 @@ private:
 	/*! The CHP header */
 	FusionCHPHeader header;
 
+public:
 	/*! A class to register the legacy CHP reader. */
 	class Reg : public FusionCHPDataReg
 	{

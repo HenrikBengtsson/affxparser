@@ -17,18 +17,22 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "BPMAPFileWriter.h"
-#include "FileIO.h"
-#include "FileWriter.h"
-#include <string.h>
-#include <sys/stat.h>
-#include <math.h>
-#include <list>
-#include <vector>
-#include <string>
-#include <sstream>
-#include <iostream>
+#include "file/BPMAPFileWriter.h"
+//
+#include "file/FileIO.h"
+#include "file/FileWriter.h"
+//
 #include <algorithm>
+#include <cmath>
+#include <cstring>
+#include <iostream>
+#include <list>
+#include <sstream>
+#include <string.h>
+#include <string>
+#include <sys/stat.h>
+#include <vector>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996)

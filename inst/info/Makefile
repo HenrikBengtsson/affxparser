@@ -1,8 +1,16 @@
-fusion=affy/sdk
-affxparser=~/Work/packages/affxparser/src/fusion_sdk
+## Usual workflow
+##   first make cleanfusion
+##   then make compare
+##     check for files and directories that ought to be deleted
+##   then copy
+
+fusion=~/Work/packages/affy/sdk
+affxparser_base=~/Work/packages/affxparser
+affxparser_fusion=${affxparser_base}/src/fusion_sdk
+affxparser_patchdir=${affxparser_base}/inst/info
 
 compare :
-	diff -rq ${fusion} ${affxparser} | grep Only | grep -v svn | cat
+	diff -rq ${fusion} ${affxparser_fusion} | grep Only | grep -v svn | cat
 
 cleanfusion :
 	rm -Rf	 \
@@ -38,7 +46,13 @@ cleanfusion :
 	${fusion}/calvin_files/parsers/data \
 	${fusion}/calvin_files/utils/data \
 	${fusion}/calvin_files/writers/data \
+	${fusion}/calvin_files/lib-calvin-devnet.vcproj \
+	${fusion}/calvin_files/lib-fusion-apt.vcproj \
 	${fusion}/file/file.vcproj \
 	${fusion}/file/file.sln \
 	${fusion}/file/lib-file-apt.vcproj \
-	${fusion}/style.css
+	${fusion}/style.css \
+
+patch:
+	patch ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir}/CDFFileData.cpp.patch
+

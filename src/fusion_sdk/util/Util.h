@@ -31,19 +31,21 @@
 #define _UTIL_H_
 
 //
-#include <assert.h>
+#include "util/Convert.h"
+#include "util/Err.h"
+//
+#include "apt/apt.h"
+#include "portability/affy-base-types.h"
+//
+#include <cassert>
+#include <cctype>
+#include <cstring>
+#include <ctime>
 #include <fstream>
 #include <string.h>
 #include <string>
 #include <vector>
-#include <ctype.h>
-#include <time.h>
-#include <string>
-
 //
-#include "util/Convert.h"
-#include "util/Err.h"
-#include "portability/affy-base-types.h"
 
 
 
@@ -67,6 +69,8 @@
 #define PATH_SEPARATOR      PATH_SEPARATOR_UNIX
 #define PATH_SEPARATOR_CHAR PATH_SEPARATOR_UNIX_CHAR
 #endif
+
+#define MEGABYTE 1048576
 
 /// 386 systems cant map more than 2GB of user memory.
 /// (unless you have a patched kernel...)
@@ -92,9 +96,9 @@
 #define ArraySize(a) (sizeof(a)/sizeof((a)[0]))
 
 /** delete function that deletes the pointer and sets it to NULL. */
-template<class T> inline void Freez(T*& p) { delete p; p = 0; }
+template<class T> inline void Freez(T*& p) { delete p; p = NULL; }
 /** delete function that deletes an array and sets the pointer to NULL. */
-template<class T> inline void FreezArray(T*& p) { delete[] p; p = 0; }
+template<class T> inline void FreezArray(T*& p) { delete[] p; p = NULL; }
 
 /** 
  * @name InstanceOf 
@@ -116,17 +120,25 @@ template<class T> inline void FreezArray(T*& p) { delete[] p; p = 0; }
  *  Util
  * @brief Utility functions for memory, etc.
  */
-class Util {
+class APTLIB_API Util {
 public:
 
   /** 
    * Make the string all lowercase.
    * @param s - string to be modified
    */
-  static void downcaseString(std::string &s) {
-    for(unsigned int i = 0; i < s.size(); i++) {
-      s[i] = tolower(s[i]);
+  static void downcaseString_inplace(std::string& str) {
+    for(unsigned int i = 0; i < str.size(); i++) {
+      str[i] = tolower(str[i]);
     }
+  }
+  /// @brief     Copy and downcase a 8bit string.
+  /// @param     str_orig  
+  /// @return    
+  static std::string downcaseString(const std::string& str_orig) {
+    std::string str=str_orig;
+    downcaseString_inplace(str);
+    return str;
   }
 
   /** Comparison object for use in map for char * */
@@ -141,7 +153,7 @@ public:
      /// Is one string less than another?
      bool operator()(const std::string& s1, const std::string& s2) const {
        return strcmp(s1.c_str(), s2.c_str()) < 0;
-		 //return s1.compare(s2)<0; //vliber
+       //return s1.compare(s2)<0; //vliber
      }
    };
 
@@ -173,6 +185,28 @@ public:
    * @return    true if str ends with endstr.
    */
   static bool stringEndsWith(const std::string& str,const std::string& end);
+
+  // like AffxString but uses std::string.
+
+  /// @brief     Check to see if STR ends with ENDING.
+  /// @param     str       
+  /// @param     ending    
+  /// @return    true if it does.
+  static bool endsWithStr(const std::string& str,const std::string& ending);
+  /// @brief     Checks to see if STR ends with ENDING ignoring the last POSFROMEND chars.
+  ///            Basicly the POSFROMEND acts as a wildcard "." at the end of the string.
+  /// @param     str       
+  /// @param     ending    
+  /// @param     posFromEnd number
+  /// @return    true if it does
+  static bool endsWithStr(const std::string& str,const std::string& ending,int posFromEnd);
+
+  /**
+   * Search the affy library file path for the actual file name to open
+   * @param fileName - the name of the file to find
+   * @param searchPath - alternative search path
+   */
+  static std::string findLibFile(const std::string &fileName, const std::string &searchPath = "");
 
   /** 
    * Open an ofstream for writing to. Abort if can't open for some reason.
@@ -225,12 +259,28 @@ public:
    */
   static bool fileRemove(const std::string &fileName, bool throwOnError = true);
 
+  static void fileRemove(std::vector<std::string> &filesToRemove);
+
+  /// @brief     removes the directory
+  /// @param     dirName       name of the dir to remove.
+  /// @param     throwOnError  throw an error if it fails.
+  /// @return    true if removed.
+  static bool dirRemove(const std::string &dirName, bool throwOnError = true);
+
   /** 
    * @brief Chop off the last character if it is a path separator.
    * windows stat() can't handle having it there.
    * @param s - string to have '/' or '\' chopped off if last.
    */
   static void chompLastIfSep(std::string &s);
+
+  /**
+   * Chop the last suffix (as defined by '.') from a string
+   * @param - string to chop
+   * @param - delimiter, default '.'
+   */
+  static std::string chopSuffix(const std::string& s, char d = '.');
+
   /** 
    * Return true if directory exists and is readable, false otherwise.
    * @param dirName 
@@ -252,16 +302,10 @@ public:
    */
   static bool makeDir(const std::string &dirName); 
 
-  /**
-   * Create a directory. Returns a pointer to error message, else 0.
-   * An error is reported if no directory currently exists and a
-   * new directory could not be created, or if a file, not a
-   * directory, already exists, with the requested name.
-   * No error is returned if a directory already exists.
-   * @param dirName - Directory name to be made.
-   * @return - Pointer to error message if any, else zero.
-   */
-  static std::string* createDir(const std::string &dirName);
+  /// @brief     Creates a directory path
+  /// @param     pathName   
+  /// @return    true if a writeable directory.
+  static bool makeDirPath(const std::string &pathName);
 
   /** 
    * Chop up a string into a vector of words.
@@ -270,8 +314,7 @@ public:
    * @param delim - delimiter to split on.
    * @param words - vector to put words into, will be cleared then filled.
    */
-  static void chopString(const std::string &s, char delim, 
-                         std::vector<std::string> &words);
+  static void chopString(const std::string& s,const char delim,std::vector<std::string>& words);
 
   /** 
    * @brief Cut off any preceding and trailing white space.
@@ -357,13 +400,19 @@ public:
   /** 
    * Simple minded function for converting unix paths to windows and
    * vice-versa. Will fail if any drives are specified or any escaping of 
-   * characters are going on...
+   * characters are going on. On windows this method will attempt to handle
+   * long paths/filenames by converting the specified path to a UNC absolute
+   * path with a leading "\\?\".
    * 
-   * @param path - filename/dirname to be converted
+   * @param path -       filename/dirname to be converted
+   * @param singleFile - boolean to indicate if the path/string is a single file 
+   *                     or if it has multiple files (eg a whole command line). 
+   *                     If it is a whole command line then to attempt to handle 
+   *                     long paths/filenames on windows will be attempted
    * 
    * @return converted filename for that platform.
    */
-  static std::string getPathName(const std::string &path);
+  static std::string convertPathName(const std::string &path, bool singleFile = true);
 
 
   /**
@@ -372,7 +421,33 @@ public:
    */
   static int32_t schrageRandom(int32_t *ix);
 
+  static std::string asMB(uint64_t x);
+
   static bool memInfo(uint64_t &free, uint64_t &total, uint64_t &swapAvail,uint64_t& memAvail, bool cap32bit=true);
+
+  static uint64_t getMemFreeAtStart();
+  static uint64_t getMemFreeAtBlock();
+  static void pushMemFreeAtStart();
+  static void popMemFreeAtStart();
+
+  /** 
+   * Determine the available space in bytes on given volume.
+   * 
+   * @param path - path to any file on the volume.
+   * 
+   * @return available space in bytes.
+   */
+  static int64_t getAvailableDiskSpace(const std::string& path);
+
+  /** 
+   * Determine if two files/dirs are on the same volume.
+   * 
+   * @param path1 - first path to any file/dir on the volume.
+   * @param path2 - second path to any file/dir on the volume.
+   * 
+   * @return 1 if same volume, 0 if not, -1 if unsupported platform.
+   */
+  static int64_t isSameVolume(const std::string& path1, const std::string& path2);
 
   /** 
    * Return a pointer to the next character that is white space
@@ -402,15 +477,68 @@ public:
    */
   static bool isFinite(double x);
 
-  inline static void PrintTextClassTitle(const std::string &className){
+   inline static void PrintTextClassTitle(const std::string &className){
     printf ("****%s****\n",className.c_str());
   }
 
   static void PrintTextFunctionTitle(const std::string &className, const std::string &functionName){
     printf ("****%s::%s****\n",className.c_str(),functionName.c_str());
   }
+
+  static std::vector<std::string> addPrefixSuffix(std::vector<std::string> middle, 
+                          const std::string &prefix, const std::string &suffix);
+  static std::vector<std::string> addPrefixSuffix(const char* middle[], 
+                          const std::string &prefix, const std::string &suffix);
+  static std::vector<std::string> addPrefixSuffix(const char* middle[], int size, 
+                          const std::string &prefix, const std::string &suffix);
+  static std::vector<std::string> listToVector(const char* in[], int size);
+  static std::vector<std::string> listToVector(const char* in[]);
   
+  static std::vector<std::string> addPrefixSuffix(const char* middle[],
+                          const std::string &prefix);
+
+  static std::vector<std::string> addPrefixSuffix(std::string middle[], 
+                          const std::string &prefix, const std::string &suffix);
+  static std::vector<std::string> addPrefixSuffix(std::string middle[], int size, 
+                          const std::string &prefix, const std::string &suffix);
+  static std::vector<std::string> listToVector(std::string in[]);
+  static std::vector<std::string> listToVector(std::string in[], int size);
+
+  static std::string joinVectorString(std::vector<std::string> toJoin, const std::string &sep);
+
+private:
+    class StaticMem {
+        public:
+            StaticMem() {
+                uint64_t freeRam = 0, totalRam = 0, swapAvail = 0, memAvail = 0;
+                Util::memInfo(freeRam, totalRam, swapAvail, memAvail, false);
+                m_MemFreeAtStart.push_back(memAvail);
+            }
+            uint64_t getMemFreeAtStart() {
+                return m_MemFreeAtStart[0];
+            }
+            uint64_t getMemFreeAtBlock() {
+                return m_MemFreeAtStart[m_MemFreeAtStart.size()-1];
+            }
+            void pushMemFreeAtStart(uint64_t mem) {
+                m_MemFreeAtStart.push_back(mem);
+            }
+            uint64_t popMemFreeAtStart() {
+                uint64_t mem = m_MemFreeAtStart[m_MemFreeAtStart.size()-1];
+                m_MemFreeAtStart.pop_back();
+                return mem;
+            }
+
+        private:
+            std::vector<uint64_t> m_MemFreeAtStart;
+    };
+
+    static StaticMem &getStaticMem();
+
+
 };
+
+
 
 #ifdef __linux__
 bool memInfo_linux(std::string proc_meminfo_filename,

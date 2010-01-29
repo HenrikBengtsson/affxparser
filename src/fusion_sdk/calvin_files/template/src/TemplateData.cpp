@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "TemplateData.h"
+#include "calvin_files/template/src/TemplateData.h"
+//
 
 using namespace affymetrix_calvin_template;
 

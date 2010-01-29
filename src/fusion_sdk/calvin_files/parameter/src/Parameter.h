@@ -24,11 +24,14 @@
 /*! \file Parameter.h This file provides definitions of parameter values.
  */
 
-#include "AffymetrixBaseTypes.h"
-#include "ParameterException.h"
+#include "calvin_files/parameter/src/ParameterException.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

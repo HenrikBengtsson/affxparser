@@ -18,9 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionGrcFileReader.h"
-#include "GRCFileData.h"
-#include "GridControlFileReader.h"
+#include "calvin_files/fusion/src/FusionGrcFileReader.h"
+//
+#include "calvin_files/parsers/src/GridControlFileReader.h"
+//
+#include "file/GRCFileData.h"
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;

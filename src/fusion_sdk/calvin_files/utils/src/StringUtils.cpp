@@ -17,10 +17,13 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include <sstream>
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cstdlib>
 #include <iomanip>
-#include <stdlib.h>
-#include "StringUtils.h"
+#include <sstream>
+#include <vector>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // ignore deprecated functions warning
@@ -143,3 +146,32 @@ std::wstring StringUtils::ToString(int value, int digits, wchar_t fill)
     throw "No implementation";
 #endif
 }
+
+/*
+ * Split a string using the separator as the delimiter
+ */
+std::vector<std::string> StringUtils::Split(const std::string &inputString, const std::string &separator)
+{
+	  std::vector<std::string> tokens;
+      size_t substrBegin = 0;
+      for (;;)
+      {
+            size_t substrEnd = inputString.find (separator, substrBegin);
+			if (substrEnd == std::string::npos)
+            {
+                  // No more ',' - save what's left, quit.
+				  std::string subString = inputString.substr (substrBegin);
+                  // Avoid returning a null string from a terminating ',' or an empty inputString.
+                  if (! subString.empty())
+                        tokens.push_back (subString);
+                  break;
+            }
+            // Avoid null strings from an initial ',' or ',,'.
+            if (substrEnd != substrBegin)
+                  tokens.push_back (inputString.substr (substrBegin, substrEnd - substrBegin) );
+            // Continue following the ','
+            substrBegin = substrEnd + 1;
+      }
+      return tokens;
+}
+

@@ -100,6 +100,7 @@ The PGF file is based on version 2 of the \link file-format-tsv TSV file format 
       probe (see the type field for the probe level) you would need to complement the sequence in this field before
       looking for matches to transcript sequences; for an antisense target (at) you would need to reverse this
       sequence.
+
 \section types Types
 
 Type columns in PGF files use the following string format to catagorize probesets, atoms, and probes:
@@ -273,8 +274,10 @@ array with PM/MM pairs.
 #ifndef _PGF_FILE_H
 #define _PGF_FILE_H
 
-#include "TsvFile.h"
+#include "file/TsvFile/TsvFile.h"
+//
 #include "util/Err.h"
+//
 
 namespace affx {
   class PgfFile;

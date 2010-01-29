@@ -23,7 +23,9 @@
 
 /*! \file ArrayMedia.h This file a type for defining the media type of an array. */
 
+#include <cstring>
 #include <string>
+//
 
 namespace affymetrix_calvin_array
 {

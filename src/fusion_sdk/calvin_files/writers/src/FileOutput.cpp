@@ -17,22 +17,26 @@
 //
 ////////////////////////////////////////////////////////////////
 
-//
-#include <stdio.h>
-#include <stdlib.h>
-//
-#include "FileOutput.h"
-
 #ifdef _MSC_VER
-#include <winsock2.h>
-#else
+#include "windows.h"
+#endif
+//
+#include "calvin_files/writers/src/FileOutput.h"
+//
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string.h>
+#include <string>
+//
+
+#ifndef _MSC_VER
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <inttypes.h>
 #endif
 
 using namespace affymetrix_calvin_io;
-
 
 /*
  * Write an 8 bit number to the file.

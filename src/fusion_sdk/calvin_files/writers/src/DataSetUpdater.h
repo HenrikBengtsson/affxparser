@@ -23,10 +23,13 @@
 #ifndef _DataSetUpdater_HEADER_
 #define _DataSetUpdater_HEADER_
 
-#include "AffymetrixBaseTypes.h"
-#include <string>
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
 #include <vector>
+//
 
 namespace affymetrix_calvin_io
 {

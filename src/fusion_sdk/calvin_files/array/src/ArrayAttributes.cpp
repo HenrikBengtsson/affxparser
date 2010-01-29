@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "ArrayAttributes.h"
+#include "calvin_files/array/src/ArrayAttributes.h"
+//
 
 using namespace affymetrix_calvin_array;
 

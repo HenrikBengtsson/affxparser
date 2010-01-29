@@ -2,19 +2,19 @@
 //
 // Copyright (C) 2006 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License (version 2) as
+// This program is free software; you can redistribute it and/or modify 
+// it under the terms of the GNU General Public License (version 2) as 
 // published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// 
+// This program is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
 // General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program;if not, write to the
-//
-// Free Software Foundation, Inc.,
+// 
+// You should have received a copy of the GNU General Public License 
+// along with this program;if not, write to the 
+// 
+// Free Software Foundation, Inc., 
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
@@ -28,12 +28,14 @@
 #ifndef MIXEDFILECHECK_H
 #define MIXEDFILECHECK_H
 
+#include "util/Convert.h"
+#include "util/RegressionCheck.h"
+//
+#include <cstring>
 #include <fstream>
 #include <sstream>
 #include <string>
-
-#include "util/Convert.h"
-#include "RegressionCheck.h"
+//
 
 /**
  * Class for testing whether two files, containing both text
@@ -56,7 +58,9 @@ public:
     const unsigned int skipLines, const unsigned int allowedMismatch)
     : m_GeneratedFile (generatedFile), m_GoldFile (goldFile), m_Eps (eps),
       m_SkipLines (skipLines), m_AllowedMismatch (allowedMismatch)
-  {}
+  { 
+        m_Name = Util::fileRoot(generatedFile);
+  }
 
   /**
    * Check that the two files are the same, within tolerances.
@@ -66,6 +70,10 @@ public:
    */
   bool check (std::string& errorMsg)
   {
+    // Convert File Names
+    m_GoldFile = Util::convertPathName(m_GoldFile);
+    m_GeneratedFile = Util::convertPathName(m_GeneratedFile);
+
     // Open files.
     Verbose::out(1,"Reading in file: " + m_GoldFile);
     Verbose::out(1,"Reading in file: " + m_GeneratedFile);
@@ -137,7 +145,7 @@ public:
 	  if (goldSuccess && generatedSuccess)
 	  {
 	    if (fabs (goldDouble - generatedDouble) > m_Eps) {
-          Verbose::out(1,"Numbers differ: " + ToStr(goldDouble) + " and " + ToStr(generatedDouble));
+          //Verbose::out(1,"Numbers differ: " + ToStr(goldDouble) + " and " + ToStr(generatedDouble));
 	      ++mismatchCount;
         }
 	    continue;

@@ -2,19 +2,19 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License (version 2) as
+// This program is free software; you can redistribute it and/or modify 
+// it under the terms of the GNU General Public License (version 2) as 
 // published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// 
+// This program is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
 // General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program;if not, write to the
-//
-// Free Software Foundation, Inc.,
+// 
+// You should have received a copy of the GNU General Public License 
+// along with this program;if not, write to the 
+// 
+// Free Software Foundation, Inc., 
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
@@ -26,14 +26,18 @@
 #ifndef TEXTFILECHECK_H
 #define TEXTFILECHECK_H
 
+#include "util/RegressionCheck.h"
+//
+#include <cstring>
 #include <fstream>
 #include <string>
+//
 
 /**
  * Class for testing that two text files are equal, except
  * for line endings.
  */
-class TextFileCheck
+class TextFileCheck : public RegressionCheck
 {
 public:
   /**
@@ -45,7 +49,9 @@ public:
    */
   TextFileCheck (const std::string &generatedFile, const std::string &goldFile, const unsigned int skipLines)
     : m_GeneratedFile (generatedFile), m_GoldFile (goldFile), m_SkipLines (skipLines)
-  {}
+  {
+        m_Name = Util::fileRoot(generatedFile);
+  }
 
   /**
    * Check that the two files are the same.

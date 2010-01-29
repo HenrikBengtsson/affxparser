@@ -21,8 +21,10 @@
 #ifndef _Coords_HEADER_
 #define _Coords_HEADER_
 
-#include "AffymetrixBaseTypes.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
 #include <vector>
+//
 
 /*! \file Coords.h This file defines array coordinate types.
 */

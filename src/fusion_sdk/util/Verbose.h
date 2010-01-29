@@ -36,17 +36,21 @@
 #include "util/ProgressDot.h"
 #include "util/ProgressHandler.h"
 //
-#include <assert.h>
+#include "apt/apt.h"
+//
+#include <cassert>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+//
 
 /**
  *  Verbose
  * @brief Class for doing logging and some command line ui.
  */
-class Verbose {
+class APTLIB_API Verbose {
 
 public:
   /**
@@ -57,8 +61,6 @@ public:
   public: 
     Param(ProgressHandler *progHandler, MsgHandler *msgHandler, MsgHandler *warnHandler) {
       m_Verbosity = 1;
-      m_DotMod = 10;
-      m_DotCount = 0;
       m_NewLine = true;
       m_Output = true;
       m_ProHandler.push_back(progHandler);
@@ -72,8 +74,8 @@ public:
     bool m_NewLine;   ///< Was a new line outputted after last message?
     bool m_Output;    ///< Do we report messages
     int m_Verbosity;  ///< What level of messages is wanted, larger num == more msgs
-    int m_DotMod;     ///< How often do we print a dot when dot() is called?
-    int m_DotCount;   ///< How many times has dot() been called?
+    std::vector<int> m_DotMod;     ///< How often do we print a dot when dot() is called?
+    std::vector<int> m_DotCount;   ///< How many times has dot() been called?
   };
   
   /** 
@@ -81,70 +83,19 @@ public:
    * initialization as local static variables work more consistently.
    * @return Param - Our static parameters for this class.
    */
-  static Param &getParam() {
-    // Avoid weird windows .NET/Forms bug where linking to cout/cerr can cause problems...
-  #ifdef _WINDOWS 
-    static ProgressDot progHandler(0, NULL);
-    static MsgStream  msgHandler(0, NULL);
-  #else
-    // Normal console mode is ok.
-    static ProgressDot progHandler(1, &std::cerr);
-    static MsgStream msgHandler(1, &std::cerr);
-  #endif
-    // By default we just use a normal message handler as the warning handler.
-    static Param m_Param(&progHandler, &msgHandler, &msgHandler);
-    return m_Param;
-  }
-
-  /// @brief Functions to add and remove handlers for communcation functions.
-  static void pushProgressHandler(ProgressHandler *handler) {
-    getParam().m_ProHandler.push_back(handler);
-  }
-
-  static void popProgressHandler() {
-    getParam().m_ProHandler.pop_back();
-  }
-
-  static void pushMsgHandler(MsgHandler *handler) {
-    getParam().m_MsgHandler.push_back(handler);
-  }
-
-  static void popMsgHandler() {
-    getParam().m_MsgHandler.pop_back();
-  }
-
-  static void pushWarnHandler(MsgHandler *handler) {
-    getParam().m_WarnHandler.push_back(handler);
-  }
-
-  static void popWarnHandler() {
-    getParam().m_WarnHandler.pop_back();
-  }
-
-  static void progressBegin(int verbosity, const std::string &msg, int total, int dotMod, int maxCalls) {
-    std::vector<ProgressHandler *> &m_Handle = getParam().m_ProHandler;
-    getParam().m_DotMod = dotMod;
-    getParam().m_DotCount = 0;
-    // if we have handlers let them know we're beginning.
-    for(unsigned int i = 0; i < m_Handle.size(); i++) {
-      ProgressHandler *handle = m_Handle[i];
-      if(handle->handleAll()) 
-        handle->progressBegin(verbosity, msg, maxCalls);
-      else
-        handle->progressBegin(verbosity, msg, total);
-    }
-  }
+  static Param &getParam();
   
-  static void progressStep(int verbosity);
+  /// @brief Functions to add and remove handlers for communcation functions.
+  static void pushProgressHandler(ProgressHandler *handler);
+  static void popProgressHandler();
+  static void pushMsgHandler(MsgHandler *handler);
+  static void popMsgHandler();
+  static void pushWarnHandler(MsgHandler *handler);
+  static void popWarnHandler();
 
-  static void progressEnd(int verbosity, const std::string &msg) {
-    Param &p = getParam();
-    if(verbosity <= p.m_Verbosity) {
-      for(unsigned int i = 0; i < p.m_ProHandler.size(); i++) {
-        p.m_ProHandler[i]->progressEnd(verbosity, msg);
-      }
-    }
-  }
+  static void progressBegin(int verbosity, const std::string &msg, int total, int dotMod, int maxCalls);
+  static void progressStep(int verbosity);
+  static void progressEnd(int verbosity, const std::string &msg);
 
   /** 
    * @brief Set whether or not output messages are logged
@@ -152,25 +103,14 @@ public:
    *
    * @param output - true or false
    */  
-  static void setOutput(bool output) {
-    Param &p = getParam();
-    p.m_Output = output;
-  }
+  static void setOutput(bool output);
 
   /** 
    * @brief Set the level of verbosity desired. 0 == no messages
    * 1 == normal messages, 2,3,4, etc. == more verbose.
    * @param level - level of verbosity desired.
    */  
-  static void setLevel(int level) {
-    Param &p = getParam();
-    for(unsigned int i = 0; i < p.m_ProHandler.size(); i++) {
-      p.m_ProHandler[i]->setBaseVerbosity(level);
-    }
-    for(unsigned int i = 0; i < p.m_MsgHandler.size(); i++) {
-      p.m_MsgHandler[i]->setBaseVerbosity(level);
-    }
-  }
+  static void setLevel(int level);
 
   /** 
    * @brief Print a message to the stream.
@@ -178,14 +118,7 @@ public:
    * @param s - Message to be printed.
    * @param nl - Should a newline be appended to message?
    */
-  static void out(int level, const std::string &s, bool nl = true) {
-    Param &p = getParam();
-    if(p.m_Output) {
-        for(unsigned int i = 0; i < p.m_MsgHandler.size(); i++) {
-            p.m_MsgHandler[i]->message(level, s, nl);
-        }
-    }
-  }
+  static void out(int level, const std::string &s, bool nl = true);
 
   /** 
    * @brief Print a warning message.
@@ -193,14 +126,7 @@ public:
    * @param s - Message to be printed.
    * @param nl - Should a newline be appended to message?
    */
-  static void warn(int level, const std::string &s, bool nl = true, const std::string prefix = "\nWARNING: ") {
-    Param &p = getParam();
-    if(p.m_Output) {
-        for(unsigned int i = 0; i < p.m_WarnHandler.size(); i++) {
-            p.m_WarnHandler[i]->message(level, prefix + s, nl);
-        }
-    }
-  }
+  static void warn(int level, const std::string &s, bool nl = true, const std::string prefix = "\nWARNING: ");
 
 };
 

@@ -17,14 +17,20 @@
 //
 ////////////////////////////////////////////////////////////////
 
+#ifdef _MSC_VER
+#include "windows.h"
+#endif
 
-#include "FileInput.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "calvin_files/parsers/src/FileInput.h"
+//
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <string.h>
+#include <string>
+//
 
 #ifdef _MSC_VER
-#include <winsock2.h>
 #pragma warning(disable: 4996)
 #else
 #include <sys/types.h>

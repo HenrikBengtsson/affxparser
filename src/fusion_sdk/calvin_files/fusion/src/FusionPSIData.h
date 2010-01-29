@@ -24,7 +24,8 @@
 /*! \file FusionPSIData.h This file defines the Fusion PSI Data classes
  */
 
-#include "PSIFileData.h"
+#include "file/PSIFileData.h"
+//
 using namespace affxpsi;
 
 namespace affymetrix_fusion_io

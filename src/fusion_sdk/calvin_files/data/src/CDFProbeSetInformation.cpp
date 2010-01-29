@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CDFData.h"
-#include "DataSet.h"
-#include "CDFProbeSetInformation.h"
-#include "CDFProbeGroupInformation.h"
+#include "calvin_files/data/src/CDFProbeSetInformation.h"
+//
+#include "calvin_files/data/src/CDFData.h"
+#include "calvin_files/data/src/CDFProbeGroupInformation.h"
+#include "calvin_files/data/src/DataSet.h"
+//
 
 using namespace affymetrix_calvin_io;
 

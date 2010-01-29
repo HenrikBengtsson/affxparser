@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "TextFileWriter.h"
+#include "calvin_files/writers/src/TextFileWriter.h"
+//
 
 using namespace affymetrix_calvin_io;
 

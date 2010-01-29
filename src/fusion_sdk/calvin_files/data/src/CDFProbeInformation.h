@@ -23,13 +23,14 @@
 
 /*! \file CDFProbeInformation.h This file defines the CDFProbeInformation class.
  */
-
-#include "DataSet.h"
-#include "AffymetrixBaseTypes.h"
-
 #ifdef _MSC_VER
 #include <windows.h>
 #endif
+
+#include "calvin_files/data/src/DataSet.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+
 
 namespace affymetrix_calvin_io
 {

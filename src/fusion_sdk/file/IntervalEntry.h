@@ -22,8 +22,10 @@
 #ifndef _IntervalEntry_HEADER_
 #define _IntervalEntry_HEADER_
 
+#include <cstring>
 #include <list>
 #include <string>
+//
 
 /*! A type to define a sequence interval. */
 typedef struct _IntervalEntry

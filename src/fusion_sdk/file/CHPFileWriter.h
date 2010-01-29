@@ -31,12 +31,15 @@
 
 //////////////////////////////////////////////////////////////////////
 
+#include "file/CDFFileData.h"
+#include "file/CHPFileData.h"
+//
+#include <cstring>
+#include <fstream>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
-#include <fstream>
-#include "CHPFileData.h"
-#include "CDFFileData.h"
+//
 
 //////////////////////////////////////////////////////////////////////
 

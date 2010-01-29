@@ -24,12 +24,15 @@
 /*! \file DataGroupHeaderReader.h This file provides methods to read the DataGroupHeaders from a file.
  */
 
-#include "FileException.h"
-#include "AffymetrixBaseTypes.h"
-#include "AffymetrixGuid.h"
-#include "GenericData.h"
-#include <string>
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/parsers/src/FileException.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // dont show warnings about throw keyword on function declarations.
@@ -84,6 +87,11 @@ public:
 	u_int32_t ReadHeader(std::ifstream& fileStream, DataGroupHeader& dch);
 
 protected:
+	/*! Read the file position of the start of the DataGroup.
+	 *	@param fileStream Open fstream positioned at the start of the DataGroupHeader.
+	 *	@param dsh Reference to the DataGroupHeader object to fill.
+	 */
+	void ReadDataGroupStartFilePos(std::ifstream& fileStream, DataGroupHeader& grpHdr);
 	/*! Reads the file position of the next DataGroup.
 	 *	@param fileStream Open fstream positioned at the start of the file position of a DataGroupHeader.
 	 *	@param dch DataGroupHeader object in which to write the file position.

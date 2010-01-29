@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "GenericDataHeaderWriter.h"
-#include "FileOutput.h"
+#include "calvin_files/writers/src/GenericDataHeaderWriter.h"
+//
+#include "calvin_files/writers/src/FileOutput.h"
+//
 
 using namespace affymetrix_calvin_io;
 

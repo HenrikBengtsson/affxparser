@@ -31,7 +31,9 @@
 #ifndef ERRHANDLER_H
 #define ERRHANDLER_H
 
+#include <cstring>
 #include <string>
+//
 
 /**
  * Abstract base class (aka interface) for handling errors that come from

@@ -25,10 +25,12 @@
 #ifndef SEQUENTIAL_CLF_FILE_H
 #define SEQUENTIAL_CLF_FILE_H
 
-#include <assert.h>
-
-#include "TsvFile.h"
+#include "file/TsvFile/TsvFile.h"
+//
 #include "util/Convert.h"
+//
+#include <cassert>
+//
 
 /**
  * Class for calculating probe coordinates using a sequential

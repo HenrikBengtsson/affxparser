@@ -20,7 +20,7 @@
 // 
 // affy/sdk/file/TsvFile/TsvFileDiff.cpp ---
 // 
-// $Id: TsvFileDiff.cpp,v 1.2 2008/07/10 04:47:26 awilli Exp $
+// $Id: TsvFileDiff.cpp,v 1.3 2009/09/18 03:37:25 mspald Exp $
 // 
 
 //
@@ -29,7 +29,8 @@
 #include "util/Err.h"
 #include "util/Guid.h"
 //
-#include <math.h>
+#include <cmath>
+//
 
 //////////
 

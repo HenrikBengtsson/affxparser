@@ -25,11 +25,13 @@
  *	is written to the file using Windows memory-mapping.
  */
 
+#include "calvin_files/data/src/DATData.h"
+#include "calvin_files/writers/src/DATFileWriter.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+#include "calvin_files/writers/src/MMDataSetDataWriter.h"
+//
 #include <fstream>
-#include "DATData.h"
-#include "DATFileWriter.h"
-#include "GenericFileWriter.h"
-#include "MMDataSetDataWriter.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

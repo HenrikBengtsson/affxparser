@@ -25,18 +25,20 @@
  * @date   Wed May  4 14:53:03 2005
  * 
  * @brief  Utility functions for converting between types.
- * 
  */
-#ifndef CONVERT_H
-#define CONVERT_H
 
+#ifndef _UTIL_CONVERT_H_
+#define _UTIL_CONVERT_H_
+
+//
 #include "portability/affy-base-types.h"
-#include <math.h>
+//
+#include <cmath>
+#include <cstring>
 #include <sstream>
 #include <string>
-
-
-//#include <iostream>
+#include <vector>
+//
 
 /** Little template function to make string conversion easy. 
     this isn't the fastest way to do things, but it is easy. */
@@ -219,6 +221,14 @@ class Convert {
    */
   static float floatLowPrecision(float f);
 
+  /**
+   * Utility function to cut a delimited string into a vector of ints.
+   *
+   * @param s - delimited string.
+   * @param delim - delimiter to chop on.
+   * @param vec - vector to be filled in.
+   */
+  static void strToIntVec(const std::string &s,char delim,std::vector<int> &vec);
 };
 
-#endif /* CONVERT_H */
+#endif /* _UTIL_CONVERT_H_ */

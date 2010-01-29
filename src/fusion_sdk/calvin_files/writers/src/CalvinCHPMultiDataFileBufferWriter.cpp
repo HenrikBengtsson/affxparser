@@ -25,17 +25,27 @@
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
-#include <winsock2.h>
 #else
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <inttypes.h>
 #endif
 
-#include "CalvinCHPFileUpdater.h"
-#include "CalvinCHPMultiDataFileBufferWriter.h"
-#include "FileOutput.h"
-#include "FileIO.h"
+//
+#include "calvin_files/writers/src/CalvinCHPMultiDataFileBufferWriter.h"
+//
+#include "calvin_files/writers/src/CalvinCHPFileUpdater.h"
+#include "calvin_files/writers/src/FileOutput.h"
+//
+#include "file/FileIO.h"
+//
+#include <cstring>
+#include <string.h>
+#include <string>
+//
+
+
+
 
 using namespace std;
 using namespace affymetrix_calvin_io;
@@ -283,7 +293,7 @@ void CHPMultiDataFileBufferWriter::WriteMultiDataGenotypeEntry(MultiDataType dat
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
-	MmSetUInt32_N((uint32_t *)pbuffer, maxProbeSetNameLength[dataType]);
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.name.length());
 	pbuffer += sizeof(int);
 	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
 	pbuffer += maxProbeSetNameLength[dataType];
@@ -308,7 +318,7 @@ void CHPMultiDataFileBufferWriter::WriteMultiDataExpressionEntry(MultiDataType d
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
-	MmSetUInt32_N((uint32_t *)pbuffer, maxProbeSetNameLength[dataType]);
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.name.length());
 	pbuffer += sizeof(int);
 	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
 	pbuffer += maxProbeSetNameLength[dataType];
@@ -331,7 +341,7 @@ void CHPMultiDataFileBufferWriter::WriteMultiDataCopyNumberEntry(MultiDataType d
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
-	MmSetUInt32_N((uint32_t *)pbuffer, maxProbeSetNameLength[dataType]);
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.name.length());
 	pbuffer += sizeof(int);
 	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
 	pbuffer += maxProbeSetNameLength[dataType];
@@ -340,6 +350,60 @@ void CHPMultiDataFileBufferWriter::WriteMultiDataCopyNumberEntry(MultiDataType d
 	MmSetUInt32_N((uint32_t *)pbuffer, entry.position);
 	pbuffer += sizeof(entry.position);
 	CopyMetricToBuffer(entry.metrics, pbuffer);
+	dataBuffers[dataType][target].push_back(buffer);
+	m_BufferSize += dataBufferSz[dataType];
+
+	if (m_BufferSize > m_MaxBufferSize)
+	{
+		FlushBuffer();
+	}
+}
+
+void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target, const AllelePeaks &entry)
+{
+	if (dataBufferSz[dataType] == 0)
+		dataBufferSz[dataType] = maxProbeSetNameLength[dataType] + sizeof(int) + sizeof(entry.chr) + sizeof(entry.position) + GetMetricBufferSize(entry.peaks);
+	char *buffer = new char[dataBufferSz[dataType]];
+	memset(buffer, 0, dataBufferSz[dataType]);
+	char *pbuffer = buffer;
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.name.length());
+	pbuffer += sizeof(int);
+	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
+	pbuffer += maxProbeSetNameLength[dataType];
+	MmSetUInt8((uint8_t *)pbuffer, entry.chr);
+	pbuffer += sizeof(entry.chr);
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.position);
+	pbuffer += sizeof(entry.position);
+	CopyMetricToBuffer(entry.peaks, pbuffer);
+	dataBuffers[dataType][target].push_back(buffer);
+	m_BufferSize += dataBufferSz[dataType];
+
+	if (m_BufferSize > m_MaxBufferSize)
+	{
+		FlushBuffer();
+	}
+}
+
+void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target, const MarkerABSignals &entry)
+{
+	if (dataBufferSz[dataType] == 0)
+		dataBufferSz[dataType] = sizeof(entry.index) + sizeof(entry.aSignal) + sizeof(entry.bSignal) + sizeof(entry.scar);
+	char *buffer = new char[dataBufferSz[dataType]];
+	memset(buffer, 0, dataBufferSz[dataType]);
+	char *pbuffer = buffer;
+
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.index);
+	pbuffer += sizeof(int);
+
+	MmSetFloat_N((float *)pbuffer, entry.aSignal);
+	pbuffer += sizeof(float);
+
+	MmSetFloat_N((float *)pbuffer, entry.bSignal);
+	pbuffer += sizeof(float);
+
+	MmSetFloat_N((float *)pbuffer, entry.scar);
+	pbuffer += sizeof(float);
+
 	dataBuffers[dataType][target].push_back(buffer);
 	m_BufferSize += dataBufferSz[dataType];
 
@@ -358,7 +422,7 @@ void CHPMultiDataFileBufferWriter::WriteMultiDataCytoRegionEntry(MultiDataType d
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
-	MmSetUInt32_N((uint32_t *)pbuffer, maxProbeSetNameLength[dataType]);
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.name.length());
 	pbuffer += sizeof(int);
 	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
 	pbuffer += maxProbeSetNameLength[dataType];
@@ -391,7 +455,7 @@ void CHPMultiDataFileBufferWriter::WriteMultiDataCopyNumberVariationRegionEntry(
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
-	MmSetUInt32_N((uint32_t *)pbuffer, maxProbeSetNameLength[dataType]);
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.name.length());
 	pbuffer += sizeof(int);
 	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
 	pbuffer += maxProbeSetNameLength[dataType]; 
@@ -429,7 +493,7 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
-	MmSetUInt32_N((uint32_t*)pbuffer, maxProbeSetNameLength[dataType]);
+	MmSetUInt32_N((uint32_t*)pbuffer, entry.name.length());
 	pbuffer += sizeof(int);
 	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
 	pbuffer += maxProbeSetNameLength[dataType];
@@ -483,7 +547,7 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
-	MmSetUInt32_N((uint32_t *)pbuffer, maxProbeSetNameLength[dataType]);
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.name.length());
 	pbuffer += sizeof(int);
 	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
 	pbuffer += maxProbeSetNameLength[dataType];
@@ -545,7 +609,7 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
-	MmSetUInt32_N((uint32_t*)pbuffer, maxProbeSetNameLength[dataType]);
+	MmSetUInt32_N((uint32_t*)pbuffer, entry.name.length());
 	pbuffer += sizeof(int);
 	memcpy(pbuffer, entry.name.c_str(), entry.name.length());
 	pbuffer += maxProbeSetNameLength[dataType];
@@ -576,6 +640,8 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	{
 		dataBufferSz[dataType] = 
             sizeof(entry.chr) +
+			sizeof(int) + 
+			maxProbeSetNameLength[dataType] +
 			sizeof(entry.startIndex) +
 			sizeof(entry.markerCount) +
             sizeof(entry.minSignal) +
@@ -591,6 +657,12 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 
     MmSetUInt8((uint8_t*) pbuffer, entry.chr);
 	pbuffer += sizeof(u_int8_t);
+
+	MmSetUInt32_N((u_int32_t *)pbuffer, entry.display.length());
+	pbuffer += sizeof(int);
+
+	memcpy(pbuffer, entry.display.c_str(), entry.display.length());
+	pbuffer += maxProbeSetNameLength[dataType];
 
 	MmSetUInt32_N((u_int32_t *)pbuffer, entry.startIndex);
 	pbuffer += sizeof(u_int32_t);
@@ -629,14 +701,12 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	if (dataBufferSz[dataType] == 0)
 	{
 		dataBufferSz[dataType] = 
-            sizeof(int) +
-            maxProbeSetNameLength[dataType] + 
+			sizeof(entry.segmentId) +
             sizeof(entry.chr) +
             sizeof(entry.startPosition) +
             sizeof(entry.stopPosition) +
-            sizeof(entry.call) +
-            sizeof(entry.confidence) +
-            sizeof(entry.markerCount) +
+			sizeof(entry.markerCount) +
+            sizeof(entry.meanMarkerDistance) +
             GetMetricBufferSize(entry.metrics);
 	}
 
@@ -644,11 +714,8 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
 
-	MmSetUInt32_N((uint32_t *)pbuffer, maxProbeSetNameLength[dataType]);
-	pbuffer += sizeof(int);
-
-	memcpy(pbuffer, entry.segmentId.c_str(), entry.segmentId.length());
-	pbuffer += maxProbeSetNameLength[dataType];
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.segmentId);
+	pbuffer += sizeof(entry.segmentId);
 
 	MmSetUInt8((uint8_t *)pbuffer, entry.chr);
 	pbuffer += sizeof(entry.chr);
@@ -659,14 +726,11 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	MmSetUInt32_N((uint32_t *)pbuffer, entry.stopPosition);
 	pbuffer += sizeof(entry.stopPosition);
 
-	MmSetUInt8((uint8_t *)pbuffer, entry.call);
-	pbuffer += sizeof(entry.call);
-
-	MmSetFloat_N((float *)pbuffer, entry.confidence);
-	pbuffer += sizeof(entry.confidence);
-
-    MmSetUInt32_N((uint32_t *)pbuffer, entry.markerCount);
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.markerCount);
 	pbuffer += sizeof(entry.markerCount);
+
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.meanMarkerDistance);
+	pbuffer += sizeof(entry.meanMarkerDistance);
 
 	CopyMetricToBuffer(entry.metrics, pbuffer);
 
@@ -684,8 +748,7 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	if (dataBufferSz[dataType] == 0)
 	{
 		dataBufferSz[dataType] = 
-            sizeof(int) +
-            maxProbeSetNameLength[dataType] + 
+            sizeof(entry.segmentId) + 
             sizeof(entry.chr) +
             sizeof(entry.startPosition) +
             sizeof(entry.stopPosition) +
@@ -703,11 +766,8 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
 
-	MmSetUInt32_N((uint32_t *)pbuffer, maxProbeSetNameLength[dataType]);
-	pbuffer += sizeof(int);
-
-	memcpy(pbuffer, entry.segmentId.c_str(), entry.segmentId.length());
-	pbuffer += maxProbeSetNameLength[dataType];
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.segmentId);
+	pbuffer += sizeof(entry.segmentId);
 
 	MmSetUInt32_N((uint32_t *)pbuffer, entry.referenceSampleKey);
 	pbuffer += sizeof(entry.referenceSampleKey);
@@ -1040,6 +1100,28 @@ void CHPMultiDataFileBufferWriter::FlushBuffer()
 			if (dataBuffers.find(dataType) != dataBuffers.end() && dataBuffers[dataType][target].size() > 0)
 			{
                 updater.UpdateFamilialSampleEntryBuffer(dataType,
+                    rowIndexes[dataType][target],
+                    dataBufferSz[dataType],
+                    dataBuffers[dataType][target]);
+				rowIndexes[dataType][target] += (int) dataBuffers[dataType][target].size();
+                ClearBuffer(dataBuffers[dataType][target]);
+			}
+
+            dataType = AllelePeaksMultiDataType;
+			if (dataBuffers.find(dataType) != dataBuffers.end() && dataBuffers[dataType][target].size() > 0)
+			{
+				updater.UpdateMultiDataAllelePeaksEntryBuffer(dataType,
+                    rowIndexes[dataType][target],
+                    dataBufferSz[dataType],
+                    dataBuffers[dataType][target]);
+				rowIndexes[dataType][target] += (int) dataBuffers[dataType][target].size();
+                ClearBuffer(dataBuffers[dataType][target]);
+			}
+
+            dataType = MarkerABSignalsMultiDataType;
+			if (dataBuffers.find(dataType) != dataBuffers.end() && dataBuffers[dataType][target].size() > 0)
+			{
+				updater.UpdateMultiDataMarkerABSignalsEntryBuffer(dataType,
                     rowIndexes[dataType][target],
                     dataBufferSz[dataType],
                     dataBuffers[dataType][target]);

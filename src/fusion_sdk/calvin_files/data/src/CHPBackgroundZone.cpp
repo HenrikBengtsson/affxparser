@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CHPBackgroundZone.h"
+#include "calvin_files/data/src/CHPBackgroundZone.h"
+//
 
 using namespace affymetrix_calvin_io;
 

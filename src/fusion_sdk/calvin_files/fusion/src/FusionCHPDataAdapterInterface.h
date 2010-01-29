@@ -25,16 +25,19 @@
  *	the FusionCHPData class and the Calvin and GCOS adapter classes.
  */
 
-#include <string>
+#include "calvin_files/data/src/CHPData.h"					// path required to distinguish between Calvin and GCOS files.
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/fusion/src/FusionProbeSetResults.h"
+#include "calvin_files/fusion/src/FusionTagValuePairType.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include "file/CHPFileData.h"				// path required to distinguish between Calvin and GCOS files.
+//
+#include <cstring>
 #include <list>
-
-#include "CHPFileData.h"				// path required to distinguish between Calvin and GCOS files.
-#include "CHPData.h"					// path required to distinguish between Calvin and GCOS files.
-#include "FusionTagValuePairType.h"
-#include "StringUtils.h"
-#include "FusionProbeSetResults.h"
-#include "GenericData.h"
-#include "AffymetrixGuid.h"
+#include <string>
+//
 
 namespace affymetrix_fusion_io
 {

@@ -17,11 +17,17 @@
 //
 ////////////////////////////////////////////////////////////////
 
-
-#include "AuditFileConstants.h"
-#include "AuditFileReader.h"
-#include "StringUtils.h"
+//
+#include "calvin_files/parsers/src/AuditFileReader.h"
+//
+#include "calvin_files/parsers/src/AuditFileConstants.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string.h>
+#include <string>
+//
 
 using namespace affymetrix_calvin_array;
 using namespace affymetrix_calvin_io;

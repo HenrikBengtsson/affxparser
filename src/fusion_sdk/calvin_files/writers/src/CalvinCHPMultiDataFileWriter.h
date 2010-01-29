@@ -21,12 +21,14 @@
 
 /*! \file CalvinCHPMultiDataFileWriter.h Contains classes to write a multi data CHP file. */
 
-#include <vector>
+#include "calvin_files/data/src/CHPMultiDataData.h"
+#include "calvin_files/data/src/ProbeSetMultiDataData.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
 #include <fstream>
 #include <map>
-#include "CHPMultiDataData.h"
-#include "GenericFileWriter.h"
-#include "ProbeSetMultiDataData.h"
+#include <vector>
+//
 
 namespace affymetrix_calvin_io
 {
@@ -159,6 +161,16 @@ public:
 	 * @param p A pointer to a multi data entry.
 	 */
     void WriteEntry(const affymetrix_calvin_data::FamilialSegmentOverlap & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+	void WriteEntry(const affymetrix_calvin_data::AllelePeaks & p);
+
+	/*! Write an entry.
+	 * @param p A pointer to a multi data entry.
+	 */
+	void WriteEntry(const affymetrix_calvin_data::MarkerABSignals & p);
 
 	/*! Seeks to the data set.
      * @param dataType The data type

@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CDFData.h"
-#include "DataSet.h"
-#include "CDFProbeGroupInformation.h"
-#include "CDFProbeInformation.h"
+#include "calvin_files/data/src/CDFProbeGroupInformation.h"
+//
+#include "calvin_files/data/src/CDFData.h"
+#include "calvin_files/data/src/CDFProbeInformation.h"
+#include "calvin_files/data/src/DataSet.h"
+//
 
 using namespace affymetrix_calvin_io;
 
@@ -58,6 +60,8 @@ void CDFProbeGroupInformation::SetDataSet(DataSet* ds)
 	cellCnt = 0;
 	wobbleSituation = 0;
 	alleleCode = 0;
+	channel = 0;
+	repType = 0;
 	probeSetNumber = 0;
 	cellsPerList = 0;
 
@@ -81,11 +85,19 @@ void CDFProbeGroupInformation::SetDataSet(DataSet* ds)
 
 	// Wobble situation 
 //	if (dsh.FindNameValParam(CDF_WOBBLE_SITUATION, nvt))
-//		wobbleSituation = nvt.GetValueUInt8();
+//		wobbleSituation = nvt.GetValueUInt16();
 
 	// Allele code
 //	if (dsh.FindNameValParam(CDF_ALLELE, nvt))
-//		allele = nvt.GetValueUInt8();
+//		alleleCode = nvt.GetValueUInt16();
+
+	// Channel
+//	if (dsh.FindNameValParam(CDF_CHANNEL, nvt))
+//		channel = nvt.GetValueUInt8();
+
+	// Probe replication type
+//	if (dsh.FindNameValParam(CDF_REP_TYPE, nvt))
+//		repType = nvt.GetValueUInt8();
 
 	// List (atom)
 	if (dsh.FindNameValParam(CDF_ATOMS, nvt))

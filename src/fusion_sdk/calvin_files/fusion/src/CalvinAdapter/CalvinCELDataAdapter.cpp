@@ -19,12 +19,15 @@
 
 
 
-#include "CalvinCELDataAdapter.h"
-#include "CelFileReader.h"
-#include "CELAlgorithmParameterNames.h"
-#include "GenericDataTypes.h"
-#include "StringUtils.h"
-#include <stdlib.h>
+#include "calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.h"
+//
+#include "calvin_files/data/src/GenericDataTypes.h"
+#include "calvin_files/parameter/src/CELAlgorithmParameterNames.h"
+#include "calvin_files/parsers/src/CelFileReader.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cstdlib>
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;
@@ -420,9 +423,21 @@ void CalvinCELDataAdapter::GetEntry(int x, int y, FusionCELFileEntryType &entry)
  */
 float CalvinCELDataAdapter::GetIntensity(int index)
 {
+  // allocate a vector, fill it with one item
 	FloatVector v;
 	calvinCel.GetIntensities(index, 1, v);
+  // and return that one item.
 	return v.at(0);
+}
+
+/*
+ */
+int CalvinCELDataAdapter::GetIntensities(int index,std::vector<float>& intensities)
+{
+  // Pass the vector along to get filled.
+	calvinCel.GetIntensities(index, intensities.size(), intensities);
+  // no errors for now.
+  return 0;
 }
 
 /*
@@ -557,6 +572,32 @@ bool CalvinCELDataAdapter::ReadEx(const char *filename, int /*state*/)
 {
 	calvinCel.SetFilename(filename);
 	return Read(false);
+}
+
+/*
+ * Returns the list of parameters associated with a data set
+ */
+ParameterNameValueTypeList CalvinCELDataAdapter::GetDataSetParameters(const std::wstring &setName)
+{
+	return calvinCel.GetDataSetParameters(setName);
+}
+
+/* Sets the active data group for a multi-group CEL file. Default is the first group. */
+void CalvinCELDataAdapter::SetActiveDataGroup(const std::wstring &groupName)
+{
+	calvinCel.SetActiveChannel(groupName);
+}
+
+/* Is this a multi-color CEL file? */
+bool CalvinCELDataAdapter::IsMultiColor()
+{
+	return calvinCel.IsMultiColor();
+}
+
+/* Returns a list of the channel (ie data group) names */
+WStringVector CalvinCELDataAdapter::GetChannels()
+{
+	return calvinCel.GetChannels();
 }
 
 /*

@@ -24,8 +24,10 @@
 /*! \file DataSetReader.h This file provides methods to read the data of a DataSet.
  */
 
+#include "calvin_files/data/src/DataSetHeader.h"
+//
 #include <fstream>
-#include "DataSetHeader.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
@@ -60,6 +62,13 @@ public:
 	 *	@return DataSetHeader
 	 */
 	const DataSetHeader& GetDataSetHeader(){ return dataSetHdr; }
+
+	/*! Reads a byte buffer from the DataSet.  File stream position is incremented
+	 *	@param buffer Pointer to the buffer.
+	 *  @param count Size of the buffer.
+	 *  @return The number of bytes read.
+	 */
+	int32_t ReadBuffer(char* buffer, int32_t count);
 
 	/*! Read int8_t from the DataSet.  File stream position is incremented
 	 *	@param value Variable reference to receive the value

@@ -3,24 +3,24 @@
 // Copyright (C) 2005 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License
+// it under the terms of the GNU Lesser General Public License 
 // (version 2.1) as published by the Free Software Foundation.
-//
+// 
 // This library is distributed in the hope that it will be useful, but
 // WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 // or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
 // for more details.
-//
+// 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library; if not, write to the Free Software Foundation, Inc.,
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
 /**
- * \file   TsvFile.h
- * \brief  Headers for the TsvFile classes.
- *         Read \link file-format-tsv the TsvFile format \endlink for an overview.
+ * @file   TsvFile.h
+ * @brief  Headers for the TsvFile classes.
+ *         Read @link file-format-tsv the TsvFile format @endlink for an overview.
  */
 
 #ifndef _TSVFILE_H_
@@ -30,12 +30,14 @@
 #include "portability/affy-base-types.h"
 #include "util/Err.h"
 //
+#include <cstring>
 #include <fstream>
 #include <map>
 #include <sstream>
 #include <streambuf>
 #include <string>
 #include <vector>
+//
 
 /// The default number of decimal places in output
 #define TSV_DEFAULT_PRECISION 6
@@ -155,7 +157,10 @@ namespace affx {
   void trim(std::string& str);
   void dequote(std::string& str);
   int  splitstr(const std::string& str,char c,std::vector<std::string>& vec);
-  int unescapechar(int c);
+  //
+  int unescapeChar(int c);
+  int escapeChar(int c);
+  std::string escapeString(const std::string& str,const char escapeChar);
   //
   bool header_ptr_less(const affx::TsvFileHeaderLine* a,const affx::TsvFileHeaderLine* b);
 };
@@ -188,8 +193,10 @@ public:
   unsigned int*  m_ptr_uint;      ///< pointer to unsigned int
   uint64_t*    m_ptr_ulonglong;   ///< pointer to unsigned long long
 
-  ///
+  //
   TsvFileBinding();
+  ~TsvFileBinding();
+  //
   void clear();
   std::string get_type_str();
 };
@@ -260,9 +267,10 @@ public:
   ~TsvFileField();
 
   //
+  void init();
+  void clear();
   bool isNull();
   bool isEmpty();
-  void clear();
 
   //
   int setBuffer(const std::string& str);
@@ -270,6 +278,7 @@ public:
   //int setInternCacheSize(int size);
   void convertToString();
 
+  std::string get_name();
   affx::tsv_type_t get_type();
   int get_max_size();
   affx::tsv_type_t set_type(affx::tsv_type_t ctype);
@@ -308,16 +317,16 @@ public:
 #endif
 
   ///
+  void linkedvars_assign(affx::TsvFile* tsvfile);
   void linkedvar_push(affx::TsvFileBinding* var);
   void linkedvars_clear();
-  void linkedvars_assign(affx::TsvFile* tsvfile);
   //
   std::string get_bound_types_str();
 };
 
 //////////
 
-/// \brief TsvFileIndex maps values to line positions
+/// @brief TsvFileIndex maps values to line positions
 class affx::TsvFileIndex {
 public:
   /// Maybe we should inherit
@@ -330,8 +339,8 @@ public:
   int  m_flags;  ///< flags for the index (unused)
   bool m_done;   ///< has the index been populated?
 
-  /// \todo Change this to something denser
-  std::multimap<std::string,linenum_t> m_index_str2line;    ///< map ofstring value to lines
+  // @todo Change this to something denser
+  std::multimap<std::string,linenum_t> m_index_str2line;    ///< map of string value to lines
   std::multimap<int        ,linenum_t> m_index_int2line;    ///< map of int values to lines
   std::multimap<double     ,linenum_t> m_index_double2line; ///< map of double values to lines
   std::multimap<unsigned int,linenum_t> m_index_uint2line;     ///< map of unsigned int values to lines
@@ -376,6 +385,9 @@ public:
 
   //
   bool operator<(const affx::TsvFileHeaderLine& b) const;
+
+  void print();
+
 };
 
 //////////
@@ -456,7 +468,7 @@ private:
   /// The columns by column level and column index
   std::vector<std::vector<affx::TsvFileField> > m_column_map;
   /// Map the columns names to column indexes
-  std::vector<std::map<std::string,int> > cnametocidx_map;
+  std::vector<std::map<std::string,int> > m_cnametocidx_map;
 
   /// The state of the bound and linked vars...
   bool m_linkvars_done;     ///< Are the links up to date
@@ -498,12 +510,13 @@ public:
   int setError(int err);
   int getError();
   int clearError();
+  //
+  void setAbortOnError(bool value);
 
   // these are linking errors but called binding errors...
   int bindErrorCnt();
 
-  //
-
+  void flush();
 
   int setFilename(const std::string& filename);
   /// \brief Get the filename of the TsvFile
@@ -535,7 +548,7 @@ public:
   int is_open() { return m_fileStream.is_open(); }
   int good() { return m_fileStream.good(); }
 
-  //
+  // These are internal methods.
   int f_getline(std::string& line);
   bool f_lookingat_eol();
   int f_read_header_v1();
@@ -552,17 +565,20 @@ public:
   /// User methods
   int defineColumn(int clvl,int cidx,const std::string& cname);
   int defineColumn(int clvl,int cidx,const std::string& cname,tsv_type_t ctype);
+  /// @todo
+  // int defineColumn(int clvl,int cidx,const std::vector<std::string>& cname,tsv_type_t ctype);
 
   //
   int defineFile(const std::string& definition);
   int defineFileParse(const std::string& definition);
   //
   tsv_return_t writeOpen(const std::string& filename);
-  tsv_return_t writeCsv(const std::string& filename);
   //
   tsv_return_t writeTsv(const std::string& filename);
   tsv_return_t writeTsv_v1(const std::string& filename);
   tsv_return_t writeTsv_v2(const std::string& filename);
+  //
+  tsv_return_t writeCsv(const std::string& filename);
 
   //
   int write_str(const std::string& str);
@@ -574,7 +590,7 @@ public:
   void writeFieldSep(int cnt);
   int writeLevel(int clvl);
 
-  /// \todo should check for duplicate indexes and not make them
+  /// @todo should check for duplicate indexes and not make them
   int defineIndex(int clvl,const std::string& cname,int kind,int flags);
   int defineIndex(int clvl,int cidx         ,int kind,int flags);
 
@@ -582,16 +598,21 @@ public:
   int getHeader(const std::string& key,std::string& val);
   int getHeader(const std::string& key,int& val);
   int getHeader(const std::string& key,double& val);
+  int getHeader(const std::string& key,std::vector<std::string>& val);
+  int getHeaderAppend(const std::string& key,std::vector<std::string>& val);
 
   // check to see if there is a header which is equal to val.
+  // this is handy for checking chip types.
   int hasHeaderEqualTo(const std::string& key,const std::string& val);
 
-  /// \todo maybe add a flag to "addHeader" to skip checking?
+  /// @todo maybe add a flag to "addHeader" to skip checking?
   int  addHeader(const std::string& key,const std::string& val,int order);
   int  addHeader(const std::string& key,const std::string& val);
-
   int  addHeader(const std::string& key,int val);
   int  addHeader(const std::string& key,double val);
+  int  addHeader(const std::string& key,const std::vector<std::string>& val);
+
+  //
   int  addHeadersFrom(affx::TsvFile& f_tsv,int flags);
   int  addHeadersFrom(affx::TsvFile& f_tsv,const std::string& prefix,int flags);
   int  addHeadersFrom(affx::TsvFile& f_tsv,const std::string& prefix,std::vector<std::string>& key_vec);
@@ -602,7 +623,13 @@ public:
   void headersBegin();
   int  headersNext(std::string& key,std::string& val);
   int  headersFindNext(const std::string& key,std::string& val);
+  //
   int  deleteHeaders(const std::string& key);
+  int  deleteHeaders(const std::vector<std::string>& keys);
+  int  deleteHeaders(const char** keys);
+  //
+  int printDuplicateHeaders();
+
 #ifndef SWIG
   TsvFileHeaderLine* nextHeaderPtr();
   int deleteHeaderPtr(TsvFileHeaderLine* hdrptr);
@@ -627,7 +654,7 @@ public:
   TsvFileField* clvlcidx2colptr(int clvl,int cidx);
   TsvFileField* clvlcidx2colptr(int clvl,const std::string& cname);
 #endif
-  ///  \todo rename this nicer...
+  ///  @todo rename this nicer...
   int  cidx2cname(int clvl,int cidx,std::string& cname);
   std::string getColumnName(int clvl,int cidx);
 
@@ -646,6 +673,8 @@ public:
   int  linkvars_makelinks();
   int  linkvars_maybe();
   void linkvars_clear();
+  void linkvars_free();
+  //
   int formatOk();
 
 #ifndef SWIG
@@ -683,6 +712,10 @@ public:
   int seekLine(linenum_t line);
   int gotoLine(linenum_t line);
 
+  // Counts the total number of data lines in the file.
+  // NOTE: rewinds the file back to the beginning.
+  int countTotalDataLines();
+
   //
   void currentLineAsString(std::string& line);
 
@@ -700,6 +733,7 @@ public:
   affx::tsv_type_t set_type(int clvl,int cidx,affx::tsv_type_t type);
 
   //
+  int clear_max_sizes();
   int deduce_types();
   int deduce_sizes();
 
@@ -839,8 +873,19 @@ public:
   /// Return a pointer to ourself for swig.
   affx::TsvFile* tsv_ptr() { return this; };
 
+  /// put the column of a file into a vector. 
+  /// the column and file are required to exist or we die.
+  static int extractColToVec(const std::string& fileName,
+                             const std::string& colName,
+                             std::vector<std::string>* vec);
+  static int extractColToVec(const std::string& fileName,
+                             const std::string& colName,
+                             std::vector<std::string>* vec,
+                             int optEscapeOk);
+
   //
-  static int extractColToVec(const std::string& fileName,const std::string& colName,std::vector<std::string>* vec,int flags);
+  static affx::tsv_type_t stringToColType(const std::string& str);
+
 };
 
 //////////

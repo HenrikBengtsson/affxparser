@@ -26,12 +26,17 @@
  */
 
 //
+#include "file/TsvFile/ClfFile.h"
+#include "file/TsvFile/PgfFile.h"
+#include "file/TsvFile/TsvFile.h"
+//
+#include <cstring>
+#include <string.h>
 #include <string>
 //
-#include "ClfFile.h"
-#include "PgfFile.h"
-#include "TsvFile.h"
 
+
+//
 //
 #ifdef _MSC_VER
 #define snprintf _snprintf
@@ -128,7 +133,8 @@ example_index_1(std::string file_name)
   std::string match_seq;
   int match_gc=0;
   int query_gc;
-  char* opstr="??";
+  const char* opstr;
+  opstr="??";
 
   //
   tsv=new affx::TsvFile();
@@ -142,7 +148,8 @@ example_index_1(std::string file_name)
   tsv->defineIndex(2,"gc_count",TSV_INDEX_INT,0);
 
   // start the search
-  tsv->findBegin(2,"gc_count",TSV_OP_LTEQ,query_gc=7,TSV_ORDERBY_VAL); opstr="<=";
+  tsv->findBegin(2,"gc_count",TSV_OP_LTEQ,query_gc=7,TSV_ORDERBY_VAL);
+  opstr="<=";
   // tsv->findBegin(2,"gc_count",TSV_OP_GTEQ,query_gc=18,TSV_ORDERBY_VAL); opstr=">=";
   // tsv->findBegin(2,"gc_count",TSV_OP_EQ,query_gc=11,TSV_ORDERBY_VAL); opstr="==";
   // tsv->dump_indexes();

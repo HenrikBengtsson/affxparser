@@ -21,16 +21,21 @@
 #ifndef _CHPMultiDataData_HEADER_
 #define _CHPMultiDataData_HEADER_
 
-#include <string>
+#include "calvin_files/data/src/AllelePeaks.h"
+#include "calvin_files/data/src/ChromosomeMultiDataSummaryData.h"
+#include "calvin_files/data/src/ChromosomeSegmentMultiDataData.h"
+#include "calvin_files/data/src/ColumnInfo.h"
+#include "calvin_files/data/src/FamilialMultiDataData.h"
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/data/src/MarkerABSignals.h"
+#include "calvin_files/data/src/ProbeSetMultiDataData.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <map>
-#include "FileHeader.h"
-#include "GenericData.h"
-#include "AffymetrixBaseTypes.h"
-#include "ProbeSetMultiDataData.h"
-#include "ChromosomeSegmentMultiDataData.h"
-#include "ChromosomeMultiDataSummaryData.h"
-#include "FamilialMultiDataData.h"
-#include "ColumnInfo.h"
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {
@@ -66,8 +71,10 @@ typedef enum MultiDataType {
     SegmentHeteroUPDMultiDataType,
     SegmentIsoUPDMultiDataType,
     SegmentDenovoCopyNumberMultiDataType,
-    SegmentHemizygousParentOfOriginMultiDataType
-};
+    SegmentHemizygousParentOfOriginMultiDataType,
+	AllelePeaksMultiDataType,
+	MarkerABSignalsMultiDataType
+} MultiDataType_t;
 
 /*! The data set name. */
 const static std::wstring MultiDataDataSetNames[] = 
@@ -98,7 +105,9 @@ const static std::wstring MultiDataDataSetNames[] =
     L"HeteroUPD",
     L"IsoUPD",
     L"DenovoCopyNumber",
-    L"HemizygousParentOfOrigin"
+    L"HemizygousParentOfOrigin",
+	L"AllelePeaks",
+	L"MarkerABSignal"
 };
 
 /*! The data types. */
@@ -130,7 +139,9 @@ const static MultiDataType MultiDataDataTypes[] =
     SegmentHeteroUPDMultiDataType,
     SegmentIsoUPDMultiDataType,
     SegmentDenovoCopyNumberMultiDataType,
-    SegmentHemizygousParentOfOriginMultiDataType
+    SegmentHemizygousParentOfOriginMultiDataType,
+	AllelePeaksMultiDataType,
+	MarkerABSignalsMultiDataType
 };
 
 /*! Holds data set information. */
@@ -383,6 +394,20 @@ public:
 	* @param entry The copy number results.
 	*/
 	void GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::DmetBiAllelicData &entry);
+
+	/*! Gets the allele peak data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::AllelePeaks &entry);
+
+	/*! Gets the marker AB signal data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::MarkerABSignals &entry);
 
 	/*! Gets the probe set data.
 	* @param dataType The data type

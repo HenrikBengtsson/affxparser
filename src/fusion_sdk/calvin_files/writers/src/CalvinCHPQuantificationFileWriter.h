@@ -21,10 +21,12 @@
 
 /*! \file CalvinCHPQuantificationFileWriter.h Contains classes to write a quant CHP file. */
 
+#include "calvin_files/data/src/CHPQuantificationData.h"
+#include "calvin_files/data/src/ProbeSetQuantificationData.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
 #include <fstream>
-#include "CHPQuantificationData.h"
-#include "GenericFileWriter.h"
-#include "ProbeSetQuantificationData.h"
+//
 
 namespace affymetrix_calvin_io
 {

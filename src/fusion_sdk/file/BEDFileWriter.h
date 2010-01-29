@@ -22,7 +22,8 @@
 #ifndef _BEDFileWriter_HEADER_
 #define _BEDFileWriter_HEADER_
 
-#include "BEDFileData.h"
+#include "file/BEDFileData.h"
+//
 
 namespace affxbed
 {

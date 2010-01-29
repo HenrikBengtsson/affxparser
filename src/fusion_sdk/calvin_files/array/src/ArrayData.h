@@ -24,13 +24,16 @@
 /*! \file ArrayData.h This file provides interfaces to store information in an array file.
  */
 
-#include "ArrayId.h"
-#include "AffymetrixBaseTypes.h"
-#include "AffymetrixGuid.h"
-#include "Parameter.h"
-#include "ParameterNameValueType.h"
-#include "ArrayAttributes.h"
+#include "calvin_files/array/src/ArrayAttributes.h"
+#include "calvin_files/array/src/ArrayId.h"
+#include "calvin_files/parameter/src/Parameter.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
 #include <string>
+//
 
 namespace affymetrix_calvin_array
 {

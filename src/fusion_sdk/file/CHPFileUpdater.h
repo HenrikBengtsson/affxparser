@@ -24,10 +24,12 @@
 #define _CHPFileUpdater_H_
 
 //
+#include "file/CHPFileWriter.h"
+//
+#include "portability/affy-base-types.h"
+//
 #include <fstream>
 //
-#include "file/CHPFileWriter.h"
-#include "portability/affy-base-types.h"
 
 namespace affxchpwriter
 {

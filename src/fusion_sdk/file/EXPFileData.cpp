@@ -17,12 +17,19 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "EXPFileData.h"
-#include "FileIO.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
+//
+#include "file/EXPFileData.h"
+//
+#include "file/FileIO.h"
+//
+#include <cstring>
 #include <fstream>
+#include <istream>
+#include <string.h>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
@@ -30,7 +37,6 @@
 
 using namespace affxexp;
 using namespace std;
-
 
 /*! The first line of an EXP file */
 #define EXP_HEADER_LINE_1 "Affymetrix GeneChip Experiment Information"

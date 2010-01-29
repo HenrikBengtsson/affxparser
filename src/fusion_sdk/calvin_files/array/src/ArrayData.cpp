@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "ArrayData.h"
+#include "calvin_files/array/src/ArrayData.h"
+//
 
 using namespace affymetrix_calvin_array;
 

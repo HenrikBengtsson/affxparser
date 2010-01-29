@@ -30,18 +30,22 @@
 #ifndef CHPCHECK_H
 #define CHPCHECK_H
 
-#include <string>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <math.h>
-#include <algorithm>
-#include <vector>
-#include <set>
-#include <map>
-#include "Util.h"
-#include "Verbose.h"
-#include "RegressionCheck.h"
+#include "util/RegressionCheck.h"
+#include "util/Util.h"
+#include "util/Verbose.h"
+//
 #include "file/CHPFileData.h"
+//
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <map>
+#include <set>
+#include <string>
+#include <sys/stat.h>
+#include <vector>
+//
 
 using namespace std;
 /**
@@ -63,6 +67,7 @@ public:
   ChpCheck(std::vector<std::string> &generated, std::vector<std::string> &gold, 
            int diffAllowed=0, const std::string &prefix="apt-", double eps=0.0001,
            bool bCheckHeaders = true) {
+    m_Name = "XDA-CHP-Check";
     m_Generated = generated;
     m_Gold = gold;
     m_Eps_confidence = eps;
@@ -76,7 +81,47 @@ public:
 
     setMaxError(30);
   }
+  ChpCheck(const std::string &generated, const std::string &gold, 
+           int diffAllowed=0, const std::string &prefix="apt-", double eps=0.0001,
+           bool bCheckHeaders = true) {
+    m_Generated.push_back(generated);
+    m_Gold.push_back(gold);
+    m_Eps_confidence = eps;
+    m_Eps_pvalue = eps;
+    m_Eps_signal = eps;
+    m_DiffAllowed = diffAllowed;
+    m_Prefix = prefix;
+    m_CheckHeaders = bCheckHeaders;
 
+    fillInToIgnore(m_IgnoreMap, prefix); // things know to change like user, time, etc.
+
+    setMaxError(30);
+  }
+
+
+  bool checkFilePair(int genIdx, int goldIdx, std::string &msg)
+  {
+    bool success = true;
+     try {
+            m_Generated[genIdx] = Util::convertPathName(m_Generated[genIdx].c_str());
+            m_Gold[goldIdx] = Util::convertPathName(m_Gold[goldIdx].c_str());
+            if (m_CheckHeaders && !headersSame(m_Generated[genIdx], m_Gold[goldIdx], msg))
+	      success = false;
+            if(!dataSame(m_Generated[genIdx], m_Gold[goldIdx], msg)) {
+	      success = false;
+            }
+	  } // end try
+	  catch(Except &e) {
+            success &= checkMsg(false, "Error: " + ToStr(e.what()),msg);
+	  }
+	  catch(const std::exception &e) {
+            success &= checkMsg(false, "Error: standard exception: " + ToStr(e.what()),msg);
+	  }
+	  catch(...) {
+            success &= checkMsg(false, "Error: Uncaught Exception.",msg);
+	  }
+	  return success;
+  }
   /** 
    * Check to make sure that two files are the same +/- some epsilon. 
    * @param msg - Fills in an error message if test fails, empty string otherwise.
@@ -87,26 +132,18 @@ public:
     if(m_Generated.size() != m_Gold.size()) {
       return checkMsg(false, "CelCheck::check() - generated and gold vectors must be same size.",msg);
     }
-    for(unsigned int i = 0; i < m_Generated.size(); i++) {
-        try {
-            m_Generated[i] = Util::getPathName(m_Generated[i].c_str());
-            m_Gold[i] = Util::getPathName(m_Gold[i].c_str());
-            if (m_CheckHeaders && !headersSame(m_Generated[i], m_Gold[i], msg))
-                success = false;
-            if(!dataSame(m_Generated[i], m_Gold[i], msg)) {
-                success = false;
-            }
-        } // end try
-        catch(Except &e) {
-            success &= checkMsg(false, "Error: " + ToStr(e.what()),msg);
-        }
-        catch(const std::exception &e) {
-            success &= checkMsg(false, "Error: standard exception: " + ToStr(e.what()),msg);
-        }
-        catch(...) {
-            success &= checkMsg(false, "Error: Uncaught Exception.",msg);
-        }
-    }
+
+    if(m_Generated.size() == 1 && m_Generated.size() == 1)
+      {
+	success = this->checkFilePair(0,0,msg);
+      }
+    else
+      {
+	for(unsigned int i = 0; i < m_Generated.size(); i++) 
+	  {
+	    success = this->checkFilePair(i,i,msg);
+	}
+      }
     return success;
   }
 
@@ -137,7 +174,6 @@ private:
     ignoreMap.insert(prefix + "free-mem");    
     ignoreMap.insert(prefix + "cvs-id");
     ignoreMap.insert(prefix + "version");
-    //ignoreMap.insert(prefix + "opt-block-size");
     //ignoreMap.insert(prefix + "opt-out-dir");
     ignoreMap.insert(prefix + "opt-analysis-spec");
   }
@@ -193,11 +229,13 @@ private:
     goldChp.SetFileName(gold.c_str());
     if(!generatedChp.ReadHeader()) {
       success = false;
-      msgs += "Can't read CHP" + ToStr(generated) + " error is: " + generatedChp.GetError();
+	  success &= checkMsg(false, "Error: Can't read CHP Header" + ToStr(generated) + " error is: " + generatedChp.GetError(), msgs);
+	  return success;
     }
     if(!goldChp.ReadHeader()) {
       success = false;
-      msgs += "Can't read CHP" + ToStr(gold) + " error is: " + goldChp.GetError();
+	  success &= checkMsg(false, "Error: Can't read CHP Header" + ToStr(gold) + " error is: " + goldChp.GetError(), msgs);
+	  return success;
     }
     if(success) {
       genHdr = generatedChp.GetHeader();
@@ -236,14 +274,19 @@ private:
     goldChp.SetFileName(gold.c_str());
     if(!generatedChp.Read()) {
       success = false;
-      msgs += "Can't read CHP" + ToStr(generated) + " error is: " + generatedChp.GetError();
+	  success &= checkMsg(false, "Error: Can't read CHP" + ToStr(generated) + " error is: " + generatedChp.GetError(), msgs);
+	  return success;
     }
     if(!goldChp.Read()) {
       success = false;
-      msgs += "Can't read CHP" + ToStr(gold) + " error is: " + goldChp.GetError();
+	  success &= checkMsg(false, "Error: Can't read CHP" + ToStr(gold) + " error is: " + goldChp.GetError(), msgs);	  
+	  return success;
     }    
 
-    genHdr = generatedChp.GetHeader();    
+    genHdr = generatedChp.GetHeader();
+    goldHdr = goldChp.GetHeader();  
+	if (genHdr.GetAssayType() != goldHdr.GetAssayType()) {success &= checkMsg(false, "Error: Assay Types are not the same. Gold: " + gold + " " + ToStr(goldHdr.GetAssayType()) + " Generated: " + generated + " " + ToStr(genHdr.GetAssayType()), msgs); return success;}
+	if (genHdr.GetNumProbeSets() != goldHdr.GetNumProbeSets()) {success &= checkMsg(false, "Error: Number of Probe Sets are not the same. Gold: " + gold + " " + ToStr(goldHdr.GetNumProbeSets()) + " Generated: " + generated + " " + ToStr(genHdr.GetNumProbeSets()), msgs); return success;}
 	if(genHdr.GetAssayType() == affxchp::CCHPFileHeader::Genotyping) {
         for(int i = 0; i < genHdr.GetNumProbeSets(); i++) {
             bool localSuccess = true;

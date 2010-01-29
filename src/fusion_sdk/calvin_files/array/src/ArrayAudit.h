@@ -24,12 +24,15 @@
 /*! \file ArrayAudit.h This file provides interfaces for an audit item in an array file.
  */
 
-#include "AffymetrixBaseTypes.h"
-#include "AffymetrixGuid.h"
-#include "Parameter.h"
-#include "DateTime.h"
-#include <string>
+#include "calvin_files/parameter/src/Parameter.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+#include "calvin_files/utils/src/DateTime.h"
+//
+#include <cstring>
 #include <list>
+#include <string>
+//
 
 namespace affymetrix_calvin_array
 {

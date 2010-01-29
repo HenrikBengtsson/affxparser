@@ -17,11 +17,17 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "PSIFileData.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
+//
+#include "file/PSIFileData.h"
+//
+#include <cstring>
 #include <fstream>
+#include <istream>
+#include <string.h>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.

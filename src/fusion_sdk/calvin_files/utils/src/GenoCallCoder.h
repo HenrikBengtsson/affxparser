@@ -28,9 +28,11 @@
 #define _CALLCODER_H_
 
 //
+#include <cstring>
 #include <map>
 #include <string>
 #include <vector>
+//
 
 
 class AlleleRecord {
@@ -254,7 +256,7 @@ public:
    * @param probeset_id - id of probeset to decode
    * @param reference_allele - string of design alleles to be converted to report alleles
    */
-  //std::string referenceAlleleToReportAllele(const std::string probeset_id, const std::string reference_allele);
+  std::string referenceAlleleToReportAllele(const std::string probeset_id, const std::string reference_allele);
 
   /**
    * @brief Translate abstract allele to design allele name for given
@@ -400,8 +402,13 @@ private:
   //alphabet map to integers
   std::map<char, int> m_alpha2num;
 
-  std::string genotypeCallNumToAllele(const std::string probeset_id, const unsigned char call_code, const std::string allele_type);
-  std::string abstractAlleleToAlleleName(const std::string probeset_id, const std::string abstract_allele_string, const std::string allele_type);
+  std::string genotypeCallNumToAllele(const std::string probeset_id, 
+				      const unsigned char call_code, 
+				      const std::string allele_type);
+  std::string alleleNameConvert(const std::string probeset_id, 
+				const std::string input_allele_string, 
+				const std::string input_type,
+				const std::string output_type);
 
 
 };

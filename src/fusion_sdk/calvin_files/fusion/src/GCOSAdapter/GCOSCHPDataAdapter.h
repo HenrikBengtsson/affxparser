@@ -24,9 +24,13 @@
 /*! \file GCOSCHPDataAdapter.h This file defines the GCOS Fusion CHP Data adapter classes
  */
 
-#include "FusionCHPDataAdapterInterface.h"
-#include "CHPFileData.h"	// path required to distinguish between Calvin and GCOS files.
+#include "calvin_files/fusion/src/FusionCHPDataAdapterInterface.h"
+//
+#include "file/CHPFileData.h"	// path required to distinguish between Calvin and GCOS files.
+//
+#include <cstring>
 #include <string>
+//
 
 using namespace affxchp;
 

@@ -18,10 +18,13 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "AuditFileWriter.h"
-#include "AuditFileConstants.h"
-#include "StringUtils.h"
+#include "calvin_files/writers/src/AuditFileWriter.h"
+//
+#include "calvin_files/parsers/src/AuditFileConstants.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
 #include <fstream>
+//
 
 using namespace affymetrix_calvin_array;
 using namespace affymetrix_calvin_utilities;

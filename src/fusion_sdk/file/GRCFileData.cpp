@@ -17,12 +17,15 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "GRCFileData.h"
-#include "FileIO.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
+#include "file/GRCFileData.h"
+//
+#include "file/FileIO.h"
+//
 #include <fstream>
+#include <istream>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 #ifdef _INCLUDE_UNISTD_HEADER_
 #include <unistd.h>

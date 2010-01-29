@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataSetUpdater.h"
-#include "GenericFileReader.h"
-#include "FileOutput.h"
-#include "GenericData.h"
+#include "calvin_files/writers/src/DataSetUpdater.h"
+//
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/parsers/src/GenericFileReader.h"
+#include "calvin_files/writers/src/FileOutput.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;

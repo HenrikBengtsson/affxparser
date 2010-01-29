@@ -19,12 +19,13 @@
 #ifndef _GenericFileWriter_HEADER_
 #define _GenericFileWriter_HEADER_
 
-#include "FileHeader.h"
-#include "DataGroupWriter.h"
-#include "FileHeaderWriter.h"
-#include "DataGroupHeaderWriter.h"
-#include "FileWriteException.h"
-#include "FileOutput.h"
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/writers/src/DataGroupHeaderWriter.h"
+#include "calvin_files/writers/src/DataGroupWriter.h"
+#include "calvin_files/writers/src/FileHeaderWriter.h"
+#include "calvin_files/writers/src/FileOutput.h"
+#include "calvin_files/writers/src/FileWriteException.h"
+//
 
 
 #ifdef _MSC_VER

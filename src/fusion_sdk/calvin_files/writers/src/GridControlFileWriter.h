@@ -24,10 +24,14 @@
 /*! \file GridControlFileWriter.h This file provides interfaces to write a GRC (grid control) file.
  */
 
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
+#include "file/GridControlData.h"
+//
+#include <cstring>
 #include <fstream>
 #include <string>
-#include "GridControlData.h"
-#include "GenericFileWriter.h"
+//
 
 namespace affymetrix_calvin_io
 {

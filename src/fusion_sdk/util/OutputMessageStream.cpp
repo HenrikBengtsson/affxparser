@@ -19,7 +19,9 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "OutputMessageStream.h"
+//
+#include "util/OutputMessageStream.h"
+//
 #include <iostream>
 
 using namespace std;

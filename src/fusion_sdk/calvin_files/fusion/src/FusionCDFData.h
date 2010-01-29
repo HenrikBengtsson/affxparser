@@ -24,12 +24,14 @@
 /*! \file FusionCDFData.h This file defines the Fusion CDF Data classes
  */
 
-#include "CDFFileData.h"
-#include "CDFData.h"
-#include "CDFProbeGroupInformation.h"
-#include "CDFProbeInformation.h"
-#include "CDFQCProbeSetInformation.h"
-#include "CDFQCProbeInformation.h"
+#include "calvin_files/data/src/CDFData.h"
+#include "calvin_files/data/src/CDFProbeGroupInformation.h"
+#include "calvin_files/data/src/CDFProbeInformation.h"
+#include "calvin_files/data/src/CDFQCProbeInformation.h"
+#include "calvin_files/data/src/CDFQCProbeSetInformation.h"
+//
+#include "file/CDFFileData.h"
+//
 
 namespace affymetrix_fusion_io
 {
@@ -239,6 +241,16 @@ public:
 	 * @return The allele code.
 	 */
 	unsigned short GetAlleleCode() const;
+
+	/*! Gets the channel.
+	 * @return The channel.
+	 */
+	unsigned char GetChannel() const;
+
+	/*! Gets the probe replication type.
+	 * @return The probe replication type.
+	 */
+	affxcdf::ReplicationType GetRepType() const;
 
 	/*! Retrieves the probe object given an index.
 	 * @param cell_index Index to the probe of interest.

@@ -25,12 +25,14 @@
  */
 
 //
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <sstream>
 #include <string>
 #include <vector>
 //
-#include "AffymetrixBaseTypes.h"
-#include "ParameterNameValueType.h"
 
 namespace affymetrix_calvin_data
 {

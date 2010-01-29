@@ -17,15 +17,17 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "BPMAPFileData.h"
-#include "FileIO.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
+#include "file/BPMAPFileData.h"
+#include "file/FileIO.h"
+//
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <fstream>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <istream>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 #ifndef _MSC_VER
 #include <sys/mman.h>

@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CreateStep.h"
+#include "calvin_files/array/src/CreateStep.h"
+//
 
 using namespace affymetrix_calvin_array;
 

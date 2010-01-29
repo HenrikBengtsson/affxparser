@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CHPGenotypeEntry.h"
+#include "calvin_files/data/src/CHPGenotypeEntry.h"
+//
 
 using namespace affymetrix_calvin_io;
 

@@ -23,11 +23,14 @@
 /*! \file FileWriter.h This file provides file level writing capaibilities.
  */
 
+#include "file/FileIO.h"
+//
+#include "portability/affy-base-types.h"
+//
+#include <cstring>
 #include <fstream>
 #include <string>
 //
-#include "FileIO.h"
-#include "portability/affy-base-types.h"
 
 #ifndef OFSTREAM
 /*! The output stream object */

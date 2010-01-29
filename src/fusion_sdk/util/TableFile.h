@@ -30,13 +30,16 @@
 #ifndef TABLEFILE_H
 #define TABLEFILE_H
 
-#include <vector>
-#include <string>
+#include "util/RowFile.h"
+#include "util/Util.h"
+//
+#include <climits>
+#include <cstring>
 #include <iostream>
 #include <map>
-#include <limits.h>
-#include "Util.h"
-#include "RowFile.h"
+#include <string>
+#include <vector>
+//
 
 /**
  *  TableFile - File for reading and using files that have delimited
@@ -90,13 +93,13 @@ public:
    * Return number of columns in data.
    * @return - number of columns.
    */
-  unsigned int numCols() { return m_ColNames.size(); }
+  size_t numCols() { return m_ColNames.size(); }
 
   /** 
    * Return number of rows in data.
    * @return - number of rows.
    */
-  unsigned int numRows() { return m_RowNames.size(); }
+  size_t numRows() { return m_RowNames.size(); }
 
   /** 
    * Look up the index of column with name specified.
@@ -134,7 +137,7 @@ public:
    * @param rowIx - Row number of interest.
    * @return - reference to row name at index of interest.
    */
-  std::string &getRowName(unsigned int rowIx) { return m_RowNames.at(rowIx); }
+  std::string &getRowName(size_t rowIx) { return m_RowNames.at(rowIx); }
 
   /** 
    * Write out words in vector delimited by specified character.

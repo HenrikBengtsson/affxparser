@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CHPFileReader.h"
-#include "GenericFileReader.h"
+#include "calvin_files/parsers/src/CHPFileReader.h"
+//
+#include "calvin_files/parsers/src/GenericFileReader.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_utilities;

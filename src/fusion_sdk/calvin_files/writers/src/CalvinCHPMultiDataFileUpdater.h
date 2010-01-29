@@ -22,12 +22,14 @@
 #ifndef _CalvinCHPMultiDataFileUpdater_HEADER_
 #define _CalvinCHPMultiDataFileUpdater_HEADER_
 
-#include "DataSetUpdater.h"
-#include "CHPMultiDataData.h"
-#include "ProbeSetMultiDataData.h"
-#include "ColumnInfo.h"
-#include <vector>
+#include "calvin_files/data/src/CHPMultiDataData.h"
+#include "calvin_files/data/src/ColumnInfo.h"
+#include "calvin_files/data/src/ProbeSetMultiDataData.h"
+#include "calvin_files/writers/src/DataSetUpdater.h"
+//
 #include <map>
+#include <vector>
+//
 
 namespace affymetrix_calvin_io
 {

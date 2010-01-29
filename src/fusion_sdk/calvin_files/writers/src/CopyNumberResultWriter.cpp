@@ -17,14 +17,17 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "CopyNumberResultWriter.h"
-#include "CalvinCHPMultiDataFileWriter.h"
-#include "AffymetrixParameterConsts.h"
-#include "CHPMultiDataData.h"
-#include "StringUtils.h"
-#include "ExceptionBase.h"
-#include <sstream>
+#include "calvin_files/writers/src/CopyNumberResultWriter.h"
+//
+#include "calvin_files/data/src/CHPMultiDataData.h"
+#include "calvin_files/exception/src/ExceptionBase.h"
+#include "calvin_files/parameter/src/AffymetrixParameterConsts.h"
+#include "calvin_files/utils/src/StringUtils.h"
+#include "calvin_files/writers/src/CalvinCHPMultiDataFileWriter.h"
+//
 #include <iomanip>
+#include <sstream>
+//
 
 using namespace std;
 using namespace affymetrix_calvin_io;

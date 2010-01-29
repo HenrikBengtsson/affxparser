@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionProbeSetResults.h"
-#include "CHPFileData.h"
+#include "calvin_files/fusion/src/FusionProbeSetResults.h"
+//
+#include "file/CHPFileData.h"
+//
 
 using namespace affymetrix_fusion_io;
 

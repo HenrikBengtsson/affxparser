@@ -24,9 +24,12 @@
 /*! \file ParameterFileReader.h This file provides interfaces to read a parameter file.
  */
 
-#include "ParameterFileData.h"
-#include <string>
+#include "calvin_files/parameter/src/ParameterFileData.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {

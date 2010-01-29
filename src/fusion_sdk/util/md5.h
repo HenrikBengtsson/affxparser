@@ -24,9 +24,10 @@
 #define _MD5_H_
 
 //
-#include <stdlib.h>
-//
 #include <portability/affy-base-types.h>
+//
+#include <cstdlib>
+//
 
 // some typedefs to smooth things over.
 typedef uint8_t   u_int8_t;

@@ -21,14 +21,16 @@
 
 /*! \file CalvinCHPFileWriter.h Provides classes to write CHP files with expression, genotyping, tag and resequencing data. */
 
+#include "calvin_files/data/src/CHPBackgroundZone.h"
+#include "calvin_files/data/src/CHPData.h"
+#include "calvin_files/data/src/CHPExpressionEntry.h"
+#include "calvin_files/data/src/CHPGenotypeEntry.h"
+#include "calvin_files/data/src/CHPReseqEntry.h"
+#include "calvin_files/data/src/CHPUniversalEntry.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
 #include <fstream>
-#include "CHPData.h"
-#include "GenericFileWriter.h"
-#include "CHPBackgroundZone.h"
-#include "CHPExpressionEntry.h"
-#include "CHPGenotypeEntry.h"
-#include "CHPUniversalEntry.h"
-#include "CHPReseqEntry.h"
+//
 
 
 namespace affymetrix_calvin_io

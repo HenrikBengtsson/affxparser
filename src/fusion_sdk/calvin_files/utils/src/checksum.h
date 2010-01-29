@@ -24,8 +24,10 @@
 /*! \file checksum.h This file provides functions for computing a checksum.
  */
 
-#include "AffymetrixBaseTypes.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
 #include <stddef.h>
+//
 
 namespace affymetrix_calvin_utilities
 {

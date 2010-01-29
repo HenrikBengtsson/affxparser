@@ -24,7 +24,8 @@
 /*! \file TemplateFileWriter.h This file provides interfaces to write a template file.
  */
 
-#include "TemplateData.h"
+#include "calvin_files/template/src/TemplateData.h"
+//
 
 namespace affymetrix_calvin_io
 {

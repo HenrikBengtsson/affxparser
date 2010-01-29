@@ -16,8 +16,10 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "CDFFileWriter.h"
-#include "CDFData.h"
+#include "calvin_files/writers/src/CDFFileWriter.h"
+//
+#include "calvin_files/data/src/CDFData.h"
+//
 
 using namespace affymetrix_calvin_io;
 

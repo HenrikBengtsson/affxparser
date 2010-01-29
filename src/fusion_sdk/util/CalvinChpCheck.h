@@ -29,24 +29,28 @@
 #ifndef CALVINCHPCHECK_H
 #define CALVINCHPCHECK_H
 
-#include <string>
-#include <set>
-#include <stdlib.h>
-#include <sys/stat.h>
-#include <math.h>
-#include <algorithm>
-#include <vector>
-#include "Util.h"
-#include "Verbose.h"
-#include "RegressionCheck.h"
-#include "CHPData.h"
-#include "CHPFileReader.h"
-#include "CHPMultiDataData.h"
-#include "CHPMultiDataFileReader.h"
-#include "CHPQuantificationFileReader.h"
-#include "StringUtils.h"
-#include "portability/affy-base-types.h"
 #include "util/AffxByteArray.h"
+#include "util/RegressionCheck.h"
+#include "util/Util.h"
+#include "util/Verbose.h"
+//
+#include "calvin_files/data/src/CHPData.h"
+#include "calvin_files/data/src/CHPMultiDataData.h"
+#include "calvin_files/parsers/src/CHPFileReader.h"
+#include "calvin_files/parsers/src/CHPMultiDataFileReader.h"
+#include "calvin_files/parsers/src/CHPQuantificationFileReader.h"
+#include "calvin_files/utils/src/StringUtils.h"
+#include "portability/affy-base-types.h"
+//
+#include <algorithm>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <set>
+#include <string>
+#include <sys/stat.h>
+#include <vector>
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_data;
@@ -70,14 +74,36 @@ public:
    * @param eps - epsilon: small amount that two floats can differ by,
    * but still be considered equivalent.
    */
-  CalvinChpCheck(std::vector<std::string> &generated, 
+  CalvinChpCheck(
+                 std::vector<std::string> &generated, 
                  std::vector<std::string> &gold, 
                  int diffAllowed=0,
                  const std::wstring &prefix=L"apt-", 
                  double eps=0.0001,
                  bool bCheckHeaders = true) {
+    m_Name = "AGCC-CHP-Check";
     m_Generated = generated;
     m_Gold = gold;
+    m_EpsConfidence = eps;
+    m_EpsQuantification = eps;
+    m_CheckHeaders = bCheckHeaders;
+    /// @todo allow for a vector of eps for checking extra metrics
+    m_EpsParam = eps;
+    m_DiffAllowed = diffAllowed;
+    m_Prefix = prefix;
+
+    fillInToIgnore(m_IgnoreMap, prefix); // things know to change like user, time, etc.
+
+    setMaxError(30);
+  }
+  CalvinChpCheck(const std::string &generated, 
+		 const std::string &gold, 
+                 int diffAllowed=0,
+                 const std::wstring &prefix=L"apt-", 
+                 double eps=0.0001,
+                 bool bCheckHeaders = true) {
+    m_Generated.push_back(generated);
+    m_Gold.push_back(gold);
     m_EpsConfidence = eps;
     m_EpsQuantification = eps;
     m_CheckHeaders = bCheckHeaders;
@@ -113,8 +139,8 @@ public:
     }
     for(unsigned int i = 0; i < m_Generated.size(); i++) {
         try {
-            m_Generated[i] = Util::getPathName(m_Generated[i].c_str());
-            m_Gold[i] = Util::getPathName(m_Gold[i].c_str());
+            m_Generated[i] = Util::convertPathName(m_Generated[i].c_str());
+            m_Gold[i] = Util::convertPathName(m_Gold[i].c_str());
             CHPData chp1, chp2;
             CHPFileReader reader;
             reader.SetFilename(m_Generated[i]);
@@ -235,20 +261,21 @@ private:
     ignoreMap.insert(prefix + L"free-mem");    
     ignoreMap.insert(prefix + L"cvs-id");
     ignoreMap.insert(prefix + L"version");
-    //ignoreMap.insert(prefix + L"opt-block-size");
-    //ignoreMap.insert(prefix + L"opt-out-dir");
+    ignoreMap.insert(prefix + L"opt-out-dir");
+    ignoreMap.insert(prefix + L"opt-temp-dir");
     ignoreMap.insert(prefix + L"opt-analysis-spec");
     ignoreMap.insert(prefix + L"opt-exec-guid");
+    ignoreMap.insert(prefix + L"state-exec-guid");
 	
     ignoreMap.insert(L"option-program-cvs-id");
-	ignoreMap.insert(L"option-version-to-report");
+    ignoreMap.insert(L"option-version-to-report");
     ignoreMap.insert(L"option-command-line");
     ignoreMap.insert(L"option-exec-guid");
-    ignoreMap.insert(L"option-mem-usage");
     ignoreMap.insert(L"option-run-probeset-genotype");
     ignoreMap.insert(L"option-cels");
     ignoreMap.insert(L"option-out-dir");
-	ignoreMap.insert(L"option-disk-dir");
+    ignoreMap.insert(L"option-temp-dir");
+
     ignoreMap.insert(prefix + L"state-time-start");
     ignoreMap.insert(prefix + L"state-free-mem-at-start");
     ignoreMap.insert(prefix + L"state-analysis-guid");
@@ -256,6 +283,11 @@ private:
     ignoreMap.insert(prefix + L"opt-program-cvs-id");
     ignoreMap.insert(prefix + L"opt-version-to-report");
     ignoreMap.insert(prefix + L"opt-command-line");
+
+    ignoreMap.insert(prefix + L"state-program-cvs-id");
+    ignoreMap.insert(prefix + L"state-version-to-report");
+    ignoreMap.insert(prefix + L"state-command-line");
+
     ignoreMap.insert(prefix + L"command-line");
   }
 
