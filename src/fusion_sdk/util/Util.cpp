@@ -25,65 +25,84 @@
  * @date   Mon May 16 16:04:48 2005
  * 
  * @brief   General Utilities.
- * 
- * 
  */
 
 //
-#include <errno.h>
-#include <fcntl.h>
-#include <map>
-#include <math.h>
-#include <sstream>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <vector>
-
+#include "util/Util.h"
 //
+#include "util/AffxFile.h"
 #include "util/Convert.h"
 #include "util/Err.h"
 #include "util/RowFile.h"
 #include "util/TableFile.h"
-#include "util/Util.h"
 #include "util/Verbose.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cerrno>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <fcntl.h>
+#include <map>
+#include <sstream>
+#include <stdarg.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <vector>
+//
 
-#define	POSIX_OPEN open
+#define POSIX_OPEN open
 #define POSIX_CLOSE close
-#define	POSIX_MKDIR mkdir
+#define POSIX_MKDIR mkdir
 
 #ifdef WIN32
+#include <windows.h>
 #include <direct.h>
 #include <float.h>
 #include <io.h>
 #include <malloc.h>
-#include <windows.h>
-#define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
+#include <tchar.h>
+#include <stdio.h>
+#define S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
+#define BUFFSIZE 10000
 
 #ifndef __MINGW32__
-#define	POSIX_OPEN _open
+#define POSIX_OPEN _open
 #define POSIX_CLOSE _close
-#define	POSIX_MKDIR _mkdir
+#define POSIX_MKDIR _mkdir
 #endif /* __MINGW32__ */
 
 #else
 #include <unistd.h>
 #endif /* WIN32 */
 
-// OS stuff for memInfo
+// OS stuff for memInfo, getAvailableDiskSpace, isSameVolume
 #ifdef __APPLE__
 #include <mach/mach.h>
+#include <sys/stat.h>
+#include <sys/mount.h>
 #endif
+
 #ifdef __linux__
 #include <sys/sysinfo.h>
+#include <sys/statfs.h>
 #endif
+
 #ifdef __sun__
 #include <unistd.h>
 #include <ieeefp.h>
 #endif
+
+#ifdef WIN32
+#include <time.h>
+void sleep(unsigned int ms) {
+   clock_t target = ms + clock();
+   while (target > clock());
+}
+#endif /*WIN32*/
+
 
 
 using namespace std;
@@ -124,7 +143,6 @@ char *Util::cloneString(const string &s) {
 }
 */
 
-
 bool Util::stringEndsWith(const std::string& str,const std::string& end)
 {
   std::string::const_reverse_iterator s_i=str.rbegin();
@@ -147,6 +165,54 @@ bool Util::stringEndsWith(const std::string& str,const std::string& end)
   return true;
 }
 
+bool Util::endsWithStr(const std::string& str,const std::string& ending,int charsAtEnd)
+{
+  if (ending.size()>str.size()) {
+    return false;
+  }
+  std::string tmpstr=str.substr(str.size()-(ending.size()+charsAtEnd),ending.size());
+  return tmpstr==ending;
+}
+
+bool Util::endsWithStr(const std::string& str,const std::string& ending)
+{
+  return endsWithStr(str,ending,0);
+}
+
+
+std::string Util::findLibFile(const std::string &fileName, const std::string &searchPath){
+
+    if(fileName == "") {
+        // empty string is not valid file name. just return it back
+        return fileName;
+    } else if(fileExists(fileName)) {
+        // file exists as already specified
+        return fileName;
+    } else {
+        // Now lets search for the file
+        std::vector<std::string> searchPathVec;
+        if(searchPath != "") {
+            ///@todo do we handle ';' on windows?
+            chopString(searchPath,':',searchPathVec);
+        } else {
+            char *sp = getenv("AFFX_ANALYSIS_FILES_PATH");
+            if(sp == NULL) {
+                return fileName;
+            } else {
+                chopString(sp,':',searchPathVec);
+            }
+        }
+
+        for(int i=0; i< searchPathVec.size(); i++) {
+            if(fileExists(searchPathVec[i] + PATH_SEPARATOR + fileName))
+                return searchPathVec[i] + PATH_SEPARATOR + fileName;
+        }
+    }
+
+    // did not find anything, so just return what we started with
+    return fileName;
+}
+
 /** 
  * Open an ofstream for writing to. Abort if can't open
  * for some reason.
@@ -157,7 +223,10 @@ void Util::mustOpenToWrite(std::ofstream &out, const std::string &fileName) {
   assert(fileName.c_str());
   out.open(fileName.c_str());
   if(!out.is_open() || !out.good()) {
-    Err::errAbort("Couldn't open file: " + fileName + " to write.");
+    out.open(Util::convertPathName(fileName).c_str());
+    if(!out.is_open() || !out.good()) {
+        Err::errAbort("Couldn't open file: " + Util::convertPathName(fileName) + " to write.");
+    }
   }
   // Set to throw an exception if something bad happens rather than silently fail.
   out.exceptions(ofstream::eofbit | ofstream::failbit | ofstream::badbit );
@@ -198,8 +267,12 @@ void Util::carefulClose(std::fstream &out) {
 bool Util::fileReadable(const std::string &fileName) {
   int f;
   f = POSIX_OPEN(fileName.c_str(), O_RDONLY);
-  if(f < 0) 
-    return false;
+  if(f < 0) {
+    f = POSIX_OPEN(Util::convertPathName(fileName).c_str(), O_RDONLY);
+    if(f < 0) {
+      return false;
+    }
+  }
   POSIX_CLOSE(f);
   return true;
 }
@@ -209,8 +282,54 @@ bool Util::fileReadable(const std::string &fileName) {
  * @param fileName 
  */
 bool Util::fileExists(const std::string &fileName) {
+  ///@todo do we want to make a distinction between Exists and Readable?
+  // _stat() on windows does not handle "\\?\" style long names. One
+  // suggestion was to use FindFirstFile() instead of _stat(). For now
+  // we just return whether or not the file is readable on windows.
+#ifdef WIN32
+  return Util::fileReadable(fileName);
+#else
   struct stat st;
-  return ((stat(fileName.c_str(), &st) == 0)? true: false);
+  if(stat(fileName.c_str(), &st) == 0) {
+    return true;
+  } else {
+    if(stat(Util::convertPathName(fileName).c_str(), &st) == 0) {
+      return true;
+    }
+  } 
+  return false;
+#endif
+}
+
+/**
+ * Not intended to direct use. Only indirectly via Util::fileRemove()
+ * We make multiple attempts to get around read lock issues.
+ */
+bool _uncheckedFileRemove(const std::string &fileName, int tries, int sec) {
+    tries--;
+    sec *= 3;
+    bool success = true;
+#ifdef WIN32
+    if (DeleteFile(fileName.c_str()) == false) {
+        if (DeleteFile(Util::convertPathName(fileName).c_str()) == false) {
+            success = false;
+        }
+    } 
+#else
+    if (remove(fileName.c_str()) != 0)
+        success = false;
+#endif
+
+    // AGCC (and potentially other file indexers) may have a lock on the file. 
+    // So retry a few times before giving up.
+    if(success) {
+        return success;
+    } else if(tries > 0) {
+        sleep(sec);
+        return _uncheckedFileRemove(fileName, tries, sec);
+    } else {
+        return false;
+    }
 }
 
 /** 
@@ -220,17 +339,50 @@ bool Util::fileExists(const std::string &fileName) {
 bool Util::fileRemove(const std::string &fileName, bool throwOnError) {
     bool success = true;
     if(fileExists(fileName)) {
-#ifdef WIN32
-	    if (DeleteFile(fileName.c_str()) == false)
-		    success = false;
-#else
-	    if (remove(fileName.c_str()) != 0)
-		    success = false;
-#endif
+        success = _uncheckedFileRemove(fileName, 4, 10);
     }
     if(throwOnError && !success)
-        Err::errAbort("Unable to remove file '" + fileName + "'");
+        Err::errAbort("Unable to remove file: '" + fileName + "'");
     return success;
+}
+
+void Util::fileRemove(std::vector<std::string> &filesToRemove) {
+    string errors = "Failed to remove files: ";
+    bool error = false;
+    for (int chip=0; chip < filesToRemove.size(); chip++) {
+        if(!Util::fileRemove(filesToRemove[chip].c_str())) {
+            error = true;
+            errors += filesToRemove[chip] + ", ";
+        }
+    }
+    if(error) {
+        Err::errAbort(errors);
+    }
+}
+
+
+bool Util::dirRemove(const std::string& dirname, bool throwOnError)
+{
+  bool success=true;
+
+#ifdef WIN32
+  if (RemoveDirectory(dirname.c_str())==false) {
+    if (RemoveDirectory(Util::convertPathName(dirname).c_str())==false) {
+        success=false;
+    }
+  }
+#else
+  int rv;
+  rv=rmdir(dirname.c_str());
+  if (rv!=0) {
+    success=false;
+  }
+#endif
+
+  if(throwOnError && !success) {
+    Err::errAbort("Unable to remove dir: '" + dirname + "'");
+  }
+  return success;
 }
 
 /**
@@ -242,8 +394,23 @@ bool Util::fileCopy(const std::string &in, const std::string &out, bool throwOnE
   ///@todo there is probably a better way to copy files and check for errors
   bool success = true;
 
-  std::ifstream is (in.c_str(),ios::binary);
-  std::ofstream os (out.c_str(),ios::binary);
+  std::ifstream is;
+  std::ofstream os;
+  std::string iName = in;
+  std::string oName = out;
+
+  is.open(in.c_str(), ios::binary);
+  if(!is.is_open() || !is.good()) {
+    iName = Util::convertPathName(in);
+    is.open(iName.c_str(),ios::binary);
+  }
+
+  os.open(out.c_str(), ios::binary);
+  if(!os.is_open() || !os.good()) {
+    oName = Util::convertPathName(out);
+    is.open(oName.c_str(),ios::binary);
+  }
+
   if(!is.good() || !os.good())
       success = false;
 
@@ -257,10 +424,35 @@ bool Util::fileCopy(const std::string &in, const std::string &out, bool throwOnE
       success = false;
 
   if(throwOnError && !success)
-      Err::errAbort("Unable to copy file '" + in + "' to '" + out + "'");
+      Err::errAbort("Unable to copy file '" + iName + "' to '" + oName + "'");
   return success;
 }
 
+/**
+ * Not intended to direct use. Only indirectly via Util::fileRename()
+ * We make multiple attempts to get around read lock issues.
+ */
+bool _uncheckedFileRename(const std::string &in, const std::string &out, int tries, int sec) {
+    tries--;
+    sec *= 3;
+    bool success = true;
+#ifdef WIN32
+    success = (MoveFile(in.c_str(), out.c_str()) == TRUE);
+    if(!success) {
+        success = (MoveFile(Util::convertPathName(in).c_str(), Util::convertPathName(out).c_str()) == TRUE);
+    }
+#else
+    success = (rename(in.c_str(), out.c_str()) == 0);
+#endif
+    if(success) {
+        return success;
+    } else if(tries > 0) {
+        sleep(sec);
+        return _uncheckedFileRename(in, out, tries, sec);
+    } else {
+        return false;
+    }
+}
 /**
  * Return true on success. False otherwise
  * @param in - file to move
@@ -268,11 +460,7 @@ bool Util::fileCopy(const std::string &in, const std::string &out, bool throwOnE
  */
 bool Util::fileRename(const std::string &in, const std::string &out, bool throwOnError) {
     bool success = true;
-#ifdef WIN32
-	success = (MoveFile(in.c_str(), out.c_str()) == TRUE);
-#else
-	success = (rename(in.c_str(), out.c_str()) == 0);
-#endif
+    _uncheckedFileRename(in,out,4,10);
   if(throwOnError && !success)
       Err::errAbort("Unable to rename file '" + in + "' to '" + out + "'");
   return success;
@@ -284,9 +472,22 @@ bool Util::fileRename(const std::string &in, const std::string &out, bool throwO
 * @param s - string to have '/' or '\' chopped off if last.
 */
 void Util::chompLastIfSep(std::string &s) {
-	string::size_type i = s.rfind(PATH_SEPARATOR);
-	if(i != string::npos && i == s.length() -1)
-		s.erase(i);
+    string::size_type i = s.rfind(PATH_SEPARATOR);
+    if(i != string::npos && i == s.length() -1)
+        s.erase(i);
+}
+
+/**
+ * Chop the last suffix (as defined by '.') from a string
+ * @param - string to chop
+ * @param - delimiter, default '.'
+ */
+std::string Util::chopSuffix(const std::string& s, char d) {
+  string::size_type pos = s.rfind(d);
+  if(pos != string::npos) {
+    return s.substr(0,pos);
+  }
+  return s;
 }
 
 #ifdef WIN32
@@ -312,7 +513,7 @@ void Util::chompLastIfSep(std::string &s) {
  * @param dirName 
  */
 bool Util::directoryReadable(const std::string &dirName) {
-  string dirString=dirName;
+  std::string dirString=dirName;
   chompLastIfSep(dirString); // Windows doesn't like the trailing '\'
   struct stat s;
   int val = 0;
@@ -324,6 +525,7 @@ bool Util::directoryReadable(const std::string &dirName) {
   uid_t user = getuid();
 #endif
   bool readable = false;
+  ///@todo this will fail on long file names under windows
   val = stat( dirString.c_str() , &s);
   /* if it doesn't exist or isn't readable, can't read it. */
   if(!S_ISDIR(s.st_mode) || val != 0) {
@@ -365,6 +567,7 @@ bool Util::directoryWritable(const std::string &dirname) {
   dirname_tmp=dirname;
   chompLastIfSep(dirname_tmp);
 
+  ///@todo this will fail on long file names under windows
   int rv = stat(dirname_tmp.c_str(), &s);
 
   /* Cant write if not found. */
@@ -377,7 +580,7 @@ bool Util::directoryWritable(const std::string &dirname) {
   }
   /* If user owns directory and user writeable then we can write it. */
   if (user == s.st_uid) {  
-	  writable = (S_IWUSR & s.st_mode) && (S_IXUSR & s.st_mode);
+      writable = (S_IWUSR & s.st_mode) && (S_IXUSR & s.st_mode);
   }
   /* if group owns directory and it is user writeable then we can write it. */
   else if (group == s.st_gid) {
@@ -385,7 +588,7 @@ bool Util::directoryWritable(const std::string &dirname) {
   }
   /* if anybody can write directory then we can too. */
   else if((S_IWOTH & s.st_mode) && (S_IXOTH & s.st_mode)) {
-	  writable = true;
+      writable = true;
   }
   //
   return writable;
@@ -400,78 +603,54 @@ bool Util::directoryWritable(const std::string &dirname) {
  */
 bool Util::makeDir(const std::string &dirName) {
   int error;
+
+  ///@todo handle long file names on windows
+
+  // Need to trim off trailing slash (or backslash)
+  std::string tmpDirName=dirName;
+  if (tmpDirName.rfind("/")==(tmpDirName.size()-1)) {
+    tmpDirName.erase(tmpDirName.size()-1);
+  }
+  else if (tmpDirName.rfind("\\")==(tmpDirName.size()-1)) {
+    tmpDirName.erase(tmpDirName.size()-1);
+  }
+
 #ifdef WIN32
-  error = POSIX_MKDIR(dirName.c_str());
+  error = POSIX_MKDIR(tmpDirName.c_str());
 #else
-  error = POSIX_MKDIR(dirName.c_str(), 0777);
+  error = POSIX_MKDIR(tmpDirName.c_str(), 0777);
 #endif
-  if(error != 0 && errno == EEXIST) 
-    return false;
-  else if(error != 0) 
-    Err::errAbort("Error: Util::makeDir() - failed to make directory " + ToStr(dirName));
+  
+  if (error==0) {
+    return true; // we made it
+  }
+  else {
+    if ((errno==EEXIST)&&directoryWritable(tmpDirName)) {
+      return false; // we didnt make it but it exists and is writeable.
+    }
+  }
+  // opps! Not there or not writeable.
+  Err::errAbort("Error: Util::makeDir() - failed to make directory '"+tmpDirName+"'");
+  // to keep gcc happy.
   return true;
 }
 
-/// @todo remove this function -- redundant with makeDir
-/**
- * Create a directory. Returns a pointer to error message, else 0.
- * An error is reported if no directory currently exists and a
- * new directory could not be created, or if a file, not a
- * directory, already exists, with the requested name.
- * No error is reported if the directory already exists.
- *
- * @param dirName - Directory name to be made.
- * @return - Pointer to error message, if any, else zero.
- */
-std::string* Util::createDir(const std::string &dirName) {
-#ifdef WIN32
-  // Windows: use ISO C++ conformants; POSIX functions are deprecated.
-  struct _stat outDirStat;
-  const int statError = _stat (dirName.c_str(), &outDirStat);
-#else
-  struct stat outDirStat;
-  const int statError = stat (dirName.c_str(), &outDirStat);
-#endif
+bool Util::makeDirPath(const std::string& pathName)
+{
+  std::vector<std::string> parts;
+  chopString(pathName,'/',parts);
+  
+  std::string path;
 
-  // Error return from fstat - requested output directory
-  // doesn't exist, so we create one.
-  string* msg = 0;
-  if (statError != 0) {
-  #ifdef WIN32
-    // Windows: use ISO C++ _mkdir; umask is deprecated.
-    const int mkdirError = _mkdir (dirName.c_str());
-  #else
-    const mode_t Umask = umask (0);
-
-    // Set directory execute permissions based on current umask.
-    mode_t Mode = S_IRWXU;	// User (this code) can read, write, execute.
-    Mode |= (~Umask & (S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH));
-    if (Mode & (S_IRGRP | S_IWGRP)) // Group, other access is optional.
-      Mode |= S_IXGRP;
-    if (Mode & (S_IROTH | S_IWOTH))
-      Mode |= S_IXOTH;
-    const int mkdirError = POSIX_MKDIR (dirName.c_str(), Mode);
-
-    // Restore caller's umask.
-    umask (Umask);
-  #endif
-    if (mkdirError != 0) {
-      // Report error.
-      msg = new string ("Unable to create directory " + string (dirName));
-      return msg;
+  for (int i=0;i<parts.size();i++) {
+    path+=parts[i];
+    if (directoryReadable(path)) {
+      continue;
     }
-  } // end if (statError != 0)
-
-#ifndef WIN32
-  // Requested file exists - just check if it's a directory.
-  else if (! S_ISDIR (outDirStat.st_mode) ) {
-    // Report error.
-    msg = new string ("Requested output directory " + string (dirName) + " is not a directory");
-    return msg;
+    // this will call errAbort
+    makeDir(path);
   }
-#endif
-  // No error found.
-  return 0;
+  return true;
 }
 
 /** 
@@ -481,12 +660,12 @@ std::string* Util::createDir(const std::string &dirName) {
  * @param delim - delimiter to split on.
  * @param words - vector to put words into, will be cleared then filled.
  */
-void Util::chopString(const std::string &s, char delim, std::vector<std::string> &words) {
+void Util::chopString(const std::string& s,const char delim,std::vector<std::string>& words) {
   string::size_type len = 0, start = 0, next = 0;
   words.clear();
   len = s.length();
-  while(start < len) {
 
+  while(start < len) {
     next = s.find(delim, start);
     if(next == string::npos) {
       next = s.size(); // entire string.
@@ -503,22 +682,7 @@ void Util::chopString(const std::string &s, char delim, std::vector<std::string>
  * @return - Root of string.
  */
 std::string Util::fileRoot(const std::string& filename) {
-  if(filename.empty()) 
-    return filename;
-  string::size_type pos = 0;
-  string name;
-  pos = filename.rfind(PATH_SEPARATOR);
-#ifdef WIN32
-  // accept the unix path separator on windows for cygwin and sanity.
-  string::size_type unixPos = filename.rfind("/");  
-  if ((unixPos != string::npos)&&(pos != string::npos)) {pos = Max(unixPos, pos);}
-  else if ((unixPos != string::npos)&&(pos == string::npos)) {pos = unixPos;}
-#endif
-  if(pos != string::npos)
-    name = filename.substr(pos+1);
-  else 
-    name = filename;
-  return name;
+    return AffxFile::parseFileName(filename);
 }
 
 /// @brief     Preform the fileRoot on a vector of filenames.
@@ -528,7 +692,7 @@ std::vector<std::string> Util::fileRoot(const std::vector<std::string>& filename
 {
   std::vector<std::string> rootname_vec;
   for (int i=0;i<filename_vec.size();i++) {
-    rootname_vec.push_back(fileRoot(filename_vec[i]));
+    rootname_vec.push_back(AffxFile::parseFileName(filename_vec[i]));
   }
   return rootname_vec;
 }
@@ -553,6 +717,9 @@ int Util::matrixDifferences(const std::string& targetFile,
                             const std::string& queryFile, 
                             int colSkip, int rowSkip, double epsilon, bool printMismatch,
                             bool matchRows) {
+
+  ///@todo handle long file names on windows
+
   vector< vector<double> > qMatrix, tMatrix;
   unsigned int rowIx = 0, colIx = 0;
   unsigned int numCol = 0, numRow = 0;
@@ -637,28 +804,126 @@ int Util::matrixDifferences(const std::string& targetFile,
   return diffCount;
 }
 
+/* Private method to this file used to convert a relative path
+   into an absolute path, and if successful to add "\\?\"
+   prefix. This prevents the system APIs for failing on long
+   filenames/paths by forcing them to pass the filename
+   directly down into the low level file system APIs. */
+#if defined (WIN32)
+std::string _getFullPathWindows(const std::string &in) {
+    DWORD  retval=1;
+    wchar_t  *wbuffer = new wchar_t[BUFFSIZE];  // Wide Char buffer for input path
+    wchar_t  *buffer = new wchar_t[BUFFSIZE];   // Wide Char buffer for output absolute path
+    char   *abuffer = new char[BUFFSIZE];       // Asci Char buffer for output absolute path
+    uint32_t strLen = 0;
+
+    // Setup wbuffer with our input
+    const char *inPtr = in.c_str();
+    strLen = strlen(inPtr);
+    if(strLen > BUFFSIZE - 1) {
+        Err::errAbort("Cannot handle string longer than " + ToStr(BUFFSIZE) + ": '" + 
+                in + "' is " + ToStr(strLen));
+    }
+    mbstowcs(wbuffer,inPtr, strLen + 1);
+
+    // Compute the absolute path. We use the wide char
+    // version which can handle > MAX_PATH
+    retval = GetFullPathNameW(wbuffer,BUFFSIZE - 1,buffer,NULL);
+
+    // If no characters were converted, then simply return the original string
+    if (retval < 1) {
+        Freez(wbuffer);
+        Freez(buffer);
+        Freez(abuffer);
+        return in;
+    }
+
+    // If we will overflow our buffer, then abort.
+    if(retval > BUFFSIZE-1) {
+        Err::errAbort("Unexpected failure. Converted more characters than expected");
+    }
+
+    // Convert the absolute path to asci char from wide char
+    wcstombs(abuffer, (wchar_t *)buffer, retval + 1);
+
+    // Free up memory and return our string
+    string rs;
+    rs = abuffer;
+    Freez(wbuffer);
+    Freez(buffer);
+    Freez(abuffer);
+    if(rs == "") {
+        // If our result is empty, return input string
+        return in;
+    } else {
+        // Otherwise we have an absolute path, so add the "\\?\" magic
+        if(rs == "") {
+            return in;
+        } else {
+            if(rs.substr(0,2) == "\\\\")
+                return rs;
+            else
+                return "\\\\?\\" + rs;
+        }
+    }
+}
+#endif
 
 /** 
  * Simple minded function for converting unix paths to windows and
  * vice-versa. Will fail if any drives are specified or any escaping of 
- * characters are going on...
+ * characters are going on. On windows this method will attempt to handle
+ * long paths/filenames by converting the specified path to a UNC absolute
+ * path with a leading "\\?\".
  * 
- * @param path - filename/dirname to be converted
+ * @param path -       filename/dirname to be converted
+ * @param singleFile - boolean to indicate if the path/string is a single file 
+ *                     or if it has multiple files (eg a whole command line). 
+ *                     If it is a whole command line then to attempt to handle 
+ *                     long paths/filenames on windows will be attempted
  * 
  * @return converted filename for that platform.
  */
-std::string Util::getPathName(const std::string &path) {
+std::string Util::convertPathName(const std::string &path, bool singleFile) {
   std::string s = path;
   if(s.find(':') != std::string::npos)
-    Err::errAbort("Can't convert " + path + " as it contains a ':' character");
-  // 92 is the ascii code for '\'
+      return s;
+
 #if defined (WIN32)
+  // Convert forward slash to back slash -- 92 is the ascii code for '\'
   subChar(s, '/', 92);
+  // If we are given a single file name, then try and cope with extra long names
+  // by using '\\?\C:\...\' magic
+  if(singleFile) {
+    // First we split into a path and filename parts
+    size_t pos=s.rfind("\\");
+    string pathPart, filePart;
+    if(pos != std::string::npos) {
+        pathPart = s.substr(0,pos);
+        filePart = s.substr(pos+1);
+    } else {
+        // No path part found, so assume CWD
+        pathPart = ".";
+        filePart = s;
+    }
+    //Verbose::out(1,"Path Part = '" + pathPart + "'");
+    //Verbose::out(1,"File Part = '" + filePart + "'");
+    // Now we call this method to convert the minimal path part to
+    // an absolute path. _getFullPathWindows() will add the
+    // "\\?\" magic if appropriate.
+    pathPart = _getFullPathWindows(pathPart);
+    s = pathPart + PATH_SEPARATOR + filePart;
+  }
 #else
+  // Unix deals with long filenames/paths as one would expect.
+  // So all we need to do is flip back slashes to forward slashes.
+  // 92 is the ascii code for '\'
   subChar(s, 92, '/');
 #endif
+  //Verbose::out(1, "Converted '" + path + "' to '" + s + "'");
   return s;
 }
+
 
 /**
  * Schrage's algorithm for generating random numbers in 32 bits.  
@@ -682,6 +947,9 @@ int32_t Util::schrageRandom(int32_t *ix) {
   return rand;
 }
 
+std::string Util::asMB(uint64_t x) {
+  return ToStr(x/MEGABYTE) + "MB";
+}
 
 #ifdef WIN32 
 #define memInfo_defined 1
@@ -825,7 +1093,7 @@ bool memInfo_linux(std::string proc_meminfo_filename,
 /// @brief     Query the mach kernel for memInfo.
 /// @param     free      The amount of free memory. (bytes)
 /// @param     total     The physical memory installed (bytes)
-/// @param     swapAvail The amount of swap avail. (bytes)
+/// @param     swapAvail Darwin can use all the disk space, return 0
 /// @param     memAvail  Suggested amount of memory to use.
 /// @return    true on success
 bool memInfo_darwin(uint64_t &free, uint64_t &total,
@@ -968,12 +1236,166 @@ bool Util::memInfo(uint64_t &free, uint64_t &total,
   success=memInfo_solaris(free,total,swapAvail,memAvail);
 #endif // __sun__
 
-  if (memAvail>MEMINFO_2GB_MAX && is32bit && cap32bit) {
+  if (memAvail>MEMINFO_2GB_MAX && (is32bit || cap32bit)) {
     memAvail=MEMINFO_2GB_MAX;
   }
 
   return success;
 }
+
+#ifdef WIN32
+static int64_t getAvailableDiskSpace_win32(const std::string& path) {
+    ULARGE_INTEGER lpFreeBytesAvailable;
+    ULARGE_INTEGER lpTotalNumberOfBytes;
+    ULARGE_INTEGER lpTotalNumberOfFreeBytes;
+
+    if (!GetDiskFreeSpaceEx(
+                            path.c_str(),
+                            &lpFreeBytesAvailable,
+                            &lpTotalNumberOfBytes,
+                            &lpTotalNumberOfFreeBytes
+    )){
+        Verbose::warn(1, "Util::getAvailableDiskSpace() - Could not determine available disk space with GetDiskFreeSpaceEx().");
+        return -1;
+    }
+
+    return lpTotalNumberOfFreeBytes.QuadPart;
+}
+#endif
+
+#ifdef __linux__
+static int64_t getAvailableDiskSpace_linux(const std::string& path) {
+    struct statfs retBuf;
+    if(statfs(path.c_str(), &retBuf)) {
+        Verbose::warn(1, "Util::getAvailableDiskSpace() - Could not determine available disk space with statfs().");
+        return -1;
+    }
+    return int64_t(retBuf.f_bavail) * int64_t(retBuf.f_bsize);
+}
+#endif
+
+#ifdef __APPLE__
+static int64_t getAvailableDiskSpace_mac(const std::string& path) {
+    struct statfs retBuf;
+    if(statfs(path.c_str(), &retBuf)) {
+        Verbose::warn(1, "Util::getAvailableDiskSpace() - Could not determine available disk space with statfs().");
+        return -1;
+    }
+    return int64_t(retBuf.f_bavail) * int64_t(retBuf.f_bsize);
+}
+#endif
+
+/** 
+ * Determine the available space in bytes on given volume.
+ * 
+ * @param path - path to any file on the volume.
+ * 
+ * @return available space in bytes or -1 on unsupported platforms.
+ */
+int64_t Util::getAvailableDiskSpace(const std::string& path) {
+#ifdef WIN32
+    return getAvailableDiskSpace_win32(path);
+#endif
+
+#ifdef __linux__
+    return getAvailableDiskSpace_linux(path);
+#endif
+
+#ifdef __APPLE__
+    return getAvailableDiskSpace_mac(path);
+#endif
+
+    return -1;
+}
+
+#ifdef WIN32
+static int64_t isSameVolume_win32(const std::string& path1, const std::string& path2) {
+    TCHAR volumeNameBuffer1[MAX_PATH+1];
+    if(!GetVolumePathName(
+                            path1.c_str(),
+                            volumeNameBuffer1,
+                            MAX_PATH+1
+    )){
+        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(1) with GetVolumePathName().");
+        return -1;
+    }
+    TCHAR volumeNameBuffer2[MAX_PATH+1];
+    if(!GetVolumePathName(
+                            path2.c_str(),
+                            volumeNameBuffer2,
+                            MAX_PATH+1
+    )){
+        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(2) with GetVolumePathName().");
+        return -1;
+    }
+    if (_stricmp(volumeNameBuffer1, volumeNameBuffer2) == 0)
+        return 1;
+
+    return 0;
+}
+#endif
+
+#ifdef __linux__
+static int64_t isSameVolume_linux(const std::string& path1, const std::string& path2) {
+    struct stat retBuf1, retBuf2;
+    if (stat(path1.c_str(), &retBuf1)) {
+        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(1) with stat().");
+        return -1;
+    }
+    if (stat(path2.c_str(), &retBuf2)) {
+        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(2) with stat().");
+        return -1;
+    }
+    if (retBuf1.st_dev == retBuf2.st_dev)
+        return 1;
+
+    return 0;
+}
+#endif
+
+#ifdef __APPLE__
+static int64_t isSameVolume_mac(const std::string& path1, const std::string& path2) {
+    struct stat retBuf1, retBuf2;
+    if (stat(path1.c_str(), &retBuf1)) {
+        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(1) with stat().");
+        return -1;
+    }
+    if (stat(path2.c_str(), &retBuf2)) {
+        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(2) with stat().");
+        return -1;
+    }
+    if (retBuf1.st_dev == retBuf2.st_dev)
+        return 1;
+
+    return 0;
+}
+#endif
+
+/** 
+ * Determine if two files/dirs are on the same volume.
+ * 
+ * @param path1 - first path to any file/dir on the volume.
+ * @param path2 - second path to any file/dir on the volume.
+ * 
+ * @return 1 if same volume, 0 if not, -1 if unsupported platform.
+ */
+int64_t Util::isSameVolume(const std::string& path1, const std::string& path2) {
+
+#ifdef WIN32
+    return isSameVolume_win32(path1, path2);
+#endif
+
+#ifdef __linux__
+    return isSameVolume_linux(path1, path2);
+#endif
+
+#ifdef __APPLE__
+    return isSameVolume_mac(path1, path2);
+#endif
+
+    return -1;
+}
+
 
 /** 
  * Return a pointer to the next character that is white space
@@ -1035,7 +1457,7 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
     if((wEnd - wStart) + position >= maxWidth) {
       out.put('\n');
       for(i = 0; i < prefix; i++) 
-	out.put(' ');      
+         out.put(' ');      
       position = prefix;
     }
     
@@ -1051,9 +1473,9 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
     while(isspace(*wEnd)) {
       if(*wEnd == '\n') {
         out.put('\n');
-	for(i = 0; i < prefix; i++) 
-	  out.put(' ');      
-	position = prefix;
+        for(i = 0; i < prefix; i++) 
+            out.put(' ');      
+        position = prefix;
       }
       wEnd++;
     }
@@ -1128,4 +1550,147 @@ void Util::changeEnd(std::vector<std::string>& str_vec,const std::string& from,c
   for (int i=0;i<str_vec.size();i++) {
     changeEnd(str_vec[i],from,to);
   }
+}
+
+
+//Assumes sentinel character (equal to NULL) exists at end of array
+std::vector<std::string> Util::listToVector(const char* in[])
+{
+  std::vector<string> fullName;
+
+  for (int i = 0; in[i] != NULL; i++)
+  {
+    fullName.push_back(in[i]);
+  } 
+  
+  return fullName;
+}
+
+std::vector<std::string> Util::listToVector(const char* in[], int size)
+{
+  std::vector<std::string> fullName;
+
+  for (int i = 0; i < size; i++)
+    {
+      fullName.push_back(in[i]);
+    }
+  
+  return fullName;
+}
+
+std::vector<std::string> Util::addPrefixSuffix(std::vector<std::string> middle, 
+                           const std::string &prefix, const std::string &suffix)
+{
+  std::vector<std::string> fullName;
+
+  for (std::vector<std::string>::iterator i = middle.begin(); i < middle.end();i++)
+  {
+     fullName.push_back(prefix + (*i) + suffix);
+  }
+
+  return fullName;
+}
+
+std::vector<std::string> Util::addPrefixSuffix(const char* middle[], 
+                           const std::string &prefix, const std::string &suffix)
+{
+  std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle), prefix, suffix);
+
+  return fullName;
+}
+
+std::vector<std::string> Util::addPrefixSuffix(const char* middle[], int size, 
+                           const std::string &prefix, const std::string &suffix)
+{
+  std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle, size), prefix, suffix);
+
+  return fullName;
+}
+
+std::vector<std::string> Util::addPrefixSuffix(const char* middle[], 
+                           const std::string &prefix)
+{
+  std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle), prefix, "");
+
+  return fullName;
+}
+
+//String Stuff 
+//Assumes a sentintel exists (equal to "") as the last element in the array.
+std::vector<std::string> Util::listToVector(std::string in[])
+{
+  std::vector<std::string> fullName;
+
+  for (int i = 0; in[i] != ""; i++)
+  {
+    fullName.push_back(in[i]);
+  }
+  
+  return fullName;
+}
+
+std::vector<std::string> Util::listToVector(std::string in[], int size)
+{
+  std::vector<std::string> fullName;
+
+  for(int i = 0; i < size; i++)
+  {
+    fullName.push_back(in[i]);
+  }
+  
+  return fullName;
+}
+
+std::vector<std::string> Util::addPrefixSuffix(std::string middle[], 
+                           const std::string &prefix, const std::string &suffix)
+{
+  std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle), prefix, suffix);
+  
+  return fullName;
+}
+
+std::vector<std::string> Util::addPrefixSuffix(std::string middle[], int size, 
+                           const std::string &prefix, const std::string &suffix)
+{
+  std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle,size), prefix, suffix);
+  
+  return fullName;
+}
+
+std::string Util::joinVectorString(std::vector<std::string> toJoin, const std::string &sep)
+{
+  std::string fullString="";
+  
+  for (std::vector<std::string>::iterator i = toJoin.begin(); i < toJoin.end();i++)
+  {
+    fullString += (*i)+sep;
+  }
+  return fullString;
+}
+
+Util::StaticMem &Util::getStaticMem() {
+    static Util::StaticMem mem;
+    return mem;
+}
+
+uint64_t Util::getMemFreeAtStart() {
+    Util::StaticMem &mem = getStaticMem();
+    return  mem.getMemFreeAtStart();
+}
+
+uint64_t Util::getMemFreeAtBlock() {
+    Util::StaticMem &mem = getStaticMem();
+    return  mem.getMemFreeAtBlock();
+}
+
+void Util::popMemFreeAtStart() {
+    Util::StaticMem &mem = getStaticMem();
+    mem.popMemFreeAtStart();
+}
+
+void Util::pushMemFreeAtStart() {
+    Util::StaticMem &mem = getStaticMem();
+    uint64_t freeRam = 0, totalRam = 0, swapAvail = 0, memAvail = 0;
+    Util::memInfo(freeRam, totalRam, swapAvail, memAvail, false);
+    mem.pushMemFreeAtStart(memAvail);
 }

@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionMSKData.h"
+#include "calvin_files/fusion/src/FusionMSKData.h"
+//
 
 using namespace affymetrix_fusion_io;
 

@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "MemMapFile.h"
+#include "calvin_files/data/src/MemMapFile.h"
+//
 
 using namespace affymetrix_calvin_io;
 

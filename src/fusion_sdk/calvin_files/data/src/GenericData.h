@@ -24,20 +24,24 @@
 /*! \file GenericData.h This file provides access to generic data.
  */
 
-#include "AffymetrixBaseTypes.h"
-#include "AffyStlCollectionTypes.h"
-#include "AffymetrixGuid.h"
-#include "FileHeader.h"
-#include "DataSet.h"
-#include "DataGroup.h"
-#include "DataException.h"
-#include "FileException.h"
-#include <string>
-#include <vector>
-
 #ifdef _MSC_VER
 #include <windows.h>
 #endif
+
+#include "calvin_files/data/src/DataException.h"
+#include "calvin_files/data/src/DataGroup.h"
+#include "calvin_files/data/src/DataSet.h"
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/parsers/src/FileException.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffyStlCollectionTypes.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
+#include <string>
+#include <vector>
+//
+
 
 using namespace affymetrix_calvin_utilities;
 

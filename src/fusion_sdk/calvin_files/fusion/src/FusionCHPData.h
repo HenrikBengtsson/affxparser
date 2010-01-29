@@ -23,12 +23,15 @@
 
 /*! \file FusionCHPData.h This file provides CHP file reading capabilities.*/
 
+#include "calvin_files/data/src/GenericData.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
+#include <fstream>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
-#include <fstream>
-#include "AffymetrixGuid.h"
-#include "GenericData.h"
+//
 
 namespace affymetrix_fusion_io
 {

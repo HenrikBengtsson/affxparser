@@ -21,10 +21,12 @@
 
 /*! \file CalvinCHPTilingFileWriter.h Contains classes to write a tiling CHP file. */
 
+#include "calvin_files/data/src/CHPTilingData.h"
+#include "calvin_files/data/src/CHPTilingEntry.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
 #include <fstream>
-#include "CHPTilingData.h"
-#include "GenericFileWriter.h"
-#include "CHPTilingEntry.h"
+//
 
 namespace affymetrix_calvin_io
 {

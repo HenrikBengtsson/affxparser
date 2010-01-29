@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataGroupHeader.h"
-#include "FileHeader.h"
+#include "calvin_files/data/src/DataGroupHeader.h"
+//
+#include "calvin_files/data/src/FileHeader.h"
+//
 
 using namespace affymetrix_calvin_io;
 
@@ -33,6 +35,7 @@ DataGroupHeader::DataGroupHeader(const std::wstring &n)
 	name = n;
 	dataSetPos = 0;
 	nextGrpPos = 0;
+	headerStartFilePos = 0;
 }
 
 DataGroupHeader::~DataGroupHeader() 
@@ -66,6 +69,18 @@ int32_t DataGroupHeader::GetDataSetCnt() const
 void DataGroupHeader::AddDataSetHdr(const DataSetHeader &p)
 {
 	dataSetHdrs.push_back(p);
+}
+
+void DataGroupHeader::ReplaceDataSetHdr(const DataSetHeader &p)
+{
+	for(int i = 0 ; i < dataSetHdrs.size(); i++)
+	{
+		if(dataSetHdrs[i].GetName() == p.GetName())
+		{
+			dataSetHdrs[i] = p;
+			return;
+		}
+	}
 }
 
 DataSetHeader& DataGroupHeader::GetDataSet(int32_t index)

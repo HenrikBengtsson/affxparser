@@ -26,8 +26,10 @@
  * @brief  Class for writing signals to a buffer before writing to CHP files.
  */
 
-#include "CalvinCHPFileUpdater.h"
-#include "CalvinCHPFileBufferWriter.h"
+#include "calvin_files/writers/src/CalvinCHPFileBufferWriter.h"
+//
+#include "calvin_files/writers/src/CalvinCHPFileUpdater.h"
+//
 
 using namespace affymetrix_calvin_io;
 

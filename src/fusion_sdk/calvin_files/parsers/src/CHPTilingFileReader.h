@@ -24,10 +24,13 @@
 /*! \file CHPTilingFileReader.h This file provides methods to read a tiling CHP data file.
  */
 
-#include "CHPTilingData.h"
-#include "DataGroupReader.h"
-#include <string>
+#include "calvin_files/data/src/CHPTilingData.h"
+#include "calvin_files/parsers/src/DataGroupReader.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {

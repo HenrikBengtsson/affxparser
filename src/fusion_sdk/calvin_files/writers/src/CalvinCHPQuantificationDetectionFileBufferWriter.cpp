@@ -26,8 +26,10 @@
  * @brief  Class for writing quantifications to a buffer before writing to CHP files.
  */
 
-#include "CalvinCHPFileUpdater.h"
-#include "CalvinCHPQuantificationDetectionFileBufferWriter.h"
+#include "calvin_files/writers/src/CalvinCHPQuantificationDetectionFileBufferWriter.h"
+//
+#include "calvin_files/writers/src/CalvinCHPFileUpdater.h"
+//
 
 using namespace affymetrix_calvin_io;
 

@@ -18,9 +18,11 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CHPData.h"
-#include "DataSetHeader.h"
-#include "StringUtils.h"
+#include "calvin_files/data/src/CHPData.h"
+//
+#include "calvin_files/data/src/DataSetHeader.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;

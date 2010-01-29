@@ -26,9 +26,11 @@
 //
 #include "portability/affy-base-types.h"
 //
+#include <cstdio>
+#include <cstring>
 #include <fstream>
-#include <stdio.h>
 #include <string>
+//
 
 //
 //#define FILEIO_WITH_STDIO 1

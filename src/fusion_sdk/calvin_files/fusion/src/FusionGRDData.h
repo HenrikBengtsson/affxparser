@@ -24,7 +24,8 @@
 /*! \file FusionGRDData.h This file defines the Fusion GRD Data classes
  */
 
-#include "GRDFileData.h"
+#include "file/GRDFileData.h"
+//
 using namespace affxgrd;
 
 namespace affymetrix_fusion_io

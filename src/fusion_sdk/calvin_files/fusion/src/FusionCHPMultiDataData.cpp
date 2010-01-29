@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionCHPMultiDataData.h"
-#include "CHPMultiDataFileReader.h"
+#include "calvin_files/fusion/src/FusionCHPMultiDataData.h"
+//
+#include "calvin_files/parsers/src/CHPMultiDataFileReader.h"
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_exceptions;

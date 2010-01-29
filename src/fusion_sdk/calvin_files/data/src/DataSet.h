@@ -21,16 +21,20 @@
 #ifndef _DataSet_HEADER_
 #define _DataSet_HEADER_
 
-#include "AffymetrixBaseTypes.h"
-#include "AffyStlCollectionTypes.h"
-#include "DataSetHeader.h"
-#include "DataException.h"
-#include <string>
-#include <fstream>
-
 #ifdef _MSC_VER
 #include <windows.h>
 #endif
+
+#include "calvin_files/data/src/DataException.h"
+#include "calvin_files/data/src/DataSetHeader.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffyStlCollectionTypes.h"
+//
+#include <cstring>
+#include <fstream>
+#include <string>
+//
+
 
 namespace affymetrix_calvin_io
 {

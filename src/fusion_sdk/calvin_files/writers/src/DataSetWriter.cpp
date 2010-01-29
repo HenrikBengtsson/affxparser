@@ -16,7 +16,8 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "DataSetWriter.h"
+#include "calvin_files/writers/src/DataSetWriter.h"
+//
 
 using namespace affymetrix_calvin_io;
 
@@ -41,8 +42,13 @@ void DataSetWriter::WriteHeader()
 void DataSetWriter::UpdateNextDataSetOffset() const
 {
 	u_int32_t currentPos = os->tellp();
-	dataSetHdr->SetNextSetFilePos(currentPos);
-	hdrWriter.UpdateNextDataSetOffset(*os, currentPos);
+	UpdateNextDataSetOffset(currentPos);
+}
+
+void DataSetWriter::UpdateNextDataSetOffset(u_int32_t pos) const
+{
+	dataSetHdr->SetNextSetFilePos(pos);
+	hdrWriter.UpdateNextDataSetOffset(*os, pos);
 }
 
 std::wstring DataSetWriter::GetDataSetName() const
@@ -98,4 +104,9 @@ void DataSetWriter::Write(const std::string &p, int32_t maxLn)
 void DataSetWriter::Write(const std::wstring &p, int32_t maxLn)
 {
 	FileOutput::WriteString16(*os, p, maxLn);
+}
+
+void DataSetWriter::WriteBuffer(char* psBuffer, int32_t iLength)
+{
+	os->write(psBuffer, iLength);
 }

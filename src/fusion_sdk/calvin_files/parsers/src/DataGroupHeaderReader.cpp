@@ -18,11 +18,14 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataGroupHeaderReader.h"
-#include "DataSetHeaderReader.h"
-#include "FileInput.h"
+#include "calvin_files/parsers/src/DataGroupHeaderReader.h"
+//
+#include "calvin_files/parsers/src/DataSetHeaderReader.h"
+#include "calvin_files/parsers/src/FileInput.h"
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 using namespace affymetrix_calvin_io;
 
@@ -78,27 +81,29 @@ void DataGroupHeaderReader::ReadAll(std::ifstream& fileStream, FileHeader& fh, u
 /*
  * Reads the DataGroupHeader and the minimum information for all DataSetHeaders associated with this DataGroupHeader from the file.
  */
-u_int32_t DataGroupHeaderReader::ReadMinimumInfo(std::ifstream& fileStream, DataGroupHeader& dch)
+u_int32_t DataGroupHeaderReader::ReadMinimumInfo(std::ifstream& fileStream, DataGroupHeader& grpHdr)
 {
-	u_int32_t dataSetCnt = ReadHeader(fileStream, dch);
+	ReadDataGroupStartFilePos(fileStream, grpHdr);
+	u_int32_t dataSetCnt = ReadHeader(fileStream, grpHdr);
 
 	// Read the DataSets
 	DataSetHeaderReader dphReader;
-	dphReader.ReadAllMinimumInfo(fileStream, dch, dataSetCnt);
-	return dch.GetNextGroupPos();
+	dphReader.ReadAllMinimumInfo(fileStream, grpHdr, dataSetCnt);
+	return grpHdr.GetNextGroupPos();
 }
 
 /*
  * Read the DataGroupHeader and all DataSetHeaders associated with this DataGroupHeader from the file.
  */
-u_int32_t DataGroupHeaderReader::Read(std::ifstream& fileStream, DataGroupHeader& dch)
+u_int32_t DataGroupHeaderReader::Read(std::ifstream& fileStream, DataGroupHeader& grpHdr)
 {
-	u_int32_t dataSetCnt = ReadHeader(fileStream, dch);
+	ReadDataGroupStartFilePos(fileStream, grpHdr);
+	u_int32_t dataSetCnt = ReadHeader(fileStream, grpHdr);
 
 	// Read the DataSets
 	DataSetHeaderReader dphReader;
-	dphReader.ReadAll(fileStream, dch, dataSetCnt);
-	return dch.GetNextGroupPos();
+	dphReader.ReadAll(fileStream, grpHdr, dataSetCnt);
+	return grpHdr.GetNextGroupPos();
 }
 
 /*
@@ -111,6 +116,14 @@ u_int32_t DataGroupHeaderReader::ReadHeader(std::ifstream& fileStream, DataGroup
 	u_int32_t dataSetCnt = ReadDataSetCnt(fileStream, dch);
 	ReadDataGroupName(fileStream, dch);
 	return dataSetCnt;
+}
+
+/*
+ * Read the file position of the start of the DataSet.
+ */
+void DataGroupHeaderReader::ReadDataGroupStartFilePos(std::ifstream& fileStream, DataGroupHeader& grpHdr)
+{
+	grpHdr.SetHeaderStartFilePos(fileStream.tellg());
 }
 
 /*

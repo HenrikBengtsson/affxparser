@@ -24,8 +24,10 @@
 /*! \file AffymetrixGuid.h This file provides functions for creating globally unique identifiers.
  */
 
-#include <string>
+#include <cstring>
 #include <list>
+#include <string>
+//
 
 namespace affymetrix_calvin_utilities
 {

@@ -23,8 +23,9 @@
 
 /*! \file FusionCHPMultiDataData.h This file provides CHP file reading capabilities for multi-data CHP files.*/
 
-#include "FusionCHPData.h"
-#include "CHPMultiDataData.h"
+#include "calvin_files/data/src/CHPMultiDataData.h"
+#include "calvin_files/fusion/src/FusionCHPData.h"
+//
 
 namespace affymetrix_fusion_io
 {
@@ -210,6 +211,46 @@ public:
 	void GetFamilialSampleEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::FamilialSample &entry)
 	{ chpData.GetFamilialSampleEntry(dataType, index, entry); }
 
+	/*! Gets the DMET probe set data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
+	void GetDmetCopyNumberEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::DmetCopyNumberData &entry)
+	{ chpData.GetEntry(dataType, index, entry); }
+
+	/*! Gets the DMET probe set data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
+	void GetDmetMultiAllelicEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::DmetMultiAllelicData &entry)
+	{ chpData.GetEntry(dataType, index, entry); }
+
+	/*! Gets the DMET probe set data.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The copy number results.
+	*/
+	void GetDmetBiAllelicEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::DmetBiAllelicData &entry)
+	{ chpData.GetEntry(dataType, index, entry); }
+
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The copy number results.
+	 */
+	void GetAllelePeakEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::AllelePeaks &entry)
+    { chpData.GetEntry(dataType, index, entry); } 
+
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The AB signals.
+	 */
+	void GetMarkerABSignalsEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::MarkerABSignals &entry)
+    { chpData.GetEntry(dataType, index, entry); } 
+
 	/*! Get the probe set name.
      * @param dataType The data type
 	 * @param index The row index.
@@ -249,6 +290,7 @@ private:
 	 */
 	bool ReadHeader();
 
+public:
 	/*! A class to register the MultiData CHP reader. */
 	class Reg : public FusionCHPDataReg
 	{
@@ -267,10 +309,10 @@ private:
 		FusionCHPData *MakeObject() { return new FusionCHPMultiDataData; }
 	};
 
+public:
 	/*! The one and only registration object. This registers the class as a CHP reader. */
 	static Reg reg;
 
-public:
 	/*! Converts the type to the MultiData CHP type.
 	 * @param chip The pointer to the CHP data object.
 	 * @return The MultiData CHP data type or NULL if not compatible.

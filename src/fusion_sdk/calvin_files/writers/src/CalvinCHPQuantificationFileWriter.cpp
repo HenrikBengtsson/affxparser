@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CalvinCHPQuantificationFileWriter.h"
-#include "CHPQuantificationData.h"
+#include "calvin_files/writers/src/CalvinCHPQuantificationFileWriter.h"
+//
+#include "calvin_files/data/src/CHPQuantificationData.h"
+//
 
 using namespace affymetrix_calvin_io;
 

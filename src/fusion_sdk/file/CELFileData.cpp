@@ -19,19 +19,21 @@
 
 //
 #include "file/CELFileData.h"
-#include "file/FileIO.h"
-
 //
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <cerrno>
-#include <istream>
-#include <fstream>
-#include <string.h>
-#include <assert.h>
+#include "file/FileIO.h"
+//
 #include <algorithm>
+#include <cassert>
+#include <cerrno>
+#include <cstdio>
+#include <cstring>
+#include <fstream>
 #include <iostream>
-#include <stdio.h>
+#include <istream>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
@@ -2427,6 +2429,48 @@ float CCELFileData::GetIntensity(int index)
 
 	return fIntensity;
 }
+
+int CCELFileData::GetIntensities(int index,std::vector<float>& intensities)
+{
+  int idx_start=index;
+  int idx_end=idx_start+intensities.size();
+  // the start and end indexes must be valid...
+	assert((idx_start >= 0) && (idx_end <= m_HeaderData.GetCells()));
+
+  // determine the format once, then copy a vectors worth of data.
+	if (m_FileFormat == TEXT_CEL) 
+	{
+    for (int idx=idx_start;idx<idx_end;idx++) {
+      intensities[idx]=MmGetFloat_I(&m_pEntries[idx].Intensity);
+    }
+  }
+	else if (m_FileFormat == XDA_BCEL) 
+	{
+    for (int idx=idx_start;idx<idx_end;idx++) {
+      intensities[idx]=MmGetFloat_I(&m_pEntries[idx].Intensity);
+    }
+	}
+	else if (m_FileFormat == TRANSCRIPTOME_BCEL) 
+	{
+    for (int idx=idx_start;idx<idx_end;idx++) {
+      intensities[idx]=MmGetUInt16_N(&m_pTransciptomeEntries[idx].Intensity);
+    }
+	}
+	else if (m_FileFormat == COMPACT_BCEL) 
+	{
+    for (int idx=idx_start;idx<idx_end;idx++) {
+      intensities[idx]=MmGetUInt16_I(&m_pMeanIntensities[idx]);
+    }
+	}
+	else {
+    // Opps - we dont know what the format was.
+    assert(0);
+	}
+
+  return 0;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  public  GetStdv

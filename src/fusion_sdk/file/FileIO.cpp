@@ -18,27 +18,31 @@
 ////////////////////////////////////////////////////////////////
 
 //
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 //////////////////////////////////////////////////////////////////////
-
+#ifdef _MSC_VER
+#include "windows.h"
+#endif
+//
+#include "file/FileIO.h"
+//
+#include "portability/affy-base-types.h"
+#include "util/Convert.h"
+#include "util/Err.h"
+//
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string.h>
+#include <string>
+//
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
-#include <winsock2.h>
 #else
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <inttypes.h>
 #endif
-
-// Include winsock2.h before these
-#include "file/FileIO.h"
-#include "util/Convert.h"
-#include "util/Err.h"
-#include "portability/affy-base-types.h"
 
 // Some machines (sparc) dont support unaligned memory access
 // The mmaped files are chock full of unaligned accesses.

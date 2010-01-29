@@ -20,11 +20,13 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include <string>
 #include <util/md5sum.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+//
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
 //
 using namespace std;
 using namespace affx;

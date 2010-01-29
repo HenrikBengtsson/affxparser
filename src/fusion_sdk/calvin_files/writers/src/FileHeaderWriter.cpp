@@ -16,10 +16,12 @@
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
-#include "FileHeaderWriter.h"
-#include "GenericDataHeaderWriter.h"
-#include "FileOutput.h"
-#include "AffymetrixGuid.h"
+#include "calvin_files/writers/src/FileHeaderWriter.h"
+//
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+#include "calvin_files/writers/src/FileOutput.h"
+#include "calvin_files/writers/src/GenericDataHeaderWriter.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_utilities;

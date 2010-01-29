@@ -18,10 +18,12 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DATData.h"
-#include "DataSetHeader.h"
-#include "GenericDataTypes.h"
-#include "ArrayId.h"
+#include "calvin_files/data/src/DATData.h"
+//
+#include "calvin_files/array/src/ArrayId.h"
+#include "calvin_files/data/src/DataSetHeader.h"
+#include "calvin_files/data/src/GenericDataTypes.h"
+//
 
 
 using namespace affymetrix_calvin_io;

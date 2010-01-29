@@ -17,15 +17,22 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "MDLFileData.h"
-#include "FileIO.h"
-#include "FileWriter.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
+//
+#include "file/MDLFileData.h"
+//
+#include "file/FileIO.h"
+#include "file/FileWriter.h"
+//
+#include <cassert>
+#include <cstring>
+#include <ctime>
 #include <fstream>
-#include <assert.h>
-#include <time.h>
+#include <istream>
+#include <string.h>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.

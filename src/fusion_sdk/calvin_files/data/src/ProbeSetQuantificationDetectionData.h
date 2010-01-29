@@ -24,8 +24,11 @@
 /*! \file ProbeSetQuantificationDetectionData.h This file provides types to hold quantification and detection results.
  */
 
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <string>
-#include "AffymetrixBaseTypes.h"
+//
 
 namespace affymetrix_calvin_data
 {

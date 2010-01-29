@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "DataGroup.h"
-#include "GenericData.h"
+#include "calvin_files/data/src/DataGroup.h"
+//
+#include "calvin_files/data/src/GenericData.h"
+//
 
 using namespace affymetrix_calvin_io;
 

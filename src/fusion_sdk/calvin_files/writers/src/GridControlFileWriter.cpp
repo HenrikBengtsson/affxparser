@@ -18,11 +18,13 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "GridControlFileWriter.h"
-#include "GridControlFileReader.h"
-#include "GenericFileWriter.h"
-#include "FileHeader.h"
-#include "Parameter.h"
+#include "calvin_files/writers/src/GridControlFileWriter.h"
+//
+#include "calvin_files/data/src/FileHeader.h"
+#include "calvin_files/parameter/src/Parameter.h"
+#include "calvin_files/parsers/src/GridControlFileReader.h"
+#include "calvin_files/writers/src/GenericFileWriter.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace std;

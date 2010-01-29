@@ -21,8 +21,10 @@
 #ifndef _GenericDataHeaderWriter_HEADER_
 #define _GenericDataHeaderWriter_HEADER_
 
+#include "calvin_files/data/src/GenericDataHeader.h"
+//
 #include <fstream>
-#include "GenericDataHeader.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

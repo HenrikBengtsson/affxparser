@@ -26,9 +26,12 @@
 #ifndef _MSC_VER
 #include <stdint.h>
 #endif
-#include <string>
 //
 #include <util/md5.h>
+//
+#include <cstring>
+#include <string>
+//
 
 namespace affx {
   class md5sum;

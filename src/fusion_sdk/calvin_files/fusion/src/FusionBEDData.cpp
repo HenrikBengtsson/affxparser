@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionBEDData.h"
+#include "calvin_files/fusion/src/FusionBEDData.h"
+//
 
 using namespace affymetrix_fusion_io;
 

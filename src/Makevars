@@ -95,8 +95,13 @@ PKG_SOURCES = \
 	fusion_sdk/file/FileIO.cpp\
 	fusion_sdk/file/FileWriter.cpp\
 	fusion_sdk/file/TsvFile/TsvFile.cpp\
+	fusion_sdk/util/AffxByteArray.cpp\
+	fusion_sdk/util/AffxConv.cpp\
+	fusion_sdk/util/AffxFile.cpp\
 	fusion_sdk/util/MsgStream.cpp\
 	fusion_sdk/util/Util.cpp\
+	fusion_sdk/util/Err.cpp\
+	fusion_sdk/util/Verbose.cpp\
 	fusion_sdk/util/RowFile.cpp\
 	fusion_sdk/util/TableFile.cpp\
 	fusion_sdk/util/Convert.cpp\

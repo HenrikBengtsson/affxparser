@@ -17,8 +17,10 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "BEDFileWriter.h"
+#include "file/BEDFileWriter.h"
+//
 #include <fstream>
+//
 
 using namespace std;
 using namespace affxbed;

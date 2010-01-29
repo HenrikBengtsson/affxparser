@@ -21,12 +21,15 @@
 #ifndef _GenericDataHeader_HEADER_
 #define _GenericDataHeader_HEADER_
 
-#include "AffymetrixBaseTypes.h"
-#include "AffymetrixParameterConsts.h"
-#include "ParameterNameValueType.h"
-#include "AffymetrixGuid.h"
+#include "calvin_files/parameter/src/AffymetrixParameterConsts.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
 #include <string>
 #include <vector>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

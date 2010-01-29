@@ -107,9 +107,10 @@ probeset_id	probeset_type	atom_id	probe_id	probe_type	gc_count	probe_length	prob
 #define _BGP_FILE_H
 
 //
-#include <assert.h>
+#include "file/TsvFile/TsvFile.h"
 //
-#include "TsvFile.h"
+#include <cassert>
+//
 
 // declare the namespace
 namespace affx {

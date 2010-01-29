@@ -17,12 +17,16 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "1LQFileData.h"
-#include "FileIO.h"
-#include <sys/types.h>
+#include "file/1LQFileData.h"
+//
+#include "file/FileIO.h"
+//
+#include <cstring>
+#include <iostream>
+#include <string.h>
 #include <sys/stat.h>
-#include <istream>
-#include <fstream>
+#include <sys/types.h>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.
@@ -186,8 +190,6 @@ bool C1LQFileData::Read(std::ifstream &instr)
 
 	return true;
 }
-
-#include <iostream>
 
 /*! Rotate the data one time. */
 void C1LQFileData::Rotate() {

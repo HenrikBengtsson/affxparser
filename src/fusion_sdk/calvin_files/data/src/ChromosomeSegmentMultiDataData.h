@@ -25,12 +25,14 @@
  */
 
 //
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "AffymetrixBaseTypes.h"
-#include "ParameterNameValueType.h"
+//
 
 namespace affymetrix_calvin_data
 {
@@ -38,7 +40,7 @@ namespace affymetrix_calvin_data
 typedef struct _ChromosomeSegmentData
 {
     /*! The segment id */
-    std::string segmentId;
+    u_int32_t segmentId;
 
     /*! The chromosome number. */
     u_int8_t chr;
@@ -49,14 +51,11 @@ typedef struct _ChromosomeSegmentData
     /*! The stop position on the chromosome. */
     u_int32_t stopPosition;
 
-    /*! The segment call */
-    u_int8_t call;
-
-    /*! The confidence in the call */
-    float confidence;
-
     /*! The number of markers in the segment. */
     int markerCount;
+
+    /*! The mean marker distance. */
+    u_int32_t meanMarkerDistance;
 
 	/*! Other metrics associated with the segment. */
 	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
@@ -66,7 +65,7 @@ typedef struct _ChromosomeSegmentData
 typedef struct _ChromosomeSegmentDataEx
 {
     /*! The segment id */
-    std::string segmentId;
+    u_int32_t segmentId;
 
 	/*! The reference sample key. */
 	u_int32_t referenceSampleKey;

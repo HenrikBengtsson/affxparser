@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2007 Affymetrix, Inc.
+// Copyright (C) 2009 Affymetrix, Inc.
 //
 // This library is free software; you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License 
@@ -17,9 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "CHPMultiDataData.h"
-#include "DataSetHeader.h"
-#include "StringUtils.h"
+#include "calvin_files/data/src/CHPMultiDataData.h"
+//
+#include "calvin_files/data/src/DataSetHeader.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
 
 using namespace std;
 using namespace affymetrix_calvin_io;
@@ -128,6 +130,9 @@ const static std::wstring CN_UPPER = L"CN_upper";
 /*! The column name for the allele count. */
 const static std::wstring ALLELE_COUNT = L"Allele Count";
 
+/*! The column name for the mean marker distance. */
+const static std::wstring MEAN_MARKER_DISTANCE = L"MeanMarkerDistance";
+
 /*! The column name for signals. */
 const static std::wstring SIGNAL_A = L"Signal A";
 const static std::wstring SIGNAL_B = L"Signal B";
@@ -142,6 +147,9 @@ const static std::wstring CONTEXT_C = L"Context C";
 const static std::wstring CONTEXT_D = L"Context D";
 const static std::wstring CONTEXT_E = L"Context E";
 const static std::wstring CONTEXT_F = L"Context F";
+
+/*! Columns for the chromosome display */
+const static std::wstring CHR_DISPLAY = L"Display";
 
 /*! Columns for chromosome summary - start index.  */
 const static std::wstring START_INDEX = L"StartIndex";
@@ -205,6 +213,12 @@ const static std::wstring NORMALDIPLOID = L"NormalDiploid";
 const static std::wstring NOCALL = L"NoCall";
 const static std::wstring HOMOZYGOSITY = L"Homozygosity";
 const static std::wstring HETEROZYGOSITY = L"Heterozygosity";
+
+const static std::wstring PROBE_SET_INDEX = L"Index";
+const static std::wstring A_SIGNAL = L"ASignal";
+const static std::wstring B_SIGNAL = L"BSignal";
+const static std::wstring SCAR = L"SCAR";
+
 
 /*! used for full column index for log2Ratio */
 const static int cnlog2RatioIndexOffset = 4;
@@ -506,6 +520,33 @@ void CHPMultiDataData::GetEntry(MultiDataType dataType, int index, affymetrix_ca
 	}
 }
 
+void CHPMultiDataData::GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::AllelePeaks &entry)
+{
+	DataSetInfo *ds = OpenMultiDataDataSet(dataType);
+	if (ds && ds->entries && ds->entries->IsOpen())
+	{
+		int colIndex = 0;
+		entry.name.clear();
+		ds->entries->GetData(index, colIndex++, entry.name);
+		ds->entries->GetData(index, colIndex++, entry.chr);
+		ds->entries->GetData(index, colIndex++, entry.position);
+		GetExtraMetricEntries(ds, index, colIndex, entry.peaks);
+	}
+}
+
+void CHPMultiDataData::GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::MarkerABSignals &entry)
+{
+	DataSetInfo *ds = OpenMultiDataDataSet(dataType);
+	if (ds && ds->entries && ds->entries->IsOpen())
+	{
+		int colIndex = 0;
+		ds->entries->GetData(index, colIndex++, entry.index);
+		ds->entries->GetData(index, colIndex++, entry.aSignal);
+		ds->entries->GetData(index, colIndex++, entry.bSignal);
+		ds->entries->GetData(index, colIndex++, entry.scar);
+	}
+}
+
 void CHPMultiDataData::GetCopyNumberEntryLog2Ratio(MultiDataType dataType, int index, float* val)
 {
 	GetGenericCopyNumberEntryLog2Ratio(dataType, index, val);
@@ -532,14 +573,12 @@ void CHPMultiDataData::GetChromosomeSegmentEntry(MultiDataType dataType, int ind
 	if (ds && ds->entries && ds->entries->IsOpen())
 	{
 		int colIndex = 0;
-		entry.segmentId.clear();
 		ds->entries->GetData(index, colIndex++, entry.segmentId);
 		ds->entries->GetData(index, colIndex++, entry.chr);
 		ds->entries->GetData(index, colIndex++, entry.startPosition);
 		ds->entries->GetData(index, colIndex++, entry.stopPosition);
-		ds->entries->GetData(index, colIndex++, entry.call);
-		ds->entries->GetData(index, colIndex++, entry.confidence);
 		ds->entries->GetData(index, colIndex++, entry.markerCount);
+		ds->entries->GetData(index, colIndex++, entry.meanMarkerDistance);
 		GetExtraMetricEntries(ds, index, colIndex, entry.metrics);
 	}
 }
@@ -550,7 +589,6 @@ void CHPMultiDataData::GetChromosomeSegmentEntry(MultiDataType dataType, int ind
 	if (ds && ds->entries && ds->entries->IsOpen())
 	{
 		int colIndex = 0;
-		entry.segmentId.clear();
 		ds->entries->GetData(index, colIndex++, entry.segmentId);
 		ds->entries->GetData(index, colIndex++, entry.referenceSampleKey);
 		ds->entries->GetData(index, colIndex++, entry.familialSampleKey);
@@ -573,6 +611,7 @@ void CHPMultiDataData::GetChromosomeSummaryEntry(MultiDataType dataType, int ind
 	{
 		int colIndex = 0;
 		ds->entries->GetData(index, colIndex++, entry.chr);
+		ds->entries->GetData(index, colIndex++, entry.display);
 		ds->entries->GetData(index, colIndex++, entry.startIndex);
 		ds->entries->GetData(index, colIndex++, entry.markerCount);
 		ds->entries->GetData(index, colIndex++, entry.minSignal);
@@ -910,6 +949,7 @@ void CHPMultiDataData::AddColumns(DataSetInfo &info, DataSetHeader& hdr)
 
     case ChromosomeSummaryMultiDataType:
 		hdr.AddUByteColumn(CHR);
+		hdr.AddAsciiColumn(CHR_DISPLAY, info.maxName);
 		hdr.AddUIntColumn(START_INDEX);
 		hdr.AddUIntColumn(MARKER_COUNT);
         hdr.AddFloatColumn(MIN_SIGNAL);
@@ -920,63 +960,57 @@ void CHPMultiDataData::AddColumns(DataSetInfo &info, DataSetHeader& hdr)
         break;
 
     case SegmentCNMultiDataType:
-		hdr.AddAsciiColumn(SEGMENT_ID, info.maxName);
+		hdr.AddUIntColumn(SEGMENT_ID);
 		hdr.AddUByteColumn(CHR);
 		hdr.AddUIntColumn(START_POSITION);
 		hdr.AddUIntColumn(STOP_POSITION);
-		hdr.AddUByteColumn(CN);
-		hdr.AddFloatColumn(CONFIDENCE);
-        hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddUIntColumn(MEAN_MARKER_DISTANCE);
         break;
 
     case SegmentLOHMultiDataType:
-		hdr.AddAsciiColumn(SEGMENT_ID, info.maxName);
+		hdr.AddUIntColumn(SEGMENT_ID);
 		hdr.AddUByteColumn(CHR);
 		hdr.AddUIntColumn(START_POSITION);
 		hdr.AddUIntColumn(STOP_POSITION);
-		hdr.AddUByteColumn(LOH);
-		hdr.AddFloatColumn(CONFIDENCE);
-        hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddUIntColumn(MEAN_MARKER_DISTANCE);
         break;
 
 	case SegmentCNNeutralLOHMultiDataType:
-		hdr.AddAsciiColumn(SEGMENT_ID, info.maxName);
+		hdr.AddUIntColumn(SEGMENT_ID);
 		hdr.AddUByteColumn(CHR);
 		hdr.AddUIntColumn(START_POSITION);
 		hdr.AddUIntColumn(STOP_POSITION);
-		hdr.AddUByteColumn(CNNEUTRALLOH);
-		hdr.AddFloatColumn(CONFIDENCE);
-        hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddUIntColumn(MEAN_MARKER_DISTANCE);
         break;
 
     case SegmentNormalDiploidMultiDataType:
-		hdr.AddAsciiColumn(SEGMENT_ID, info.maxName);
+		hdr.AddUIntColumn(SEGMENT_ID);
 		hdr.AddUByteColumn(CHR);
 		hdr.AddUIntColumn(START_POSITION);
 		hdr.AddUIntColumn(STOP_POSITION);
-		hdr.AddUByteColumn(NORMALDIPLOID);
-		hdr.AddFloatColumn(CONFIDENCE);
-        hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddUIntColumn(MEAN_MARKER_DISTANCE);
         break;
 
     case SegmentNoCallMultiDataType:
-		hdr.AddAsciiColumn(SEGMENT_ID, info.maxName);
+		hdr.AddUIntColumn(SEGMENT_ID);
 		hdr.AddUByteColumn(CHR);
 		hdr.AddUIntColumn(START_POSITION);
 		hdr.AddUIntColumn(STOP_POSITION);
-		hdr.AddUByteColumn(NOCALL);
-		hdr.AddFloatColumn(CONFIDENCE);
-        hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddUIntColumn(MEAN_MARKER_DISTANCE);
         break;
 
     case SegmentMosaicismMultiDataType:
-		hdr.AddAsciiColumn(SEGMENT_ID, info.maxName);
+		hdr.AddUIntColumn(SEGMENT_ID);
 		hdr.AddUByteColumn(CHR);
 		hdr.AddUIntColumn(START_POSITION);
 		hdr.AddUIntColumn(STOP_POSITION);
-		hdr.AddUByteColumn(MOSAICISM);
-		hdr.AddFloatColumn(CONFIDENCE);
-        hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddIntColumn(MARKER_COUNT);
+		hdr.AddUIntColumn(MEAN_MARKER_DISTANCE);
         break;
 
     case SegmentGenotypeConcordanceMultiDataType:
@@ -987,7 +1021,7 @@ void CHPMultiDataData::AddColumns(DataSetInfo &info, DataSetHeader& hdr)
     case SegmentIsoUPDMultiDataType:
     case SegmentDenovoCopyNumberMultiDataType:
     case SegmentHemizygousParentOfOriginMultiDataType:
-		hdr.AddAsciiColumn(SEGMENT_ID, info.maxName);
+		hdr.AddUIntColumn(SEGMENT_ID);
 		hdr.AddUIntColumn(REFERENCE_SAMPLE_KEY);
 		hdr.AddUIntColumn(FAMILIAL_SAMPLE_KEY);
 		hdr.AddUByteColumn(CHR);
@@ -1016,6 +1050,19 @@ void CHPMultiDataData::AddColumns(DataSetInfo &info, DataSetHeader& hdr)
 		hdr.AddAsciiColumn(ROLE, info.maxFamilialRole);
 		hdr.AddUByteColumn(ROLE_VALIDITY);
 		hdr.AddFloatColumn(ROLE_CONFIDENCE);
+		break;
+
+	case AllelePeaksMultiDataType:
+		hdr.AddAsciiColumn(PROBE_SET_NAME, info.maxName);
+		hdr.AddUByteColumn(CHR);
+		hdr.AddUIntColumn(POSITION);
+		break;
+
+	case MarkerABSignalsMultiDataType:
+		hdr.AddUIntColumn(PROBE_SET_INDEX);
+		hdr.AddFloatColumn(A_SIGNAL);
+		hdr.AddFloatColumn(B_SIGNAL);
+		hdr.AddFloatColumn(SCAR);
 		break;
 
 	default:
@@ -1097,7 +1144,7 @@ DataSetInfo *CHPMultiDataData::OpenMultiDataDataSet(MultiDataType dataType)
 		}
         else if (dataType == ChromosomeSummaryMultiDataType)
         {
-            startCol = 8;
+            startCol = 9;
         }
         else if (dataType == SegmentCNMultiDataType ||
             dataType == SegmentLOHMultiDataType ||
@@ -1106,7 +1153,7 @@ DataSetInfo *CHPMultiDataData::OpenMultiDataDataSet(MultiDataType dataType)
             dataType == SegmentNoCallMultiDataType ||
             dataType == SegmentMosaicismMultiDataType)
 		{
-			startCol = 7;
+			startCol = 6;
 		}
 		else if (dataType == SegmentGenotypeConcordanceMultiDataType ||
             dataType == SegmentGenotypeDiscordanceMultiDataType ||
@@ -1126,6 +1173,14 @@ DataSetInfo *CHPMultiDataData::OpenMultiDataDataSet(MultiDataType dataType)
 		else if (dataType == FamilialSamplesMultiDataType)
 		{
 			startCol = 7;
+		}
+		else if (dataType == AllelePeaksMultiDataType)
+		{
+			startCol = 3;
+		}
+		else if (dataType == MarkerABSignalsMultiDataType)
+		{
+			startCol = 4;
 		}
 		for (int32_t icol=startCol; icol<ncols; icol++)
 		{

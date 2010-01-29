@@ -18,8 +18,11 @@
 ////////////////////////////////////////////////////////////////
 
 //
-#include "ProbeSetMultiDataData.h"
+#include "calvin_files/data/src/ProbeSetMultiDataData.h"
+//
+#include <cstdlib>
 #include <sstream>
+//
 
 u_int8_t affymetrix_calvin_data::ChromosomeFromString(const std::string& chr)
 {

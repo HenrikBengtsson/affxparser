@@ -21,8 +21,10 @@
 #ifndef _Subgrids_HEADER_
 #define _Subgrids_HEADER_
 
-#include "Coords.h"
+#include "calvin_files/utils/src/Coords.h"
+//
 #include <vector>
+//
 
 /*! \file Subgrids.h This file defines a subgrid.
 */

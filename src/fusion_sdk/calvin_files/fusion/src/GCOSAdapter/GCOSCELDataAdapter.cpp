@@ -18,14 +18,15 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "GCOSCELDataAdapter.h"
-#include "StringUtils.h"
+#include "calvin_files/fusion/src/GCOSAdapter/GCOSCELDataAdapter.h"
+//
+#include "calvin_files/utils/src/StringUtils.h"
+//
 
 using namespace affxcel;
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_utilities;
-//using namespace affymetrix_calvin_exceptions;
-
+using namespace affymetrix_calvin_parameter;
 
 /*
  * Constructor
@@ -234,6 +235,12 @@ float GCOSCELDataAdapter::GetIntensity(int index)
 {
 	return gcosCel.GetIntensity(index);
 }
+/*
+ */
+int GCOSCELDataAdapter::GetIntensities(int index,std::vector<float>& intensities)
+{
+	return gcosCel.GetIntensities(index,intensities);
+}
 
 /*
  */
@@ -361,4 +368,13 @@ void GCOSCELDataAdapter::CopyGCOSEntryToCalvin(const CELFileEntryType& source, F
 	target.Intensity = source.Intensity;
 	target.Stdv = source.Stdv;
 	target.Pixels = source.Pixels;
+}
+
+/*
+ * Returns the list of parameters associated with a data set, empty for GCOS files
+ */
+ParameterNameValueTypeList GCOSCELDataAdapter::GetDataSetParameters(const std::wstring &setName)
+{
+	ParameterNameValueTypeList params;
+	return params;
 }

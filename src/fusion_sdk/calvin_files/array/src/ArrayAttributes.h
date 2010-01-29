@@ -24,13 +24,16 @@
 /*! \file ArrayAttributes.h This file provides interfaces to store attributes about a physical array.
  */
 
-#include "AffymetrixGuid.h"
-#include "Parameter.h"
-#include "PATAssignment.h"
-#include "ArrayMedia.h"
-#include "CreateStep.h"
+#include "calvin_files/array/src/ArrayMedia.h"
+#include "calvin_files/array/src/CreateStep.h"
+#include "calvin_files/array/src/PATAssignment.h"
+#include "calvin_files/parameter/src/Parameter.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
 #include <string>
 #include <vector>
+//
 
 namespace affymetrix_calvin_array
 {

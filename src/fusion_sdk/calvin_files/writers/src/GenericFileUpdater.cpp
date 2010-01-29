@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "GenericFileUpdater.h"
+#include "calvin_files/writers/src/GenericFileUpdater.h"
+//
 
 using namespace affymetrix_calvin_io;
 

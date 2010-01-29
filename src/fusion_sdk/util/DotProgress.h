@@ -24,9 +24,11 @@
 #ifndef _DotProgress_HEADER_
 #define _DotProgress_HEADER_
 
-#include "Progress.h"
-#include <ostream>
+#include "util/Progress.h"
+//
 #include <iostream>
+#include <ostream>
+//
 
 /*! Provides a class for showing progress with dots written to an output stream. */
 class DotProgress : public Progress

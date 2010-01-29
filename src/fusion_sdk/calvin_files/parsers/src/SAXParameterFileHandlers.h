@@ -24,12 +24,16 @@
 /*! \file SAXParameterFileHandlers.h This file provides SAX parsing handles for parameter files.
  */
 
-#include "ParameterFileData.h"
-#include <string>
-#include <map>
-#include <xercesc/sax/SAXException.hpp>
-#include <xercesc/sax/HandlerBase.hpp>
+#include "calvin_files/parameter/src/ParameterFileData.h"
+//
 #include <xercesc/sax/AttributeList.hpp>
+#include <xercesc/sax/HandlerBase.hpp>
+#include <xercesc/sax/SAXException.hpp>
+//
+#include <cstring>
+#include <map>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {

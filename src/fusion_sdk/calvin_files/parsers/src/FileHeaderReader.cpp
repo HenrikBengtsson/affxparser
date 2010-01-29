@@ -18,11 +18,14 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FileHeaderReader.h"
-#include "GenericDataHeaderReader.h"
-#include "FileInput.h"
+#include "calvin_files/parsers/src/FileHeaderReader.h"
+//
+#include "calvin_files/parsers/src/FileInput.h"
+#include "calvin_files/parsers/src/GenericDataHeaderReader.h"
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 using namespace affymetrix_calvin_io;
 

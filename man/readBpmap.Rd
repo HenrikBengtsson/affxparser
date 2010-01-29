@@ -21,7 +21,7 @@ readBpmapSeqinfo(filename, seqIndices = NULL, verbose = 0)
   \item{filename}{The filename as a character.}
   \item{seqIndices}{A vector of integers, detailing the indices of the
     sequences being read. If \code{NULL}, the entire file is being read.}
-  \item{readProbeSeq}{}
+  \item{readProbeSeq}{Do we read the probe sequences.}
   \item{readSeqInfo}{Do we read the sequence information (a list
     containing information such as sequence name, number of hits etc.)}
   \item{readPMXY}{Do we read the (x,y) coordinates of the PM-probes.}

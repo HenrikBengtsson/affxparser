@@ -24,7 +24,8 @@
 /*! \file FusionCELData.h This file defines the Fusion CEL Data classes
  */
 
-#include "FusionCELDataAdapterInterface.h"
+#include "calvin_files/fusion/src/FusionCELDataAdapterInterface.h"
+//
 
 namespace affymetrix_fusion_io
 {
@@ -235,6 +236,11 @@ public:
 	 */
 	float GetIntensity(int index);
 
+  /// @brief     Get a vector of intensities.
+  /// @param     index         The index of where to start.
+  /// @param     intensity_vec The vector to fill, its size is the number of intensities.
+	int GetIntensities(int index,std::vector<float>& intensity_vec);
+
 	/*! Retrieve a CEL file intensity.
 	 * @param x The X coordinate.
 	 * @param y The Y coordinate.
@@ -345,6 +351,25 @@ public:
 
 	/*! Returns the GenericData object associated with a Calvin file, NULL for GCOS files. */
 	affymetrix_calvin_io::GenericData *GetGenericData();
+
+	/*! Returns the list of parameters associated with a data set, empty for GCOS files
+	 * @param setName The data set name
+	 * @return The list of parameters
+	 */
+	affymetrix_calvin_parameter::ParameterNameValueTypeList GetDataSetParameters(const std::wstring &setName);
+
+	/*! Sets the active data group for a multi-group CEL file. Default is the first group. */
+	void SetActiveDataGroup(const std::wstring &groupName);
+
+	/*! Is this a multi-color CEL file?
+	 *  @return True if it is multi-color
+	 */
+	bool IsMultiColor();
+
+	/*! Returns a list of the channel (ie data group) names
+	 *	@return list of channel names
+	 */
+	WStringVector GetChannels();
 
 protected:
 	/*! Factory method to create the appropriate adapter class.

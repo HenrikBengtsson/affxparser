@@ -24,10 +24,13 @@
 /*! \file CHPQuantificationDetectionFileReader.h This file provides methods to read a quantification/detection CHP data file.
  */
 
-#include "CHPQuantificationDetectionData.h"
-#include "DataGroupReader.h"
-#include <string>
+#include "calvin_files/data/src/CHPQuantificationDetectionData.h"
+#include "calvin_files/parsers/src/DataGroupReader.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {

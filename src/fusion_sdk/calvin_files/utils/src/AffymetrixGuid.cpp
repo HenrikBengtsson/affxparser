@@ -17,18 +17,25 @@
 //
 ////////////////////////////////////////////////////////////////
 
+#ifdef _MSC_VER
+#include "windows.h"
+#endif
 
-#include "AffymetrixGuid.h"
-#include "checksum.h"
-#include <time.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include "calvin_files/utils/src/checksum.h"
+//
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <sstream>
 #include <string.h>
+#include <string>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // ignore deprecated functions warning
-#include <winsock2.h>
 #include <process.h>
 #define getpid _getpid
 #endif

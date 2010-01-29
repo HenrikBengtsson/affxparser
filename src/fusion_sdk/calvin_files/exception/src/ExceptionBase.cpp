@@ -21,7 +21,8 @@
 /*! \file ExceptionBase.h This file provides class definition for the base exception types.
  */ 
 
-#include "ExceptionBase.h"
+#include "calvin_files/exception/src/ExceptionBase.h"
+//
 
 using namespace affymetrix_calvin_exceptions;
 using namespace affymetrix_calvin_utilities;

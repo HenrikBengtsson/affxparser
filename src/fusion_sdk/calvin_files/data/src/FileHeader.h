@@ -24,12 +24,15 @@
 /*! \file FileHeader.h This file defines a class to act as a data container for the generic file header
  */
 
+#include "calvin_files/data/src/DataGroupHeader.h"
+#include "calvin_files/data/src/GenericDataHeader.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffyStlCollectionTypes.h"
+//
+#include <cstring>
 #include <string>
 #include <vector>
-#include "AffymetrixBaseTypes.h"
-#include "AffyStlCollectionTypes.h"
-#include "GenericDataHeader.h"
-#include "DataGroupHeader.h"
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

@@ -17,8 +17,10 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "CalvinCHPMultiDataFileWriter.h"
-#include "CHPMultiDataData.h"
+#include "calvin_files/writers/src/CalvinCHPMultiDataFileWriter.h"
+//
+#include "calvin_files/data/src/CHPMultiDataData.h"
+//
 
 using namespace std;
 using namespace affymetrix_calvin_io;
@@ -118,6 +120,26 @@ void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ProbeSetMu
 	entryPos[currentDataType] = writer->GetFilePos();
 }
 
+void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::AllelePeaks & p)
+{
+	writer->SeekFromBeginPos(entryPos[currentDataType]);
+	dataSetWriter->Write(p.name, maxName);
+	dataSetWriter->Write(p.chr);
+	dataSetWriter->Write(p.position);
+	WriteMetrics(p.peaks);
+	entryPos[currentDataType] = writer->GetFilePos();
+}
+
+void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::MarkerABSignals & p)
+{
+	writer->SeekFromBeginPos(entryPos[currentDataType]);
+	dataSetWriter->Write(p.index);
+	dataSetWriter->Write(p.aSignal);
+	dataSetWriter->Write(p.bSignal);
+	dataSetWriter->Write(p.scar);
+	entryPos[currentDataType] = writer->GetFilePos();
+}
+
 void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ProbeSetMultiDataCytoRegionData & p)
 {
 	writer->SeekFromBeginPos(entryPos[currentDataType]);
@@ -208,6 +230,7 @@ void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::Chromosome
 {
 	writer->SeekFromBeginPos(entryPos[currentDataType]);
     dataSetWriter->Write(p.chr);
+	dataSetWriter->Write(p.display, maxName);
 	dataSetWriter->Write(p.startIndex);
 	dataSetWriter->Write(p.markerCount);
     dataSetWriter->Write(p.minSignal);
@@ -222,13 +245,12 @@ void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::Chromosome
 void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ChromosomeSegmentData & p)
 {
 	writer->SeekFromBeginPos(entryPos[currentDataType]);
-    dataSetWriter->Write(p.segmentId, maxName);
+    dataSetWriter->Write(p.segmentId);
 	dataSetWriter->Write(p.chr);
 	dataSetWriter->Write(p.startPosition);
 	dataSetWriter->Write(p.stopPosition);
-	dataSetWriter->Write(p.call);
-	dataSetWriter->Write(p.confidence);
-    dataSetWriter->Write(p.markerCount);
+	dataSetWriter->Write(p.markerCount);
+	dataSetWriter->Write(p.meanMarkerDistance);
 	WriteMetrics(p.metrics);
 	entryPos[currentDataType] = writer->GetFilePos();
 }
@@ -236,7 +258,7 @@ void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::Chromosome
 void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::ChromosomeSegmentDataEx & p)
 {
 	writer->SeekFromBeginPos(entryPos[currentDataType]);
-    dataSetWriter->Write(p.segmentId, maxName);
+    dataSetWriter->Write(p.segmentId);
 	dataSetWriter->Write(p.referenceSampleKey);
 	dataSetWriter->Write(p.familialSampleKey);
 	dataSetWriter->Write(p.chr);

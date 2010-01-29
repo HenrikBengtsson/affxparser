@@ -24,12 +24,15 @@
 /*! \file CelFileReader.h This file provides methods to read a CEL data file.
  */
 
-#include "FileException.h"
-#include "AffymetrixBaseTypes.h"
-#include "AffymetrixGuid.h"
-#include "CELData.h"
-#include <string>
+#include "calvin_files/data/src/CELData.h"
+#include "calvin_files/parsers/src/FileException.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // dont show warnings about throw keyword on function declarations.

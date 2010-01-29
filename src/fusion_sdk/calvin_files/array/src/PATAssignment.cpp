@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "PATAssignment.h"
+#include "calvin_files/array/src/PATAssignment.h"
+//
 
 using namespace affymetrix_calvin_array;
 

@@ -24,7 +24,13 @@
 /*! \file ChromosomeMultiDataSummaryData.h This file provides types to hold chromosome multi data results.
  */
 
-#include "AffymetrixBaseTypes.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
+#include <string>
+#include <vector>
+//
 
 namespace affymetrix_calvin_data
 {
@@ -33,6 +39,9 @@ typedef struct _ChromosomeMultiDataSummaryData
 {
     /*! The chromosome number. */
     u_int8_t chr;
+
+	/*! The chromosome number for display. */
+	std::string display;
 
 	/*! The starting index */
 	u_int32_t startIndex;

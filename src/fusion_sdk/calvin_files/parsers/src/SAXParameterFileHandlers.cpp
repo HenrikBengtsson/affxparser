@@ -18,10 +18,14 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "SAXParameterFileHandlers.h"
-#include "StringUtils.h"
-#include <string>
+#include "calvin_files/parsers/src/SAXParameterFileHandlers.h"
+//
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cstring>
 #include <map>
+#include <string>
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;

@@ -23,7 +23,8 @@
 
 /*! \file FusionGrcFileReader.h This file provides fusion classes for reading GRC files. */
 
-#include "GridControlData.h"
+#include "file/GridControlData.h"
+//
 
 namespace affymetrix_fusion_io
 {

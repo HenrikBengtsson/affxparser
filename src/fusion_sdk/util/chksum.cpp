@@ -54,4 +54,3 @@ uint16_t CheckSum::OnesComplementCheckSum(void *addr, size_t size)
 	checksum = (uint16_t) ~sum;
 	return checksum;
 }
-

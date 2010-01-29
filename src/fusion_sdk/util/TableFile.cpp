@@ -27,19 +27,22 @@
  * @brief  Class for dealing with column oriented files.
  */
 
+#include "util/TableFile.h"
+//
+#include "util/Convert.h"
+#include "util/Err.h"
+#include "util/RowFile.h"
+#include "util/Util.h"
+#include "util/Verbose.h"
+//
 #include <iostream>
-#include "TableFile.h"
-#include "RowFile.h"
-#include "Err.h"
-#include "Convert.h"
-#include "Util.h"
-#include "Verbose.h"
+//
 
 using namespace std;
 
 /** 
  * Constructor.
- * @param delim - Character to use for word separator. i.e. ',' or '\t'
+ * @param delim - Character to use for word separator. i.e. ',' or '\\t'
  * @param comment - Character that comment lines begin with.
  */
 TableFile::TableFile(char delim, char comment, bool useRowNames, bool useColNames) 

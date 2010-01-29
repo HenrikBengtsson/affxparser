@@ -24,7 +24,8 @@
 /*! \file FusionBPMAPData.h This file defines the Fusion BPMAP Data classes
  */
 
-#include "BPMAPFileData.h"
+#include "file/BPMAPFileData.h"
+//
 using namespace affxbpmap;
 
 namespace affymetrix_fusion_io

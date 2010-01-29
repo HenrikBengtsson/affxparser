@@ -17,9 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "MSKFileWriter.h"
-#include <istream>
+#include "file/MSKFileWriter.h"
+//
 #include <fstream>
+#include <istream>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4996) // don't show deprecated warnings.

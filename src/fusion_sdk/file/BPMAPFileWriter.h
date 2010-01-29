@@ -23,9 +23,10 @@
 /*! \file BPMAPFileWriter.h This file provides BPMAP file writing capabilities.
  */
 
-#include "BPMAPFileData.h"
-
+#include "file/BPMAPFileData.h"
+//
 #include <fstream>
+//
 
 namespace affxbpmapwriter
 {

@@ -30,7 +30,9 @@
 #ifndef MSGHANDLER_H
 #define MSGHANDLER_H
 
+#include <cstring>
 #include <string>
+//
 
 /**
  * @brief An abstract handler for messages.

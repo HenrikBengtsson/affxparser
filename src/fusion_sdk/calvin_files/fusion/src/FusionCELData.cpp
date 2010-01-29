@@ -18,19 +18,22 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionCELData.h"
-#include "FileException.h"
-#include "CalvinCELDataAdapter.h"
-#include "GCOSCELDataAdapter.h"
-
-#include <sys/types.h>
+#include "calvin_files/fusion/src/FusionCELData.h"
+//
+#include "calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.h"
+#include "calvin_files/fusion/src/GCOSAdapter/GCOSCELDataAdapter.h"
+#include "calvin_files/parsers/src/FileException.h"
+//
+#include <cassert>
 #include <sys/stat.h>
-#include <assert.h>
+#include <sys/types.h>
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;
 using namespace affymetrix_calvin_utilities;
+using namespace affymetrix_calvin_parameter;
 
 /*
  * Default constructor
@@ -82,6 +85,16 @@ GenericData *FusionCELData::GetGenericData()
 {
 	CheckAdapter();
 	return adapter->GetGenericData();
+}
+
+
+/*
+ * Returns the list of parameters associated with a data set, empty for GCOS files
+ */
+ParameterNameValueTypeList FusionCELData::GetDataSetParameters(const std::wstring &setName)
+{
+	CheckAdapter();
+	return adapter->GetDataSetParameters(setName);
 }
 
 /*
@@ -356,6 +369,15 @@ float FusionCELData::GetIntensity(int index)
 }
 
 /*
+ * Retrieve vector of CEL file intensities.
+ */
+int FusionCELData::GetIntensities(int index,std::vector<float>& intensities)
+{
+	CheckAdapter();
+	return adapter->GetIntensities(index,intensities);
+}
+
+/*
  * Retrieve a CEL file intensity.
  */
 float FusionCELData::GetIntensity(int x, int y)
@@ -621,4 +643,26 @@ void FusionCELData::FillParameterList()
 		adapter->GetParameters(parameterList);
 		parameterListRead = true;
 	}
+}
+
+/* Sets the active data group for a multi-group CEL file. Default is the first group. */
+void FusionCELData::SetActiveDataGroup(const std::wstring &groupName)
+{
+	CheckAdapter();
+	adapter->SetActiveDataGroup(groupName);
+}
+
+/* Is this a multi-color CEL file? */
+bool FusionCELData::IsMultiColor()
+{
+	CheckAdapter();
+	return adapter->IsMultiColor();
+}
+
+
+/* Returns a list of the channel (ie data group) names */
+WStringVector FusionCELData::GetChannels()
+{
+	CheckAdapter();
+	return adapter->GetChannels();
 }

@@ -23,12 +23,14 @@
 #ifndef _CalvinCHPFileUpdater_HEADER_
 #define _CalvinCHPFileUpdater_HEADER_
 
+#include "calvin_files/data/src/CHPMultiDataData.h"
+#include "calvin_files/data/src/ProbeSetMultiDataData.h"
+#include "calvin_files/writers/src/CalvinCHPFileBufferWriter.h"
+#include "calvin_files/writers/src/DataSetUpdater.h"
+//
 #include <fstream>
 #include <map>
-#include "DataSetUpdater.h"
-#include "CalvinCHPFileBufferWriter.h"
-#include "ProbeSetMultiDataData.h"
-#include "CHPMultiDataData.h"
+//
 
 namespace affymetrix_calvin_io
 {
@@ -260,6 +262,22 @@ public:
      * @param entryBuffer The vector contain all buffered entries to be updated.
 	 */
     void UpdateFamilialSampleEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
+	/*! Seek to appropriate file position and update allele peak entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param allelePeakEntryBuffer The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataAllelePeaksEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &allelePeakEntryBuffer);
+
+	/*! Seek to appropriate file position and update AB signal entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param entryBuffer The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataMarkerABSignalsEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &entryBuffer);
 
 	/*! Close CHP signal file. */
 	void CloseCHPFile();

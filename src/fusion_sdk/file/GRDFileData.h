@@ -27,9 +27,12 @@
 #endif
 
 #include "portability/affy-base-types.h"
+//
+#include <cstring>
 #include <map>
 #include <string>
 #include <vector>
+//
 
 //////////////////////////////////////////////////////////////////////
 

@@ -30,10 +30,12 @@
 #ifndef ROWFILE_H
 #define ROWFILE_H
 
-#include <vector>
-#include <string>
+#include <cstring>
 #include <fstream>
 #include <map>
+#include <string>
+#include <vector>
+//
 
 /**
  *  RowFile

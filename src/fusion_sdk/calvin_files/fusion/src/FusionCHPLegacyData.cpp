@@ -18,17 +18,18 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionCHPLegacyData.h"
-#include "FileException.h"
-#include "CalvinCHPDataAdapter.h"
-#include "GCOSCHPDataAdapter.h"
-#include "FusionTagValuePairType.h"
-#include "StringUtils.h"
-
-
-#include <sys/types.h>
+#include "calvin_files/fusion/src/FusionCHPLegacyData.h"
+//
+#include "calvin_files/fusion/src/CalvinAdapter/CalvinCHPDataAdapter.h"
+#include "calvin_files/fusion/src/FusionTagValuePairType.h"
+#include "calvin_files/fusion/src/GCOSAdapter/GCOSCHPDataAdapter.h"
+#include "calvin_files/parsers/src/FileException.h"
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cassert>
 #include <sys/stat.h>
-#include <assert.h>
+#include <sys/types.h>
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_exceptions;

@@ -30,12 +30,15 @@
 
 //////////////////////////////////////////////////////////////////////
 
+#include "calvin_files/data/src/CHPExpressionEntry.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffyStlCollectionTypes.h"
+//
+#include <cstring>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
-#include "AffymetrixBaseTypes.h"
-#include "AffyStlCollectionTypes.h"
-#include "CHPExpressionEntry.h"
+//
 
 //////////////////////////////////////////////////////////////////////
 

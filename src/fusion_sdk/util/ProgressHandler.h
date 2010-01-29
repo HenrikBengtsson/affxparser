@@ -33,7 +33,9 @@
 #ifndef PROGRESSHANDLER_H
 #define PROGRESSHANDLER_H
 
+#include <cstring>
 #include <string>
+//
 
 /**
  * @brief An abstract class for handling Progress updates.

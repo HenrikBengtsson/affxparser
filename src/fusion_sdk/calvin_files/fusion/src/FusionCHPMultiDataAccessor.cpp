@@ -17,9 +17,11 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "FusionCHPMultiDataAccessor.h"
-#include "FusionCHPMultiDataData.h"
-#include "FusionCHPData.h"
+#include "calvin_files/fusion/src/FusionCHPMultiDataAccessor.h"
+//
+#include "calvin_files/fusion/src/FusionCHPData.h"
+#include "calvin_files/fusion/src/FusionCHPMultiDataData.h"
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_io;

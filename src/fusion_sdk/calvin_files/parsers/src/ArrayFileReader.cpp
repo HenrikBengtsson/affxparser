@@ -18,12 +18,16 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "ArrayFileReader.h"
-#include "SAXArrayHandlers.h"
-#include <xercesc/util/PlatformUtils.hpp>
+#include "calvin_files/parsers/src/ArrayFileReader.h"
+//
+#include "calvin_files/parsers/src/SAXArrayHandlers.h"
+//
 #include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 using namespace affymetrix_calvin_array;
 using namespace affymetrix_calvin_io;

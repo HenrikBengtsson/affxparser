@@ -24,8 +24,10 @@
 /*! \file GridControlData.h This file provides interfaces to store information in a GRC (grid control) file.
  */
 
+#include <cstring>
 #include <string>
 #include <vector>
+//
 
 namespace affymetrix_grid_control
 {

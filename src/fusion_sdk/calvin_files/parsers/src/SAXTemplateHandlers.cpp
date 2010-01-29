@@ -18,10 +18,14 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "SAXTemplateHandlers.h"
-#include "StringUtils.h"
-#include <string>
+#include "calvin_files/parsers/src/SAXTemplateHandlers.h"
+//
+#include "calvin_files/utils/src/StringUtils.h"
+//
+#include <cstring>
 #include <map>
+#include <string>
+//
 
 using namespace affymetrix_calvin_template;
 using namespace affymetrix_calvin_io;
@@ -234,7 +238,7 @@ void SAXTemplateHandlers::startElement(const XMLCh* const name, AttributeList&  
 /*
  * Based on the current element, assign the value.
  */
-void SAXTemplateHandlers::characters(const XMLCh *const chars, const unsigned int length)
+void SAXTemplateHandlers::characters(const XMLCh *const chars, const XMLSize_t length)
 {
 	wstring str = XMLChToWString(chars);
 	if (currentElement == TEMPLATE_USER_ATTRIBUTES_ATTRIBUTE_VALUE)

@@ -20,10 +20,11 @@
 ////////////////////////////////////////////////////////////////
 
 
-#ifndef FRUGALVECTOR_H
-#define FRUGALVECTOR_H
+#ifndef _UTIL_FRUGALVECTOR_H_
+#define _UTIL_FRUGALVECTOR_H_
 
-#include<vector>
+#include <cstdio>
+//
 
 template<typename T>
 class FrugalVector {
@@ -114,4 +115,4 @@ public:
 
 };
 
-#endif /* FRUGALVECTOR_H */
+#endif /* _UTIL_FRUGALVECTOR_H_ */

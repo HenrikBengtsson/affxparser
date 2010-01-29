@@ -26,18 +26,21 @@
  */
 
 //
+#include "calvin_files/utils/src/GenoCallCoder.h"
+//
+#include "file/TsvFile/TsvFile.h"
+#include "util/Convert.h"
+#include "util/Err.h"
+#include "util/Verbose.h"
+//
 #include <algorithm>
-#include <assert.h>
+#include <cassert>
+#include <cstring>
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-#include <iostream>
 //
-#include "GenoCallCoder.h"
-#include "file/TsvFile/TsvFile.h"
-#include "util/Convert.h"
-#include "util/Verbose.h"
-#include "util/Err.h"
 
 using namespace std;
 using namespace affx;
@@ -82,6 +85,30 @@ const string GenoCallCoder::m_version_zero_codes[] = {
 
 const char GenoCallCoder::m_num2alpha[] = {'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'};
 
+
+/** 
+ * @brief choose (i.e. 'n choose k')
+ * @param top - the top number, i.e. 'n'
+ * @param bottom - the bottom number, i.e. 'k'
+ */
+
+int choose(int top, int bottom) {
+  int i;
+  int result = 1;
+  
+  if (top >= bottom && top >=0 && bottom >= 0) {
+    if (bottom > top / 2) {
+      bottom = top - bottom;
+    }
+
+    for (i = 1; i <= bottom; i++) {
+      result = (result*top) / i;
+      top--;
+    }
+    return result;
+  }
+  return 0;
+}
 
 
 /** 
@@ -207,12 +234,13 @@ GenoCallCoder::GenoCallCoder(const int max_allele_count,
 			     const string marker_annotation_file) {
   initialize(max_allele_count, data_size, version, allele_delimiter);
 
+  unsigned char zero_copy_number_call_code = abstractAlleleToGenotypeCallNum("ZeroCopyNumber");
   /* HACK!!! Hard code valid call codes. */
   vector<vector<vector<unsigned char> > > valid_call_codes(3);
-  vector<unsigned char> cn0(1, 17);
+  vector<unsigned char> cn0(1, zero_copy_number_call_code);
   vector<vector<unsigned char> > cn0_row(max_allele_count + 1, cn0);
   valid_call_codes[0] = cn0_row;
-  vector<unsigned char> cn1(1, 18);
+  vector<unsigned char> cn1(1, m_min_translatable_code);
   vector<vector<unsigned char> > cn1_row(max_allele_count + 1, cn1);
   valid_call_codes[1] = cn1_row;
   vector<unsigned char> cn2(0);
@@ -223,7 +251,7 @@ GenoCallCoder::GenoCallCoder(const int max_allele_count,
 
   for (int i = 2; i <= max_allele_count; i++) {
     for (int j = 1; j < i; j++) {
-      valid_call_codes[1][i].push_back(18+j);
+      valid_call_codes[1][i].push_back(m_min_translatable_code + j);
     }
 
     switch (i) {
@@ -263,7 +291,7 @@ GenoCallCoder::GenoCallCoder(const int max_allele_count,
   int marker_annotation_file_cnames_count = sizeof(m_marker_annotation_file_cnames) / sizeof (m_marker_annotation_file_cnames[0]);
 
   vector<int> annot_csv_cidxs;
-  int i;
+  unsigned int i;
   for (i = 0; i < marker_annotation_file_cnames_count; i++) {
     int temp_idx = annot_csv.cname2cidx(0, m_marker_annotation_file_cnames[i]);
     if (temp_idx == TSV_ERR_NOTFOUND) {
@@ -299,8 +327,11 @@ GenoCallCoder::GenoCallCoder(const int max_allele_count,
 	break;
       }
 
-      int allele_start = 0;
-      int idx = col_value.find(m_annotation_csv_delimiter);
+      unsigned int allele_start = 0;
+      size_t idx = col_value.find(m_annotation_csv_delimiter);
+      if (idx == col_value.npos) {
+	idx = col_value.size();
+      }
       vector<string> allele_vec;
       //cout << col_value + '\n';
       while (allele_start < col_value.size()) {
@@ -319,6 +350,7 @@ GenoCallCoder::GenoCallCoder(const int max_allele_count,
       if (m_marker_annotation_file_cnames[i] == "Alleles-Alias Reported Strand") {
 	if (col_value != m_annot_csv_skip_text) {
 	  allele_lists.pop_back();
+// 	  cout << allele_vec[0] << '/' << allele_vec[1] << '\n';
 	}
 	else {
 	  break;
@@ -339,15 +371,15 @@ GenoCallCoder::GenoCallCoder(const int max_allele_count,
     }
 
 
-    int num_alleles = allele_lists[0].size();
+    size_t num_alleles = allele_lists[0].size();
 
 //     vector<unsigned char> cn_states(3);
 //     cn_states.push_back(0);
 //     cn_states.push_back(1);
 //     cn_states.push_back(2);
 
-    vector<unsigned char> call_code_list(1, 17);
-    for (int j = 1; j < valid_call_codes.size(); j++) {
+    vector<unsigned char> call_code_list(1, zero_copy_number_call_code);
+    for (unsigned int j = 1; j < valid_call_codes.size(); j++) {
       call_code_list.insert(call_code_list.end(), valid_call_codes[j][num_alleles].begin(), valid_call_codes[j][num_alleles].end());
     }
 
@@ -415,9 +447,9 @@ void GenoCallCoder::initialize(const int max_allele_count,
   }
 
   int version_zero_codes_count = sizeof(m_version_zero_codes) / sizeof(m_version_zero_codes[0]);
-  int extra_codes_count = sizeof(m_extra_codes) / sizeof(m_extra_codes[0]);
+  unsigned int extra_codes_count = sizeof(m_extra_codes) / sizeof(m_extra_codes[0]);
   int num2alpha_count = sizeof(m_num2alpha) / sizeof(m_num2alpha[0]);
-  int i;
+  unsigned int i;
 
   m_max_extra_code = (1 << m_data_size_bits) - 1;
   m_abstract_codes.resize(m_max_extra_code + 1);
@@ -462,10 +494,8 @@ void GenoCallCoder::initialize(const int max_allele_count,
     }
   }
   else {
-    assert(max_allele_count == 6);
+//     assert(max_allele_count == 6);
     assert(version == "1.0");
-    //    assert(allele_delimiter == '\0');
-
 
     if (version == string("1.0")) {
       m_min_extra_code = 254;
@@ -475,160 +505,97 @@ void GenoCallCoder::initialize(const int max_allele_count,
     assert(m_max_extra_code - m_min_extra_code + 1 <= extra_codes_count);
 
     m_max_allele_count = max_allele_count;
-    m_min_code = 16;
-    m_min_translatable_code = 18;
-    //    m_max_code = 136;  // %!% HARD CODED.  needs to be determined dynamically
+    m_min_code = version_zero_codes_count;
     m_version = version;
 
-    m_abstract_codes[16] = "NoCall";  // Unable to genotype
-    m_abstract_codes[17] = "ZeroCopyNumber";
+    // index indicating where the translatable alleles begin.  First 2 codes
+    // are reserved for 'NoCall' and 'ZeroCopyNumber' (added below).
+    m_min_translatable_code = m_min_code + 2;
+
+    // (add 1 for 'n' allele) -- adding 'n' allele allows for half/partial calls
+    int effective_max_allele_count = max_allele_count + 1;
+
+    // calculate maximum possible allele code number
+    // the value is given by: 
+    // argmax{CN: sum_{j=1}^{CN} ( sum_{i=1}^{min(E, j)} ( choose(E, i) * choose(j-1,i-1) ) ) <= Space}
+
+    // where 'E' = effective_max_allele_count, and 'Space' = the amount of
+    // space in the array available for storing allele codes
+
+
+    unsigned int candidate_max = m_min_translatable_code + max_allele_count;
+    if (candidate_max > m_max_extra_code - extra_codes_count) {
+      Err::errAbort("Value for option 'max_allele_count':" + ToStr(max_allele_count) + " is to large for given 'data_size': " + data_size);
+    }
+
+    int max_cn = 1;
+    while (candidate_max < m_max_extra_code - extra_codes_count) {
+      m_max_code = candidate_max;      
+      max_cn++;
+      int bound = max_cn;
+      if (bound > effective_max_allele_count) {
+	bound = effective_max_allele_count;
+      }
+      for (int allele_idx = 1; allele_idx <= bound; allele_idx++) {
+	candidate_max += choose(effective_max_allele_count, allele_idx) * 
+	  choose(max_cn - 1, allele_idx - 1);
+      }
+    }
+    max_cn--;
+
+    // fill out m_abstract_codes[] with abstract alleles.  
+
+    // this is a bootstrap method.  allele strings for each copy number are
+    // built upon the allele strings for the previous copy number.  First the
+    // array is initialized with CN=1 alleles: A, B, C, ... n.  CN=2 alleles
+    // are generated by iteratively prepending single allele letters to the
+    // previous CN=1 alleles.  E.g. 'A' is prepended to all CN=1 alleles
+    // starting with the A allele to make AA, AB, AC, ... An, and 'B' is
+    // prepended to all of the alleles starting with the B allele: BB, BC, ...,
+    // Bn, and 'C' is prepended to all the alleles starting with the C allele,
+    // and so on.  The hard part is in the index bookkeeping.  For each
+    // prepending allele letter ('A','B', etc.), an index is kept of where in
+    // the array that letter needs to start prepending (start_idxs[]).  An
+    // index is kept of where to stop prepending (tail_stop_idx).  After each
+    // allele letter completes a series of prepending, it's start index is
+    // updated so that it will begin prepending in the correct place for the
+    // next copynumber.
+
+    // initialize for haploid alleles
+    int m_abstract_codes_end = m_min_translatable_code;
+
+    vector<int> start_idxs(effective_max_allele_count, m_min_translatable_code - 1);
+    vector<string> prepend_alleles(effective_max_allele_count);
+    int i;
+    for (i = 0; i < max_allele_count; i++) {
+      prepend_alleles[i] = string(1, m_num2alpha[i]);
+    }
+
+    prepend_alleles[i] = 'n';
+
+    for (int cn = 1; cn <= max_cn; cn++) {
+      int tail_stop_idx = m_abstract_codes_end;
+      for (i = 0; i < start_idxs.size(); i++) {
+	// save the start_idx for the next copy number 
+	int next_start_idx = m_abstract_codes_end;
+	for (int curr_idx = start_idxs[i]; curr_idx < tail_stop_idx; curr_idx++) {
+	  m_abstract_codes[m_abstract_codes_end++] = prepend_alleles[i] + m_abstract_codes[curr_idx];
+	}
+	start_idxs[i] = next_start_idx;
+      }
+    }
+
+    // add non-translatable codes
+    m_abstract_codes[m_min_code] = "NoCall";  // Unable to genotype
+    m_abstract_codes[m_min_code + 1] = "ZeroCopyNumber";
     //m_abstract_codes[17] = "0";
 
-    if (max_allele_count == 3) {
-      m_abstract_codes[18] = "A";
-      m_abstract_codes[19] = "B";
-      m_abstract_codes[20] = "C";
-      m_abstract_codes[21] = "n";  // CN=1 model applied; unable to genotype
-      m_abstract_codes[22] = "AA";
-      m_abstract_codes[23] = "AB";
-      m_abstract_codes[24] = "AC";
-      m_abstract_codes[25] = "An";
-      m_abstract_codes[26] = "BB";
-      m_abstract_codes[27] = "BC";
-      m_abstract_codes[28] = "Bn";
-      m_abstract_codes[29] = "CC";
-      m_abstract_codes[30] = "Cn";
-      m_abstract_codes[31] = "nn";
-
-      m_max_code = 31;  // %!% HARD CODED.  needs to be determined dynamically
-    }
-    else if (max_allele_count == 6) {
-      m_abstract_codes[18] = "A";
-      m_abstract_codes[19] = "B";
-      m_abstract_codes[20] = "C";
-      m_abstract_codes[21] = "D";
-      m_abstract_codes[22] = "E";
-      m_abstract_codes[23] = "F";
-      m_abstract_codes[24] = "n";  // CN=1 model applied; unable to genotype
-      m_abstract_codes[25] = "AA";
-      m_abstract_codes[26] = "AB";
-      m_abstract_codes[27] = "AC";
-      m_abstract_codes[28] = "AD";
-      m_abstract_codes[29] = "AE";
-      m_abstract_codes[30] = "AF";
-      m_abstract_codes[31] = "An";
-      m_abstract_codes[32] = "BB";
-      m_abstract_codes[33] = "BC";
-      m_abstract_codes[34] = "BD";
-      m_abstract_codes[35] = "BE";
-      m_abstract_codes[36] = "BF";
-      m_abstract_codes[37] = "Bn";
-      m_abstract_codes[38] = "CC";
-      m_abstract_codes[39] = "CD";
-      m_abstract_codes[40] = "CE";
-      m_abstract_codes[41] = "CF";
-      m_abstract_codes[42] = "Cn";
-      m_abstract_codes[43] = "DD";
-      m_abstract_codes[44] = "DE";
-      m_abstract_codes[45] = "DF";
-      m_abstract_codes[46] = "Dn";
-      m_abstract_codes[47] = "EE";
-      m_abstract_codes[48] = "EF";
-      m_abstract_codes[49] = "En";
-      m_abstract_codes[50] = "FF";
-      m_abstract_codes[51] = "Fn";
-      m_abstract_codes[52] = "nn";
-      m_abstract_codes[53] = "AAA";
-      m_abstract_codes[54] = "AAB";
-      m_abstract_codes[55] = "AAC";
-      m_abstract_codes[56] = "AAD";
-      m_abstract_codes[57] = "AAE";
-      m_abstract_codes[58] = "AAF";
-      m_abstract_codes[59] = "AAn";
-      m_abstract_codes[60] = "ABB";
-      m_abstract_codes[61] = "ABC";
-      m_abstract_codes[62] = "ABD";
-      m_abstract_codes[63] = "ABE";
-      m_abstract_codes[64] = "ABF";
-      m_abstract_codes[65] = "ABn";
-      m_abstract_codes[66] = "ACC";
-      m_abstract_codes[67] = "ACD";
-      m_abstract_codes[68] = "ACE";
-      m_abstract_codes[69] = "ACF";
-      m_abstract_codes[70] = "ACn";
-      m_abstract_codes[71] = "ADD";
-      m_abstract_codes[72] = "ADE";
-      m_abstract_codes[73] = "ADF";
-      m_abstract_codes[74] = "ADn";
-      m_abstract_codes[75] = "AEE";
-      m_abstract_codes[76] = "AEF";
-      m_abstract_codes[77] = "AEn";
-      m_abstract_codes[78] = "AFF";
-      m_abstract_codes[79] = "AFn";
-      m_abstract_codes[80] = "Ann";
-      m_abstract_codes[81] = "BBB";
-      m_abstract_codes[82] = "BBC";
-      m_abstract_codes[83] = "BBD";
-      m_abstract_codes[84] = "BBE";
-      m_abstract_codes[85] = "BBF";
-      m_abstract_codes[86] = "BBn";
-      m_abstract_codes[87] = "BCC";
-      m_abstract_codes[88] = "BCD";
-      m_abstract_codes[89] = "BCE";
-      m_abstract_codes[90] = "BCF";
-      m_abstract_codes[91] = "BCn";
-      m_abstract_codes[92] = "BDD";
-      m_abstract_codes[93] = "BDE";
-      m_abstract_codes[94] = "BDF";
-      m_abstract_codes[95] = "BDn";
-      m_abstract_codes[96] = "BEE";
-      m_abstract_codes[97] = "BEF";
-      m_abstract_codes[98] = "BEn";
-      m_abstract_codes[99] = "BFF";
-      m_abstract_codes[100] = "BFn";
-      m_abstract_codes[101] = "Bnn";
-      m_abstract_codes[102] = "CCC";
-      m_abstract_codes[103] = "CCD";
-      m_abstract_codes[104] = "CCE";
-      m_abstract_codes[105] = "CCF";
-      m_abstract_codes[106] = "CCn";
-      m_abstract_codes[107] = "CDD";
-      m_abstract_codes[108] = "CDE";
-      m_abstract_codes[109] = "CDF";
-      m_abstract_codes[110] = "CDn";
-      m_abstract_codes[111] = "CEE";
-      m_abstract_codes[112] = "CEF";
-      m_abstract_codes[113] = "CEn";
-      m_abstract_codes[114] = "CFF";
-      m_abstract_codes[115] = "CFn";
-      m_abstract_codes[116] = "Cnn";
-      m_abstract_codes[117] = "DDD";
-      m_abstract_codes[118] = "DDE";
-      m_abstract_codes[119] = "DDF";
-      m_abstract_codes[120] = "DDn";
-      m_abstract_codes[121] = "DEE";
-      m_abstract_codes[122] = "DEF";
-      m_abstract_codes[123] = "DEn";
-      m_abstract_codes[124] = "DFF";
-      m_abstract_codes[125] = "DFn";
-      m_abstract_codes[126] = "Dnn";
-      m_abstract_codes[127] = "EEE";
-      m_abstract_codes[128] = "EEF";
-      m_abstract_codes[129] = "EEn";
-      m_abstract_codes[130] = "EFF";
-      m_abstract_codes[131] = "EFn";
-      m_abstract_codes[132] = "Enn";
-      m_abstract_codes[133] = "FFF";
-      m_abstract_codes[134] = "FFn";
-      m_abstract_codes[135] = "Fnn";
-      m_abstract_codes[136] = "nnn";
-
-      m_max_code = 136;  // %!% HARD CODED.  needs to be determined dynamically
-    }
+    // add extra codes for this version
     for (i = 0; i < extra_codes_count; i++) {
       m_abstract_codes[m_max_extra_code - i] = m_extra_codes[i];
     }
 
+    // insert allele delimiter if one was provided
     if (allele_delimiter != '\0') {
       for (i = m_min_translatable_code; i <= m_max_code; i++) {
 	string new_allele_string;
@@ -641,7 +608,7 @@ void GenoCallCoder::initialize(const int max_allele_count,
       }
     }
   }
-  // populate encoding map
+  // make reverse map of abstract allele codes for encoding 
   for (i = m_min_code; i <= m_max_code; i++) {
     m_alleles[m_abstract_codes[i]] = i;
   }
@@ -701,7 +668,105 @@ string GenoCallCoder::genotypeCallNumToAbstractAllele(const unsigned char call_c
  * @param call_code - number to decode
  */
 string GenoCallCoder::genotypeCallNumToReferenceAllele(const string probeset_id, const unsigned char call_code) {
-  return genotypeCallNumToAllele(probeset_id, call_code, "reference"); 
+  return genotypeCallNumToAllele(probeset_id, call_code, "ref"); 
+}
+
+/**
+ * @brief Translate allele name from one type to another {absract, reference,
+ * report} for given probeset id and allele type
+ * 
+ * @param probeset_id - id of probeset to decode
+ * @param abstract_allele - abstract allele to decode
+ * @param input_type - flag to indicate input type of allele name {"abs","ref","rep"}
+ * @param output_type - flag to indicate output type of allele name {"abs","ref","rep"}
+ */
+string GenoCallCoder::alleleNameConvert(const string probeset_id, 
+						 const string input_allele_string, 
+						 const string input_type,
+						 const string output_type) {
+  
+  string allele_name_string;
+
+  //vector<AlleleRecord>::iterator at_start = m_probeset_allele_name_table.begin();
+  //vector<AlleleRecord>::iterator at_end = m_probeset_allele_name_table.end();
+  vector<string> temp(0);
+  AlleleRecord key(probeset_id, temp, temp, temp);
+
+  //cout << probeset_id + '*' + abstract_allele << '\n';
+
+  vector<AlleleRecord>::iterator result = lower_bound(m_probeset_allele_name_table.begin(), m_probeset_allele_name_table.end(), key, AlleleRecord::compareAlleleRecordsByProbesetId);
+  if (result == m_probeset_allele_name_table.end()) {
+    Verbose::warn(0, "Cannot find probeset '" + probeset_id + "' in supplied probeset allele table");
+  }
+  else {
+ 
+    vector<string> input_allele_vec;
+    if (input_type == "abs") {
+      input_allele_vec = result->m_abstract_allele;
+    }
+    else if (input_type == "ref") {
+      input_allele_vec = result->m_reference_allele;
+    }
+    else if (input_type == "rep") {
+      input_allele_vec = result->m_report_allele;
+    }
+    else {
+      Err::errAbort("Value for parameter 'input_type':" + input_type + " is not one of {'abstract', 'reference', 'report'}");
+    }
+    
+    vector<string> output_allele_vec;
+    if (output_type == "abs") {
+      output_allele_vec = result->m_abstract_allele;
+    }
+    else if (output_type == "ref") {
+      output_allele_vec = result->m_reference_allele;
+    }
+    else if (output_type == "rep") {
+      output_allele_vec = result->m_report_allele;
+    }
+    else {
+      Err::errAbort("Value for parameter 'output_type':" + output_type + " is not one of {'abstract', 'reference', 'report'}");
+    }
+    
+    //cout << result->m_probeset_id + '|' + result->m_abstract_allele + '|' + result->m_reference_allele + '|' + result->m_report_allele + '\n';
+    //cout << result->m_probeset_id + '|' + result->m_abstract_allele[0] + '|' + result->m_reference_allele[0] + '|' + result->m_report_allele[0] + '\n';
+
+    int allele_start = 0;
+    string query;
+    while (allele_start < input_allele_string.size()) {
+      int delimiter_pos = input_allele_string.find(m_allele_delimiter, allele_start);
+      if (delimiter_pos == input_allele_string.npos) {
+	delimiter_pos = input_allele_string.size();
+      }
+      query = input_allele_string.substr(allele_start, delimiter_pos - allele_start);
+//       cout << allele_start << '-' << delimiter_pos << '-' << input_allele_string.size() << ':' << query + "\n";
+      if (input_type == "abs" && query == string(1, m_abstract_nocall_char)) {
+	// For now, using 'NoCall' text
+	allele_name_string.append(m_abstract_codes[16]);
+      }
+      else {
+	int i = 0;
+	for (i = 0; i < input_allele_vec.size(); i++) {
+	  // 	  cout << *aas_it << '-';
+	  if (query == input_allele_vec[i]) {
+	    allele_name_string.append(output_allele_vec[i]);
+	    // append delimiter, if there is another allele to lookup
+	    if (delimiter_pos < input_allele_string.size()) {
+	      allele_name_string.append(string(1, m_allele_delimiter));
+	    }
+	    break;
+	  }
+	}
+	if (i >= input_allele_vec.size()) {
+	  Verbose::warn(0, "Cannot find listing for '" + input_type + "' allele '" + query + "' for probeset: " + probeset_id);
+	}
+      }
+      // set allele_start to position beyond delimiter
+      allele_start = delimiter_pos + 1;
+    }
+//     cout << '\n';
+  }
+  return allele_name_string;
 }
 
 /**
@@ -712,7 +777,7 @@ string GenoCallCoder::genotypeCallNumToReferenceAllele(const string probeset_id,
  * @param call_code - number to decode
  */
 string GenoCallCoder::genotypeCallNumToReportAllele(const string probeset_id, const unsigned char call_code) {
-  return genotypeCallNumToAllele(probeset_id, call_code, "report"); 
+  return genotypeCallNumToAllele(probeset_id, call_code, "rep"); 
 }
 
 
@@ -731,7 +796,7 @@ string GenoCallCoder::genotypeCallNumToAllele(const string probeset_id,
   string abstract_allele_string = genotypeCallNumToAbstractAllele(call_code);  
   
   if (call_code >= m_min_translatable_code && call_code <= m_max_code) {
-    allele_name_string = abstractAlleleToAlleleName(probeset_id, abstract_allele_string, allele_type);
+    allele_name_string = alleleNameConvert(probeset_id, abstract_allele_string, "abs", allele_type);
   }
   else if ((call_code >= m_min_code && call_code < m_min_translatable_code) ||
 	   (call_code >= m_min_extra_code && call_code <= m_max_extra_code)
@@ -741,6 +806,7 @@ string GenoCallCoder::genotypeCallNumToAllele(const string probeset_id,
   return allele_name_string;
 }
 
+
 /**
  * @brief Translate abstract allele to allele name for given
  * probeset id and allele type
@@ -748,77 +814,8 @@ string GenoCallCoder::genotypeCallNumToAllele(const string probeset_id,
  * @param probeset_id - id of probeset to decode
  * @param abstract_allele - abstract allele to decode
  */
-string GenoCallCoder::abstractAlleleToAlleleName(const string probeset_id, 
-						 const string abstract_allele_string, 
-						 const string allele_type) {
-  
-  string allele_name_string;
-
-  //vector<AlleleRecord>::iterator at_start = m_probeset_allele_name_table.begin();
-  //vector<AlleleRecord>::iterator at_end = m_probeset_allele_name_table.end();
-  vector<string> temp(0);
-  AlleleRecord key(probeset_id, temp, temp, temp);
-
-  //cout << probeset_id + '*' + abstract_allele << '\n';
-
-  vector<AlleleRecord>::iterator result = lower_bound(m_probeset_allele_name_table.begin(), m_probeset_allele_name_table.end(), key, AlleleRecord::compareAlleleRecordsByProbesetId);
-  if (result == m_probeset_allele_name_table.end()) {
-    Verbose::warn(0, "Cannot find probeset '" + probeset_id + "' in supplied probeset allele table");
-  }
-  else {
-    //cout << result->m_probeset_id + '|' + result->m_abstract_allele + '|' + result->m_reference_allele + '|' + result->m_report_allele + '\n';
-    //cout << result->m_probeset_id + '|' + result->m_abstract_allele[0] + '|' + result->m_reference_allele[0] + '|' + result->m_report_allele[0] + '\n';
-/* keep this code for future reimplementation of abstractAlleleToAlleleName()
-//   while (result != at_end &&
-// 	 result->m_probeset_id == probeset_id && 
-// 	 result->m_abstract_allele != abstract_allele
-// 	 ) {
-//     result++;
-//   }
-  
-//   if (result == at_end || result->m_probeset_id != probeset_id) {
-//     Verbose::warn(0, "Cannot find allele string '" + abstract_allele + "' for probeset '" + probeset_id + "'\n");
-//   }
-//   else {
-//     allele_name = result->m_allele_name;
-//   }
-*/
-
-    string::const_iterator aas_it;
-    for (aas_it = abstract_allele_string.begin(); aas_it != abstract_allele_string.end(); aas_it++) {
-      //cout << *aas_it << '-';
-      if (*aas_it == m_allele_delimiter) {
-	allele_name_string += m_allele_delimiter;
-      }
-      else if (*aas_it == m_abstract_nocall_char) {
-	// For now, using 'NoCall' text
-	allele_name_string.append(m_abstract_codes[16]);
-      }
-      else {
-	int i = 0;
-	for (i = 0; i < result->m_abstract_allele.size(); i++) {
-	//      while (i < result->m_abstract_allele.size() && aas_it != abstract_allele_string.end()) {	  
-	//cout << *aas_it << '-';
-	  if (string(1, *aas_it) == result->m_abstract_allele[i]) {
-	    if (allele_type == "reference") {
-	      allele_name_string.append(result->m_reference_allele[i]);
-	      break;
-	    }
-	    else if (allele_type == "report") {
-	      allele_name_string.append(result->m_report_allele[i]);
-	      break;
-	    }
-	  }
-	}
-	if (i >= result->m_abstract_allele.size()) {
-	  Verbose::warn(0, "Cannot find listing for abstract allele '" + string(1, *aas_it) + "' for probeset: " + probeset_id);
-	}
-      }
-    }
-    //cout << '\n';
-  }
-  
-  return allele_name_string;
+string GenoCallCoder::referenceAlleleToReportAllele(const string probeset_id, const string reference_allele) {
+  return alleleNameConvert(probeset_id, reference_allele, "ref", "rep");
 }
 
 /**
@@ -829,7 +826,7 @@ string GenoCallCoder::abstractAlleleToAlleleName(const string probeset_id,
  * @param abstract_allele - abstract allele to decode
  */
 string GenoCallCoder::abstractAlleleToReferenceAllele(const string probeset_id, const string abstract_allele) {
-  return abstractAlleleToAlleleName(probeset_id, abstract_allele, "reference");
+  return alleleNameConvert(probeset_id, abstract_allele, "abs", "ref");
 }
 
 
@@ -841,7 +838,7 @@ string GenoCallCoder::abstractAlleleToReferenceAllele(const string probeset_id, 
  * @param abstract_allele - abstract allele to decode
  */
 string GenoCallCoder::abstractAlleleToReportAllele(const string probeset_id, const string abstract_allele) {
-  return abstractAlleleToAlleleName(probeset_id, abstract_allele, "report");
+  return alleleNameConvert(probeset_id, abstract_allele, "abs", "rep");
 }
 
 
@@ -996,3 +993,4 @@ bool GenoCallCoder::isHet(const unsigned char call_code) {
   }
   return false;
 }
+

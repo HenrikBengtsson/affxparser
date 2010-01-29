@@ -24,12 +24,15 @@
 /*! \file ArrayFileReader.h This file provides interfaces to read an array file.
  */
 
-#include "AffymetrixBaseTypes.h"
-#include "AffymetrixGuid.h"
-#include "Parameter.h"
-#include "ArrayData.h"
-#include <string>
+#include "calvin_files/array/src/ArrayData.h"
+#include "calvin_files/parameter/src/Parameter.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
+#include <cstring>
 #include <fstream>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {

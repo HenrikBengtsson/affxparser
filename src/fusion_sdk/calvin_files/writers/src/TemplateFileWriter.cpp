@@ -18,20 +18,26 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "TemplateFileWriter.h"
-#include "TemplateData.h"
-#include "TemplateId.h"
-#include "SAXTemplateHandlers.h"
-#include "AffymetrixGuid.h"
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <xercesc/util/PlatformUtils.hpp>
-#include <xercesc/util/XMLString.hpp>
-#include <xercesc/framework/LocalFileFormatTarget.hpp>
+#include "calvin_files/writers/src/TemplateFileWriter.h"
+//
+#include "calvin_files/parsers/src/SAXTemplateHandlers.h"
+#include "calvin_files/template/src/TemplateData.h"
+#include "calvin_files/template/src/TemplateId.h"
+#include "calvin_files/utils/src/AffymetrixGuid.h"
+//
 #include <xercesc/dom/DOM.hpp>
 #include <xercesc/dom/DOMImplementation.hpp>
 #include <xercesc/dom/DOMImplementationLS.hpp>
-#include <xercesc/dom/DOMWriter.hpp>
+#include <xercesc/framework/LocalFileFormatTarget.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+#include <xercesc/util/XMLString.hpp>
+//
+#include <cstring>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
+//#include <xercesc/dom/DOMWriter.hpp>
 
 using namespace affymetrix_calvin_template;
 using namespace affymetrix_calvin_io;
@@ -123,7 +129,7 @@ public:
 	/*! Destructor */
 	~XMLChConversion() { clear(); }
 	/*! Returns the XML string.
-	 * @Return The XML string.
+	 * @return The XML string.
 	 */
 	const XMLCh *String() const { return str; }
 };
@@ -238,12 +244,14 @@ bool TemplateFileWriter::Write(const std::string &fileName, affymetrix_calvin_te
 	DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(ToXMLCh(L"LS"));
 	//DOMDocumentType* dt  = impl->createDocumentType(ToXMLCh(TEMPLATE_FILE_ELEMENT), 0, ToXMLCh(TEMPLATE_FILE_DTD));
 	DOMDocument* doc = impl->createDocument();
-	doc->setStandalone(true);
+	//doc->setStandalone(true);
 	//doc->appendChild(dt);
 
 	// Create the serializer.
-	DOMWriter *theSerializer = ((DOMImplementationLS*)impl)->createDOMWriter();
-	theSerializer->setEncoding(ToXMLCh(TEMPLATE_FILE_ENCODING));
+	DOMLSSerializer *theSerializer = ((DOMImplementationLS*)impl)->createLSSerializer();
+	DOMLSOutput *theOutputDesc = ((DOMImplementationLS*)impl)->createLSOutput();
+	//theSerializer->setEncoding(ToXMLCh(TEMPLATE_FILE_ENCODING));
+	theOutputDesc->setEncoding(ToXMLCh(TEMPLATE_FILE_ENCODING));
 
 	// TemplateFile element
 	DOMElement* templateElement = CreateTemplateElement(templateData, doc, dataTypeIdentifier);
@@ -257,9 +265,10 @@ bool TemplateFileWriter::Write(const std::string &fileName, affymetrix_calvin_te
 	// Write the file.
 	bool status = false;
 	XMLFormatTarget *myFormTarget = new LocalFileFormatTarget(fileName.c_str());
+	theOutputDesc->setByteStream(myFormTarget);
 	try
 	{
-		theSerializer->writeNode(myFormTarget, *doc);
+		theSerializer->write(doc, theOutputDesc);
 		status = true;
 	}
 	catch (...)
@@ -269,6 +278,7 @@ bool TemplateFileWriter::Write(const std::string &fileName, affymetrix_calvin_te
 
 	// Clean up
 	doc->release();
+	theOutputDesc->release();
 	theSerializer->release();
 	delete myFormTarget;
 

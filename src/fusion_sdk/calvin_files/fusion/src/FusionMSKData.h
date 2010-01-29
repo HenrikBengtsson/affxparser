@@ -24,7 +24,8 @@
 /*! \file FusionMSKData.h This file defines the Fusion MSK Data classes
  */
 
-#include "MSKFileData.h"
+#include "file/MSKFileData.h"
+//
 using namespace affxmsk;
 
 namespace affymetrix_fusion_io

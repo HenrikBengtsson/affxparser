@@ -21,12 +21,19 @@
 #ifndef _CDFQCProbeSetInformation_HEADER_
 #define _CDFQCProbeSetInformation_HEADER_
 
-/*! \file CDFQCProbeSetInformation.h This file defines the CDFQCProbeSetInformation class.
- */
-
 #ifdef _MSC_VER
 #include <windows.h>
 #endif
+
+/*! \file CDFQCProbeSetInformation.h This file defines the CDFQCProbeSetInformation class.
+ */
+
+#include "calvin_files/data/src/DataSet.h"
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {

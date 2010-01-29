@@ -17,13 +17,15 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "BARFileData.h"
-#include "FileIO.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
+#include "file/BARFileData.h"
+#include "file/FileIO.h"
+//
+#include <cassert>
 #include <fstream>
-#include <assert.h>
+#include <istream>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 #ifndef _MSC_VER
 #include <sys/mman.h>

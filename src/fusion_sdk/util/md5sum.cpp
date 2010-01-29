@@ -21,16 +21,21 @@
 
 
 //
-#include <assert.h>
+#include <util/md5sum.h>
+//
+#include <util/md5.h>
+//
+#include <cassert>
+#include <cstdlib>
+#include <cstring>
 #include <fstream>
+#include <string>
+//
+
 #ifndef _MSC_VER
 #include <netinet/in.h>
 #include <stdint.h>
 #endif
-#include <stdlib.h>
-//
-#include <util/md5.h>
-#include <util/md5sum.h>
 
 using namespace std;
 
@@ -72,7 +77,7 @@ affx::md5sum::update(const std::string& str)
 int
 affx::md5sum::update(char const * const str)
 {
-  MD5Update(&m_context,(const u_int8_t*)str,strlen(str));
+  MD5Update(&m_context,(const u_int8_t*)str,(u_int32_t)strlen(str));
   return 0;
 }
 
@@ -205,7 +210,7 @@ affx::md5sum::ofFile(const std::string filename,std::string& sum)
 
   do {
     istm.read(buf_ptr,buf_size);
-    update(buf_ptr,istm.gcount());
+    update(buf_ptr,(int)istm.gcount());
   } while (!istm.eof());
 
   delete[] buf_ptr;

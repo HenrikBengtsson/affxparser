@@ -23,8 +23,10 @@
 /*! \file GRDFileWriter.h This file provides GRD file writing capabilities.
  */
 
-#include "GRDFileData.h"
+#include "file/GRDFileData.h"
+//
 #include <fstream>
+//
 
 namespace affxgrd
 {

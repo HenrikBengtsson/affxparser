@@ -17,9 +17,12 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "SAXDttArrayHandlers.h"
-#include <string>
+#include "file/SAXDttArrayHandlers.h"
+//
+#include <cstring>
 #include <map>
+#include <string>
+//
 
 using namespace affymetrix_dttarray;
 using namespace std;
@@ -63,9 +66,9 @@ static bool operator==(const XMLCh* const &c1, wstring c2)
  * Store the array data and set the starting element to the head.
  */
 SAXArrayHandlers::SAXArrayHandlers(DttArrayData *data) :
+	levelsDeep(0),
 	arrayData(data),
-	currentElement(DTT_ARRAY_FILE),
-	levelsDeep(0)
+	currentElement(DTT_ARRAY_FILE)
 {
 }
 

@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CHPExpressionEntry.h"
+#include "calvin_files/data/src/CHPExpressionEntry.h"
+//
 
 using namespace affymetrix_calvin_io;
 

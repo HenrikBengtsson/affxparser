@@ -18,9 +18,11 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "CDFData.h"
-#include "DataSetHeader.h"
-#include "DataException.h"
+#include "calvin_files/data/src/CDFData.h"
+//
+#include "calvin_files/data/src/DataException.h"
+#include "calvin_files/data/src/DataSetHeader.h"
+//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_exceptions;

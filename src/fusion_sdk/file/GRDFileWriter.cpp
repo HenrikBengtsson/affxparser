@@ -17,17 +17,21 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "GRDFileWriter.h"
-#include "FileIO.h"
-#include "FileWriter.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
-#include <fstream>
-#include <string.h>
-#include <assert.h>
+#include "file/GRDFileWriter.h"
+//
+#include "file/FileIO.h"
+#include "file/FileWriter.h"
+//
 #include <algorithm>
+#include <cassert>
+#include <cstring>
+#include <fstream>
 #include <iostream>
+#include <istream>
+#include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 using namespace affxgrd;
 

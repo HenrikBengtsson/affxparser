@@ -25,8 +25,11 @@
  */
 
 
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+//
+#include <cstring>
 #include <string>
-#include "ParameterNameValueType.h"
+//
 
 /*! Stores data for a tiling array sequence. */
 typedef struct _TilingSequenceData

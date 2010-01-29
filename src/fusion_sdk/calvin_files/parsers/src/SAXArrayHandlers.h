@@ -24,12 +24,16 @@
 /*! \file SAXArrayHandlers.h This file provides SAX parsing handles for array files.
  */
 
-#include "ArrayData.h"
-#include <string>
-#include <map>
-#include <xercesc/sax/SAXException.hpp>
-#include <xercesc/sax/HandlerBase.hpp>
+#include "calvin_files/array/src/ArrayData.h"
+//
 #include <xercesc/sax/AttributeList.hpp>
+#include <xercesc/sax/HandlerBase.hpp>
+#include <xercesc/sax/SAXException.hpp>
+//
+#include <cstring>
+#include <map>
+#include <string>
+//
 
 namespace affymetrix_calvin_io
 {
@@ -256,7 +260,7 @@ public:
 	 * @param chars The character data.
 	 * @param length The length of the character string.
 	 */
-	void characters(const XMLCh *const chars, const unsigned int length);
+	void characters(const XMLCh *const chars, const XMLSize_t length);
 
 	/*! Called at the start of each element.
 	 *

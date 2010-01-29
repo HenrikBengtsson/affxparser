@@ -21,9 +21,12 @@
 
 /*! \file CHPExpressionEntry.h Defines a class to store the expression analyis results. */
 
+#include "calvin_files/portability/src/AffymetrixBaseTypes.h"
+//
+#include <cstring>
 #include <string>
 #include <vector>
-#include "AffymetrixBaseTypes.h"
+//
 
 namespace affymetrix_calvin_io
 {

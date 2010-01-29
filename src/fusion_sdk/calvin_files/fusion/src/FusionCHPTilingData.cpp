@@ -18,8 +18,10 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionCHPTilingData.h"
-#include "CHPTilingFileReader.h"
+#include "calvin_files/fusion/src/FusionCHPTilingData.h"
+//
+#include "calvin_files/parsers/src/CHPTilingFileReader.h"
+//
 
 using namespace affymetrix_fusion_io;
 using namespace affymetrix_calvin_exceptions;

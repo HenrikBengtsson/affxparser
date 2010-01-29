@@ -2,19 +2,19 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU General Public License (version 2) as
+// This program is free software; you can redistribute it and/or modify 
+// it under the terms of the GNU General Public License (version 2) as 
 // published by the Free Software Foundation.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+// 
+// This program is distributed in the hope that it will be useful, 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of 
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
 // General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program;if not, write to the
-//
-// Free Software Foundation, Inc.,
+// 
+// You should have received a copy of the GNU General Public License 
+// along with this program;if not, write to the 
+// 
+// Free Software Foundation, Inc., 
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
@@ -29,14 +29,17 @@
 //
 #include "util/PgOptions.h"
 //
+#include "util/AffxFile.h"
 #include "util/Convert.h"
 #include "util/Err.h"
 #include "util/Util.h"
-#include "util/AffxFile.h"
 //
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
+//
+
+#ifndef APT_PGOPTIONS_NO_XERCES
 
 #define XML_LIBRARY
 #define XERCES_STATIC_LIBRARY
@@ -49,6 +52,8 @@
 #include "../../external/xerces/src/xercesc/sax/AttributeList.hpp"
 #include "../../external/xerces/src/xercesc/framework/XMLPScanToken.hpp"
 #include "../../external/xerces/src/xercesc/util/XMLString.hpp"
+#include "../../external/xerces/src/xercesc/framework/LocalFileInputSource.hpp"
+#include "../../external/xerces/src/xercesc/framework/URLInputSource.hpp"
 
 class PgOptionsSAXHandler : public XERCES_CPP_NAMESPACE::HandlerBase
 {
@@ -56,6 +61,8 @@ private:
 	PgOptions* m_pPgOptions;
 	std::vector<std::string>* m_pvFileNames;
     unsigned int m_uiOptionCount;
+	AffxString m_strPrevCategory;
+	AffxString m_strAnalysis;
 
 public :
 	PgOptionsSAXHandler(PgOptions* pPgOptions, std::vector<std::string>& vFileNames) : 
@@ -72,18 +79,34 @@ public :
 	void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exc) {Err::errAbort(toString(exc.getMessage()));}
 
 	void startDocument() {m_uiOptionCount = 0;}
+	void endDocument()
+	{
+		if (m_strAnalysis != "")
+		{
+			Verbose::out(1, "\tanalysis = " + m_strAnalysis);
+			if (m_pPgOptions->mustFindOpt("analysis")->m_allowMultiple)
+			{
+				m_pPgOptions->push("analysis", m_strAnalysis);
+			}
+			else
+			{
+				m_pPgOptions->set("analysis", m_strAnalysis);
+			}
+		}
+	}
 	static std::string toString(const XMLCh* const in)
 	{
 		char* p = XERCES_CPP_NAMESPACE::XMLString::transcode(in);
-		std::string str = p;
+		AffxString str = p;
 		XERCES_CPP_NAMESPACE::XMLString::release(&p);
-		return str;
+		return str.trim();
 	}
     void startElement(const XMLCh* const name, XERCES_CPP_NAMESPACE::AttributeList& attributes)
 	{
 		std::string strElementName = toString(name);
 //		Verbose::out(1, "Element=" + strElementName);
 		m_uiOptionCount++;
+		AffxString strCategoryName;
 		std::string strOptionName;
 		std::string strDescription;
 		std::string strCurrentValue;
@@ -102,36 +125,97 @@ public :
 					m_pPgOptions->m_strXMLParameterFileGuid = strAttributeValue; 
 				}
 				break;
+			}			
+			else if ((strElementName == "JobOrder") && (strAttributeName == "joGUID")) 
+			{
+				Verbose::out(1, "\tguid = " + strAttributeValue);
+				if (m_pPgOptions->getXMLParameterFileGuid() == "")
+				{
+					m_pPgOptions->m_strXMLParameterFileGuid = strAttributeValue; 
+				}
+				break;
 			}
+			else if (strAttributeName == "analysis") {strCategoryName = strAttributeValue;}
 			else if (strAttributeName == "name") {strOptionName = strAttributeValue;}
 			else if (strAttributeName == "description") {strDescription = strAttributeValue;}
 			else if (strAttributeName == "currentValue") {strCurrentValue = strAttributeValue;}
 		}
 		if (strElementName == "Parameter")
 		{
-			if (m_pPgOptions->isOptDefined(strOptionName))
+			if (strCategoryName != "")
 			{
-				Verbose::out(1, "\t" + strOptionName + " = " + strCurrentValue);
-				if (strOptionName == "xml-file") {m_pPgOptions->setOptionsFromXMLFile(strCurrentValue, *m_pvFileNames);}
-				else 
+				if (!m_pPgOptions->isOptDefined("analysis")) 
 				{
-					if (m_pPgOptions->mustFindOpt(strOptionName)->m_allowMultiple)
+					Verbose::out(1, "Specified option is not defined. Name: " + strOptionName);
+				}
+				else
+				{
+					if (strCategoryName != m_strPrevCategory)
 					{
-						m_pPgOptions->push(strOptionName, strCurrentValue);
+						if (m_strAnalysis != "")
+						{
+							Verbose::out(1, "\tanalysis = " + m_strAnalysis);
+							if (m_pPgOptions->mustFindOpt("analysis")->m_allowMultiple)
+							{
+								m_pPgOptions->push("analysis", m_strAnalysis);
+							}
+							else
+							{
+								m_pPgOptions->set("analysis", m_strAnalysis);
+							}
+						}
+						if (strCurrentValue == "")
+						{
+							m_strAnalysis = strOptionName;
+						}
 					}
 					else
 					{
-						m_pPgOptions->set(strOptionName, strCurrentValue);
+						if (strCurrentValue != "")
+						{
+	//						if (::getInt(::getInt(strCurrentValue)) == strCurrentValue)
+	//						{
+	//							m_strAnalysis += "." + strOptionName + "=" + strCurrentValue;
+	//						}
+	//						else
+	//						{
+								m_strAnalysis += "." + strOptionName + "='" + strCurrentValue + "'";
+	//						}
+						}
 					}
+					m_strPrevCategory = strCategoryName;
 				}
 			}
-			else 
+			else
 			{
-				Verbose::out(1, "WARNING: Specified option is not defined. Name: " + strOptionName);
+				if (m_pPgOptions->isOptDefined(strOptionName))
+				{
+					Verbose::out(1, "\t" + strOptionName + " = " + strCurrentValue);
+					if (strOptionName == "xml-file") {
+            m_pPgOptions->setOptionsFromXMLFile(strCurrentValue, *m_pvFileNames);
+          }
+					else 
+					{
+						if (m_pPgOptions->mustFindOpt(strOptionName)->m_allowMultiple)
+						{
+							m_pPgOptions->push(strOptionName, strCurrentValue);
+						}
+						else
+						{
+							m_pPgOptions->set(strOptionName, strCurrentValue);
+						}
+					}
+				}
+				else 
+				{
+					Verbose::out(1, "Specified option is not defined. Name: " + strOptionName);
+				}
 			}
 		}
 	}
 };
+
+#endif
 
 //
 using namespace std;
@@ -186,7 +270,11 @@ void PgOpt::pushValue(const std::string& new_value) {
 }
 
 int PgOpt::getValueCount() const {
-  return m_values.size();
+  return (int)m_values.size();
+}
+
+std::vector<std::string> PgOpt::getValueVector() const {
+  return m_values;
 }
 
 std::string PgOpt::getValue(size_t idx) const {
@@ -357,7 +445,7 @@ std::string PgOptions::getArg(int idx) {
 }
 
 int PgOptions::getArgCount() {
-  return m_args.size();
+  return (int)m_args.size();
 }
 
 std::string PgOptions::getProgName() {
@@ -433,7 +521,7 @@ PgOpt* PgOptions::addPgOpt_nocopy(PgOpt* opt)
 }
 
 void PgOptions::defineOptionSection(const std::string &sectionName) {
-    m_option_section[m_option_vec.size()] = sectionName;
+  m_option_section[(int)m_option_vec.size()] = sectionName;
 }
 
 PgOpt* PgOptions::defineOption(const std::string& shortName,
@@ -506,7 +594,6 @@ void PgOptions::usage(std::set<std::string> &hiddenOpts, bool printOpts) {
   cout << "\n";
 
   if(printOpts == true) {
-    cout << "\noptions:\n";
     /* find the length of the longest option name. */
     for (i = 0; i<m_option_vec.size(); i++) {
       opt = m_option_vec[i];
@@ -517,7 +604,7 @@ void PgOptions::usage(std::set<std::string> &hiddenOpts, bool printOpts) {
       // subtract it off if there is a character.
       size_t length = opt->m_longName.size();
       if(maxLength < length)
-        maxLength = length;
+        maxLength = (int)length;
     }
     // extraChars contains a padded space for options without a short flag,
     // three ' ' at the beginning and one ' ' at end.
@@ -527,8 +614,8 @@ void PgOptions::usage(std::set<std::string> &hiddenOpts, bool printOpts) {
       maxLength = 26;
     }
 
+    cout << "\noptions:\n";
     /* Loop through and print out the help. */
-    //for(i = 0; optSpec[i] != NULL; i++) {
     for(i = 0; i<m_option_vec.size(); i++) {
       // Do we have a section header to print?
       if(m_option_section.find(i) != m_option_section.end())
@@ -556,7 +643,8 @@ void PgOptions::usage(std::set<std::string> &hiddenOpts, bool printOpts) {
         currentLength++;
       }
 
-      printStringWidth(opt->m_help + " [default '" + opt->m_defaultValue + "']", maxLength, currentLength);
+      printStringWidth(opt->m_help + " [default '" + opt->m_defaultValue + "']",
+                       maxLength, currentLength);
       cout << "\n";
     }
   }
@@ -564,8 +652,6 @@ void PgOptions::usage(std::set<std::string> &hiddenOpts, bool printOpts) {
 
 int PgOptions::parseArgv(const char * const * const argv, int start) {
   assert(argv!=NULL);
-
-  resetToDefaults();
 
   setArgv(argv);
 
@@ -578,7 +664,7 @@ int PgOptions::parseArgv(const char * const * const argv, int start) {
   // dump the values at the end.
   // dump(); // debug
 
-  return arg_idx;
+  return (int)arg_idx;
 }
 
 void PgOptions::resetToDefaults() {
@@ -698,8 +784,8 @@ void PgOptions::matchOneArg(size_t* arg_idx)
           *arg_idx+=1;
         }
         else {
-          // didnt look like a bool, use true
-          opt->setValue("true");
+          // didnt look like a bool, use 
+			opt->setValue("true");
         }
       }
       // just "program --foo"
@@ -770,7 +856,7 @@ int PgOptions::getInt(const std::string& opt_name)
 //////////
 
 int PgOptions::argc() {
-  return m_argv.size();
+  return (int)m_argv.size();
 }
 std::string PgOptions::argv(int idx) {
   return m_argv[idx];
@@ -781,8 +867,11 @@ std::string PgOptions::argv(int idx) {
  * 
  * @param strFileName - The name of the XML file to load parameters from.
  */
-void PgOptions::setOptionsFromXMLFile(const std::string& strFileName, std::vector<std::string>& vFileNames)
+void PgOptions::setOptionsFromXMLFile(const std::string& strFileNameIn, std::vector<std::string>& vFileNames)
 {
+#ifndef APT_PGOPTIONS_NO_XERCES
+	AffxString strFileName = strFileNameIn;
+
 	Verbose::out(1, "*");
 	Verbose::out(1, "Loading options from file: " + strFileName);
 		
@@ -835,34 +924,52 @@ void PgOptions::setOptionsFromXMLFile(const std::string& strFileName, std::vecto
 		const unsigned long startMillis = XERCES_CPP_NAMESPACE::XMLPlatformUtils::getCurrentMillis();
 		try
 		{
-			if (!parser->parseFirst(strFileName.c_str(), token))
+			XMLCh* p = XERCES_CPP_NAMESPACE::XMLString::transcode(strFileName.c_str());
+			try
 			{
-				Err::errAbort("PgOptions::setParametersFromXMLFile() failed at parser->parseFirst(). FileName: " + strFileName);
+				XERCES_CPP_NAMESPACE::URLInputSource source(p);
+				if (!parser->parseFirst(source, token))
+				{
+					Err::errAbort("PgOptions::setParametersFromXMLFile() Cannot open or parse xml-file. FileName: " + strFileName);
+				}
 			}
-		} catch(...) {Err::errAbort("PgOptions::setParametersFromXMLFile() failed at parser->parseFirst(). FileName: " + strFileName);}
+			catch(...)
+			{				
+				XERCES_CPP_NAMESPACE::LocalFileInputSource source(p);
+				if (!parser->parseFirst(source, token))
+				{
+					Err::errAbort("PgOptions::setParametersFromXMLFile() Cannot open or parse xml-file. FileName: " + strFileName);
+				}
+			}
+			XERCES_CPP_NAMESPACE::XMLString::release(&p);
+			//
+			//  We started ok, so lets call scanNext() until we find what we want
+			//  or hit the end.
+			//
+			bool gotMore = true;
+			while (gotMore && !parser->getErrorCount())
+			{
+				gotMore = parser->parseNext(token);
+			}
 
-		//
-		//  We started ok, so lets call scanNext() until we find what we want
-		//  or hit the end.
-		//
-		bool gotMore = true;
-		while (gotMore && !parser->getErrorCount())
-		{
-			gotMore = parser->parseNext(token);
+			const unsigned long endMillis = XERCES_CPP_NAMESPACE::XMLPlatformUtils::getCurrentMillis();
+			duration = endMillis - startMillis;
+
+			errorCount = parser->getErrorCount();
+			//
+			//  Reset the parser-> In this simple progrma, since we just exit
+			//  now, its not technically required. But, in programs which
+			//  would remain open, you should reset after a progressive parse
+			//  in case you broke out before the end of the file. This insures
+			//  that all opened files, sockets, etc... are closed.
+			//
+			parser->parseReset(token);
 		}
-
-		const unsigned long endMillis = XERCES_CPP_NAMESPACE::XMLPlatformUtils::getCurrentMillis();
-		duration = endMillis - startMillis;
-
-		errorCount = parser->getErrorCount();
-		//
-		//  Reset the parser-> In this simple progrma, since we just exit
-		//  now, its not technically required. But, in programs which
-		//  would remain open, you should reset after a progressive parse
-		//  in case you broke out before the end of the file. This insures
-		//  that all opened files, sockets, etc... are closed.
-		//
-		parser->parseReset(token);
+		catch (const XERCES_CPP_NAMESPACE::XMLException& toCatch)
+		{
+			Err::errAbort("PgOptions::setParametersFromXMLFile() failed with an XMLException. Msg: " + PgOptionsSAXHandler::toString(toCatch.getMessage()) + " FileName: " + strFileName);
+		} 
+		catch(...) {Err::errAbort("PgOptions::setParametersFromXMLFile() Exception thrown while parsing xml-file. FileName: " + strFileName);}
 	}
 	catch (const XERCES_CPP_NAMESPACE::OutOfMemoryException&)
 	{		
@@ -882,5 +989,7 @@ void PgOptions::setOptionsFromXMLFile(const std::string& strFileName, std::vecto
 	delete parser;
 	XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
 	vFileNames.pop_back();
+#endif
 }
+
 

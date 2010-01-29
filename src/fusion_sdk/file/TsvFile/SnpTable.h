@@ -31,8 +31,10 @@
 #ifndef SNPTABLE_H
 #define SNPTABLE_H
 
-#include <assert.h>
-#include "TsvFile.h"
+#include "file/TsvFile/TsvFile.h"
+//
+#include <cassert>
+//
 
 using namespace affx;
 class SnpTable {

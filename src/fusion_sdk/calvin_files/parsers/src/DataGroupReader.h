@@ -24,9 +24,11 @@
 /*! \file DataGroupReader.h This file provides methods to read the data of a DataGroup.
  */
 
-#include "DataGroupHeader.h"
-#include "DataSetReader.h"
+#include "calvin_files/data/src/DataGroupHeader.h"
+#include "calvin_files/parsers/src/DataSetReader.h"
+//
 #include <fstream>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.

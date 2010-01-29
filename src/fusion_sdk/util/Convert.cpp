@@ -29,18 +29,21 @@
  */
 
 //
-#include <assert.h>
-#include <errno.h>
-#include <float.h>
-#include <limits.h>
-#include <math.h>
-#include <sstream>
-#include <stdlib.h>
-#include <string>
-#include <string.h>
+#include "util/Convert.h"
 //
-#include "Convert.h"
 #include "util/Err.h"
+#include "util/Util.h"
+//
+#include <cassert>
+#include <cerrno>
+#include <cfloat>
+#include <climits>
+#include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <sstream>
+#include <string>
+//
 
 using namespace std;
 
@@ -155,7 +158,7 @@ unsigned int Convert::toUnsignedInt(const std::string& num) {
 
 uint64_t Convert::toUnsignedInt64(const std::string& num) {
   bool success = true;
-  unsigned int i = Convert::toUnsignedInt64Check(num, &success);
+  uint64_t i = Convert::toUnsignedInt64Check(num, &success);
   if(success != true)
     Err::errAbort("Could not convert '" + std::string(num) + "' to an unsigned int64.");
   return i;
@@ -374,4 +377,16 @@ bool Convert::doubleCloseEnough(double d1, double d2, int digits) {
  */
 float Convert::floatLowPrecision(float f) {
   return (float)((floor((f+0.05)*10))/10.0);
+}
+
+void
+Convert::strToIntVec(const std::string& s,const char delim,std::vector<int>& vec)
+{
+  std::vector<string> words;
+  Util::chopString(s,delim, words);
+  vec.clear();
+  vec.resize(words.size());
+  for(int i = 0; i < words.size(); i++) {
+    vec[i] = Convert::toInt(words[i]);
+  }
 }

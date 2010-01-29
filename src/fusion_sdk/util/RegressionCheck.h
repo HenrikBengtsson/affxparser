@@ -29,10 +29,14 @@
 #ifndef REGRESSIONCHECK_H
 #define REGRESSIONCHECK_H
 
-#include <string>
-#include "Verbose.h"
 #include "util/Util.h"
+#include "util/Verbose.h"
+//
 #include "portability/affy-base-types.h"
+//
+#include <cstring>
+#include <string>
+//
 
 /**
  * Abstract base class (i.e. interface) for checks to be run during a regression
@@ -43,10 +47,8 @@ class RegressionCheck {
 public:
  
   /** Constructor */
-  RegressionCheck() {
-    m_MaxErrorsReport = 30;
-    m_CurrentErrorsReported = 0;
-  }
+  RegressionCheck() : m_Name("test"), m_NegTest(false), m_MaxErrorsReport(30), m_CurrentErrorsReported(0)
+  { }
 
   /** Virtual destructor for virtual class. */
   virtual ~RegressionCheck() {}
@@ -130,7 +132,11 @@ protected:
         return;
       }
   }
-  
+ 
+public:
+  std::string m_Name;
+  bool m_NegTest;
+
 private:
 
   int m_MaxErrorsReport;        /// The maximum number of errors to report

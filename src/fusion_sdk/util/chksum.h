@@ -19,17 +19,19 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#ifndef _checksum_HEADER
-#define _checksum_HEADER
+#ifndef _UTIL_CHECKSUM_H
+#define _UTIL_CHECKSUM_H
 
 /**
  * @file  chksum.h
  * @brief This file provides functions for computing a checksum.
  */
 
-#include <stdlib.h>
 //
 #include "portability/affy-base-types.h"
+//
+#include <cstdlib>
+//
 
 namespace affxutil
 {
@@ -50,4 +52,4 @@ public:
 
 };
 
-#endif
+#endif // _UTIL_CHECKSUM_H

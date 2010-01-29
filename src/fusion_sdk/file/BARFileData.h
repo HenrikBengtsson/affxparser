@@ -32,11 +32,14 @@
 
 //////////////////////////////////////////////////////////////////////
 
+#include "file/TagValuePair.h"
+//
+#include <cstring>
+#include <fstream>
+#include <list>
 #include <string>
 #include <vector>
-#include <list>
-#include <fstream>
-#include "TagValuePair.h"
+//
 
 //////////////////////////////////////////////////////////////////////
 

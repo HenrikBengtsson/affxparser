@@ -18,12 +18,16 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "TemplateFileReader.h"
-#include "SAXTemplateHandlers.h"
-#include <xercesc/util/PlatformUtils.hpp>
+#include "calvin_files/parsers/src/TemplateFileReader.h"
+//
+#include "calvin_files/parsers/src/SAXTemplateHandlers.h"
+//
 #include <xercesc/parsers/SAXParser.hpp>
+#include <xercesc/util/PlatformUtils.hpp>
+//
 #include <sys/stat.h>
 #include <sys/types.h>
+//
 
 using namespace affymetrix_calvin_template;
 using namespace affymetrix_calvin_io;

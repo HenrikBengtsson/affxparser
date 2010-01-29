@@ -18,7 +18,8 @@
 ////////////////////////////////////////////////////////////////
 
 
-#include "FusionBARData.h"
+#include "calvin_files/fusion/src/FusionBARData.h"
+//
 
 using namespace affymetrix_fusion_io;
 

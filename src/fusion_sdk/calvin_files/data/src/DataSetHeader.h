@@ -24,12 +24,15 @@
 /*! \file DataSetHeader.h This file defines the data container for DataSetHeader information.
  */
 
-#include <string>
+#include "calvin_files/data/src/ColumnInfo.h"
+#include "calvin_files/data/src/GenericDataHeader.h"
+#include "calvin_files/parameter/src/ParameterNameValueType.h"
+#include "calvin_files/utils/src/AffyStlCollectionTypes.h"
+//
+#include <cstring>
 #include <list>
-#include "ParameterNameValueType.h"
-#include "GenericDataHeader.h"
-#include "AffyStlCollectionTypes.h"
-#include "ColumnInfo.h"
+#include <string>
+//
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4290) // don't show warnings about throw keyword on function declarations.
@@ -69,6 +72,9 @@ public:
 
 	/*!  */
 	void Clear();
+
+	void ClearNameValueParameters();
+
 	/*!  */
 	int32_t GetDataSize() const;
 	/*!  */
@@ -83,6 +89,8 @@ public:
 	void AddNameValParam(const ParameterNameValueType &p);
 	/*!  */
 	void GetNameValIterators(ParameterNameValueTypeConstIt &begin, ParameterNameValueTypeConstIt &end) const;
+
+	void GetNameValIterators(ParameterNameValueTypeIt &begin, ParameterNameValueTypeIt &end);
 	/*! Finds a ParameterNameValueType by name in the nameValPairs collection
 	 *	@param name The name of the NameValPair to find
 	 *	@param result Reference to a ParameterNameValueType to fill with the found ParameterNameValueType.

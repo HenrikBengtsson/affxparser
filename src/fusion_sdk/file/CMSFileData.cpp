@@ -17,14 +17,19 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#include "CMSFileData.h"
-#include "IniFile.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <istream>
+#include "file/CMSFileData.h"
+//
+#include "file/IniFile.h"
+//
+#include <cassert>
+#include <cstring>
+#include <ctime>
 #include <fstream>
-#include <assert.h>
-#include <time.h>
+#include <istream>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+//
 
 using namespace std;
 using namespace affxcms;

@@ -26,14 +26,19 @@
  * @brief  Class for dealing with line oriented files.
  */
 
-#include <vector>
-#include <string>
+//
+#include "util/RowFile.h"
+//
+#include "util/Convert.h"
+#include "util/Err.h"
+#include "util/Util.h"
+//
+#include <cstring>
 #include <fstream>
 #include <map>
-#include "RowFile.h"
-#include "Err.h"
-#include "Convert.h"
-#include "Util.h"
+#include <string>
+#include <vector>
+//
 
 using namespace std; 
 
@@ -389,4 +394,3 @@ enum RowFile::FileLineEnding RowFile::determineLineEndingType(std::ifstream &inp
   input.seekg(0);
   return ending;
 }
-      

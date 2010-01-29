@@ -24,7 +24,10 @@
 /*! \file StringUtils.h This file provides string utilities.
  */
 
+#include <cstring>
 #include <string>
+#include <vector>
+//
 
 #ifdef __MINGW32__
 #define USE_OLD_SWPRINTF
@@ -99,6 +102,13 @@ public:
 	 * @param fill The value to fill in empty spaces.
 	 */
 	static std::wstring ToString(int value, int digits, wchar_t fill=L'0');
+
+	/*
+	 * Split a string using the separator as the delimiter
+	 * @param inputString The string to split
+	 * @param separator The delimiter
+	 */
+	static std::vector<std::string> Split(const std::string &inputString, const std::string &separator);
 };
 
 }
