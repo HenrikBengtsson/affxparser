@@ -60,6 +60,10 @@
 #define Min(a,b) std::min(a,b)
 #endif           // _MSC_VER
 
+#ifdef WIN64
+#include <stdint.h>
+#endif
+
 /* "WIN32" should always be defined by MS C++  */
 /* It shouldnt be defined on any other platform */
 #ifndef WIN32

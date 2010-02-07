@@ -40,7 +40,12 @@
 #include <cstring>
 #include <limits>
 #include <string>
+#include <cstdio>
 //
+
+#ifdef WIN64
+# undef WIN32
+#endif
 
 using namespace std;
 

@@ -1,7 +1,16 @@
-42a43
-> #include <cstdio>
-44a46,49
-> #ifdef WIN64
-> # undef WIN32
-> #endif
-> 
+--- /Users/khansen/Work/packages/affxparser/src/fusion_sdk/util/AffxConv.cpp	2010-02-07 11:25:16.000000000 -0500
++++ AffxConv.cpp	2010-02-06 02:15:25.000000000 -0500
+@@ -40,8 +40,13 @@
+ #include <cstring>
+ #include <limits>
+ #include <string>
++#include <cstdio>
+ //
+ 
++#ifdef WIN64
++# undef WIN32
++#endif
++
+ using namespace std;
+ 
+ /** 
