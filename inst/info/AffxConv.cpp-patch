@@ -1,0 +1,7 @@
+42a43
+> #include <cstdio>
+44a46,49
+> #ifdef WIN64
+> # undef WIN32
+> #endif
+> 
