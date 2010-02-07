@@ -24,6 +24,10 @@
 /*! \file AffymetrixBaseTypes.h This file provides type definitions for atom types.
  */ 
 
+#ifdef WIN64
+#include <stdint.h>
+#endif
+
 /* Define the type for the Windows platform. */
 #ifdef WIN32
 

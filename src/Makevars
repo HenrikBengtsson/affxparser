@@ -1,10 +1,10 @@
-MYCXXFLAGS=-O0 -Wall
+MYCXXFLAGS=-O0
 
 %.o: %.cpp
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
 
 PKG_CPPFLAGS=\
- -imacros R_affx_constants.h\
+ -I.\ # -imacros R_affx_constants.h\
  -Ifusion_sdk/calvin_files/array/src\
  -Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/exception/src\
