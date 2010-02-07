@@ -1,7 +1,10 @@
 Package: affxparser
 ===================
 
-Version: 1.19.2 [2010-02-02]
+Version: 1.19.4 [2010-02-06]
+o More fixes.
+
+Version: 1.19.3 [2010-02-06]
 o A couple of patches to Fusion SDK courtesy of Brian Ripley; they are
   needed for Windows (64).
 

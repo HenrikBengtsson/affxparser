@@ -667,7 +667,7 @@ AffxString AffxByteArray::toString()
 	if (getSize() > 0)
 	{
 		char *psz = (char *)malloc(getSize() + 1);
-#ifdef WIN32
+#if defined WIN32 && !defined WIN64
 		strncpy_s(psz, getSize() + 1, (char *)getData(), getSize());
 #else
 		strncpy(psz, (char *)getData(), getSize());
