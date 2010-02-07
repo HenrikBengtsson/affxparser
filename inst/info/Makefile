@@ -54,5 +54,8 @@ cleanfusion :
 	${fusion}/style.css \
 
 patch:
-	patch ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir}/CDFFileData.cpp.patch
-
+	patch ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir}/CDFFileData.cpp-patch
+	patch ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir}/AffxConv.cpp-patch
+	patch ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir}/AffxByteArray.cpp-patch
+	patch ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir}/AffymetrixBaseTypes.h-patch
+	patch ${affxparser_fusion}/portability/affy-base-types.h ${affxparser_patchdir}/affy-base-types.h-patch
