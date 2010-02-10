@@ -1,7 +1,6 @@
 PKG_LIBS+=-lws2_32
 
 PKG_CPPFLAGS+=\
- -I.\ # -imacros R_affx_constants.h\
  -Ifusion_sdk/calvin_files/array/src\
  -Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/exception/src\

@@ -4,7 +4,6 @@ MYCXXFLAGS=-O0
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
 
 PKG_CPPFLAGS=\
- -I. \ 
  -Ifusion_sdk/calvin_files/array/src\
  -Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/exception/src\
