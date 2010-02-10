@@ -4,7 +4,7 @@ MYCXXFLAGS=-O0
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
 
 PKG_CPPFLAGS=\
- -I.\ # -imacros R_affx_constants.h\
+ -I. \ 
  -Ifusion_sdk/calvin_files/array/src\
  -Ifusion_sdk/calvin_files/data/src\
  -Ifusion_sdk/calvin_files/exception/src\
