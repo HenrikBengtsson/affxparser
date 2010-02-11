@@ -24,6 +24,8 @@
 /*! \file AffymetrixBaseTypes.h This file provides type definitions for atom types.
  */ 
 
+#include "R_affx_constants.h"
+
 #ifdef WIN64
 #include <stdint.h>
 #endif
