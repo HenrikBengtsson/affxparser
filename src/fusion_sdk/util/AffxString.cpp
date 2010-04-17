@@ -84,7 +84,7 @@ int AffxString::printf(const char *pszFormat, ...)
 	
 	va_list args;
 	va_start(args, pszFormat);
-#ifdef WIN32
+#if defined(WIN32) && !defined(__MINGW32__)
 	iResult = vsprintf_s(szBuffer, MAX_SPRINTF_SIZE, pszFormat, args);
 #else
 	iResult = vsprintf(szBuffer, pszFormat, args);
@@ -102,7 +102,7 @@ int AffxString::sprintf(const char *pszFormat, ...)
 	
 	va_list args;
 	va_start(args, pszFormat);
-#ifdef WIN32
+#if defined(WIN32) && !defined(__MINGW32__)
 	iResult = vsprintf_s(szBuffer, MAX_SPRINTF_SIZE, pszFormat, args);
 #else
 	iResult = vsprintf(szBuffer, pszFormat, args);
