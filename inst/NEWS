@@ -1,24 +1,38 @@
 Package: affxparser
 ===================
 
+Version: 1.21.0 [2009-04-22]
+o The version number was bumped for the Bioconductor devel version.
+
+
+Version: 1.20.0 [2009-04-22]
+o The version number was bumped for the Bioconductor release version.
+
+
 Version: 1.19.6 [2010-02-11]
 o More fixes.
+
 
 Version: 1.19.5 [2010-02-09]
 o More fixes.
 
+
 Version: 1.19.4 [2010-02-06]
 o More fixes.
+
 
 Version: 1.19.3 [2010-02-06]
 o A couple of patches to Fusion SDK courtesy of Brian Ripley; they are
   needed for Windows (64).
 
+
 Version: 1.19.2 [2010-02-02]
 o A fic to the windows build.
 
+
 Version: 1.19.1 [2010-01-29]
 o Updated Fusion SDK to 1.1.0
+
 
 Version: 1.19.0 [2009-10-27]
 o Devel version bumped because of the new Bioconductor release.
