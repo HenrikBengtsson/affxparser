@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.21.1 [2010-10-05]
+o Now readCdfDataFrame() also returns the cell field 'expos'.
+
+
 Version: 1.21.0 [2009-04-22]
 o The version number was bumped for the Bioconductor devel version.
 
