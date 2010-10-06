@@ -29,10 +29,13 @@
 #   An NxK @data.frame or a @vector of length N.
 # }
 #
+# \author{Henrik Bengtsson}
+# 
 # @examples "../incl/readCdfDataFrame.Rex"
 # 
 # \seealso{
-#   For retrieving the CDF as a @list structure, see @see "readCdfUnits".
+#   For retrieving the CDF as a @list structure, see 
+#   @see "affxparser::readCdfUnits".
 # }
 # 
 # \references{
@@ -85,7 +88,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
     knownGroupFields <- c("group", "groupName", "groupDirection",
                           "groupNbrOfAtoms");
     knownCellFields <- c("cell", "x", "y", "pbase", "tbase", 
-                         "indexPos", "atom");
+                         "indexPos", "atom", "expos");
     fields <- c(knownUnitFields, knownGroupFields, knownCellFields);
   }
   
@@ -118,6 +121,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
   readIndices <- ("cell" %in% readFields);
   readBases <- any(c("tbase", "pbase") %in% readFields);
   readIndexpos <- ("indexPos" %in% readFields);
+  readExpos <- ("expos" %in% readFields);
   readAtoms <- ("atom" %in% readFields);
 
 
