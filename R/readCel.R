@@ -78,9 +78,9 @@ readCel <- function(filename,
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     if (reorder) {
       # About 10-15 times faster than using order()!
-      o <- .Internal(qsort(indices, TRUE));
+      o <- .Internal(qsort(indices, TRUE));  # From base::sort.int()
       indices <- o$x;
-      o <- .Internal(qsort(o$ix, TRUE))$ix;
+      o <- .Internal(qsort(o$ix, TRUE))$ix;  # From base::sort.int()
     }
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
