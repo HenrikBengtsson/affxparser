@@ -276,9 +276,9 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   if (reorder) {
     verbose && enter(verbose, "Reordering cell indices to optimize speed");
     # About 10-15 times faster than using order()!
-    o <- .Internal(qsort(indices, TRUE));
+    o <- .Internal(qsort(indices, TRUE));  # From base::sort.int()
     indices <- o$x;
-    o <- .Internal(qsort(o$ix, TRUE))$ix;
+    o <- .Internal(qsort(o$ix, TRUE))$ix;  # From base::sort.int()
     verbose && exit(verbose);
   }
 

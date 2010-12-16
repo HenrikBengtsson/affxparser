@@ -177,7 +177,7 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
           stop("Number of PM and MM probes differ in probeset #", uu,
                                      ": ", length(pm), " != ", length(mm));
         }
-        pmmm <- .Internal(matrix(c(pm, mm), 2, npm, TRUE));
+        pmmm <- matrix(c(pm, mm), nrow=2L, ncol=npm, byrow=TRUE);
 #        dimnames(pmmm) <- dimnames;
 
         # Re-order cell elements according to PM/MM.
@@ -250,6 +250,9 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
 
 ############################################################################
 # HISTORY:
+# 2010-12-12
+# o ROBUSTNESS: Replaces .Internal(matrix(...)) with matrix().
+#   In the upcoming R 2.13.0 matrix() has less overhead.
 # 2006-12-30
 # o Now 'readDirection=TRUE' also return group directions.
 # 2006-03-28
