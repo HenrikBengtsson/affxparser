@@ -38,6 +38,8 @@
    An NxK \code{\link[base]{data.frame}} or a \code{\link[base]{vector}} of length N.
  }
 
+ \author{Henrik Bengtsson}
+
  \examples{
 ##############################################################
 if (require("AffymetrixDataTestFiles")) {            # START #
@@ -65,7 +67,8 @@ stopifnot(identical(sort(unique(df$unit)), units))
 }
 
  \seealso{
-   For retrieving the CDF as a \code{\link[base]{list}} structure, see \code{\link{readCdfUnits}}().
+   For retrieving the CDF as a \code{\link[base]{list}} structure, see
+   \code{\link[affxparser]{readCdfUnits}}.
  }
 
  \references{
