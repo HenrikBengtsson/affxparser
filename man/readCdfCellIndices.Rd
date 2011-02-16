@@ -10,12 +10,12 @@
 \alias{readCdfCellIndices}
 
 
- \title{Reads cell indices of units (probesets) in an Affymetrix CDF file}
+ \title{Reads (one-based) cell indices of units (probesets) in an Affymetrix CDF file}
 
  \usage{readCdfCellIndices(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), verbose=0)}
 
  \description{
-   Reads cell indices of units (probesets) in an Affymetrix CDF file.
+   Reads (one-based) cell indices of units (probesets) in an Affymetrix CDF file.
  }
 
  \arguments{
@@ -62,6 +62,15 @@
    }
  
    This is structure is compatible with what \code{\link{readCdfUnits}}() returns.
+
+   Note that these indices are \emph{one-based}.
+ }
+
+ \section{Cell indices are one-based}{
+   Note that in \pkg{affxparser} all \emph{cell indices} are by
+   convention \emph{one-based}, which is more convenient to work
+   with in \R.  For more details on one-based indices, see
+   \code{\link{2. Cell coordinates and cell indices}}.
  }
 
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}

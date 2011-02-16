@@ -33,8 +33,9 @@
 #    Moreover, the PMs and MMs may not even be paired, i.e. there is no 
 #    guarantee that the two elements in a column corresponds to a 
 #    PM-MM pair.}
-#  \item{readIndices}{If @TRUE, cell indices calculated from the row and 
-#    column (X,Y) coordinates are retrieved, otherwise not.}
+#  \item{readIndices}{If @TRUE, cell indices \emph{calculated} from
+#    the row and column (x,y) coordinates are retrieved, otherwise not.
+#     Note that these indices are \emph{one-based}.}
 #  \item{verbose}{An @integer specifying the verbose level. If 0, the
 #    file is parsed quietly.  The higher numbers, the more details.}
 # }
@@ -61,6 +62,13 @@
 #    2 is "anti-sense".}
 # }
 #
+# \section{Cell indices are one-based}{
+#   Note that in \pkg{affxparser} all \emph{cell indices} are by 
+#   convention \emph{one-based}, which is more convenient to work 
+#   with in \R.  For more details on one-based indices, see
+#   @see "2. Cell coordinates and cell indices".
+# }
+# 
 # \author{
 #  James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
 #  Daniel Hansen, \email{khansen@stat.berkeley.edu}.
@@ -250,6 +258,10 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
 
 ############################################################################
 # HISTORY:
+# 2011-02-15
+# o DOCUMENTATION: Clarified in help(readCdfUnits) that (x,y) coordinates
+#   are zero-based and the _from (x,y) calculated_ cell indices are 
+#   one-based, regardless what the indices on file are.
 # 2010-12-12
 # o ROBUSTNESS: Replaces .Internal(matrix(...)) with matrix().
 #   In the upcoming R 2.13.0 matrix() has less overhead.

@@ -55,11 +55,42 @@
    be found to be \eqn{(x,y)=(0,0)}, for cell \eqn{i=2560000} it is
    \eqn{(x,y)=(1599,1599)}, for cell \eqn{i=6299} is it
    \eqn{(x,y)=(1498,3)}.
+ }
 
+ \section{Converting between cell indices and (x,y) coordinates in R}{
    Although not needed to use the methods in this package, to get the
    cell indices for the cell coordinates or vice versa, see
    \code{\link[affy:xy2indices]{xy2indices}()} and \code{indices2xy()}
    in the \pkg{affy} package.
+ }
+
+ \section{Note on the zero-based "index" field of Affymetrix CDF files}{
+   An Affymetrix CDF file provides information on which cells should be
+   grouped together.  To identify these groups of cells, the cells
+   are specified by their (x,y) coordinates, which are stored as
+   zero-based coordinates in the CDF file.
+
+   All methods of the \pkg{affxparser} package make use of these
+   (x,y) coordinates, and some methods makes it possible to read
+   them as well.  However, it is much more common that the methods
+   return cell indices \emph{calculated} from the (x,y) coordinates
+   as explained above.
+
+   In order to conveniently work with cell indices in \R, the
+   convention in \emph{affxparser} is to use \emph{one-based}
+   indices.
+   Hence the addition (and subtraction) of 1:s in the above equations.
+   This is all taken care of by \pkg{affxparser}.
+
+   Note that, in addition to (x,y) coordinates, a CDF file also contains
+   a one-based "index" for each cell.  This "index" is redundant to
+   the (x,y) coordinate and can be calculated analogously to the
+   above \emph{cell index} while leaving out the addition (subtration)
+   of 1:s.
+   Importantly, since this "index" is redundant (and exists only in
+   CDF files), we have decided to treat this field as an internal field.
+   Methods of \pkg{affxparser} do neither provide access to nor make
+   use of this internal field.
  }
 
  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
