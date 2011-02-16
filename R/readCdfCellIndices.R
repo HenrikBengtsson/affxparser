@@ -1,7 +1,7 @@
 #########################################################################/**
 # @RdocFunction readCdfCellIndices
 # 
-# @title "Reads cell indices of units (probesets) in an Affymetrix CDF file"
+# @title "Reads (one-based) cell indices of units (probesets) in an Affymetrix CDF file"
 # 
 # @synopsis
 # 
@@ -53,6 +53,15 @@
 #   }
 #   
 #   This is structure is compatible with what @see "readCdfUnits" returns.
+#
+#   Note that these indices are \emph{one-based}.
+# }
+#
+# \section{Cell indices are one-based}{
+#   Note that in \pkg{affxparser} all \emph{cell indices} are by 
+#   convention \emph{one-based}, which is more convenient to work 
+#   with in \R.  For more details on one-based indices, see
+#   @see "2. Cell coordinates and cell indices".
 # }
 # 
 # @author

@@ -42,8 +42,9 @@
     Moreover, the PMs and MMs may not even be paired, i.e. there is no
     guarantee that the two elements in a column corresponds to a
     PM-MM pair.}
-  \item{readIndices}{If \code{\link[base:logical]{TRUE}}, cell indices calculated from the row and
-    column (X,Y) coordinates are retrieved, otherwise not.}
+  \item{readIndices}{If \code{\link[base:logical]{TRUE}}, cell indices \emph{calculated} from
+    the row and column (x,y) coordinates are retrieved, otherwise not.
+     Note that these indices are \emph{one-based}.}
   \item{verbose}{An \code{\link[base]{integer}} specifying the verbose level. If 0, the
     file is parsed quietly.  The higher numbers, the more details.}
  }
@@ -68,6 +69,13 @@
     of the unit, which defines if the probes are interrogating the sense
     or the anti-sense target, where 0 is "no direction", 1 is "sense", and
     2 is "anti-sense".}
+ }
+
+ \section{Cell indices are one-based}{
+   Note that in \pkg{affxparser} all \emph{cell indices} are by
+   convention \emph{one-based}, which is more convenient to work
+   with in \R.  For more details on one-based indices, see
+   \code{\link{2. Cell coordinates and cell indices}}.
  }
 
  \author{
