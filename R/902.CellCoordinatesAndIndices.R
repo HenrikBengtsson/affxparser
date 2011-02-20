@@ -61,7 +61,7 @@
 #   zero-based coordinates in the CDF file.
 #
 #   All methods of the \pkg{affxparser} package make use of these
-#   (x,y) coordinates, and some methods makes it possible to read 
+#   (x,y) coordinates, and some methods make it possible to read 
 #   them as well.  However, it is much more common that the methods
 #   return cell indices \emph{calculated} from the (x,y) coordinates
 #   as explained above.
