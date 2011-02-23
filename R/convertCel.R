@@ -82,7 +82,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   if (!is.null(newChipType)) {
     newChipType <- as.character(newChipType);
     if (nchar(newChipType) == 0) {
-      stop("Argument 'newChipType' cannot be a empty string.");
+      stop("Argument 'newChipType' cannot be an empty string.");
     }
   }
 
@@ -109,7 +109,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   hdr <- cel$header;
   if (!is.null(newChipType)) {
     if (verbose) {
-      cat("Updating chip type from '", hdr$chiptype, "' to '", 
+      cat("Updating the chip type label from '", hdr$chiptype, "' to '", 
                                               newChipType, "'.\n", sep="");
     }
 

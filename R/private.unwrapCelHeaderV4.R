@@ -41,97 +41,128 @@
     header <- strsplit(header, split="\n")[[1]];
   }
 
+
+  # Extract the "head" and the "tail" of the DAT header
+  pattern <- "([^\024]*)(\024.*)";
+  head <- gsub(pattern, "\\1", header);
+  tail <- gsub(pattern, "\\2", header);
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # [123456789012345678900123456789001234567890]
   # "[5..65534]  NA06985_H_tH_B5_3005533:",      ????
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   pattern <- "^([^:]*):(.*)$";
-  bfr <- gsub(pattern, "\\1", header);
-  header2 <- gsub(pattern, "\\2", header);
+  if (regexpr(pattern, head) != -1) {
+    bfr <- gsub(pattern, "\\1", header);
+    header2 <- gsub(pattern, "\\2", header);
+    bfr <- trim(bfr);             # Example: "[12..40151]  Fetal 3"
+    if (nchar(bfr) > 0) {
+      pattern <- "^([^ ]*])[ ]*(.*)[ ]*";
+      pixelRange <- gsub(pattern, "\\1", bfr);
+      sampleName <- gsub(pattern, "\\2", bfr);
+      if (identical(pixelRange, sampleName)) {
+        stop("Internal error: Failed to extract 'pixelRange' and 'sampleName' from DAT header.  They became identical: ", pixelRange);
+      }
+    } else {
+      pixelRange <- "";
+      sampleName <- "";
+    }
 
-  bfr <- trim(bfr);                           # Example: "[12..40151]  Fetal 3"
-  pattern <- "^([^]]*])[ ]*(.*)[ ]*";
-  pixelRange <- gsub(pattern, "\\1", bfr);
-  sampleName <- gsub(pattern, "\\2", bfr);
-  if (identical(pixelRange, sampleName)) {
-    stop("Internal error: Failed to extract 'pixelRange' and 'sampleName' from DAT header.  They became identical: ", pixelRange);
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Parse the DAT header
+    #
+    # 1. Number of pixels per row (padded with spaces), preceded with 
+    #    "CLS=". char[9]
+    # 2. Number of rows in the image (padded with spaces), preceded with 
+    #    "RWS=".char[9]
+    # 3. Pixel width in micrometers (padded with spaces), preceded with 
+    #    "XIN=" char[7]
+    # 4. Pixel height in micrometers (padded with spaces), preceded with 
+    #    "YIN=". char[7]
+    # 5. Scan speed in millimeters per second (padded with spaces), preceded 
+    #    with "VE=". char[6]
+    # 6. Temperature in degrees Celsius (padded with spaces). If no temperature
+    #    was set then the entire field is empty. char[7]
+    # 7. Laser power in milliwatts or microwatts (padded with spaces). char[4]
+    # 8. Date and time of scan (padded with spaces). char[18]
+    #
+    # Example:
+    # [123456789012345678900123456789001234567890] (See above)
+    # "CLS=8714 ",
+    # "RWS=8714 ",
+    # "XIN=1  ",
+    # "YIN=1  ",
+    # "VE=30 ",
+    # "       ",
+    # "2.0 ",
+    # "01/14/04 14:26:57 "
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    len <- c(9,9,7,7,6,7,4,18,220);
+    ends <- cumsum(len);
+    starts <- ends - len + 1;
+    header <- substring(header2, starts, ends);
+    header <- trim(header);
+  
+    # Store the last field
+    bfr <- header[9];
+  
+    header <- list(
+      pixelRange = pixelRange,
+      sampleName = sampleName,
+      CLS = gsub("^CLS=(.*)", "\\1", header[1]),
+      RWS = gsub("^RWS=(.*)", "\\1", header[2]),
+      XIN = gsub("^XIN=(.*)", "\\1", header[3]),
+      YIN = gsub("^YIN=(.*)", "\\1", header[4]),
+      VE = gsub("^VE=(.*)", "\\1", header[5]),
+      scanTemp = header[6],
+      laserPower = header[7],
+      scanDate = header[8]
+    );
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # The 'bfr' field:
+    #
+    # "There are several sub-fields in this field. The first sub field is the 
+    #  scanner ID, sometimes followed by a number, followed by three spaces. 
+    #  If the scanner ID is absent, the field consists of four spaces.
+    #
+    # Example:
+    # [123456789012345678900123456789001234567890] (????)
+    # "50101230  M10   \024  \024 Hind240.1sq \024  \024  \024  \024  
+    # \024  \024  \024  \024  \024 6"
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # 0x14 == 024
+    pattern <- "^([^\024]*)[ ]*(\024.*)$";
+    scannerInfo <- gsub(pattern, "\\1", bfr);
+    scannerInfo <- trim(scannerInfo);
+    bfr <- gsub(pattern, "\\2", bfr);
+  
+  # Not locale safe: pattern <- "^([a-zA-Z0-9]*)[ ]*([a-zA-Z0-9]*)[ ]*";
+    pattern <- "^([abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0-9]*)[ ]*([abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0-9]*)[ ]*";
+    header$scanner <- list(
+        id = gsub(pattern, "\\1", scannerInfo),
+      type = gsub(pattern, "\\2", scannerInfo)
+    );
+  } else {
+    # TO DO: Make these NAs to have the correct storage modes
+    naValue <- as.character(NA);
+    naValue <- "";
+    header <- list(
+      pixelRange = naValue,
+      sampleName = naValue,
+      CLS = naValue,
+      RWS = naValue,
+      XIN = naValue,
+      YIN = naValue,
+      VE = naValue,
+      scanTemp = naValue,
+      laserPower = naValue,
+      scanDate = naValue,
+      scanner = list(id=naValue, type=naValue)
+    );
   }
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Parse the DAT header
-  #
-  # 1. Number of pixels per row (padded with spaces), preceded with 
-  #    "CLS=". char[9]
-  # 2. Number of rows in the image (padded with spaces), preceded with 
-  #    "RWS=".char[9]
-  # 3. Pixel width in micrometers (padded with spaces), preceded with 
-  #    "XIN=" char[7]
-  # 4. Pixel height in micrometers (padded with spaces), preceded with 
-  #    "YIN=". char[7]
-  # 5. Scan speed in millimeters per second (padded with spaces), preceded 
-  #    with "VE=". char[6]
-  # 6. Temperature in degrees Celsius (padded with spaces). If no temperature
-  #    was set then the entire field is empty. char[7]
-  # 7. Laser power in milliwatts or microwatts (padded with spaces). char[4]
-  # 8. Date and time of scan (padded with spaces). char[18]
-  #
-  # Example:
-  # [123456789012345678900123456789001234567890] (See above)
-  # "CLS=8714 ",
-  # "RWS=8714 ",
-  # "XIN=1  ",
-  # "YIN=1  ",
-  # "VE=30 ",
-  # "       ",
-  # "2.0 ",
-  # "01/14/04 14:26:57 "
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  len <- c(9,9,7,7,6,7,4,18,220);
-  ends <- cumsum(len);
-  starts <- ends - len + 1;
-  header <- substring(header2, starts, ends);
-  header <- trim(header);
-
-  # Store the last field
-  bfr <- header[9];
-
-  header <- list(
-    pixelRange = pixelRange,
-    sampleName = sampleName,
-    CLS = gsub("^CLS=(.*)", "\\1", header[1]),
-    RWS = gsub("^RWS=(.*)", "\\1", header[2]),
-    XIN = gsub("^XIN=(.*)", "\\1", header[3]),
-    YIN = gsub("^YIN=(.*)", "\\1", header[4]),
-    VE = gsub("^VE=(.*)", "\\1", header[5]),
-    scanTemp = header[6],
-    laserPower = header[7],
-    scanDate = header[8]
-  )
-
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # The 'bfr' field:
-  #
-  # "There are several sub-fields in this field. The first sub field is the 
-  #  scanner ID, sometimes followed by a number, followed by three spaces. 
-  #  If the scanner ID is absent, the field consists of four spaces.
-  #
-  # Example:
-  # [123456789012345678900123456789001234567890] (????)
-  # "50101230  M10   \024  \024 Hind240.1sq \024  \024  \024  \024  
-  # \024  \024  \024  \024  \024 6"
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # 0x14 == 024
-  pattern <- "^([^\024]*)[ ]*(\024.*)$";
-  scannerInfo <- gsub(pattern, "\\1", bfr);
-  scannerInfo <- trim(scannerInfo);
-  bfr <- gsub(pattern, "\\2", bfr);
-
-# Not locale safe: pattern <- "^([a-zA-Z0-9]*)[ ]*([a-zA-Z0-9]*)[ ]*";
-  pattern <- "^([abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0-9]*)[ ]*([abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0-9]*)[ ]*";
-  header$scanner <- list(
-      id = gsub(pattern, "\\1", scannerInfo),
-    type = gsub(pattern, "\\2", scannerInfo)
-  )
+  bfr <- tail;
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   #  Next are 10 structured comment fields. Each field is preceded by the 
@@ -268,6 +299,13 @@
 
 ############################################################################
 # HISTORY:
+# 2011-02-22
+# o ROBUSTNESS/BUG FIX: The internal .unwrapDatHeaderString() would
+#   throw "Internal error: Failed to extract 'pixelRange' and 'sampleName' 
+#   from DAT header.  They became identical: ..." in case the DAT header
+#   of the CEL file did not contain all fields.  The function has now
+#   been updated to be more forgiving and robust so that missing values
+#   are returned for such fields instead.
 # 2007-08-16
 # o BUG FIX: Internal .unwrapDatHeaderString() failed to correctly extract
 #   'pixelRange' and 'sampleName' from DAT header.
