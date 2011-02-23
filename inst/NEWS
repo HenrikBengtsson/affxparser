@@ -2,12 +2,15 @@ Package: affxparser
 ===================
 
 Version: 1.23.3 [2011-02-22]
-o ROBUSTNESS/BUG FIX: The internal .unwrapDatHeaderString() would
-  throw "Internal error: Failed to extract 'pixelRange' and 'sampleName' 
-  from DAT header.  They became identical: ..." in case the DAT header
-  of the CEL file did not contain all fields.  The function has now
-  been updated to be more forgiving and robust so that missing values
-  are returned for such fields instead. 
+o DOCUMENTATION: Added a section on what it means by setting
+  a new (different) chip type for the output in convertCel().
+o ROBUSTNESS/BUG FIX: The internal .unwrapDatHeaderString(), used
+  by convertCel() among others, would throw "Internal error: 
+  Failed to extract 'pixelRange' and 'sampleName' from DAT header.
+  They became identical: ..." in case the DAT header of the CEL file
+  did not contain all fields.  The function has now been updated to
+  be more forgiving and robust so that missing values are returned
+  for such fields instead. 
 
 
 Version: 1.23.2 [2011-02-15]
