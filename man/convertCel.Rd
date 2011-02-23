@@ -27,7 +27,9 @@
    \item{readMap}{An optional read map for the input CEL file.}
    \item{writeMap}{An optional write map for the output CEL file.}
    \item{version}{The version of the output file format.}
-   \item{newChipType}{An optional string for overriding the chip type
+   \item{newChipType}{(Only for advanced users who fully understands
+      the Affymetrix CEL file format!)
+      An optional string for overriding the chip type (label)
       in the CEL file header.}
    \item{...}{Not used.}
    \item{.validate}{If \code{\link[base:logical]{TRUE}}, a consistency test between the generated
@@ -46,6 +48,17 @@
    \itemize{
      \item To do
    }
+ }
+
+ \section{WARNING: Changing the chip type label}{
+   The \code{newChipType} argument changes the label in the
+   part of DAT header that specifies the chip type of the
+   CEL file.  Note that it does not change anything else in
+   the CEL file.  This type of relabelling is valid for updating
+   the chip type \emph{label} of CEL files that where generated
+   during, say, an "Early Access" period leading to a different
+   chip type label than what more recent CEL files of the same
+   physical chip type have.
  }
 
  \examples{
