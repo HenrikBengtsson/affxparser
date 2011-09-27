@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.25.1 [2011-09-27]
+o Maintainer email was updated.
+
 Version: 1.25.0 [2011-04-13]
 o The version number was bumped for the Bioconductor devel version.
 
