@@ -239,7 +239,8 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   }
 
   readUInt <- function(con, n=1, ...) {
-    readBin(con, what=integer(), size=4, signed=FALSE, endian="big", n=n);
+    # For 4-byte integers 'signed' can not be FALSE for readBin()
+    readBin(con, what=integer(), size=4, signed=TRUE, endian="big", n=n);
   }
 
   readWString <- function(con, ...) {
@@ -336,7 +337,8 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   }
 
   readUInt <- function(con, n=1, ...) {
-    readBin(con, what=integer(), size=4, signed=FALSE, endian="big", n=n);
+    # For 4-byte integers 'signed' can not be FALSE for readBin()
+    readBin(con, what=integer(), size=4, signed=TRUE, endian="big", n=n);
   }
 
   readString <- function(con, ...) {
@@ -414,7 +416,8 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       },
 
       "text/x-calvin-unsigned-integer-32" = {
-        readBin(raw, what=integer(0), endian="big", size=4, signed=FALSE, n=n);
+        # For 4-byte integers 'signed' can not be FALSE for readBin()
+        readBin(raw, what=integer(0), endian="big", size=4, signed=TRUE, n=n);
       },
 
       "text/x-calvin-float" = {
@@ -579,6 +582,10 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
 ############################################################################
 # HISTORY:
+# 2011-11-01
+# o CLEANUP: Changed signed=FALSE to signed=TRUE for readBin() calls
+#   reading 4-byte integers in internal .readCcgDataGroupHeader() and
+#   .readCcgDataSet().
 # 2009-02-10
 # o Added internal rawToString() replacing rawToChar() to avoid warnings
 #   on "truncating string with embedded nul".
