@@ -1,8 +1,27 @@
 Package: affxparser
 ===================
 
+Version: 1.27.1 [2011-11-01]
+o Same updates as in v1.26.1.
+
+
+Version: 1.27.0 [2011-10-31]
+o The version number was bumped for the Bioconductor devel version.
+
+
+Version: 1.26.1 [2011-11-01]
+o FIX: Fixed warning on "In readBin(con, what = "integer", size = 4,
+  n = 1, signed = FALSE, 'signed = FALSE' is only valid for integers
+  of sizes 1 and 2" that some read methods would generated.
+
+
+Version: 1.26.0 [2011-10-31]
+o The version number was bumped for the Bioconductor release version.
+
+
 Version: 1.25.1 [2011-09-27]
 o Maintainer email was updated.
+
 
 Version: 1.25.0 [2011-04-13]
 o The version number was bumped for the Bioconductor devel version.
