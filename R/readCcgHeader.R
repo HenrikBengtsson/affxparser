@@ -122,6 +122,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   }
 
   readUInt <- function(con, n=1, ...) {
+    # For 4-byte integers 'signed' can not be FALSE for readBin()
     readBin(con, what=integer(), size=4, signed=FALSE, endian="big", n=n);
   }
 
@@ -193,6 +194,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   }
 
   readUInt <- function(con, n=1, ...) {
+    # For 4-byte integers 'signed' can not be FALSE for readBin()
     readBin(con, what=integer(), size=4, signed=FALSE, endian="big", n=n);
   }
 
@@ -267,6 +269,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
       },
 
       "text/x-calvin-unsigned-integer-32" = {
+        # For 4-byte integers 'signed' can not be FALSE for readBin()
         readBin(raw, what=integer(0), endian="big", size=4, signed=FALSE, n=n/4);
       },
 
@@ -337,6 +340,10 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
 
 ############################################################################
 # HISTORY:
+# 2011-11-01
+# o CLEANUP: Changed signed=FALSE to signed=TRUE for readBin() calls
+#   reading 4-byte integers in internal .readCcgFileHeader() and
+#   .readCcgDataHeader().
 # 2009-02-10
 # o Added internal rawToString() replacing rawToChar() to avoid warnings
 #   on "truncating string with embedded nul".

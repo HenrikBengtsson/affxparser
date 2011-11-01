@@ -51,7 +51,7 @@ updateCel(filename, indices=idxs, data)
 cel <- readCel(filename, indices=idxs, readStdvs=TRUE, readPixels=TRUE)
 print(cel[fields])
 for (ff in fields) {
-#  stopifnot(all.equal(cel[[ff]], data[[ff]], .Machine$double.eps^0.25))
+  stopifnot(all.equal(cel[[ff]], data[[ff]], .Machine$double.eps^0.25))
 }
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
