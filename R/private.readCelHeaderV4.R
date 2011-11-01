@@ -44,7 +44,8 @@
   }
 
   readDWord <- function(con, ...) {
-    readBin(con, what="integer", size=4, n=1, signed=FALSE, endian="little");
+    # For 4-byte integers 'signed' can not be FALSE for readBin()
+    readBin(con, what="integer", size=4, n=1, signed=TRUE, endian="little");
   }
 
   readString <- function(con, ...) {
@@ -78,6 +79,9 @@
 
 ############################################################################
 # HISTORY:
+# 2011-11-01
+# o CLEANUP: Changed a signed=FALSE to signed=TRUE for a readBin() call
+#   reading 4-byte integers in .readCelHeaderV4().
 # 2006-06-18
 # o Created.  Used by updateCel() to skip header to reach data section.
 ############################################################################  
