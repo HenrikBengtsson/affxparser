@@ -58,12 +58,21 @@ readCdfIsPm <- function(filename, units=NULL, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Read the CDF file
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  .Call("R_affx_cdf_isPm", filename, units, verbose, PACKAGE="affxparser");
+  res <- .Call("R_affx_cdf_isPm", filename, units, verbose, PACKAGE="affxparser");
+
+  # Sanity check
+  if (is.null(res)) {
+    stop("Failed to read PM information from CDF file: ", filename);
+  }
+ 
+  res;
 }
 
 
 ############################################################################
 # HISTORY:
+# 2011-11-18
+# o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2006-05-12
 # o Added Rdoc comments (converted from Rd).
 # 2006-03-28

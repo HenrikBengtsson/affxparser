@@ -109,6 +109,11 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
   cdf <- .Call("R_affx_get_cdf_cell_indices", filename, units, verbose,
                                                      PACKAGE="affxparser");
 
+  # Sanity check
+  if (is.null(cdf)) {
+    stop("Failed to read cell indices from CDF file: ", filename);
+  }
+
   if (stratifyBy == "nothing")
     return(cdf);
 
@@ -213,8 +218,11 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
 } # readCdfUnitInidices()
 
 
+
 ############################################################################
 # HISTORY:
+# 2011-11-18
+# o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2010-12-12
 # o ROBUSTNESS: Replaces .Internal(matrix(...)) with matrix().
 #   In the upcoming R 2.13.0 matrix() has less overhead.

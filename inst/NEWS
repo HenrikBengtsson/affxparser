@@ -1,12 +1,25 @@
 Package: affxparser
 ===================
 
+Version: 1.27.3 [2011-11-18]
+o ROBUSTNESS: Added sanity checks asserting that the internal 
+  readers did indeed read something and not just returned NULL.
+  It should be very unlikely that this occurs, but there is
+  still a small risk that after asserting that a file exists,
+  but before the internal Fusion SDK parsers access the file,
+  the file has been removed.
+
+
 Version: 1.27.1 [2011-11-01]
 o Same updates as in v1.26.1.
 
 
 Version: 1.27.0 [2011-10-31]
 o The version number was bumped for the Bioconductor devel version.
+
+
+Version: 1.26.2 [2011-11-16]
+o The version number was bumped by Bioconductor to trigger a build.
 
 
 Version: 1.26.1 [2011-11-01]

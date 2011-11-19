@@ -72,14 +72,23 @@ readCdfGroupNames <- function(filename, units=NULL, truncateGroupNames=TRUE, ver
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Read the CDF file
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  .Call("R_affx_cdf_groupNames", filename, units,
+  res <- .Call("R_affx_cdf_groupNames", filename, units,
         truncateGroupNames, verbose,
         PACKAGE="affxparser");
+
+  # Sanity check
+  if (is.null(res)) {
+    stop("Failed to read unit group names from CDF file: ", filename);
+  }
+
+  res;
 }
 
 
 ############################################################################
 # HISTORY:
+# 2011-11-18
+# o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2007-03-05
 # o Added argument truncateGroupNames. Also see R_affx_cdf_group_names(). /KS
 # 2006-03-28

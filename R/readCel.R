@@ -93,6 +93,11 @@ readCel <- function(filename,
                   indices,
                   as.integer(verbose), PACKAGE="affxparser");
 
+    # Sanity check
+    if (is.null(cel)) {
+      stop("Failed to read CEL file: ", filename);
+    }
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Re-reordering the cell values
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,6 +113,8 @@ readCel <- function(filename,
 
 ############################################################################
 # HISTORY:
+# 2011-11-18
+# o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2007-12-01
 # o Removed argument 'reorder' from readCel().
 # 2007-01-04
