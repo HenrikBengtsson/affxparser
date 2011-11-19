@@ -151,6 +151,12 @@ readCdf <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE,
                  returnBases, returnAtoms, returnIndexpos, returnIsPm,
                  returnBlockDirection, returnBlockAtomNumbers,
                  PACKAGE="affxparser")
+
+    # Sanity check
+    if (is.null(cdf)) {
+      stop("Failed to read CDF file: ", filename);
+    }
+
     if (stratifyBy == "nothing")
         return(cdf);
 
@@ -281,11 +287,13 @@ readCdf <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE,
     }
     
     cdf;
-} # readCdfUnits()
+} # readCdf()
 
 
 ############################################################################
 # HISTORY:
+# 2011-11-18
+# o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2011-02-15
 # o DOCUMENTATION: Converted the Rd to an Rdoc comment in this file.
 # 2010-12-12

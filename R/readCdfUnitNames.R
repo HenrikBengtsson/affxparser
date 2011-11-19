@@ -28,13 +28,21 @@ readCdfUnitNames <- function(filename, units=NULL, verbose=0) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Read the CDF file
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  .Call("R_affx_get_cdf_unit_names", filename, units, verbose,
+  res <- .Call("R_affx_get_cdf_unit_names", filename, units, verbose,
         PACKAGE="affxparser");
-}
+
+  # Sanity check
+  if (is.null(res)) {
+    stop("Failed to read unit names from CDF file: ", filename);
+  }
+ 
+  res;
+} # readCdfUnitNames()
 
 ############################################################################
 # HISTORY:
+# 2011-11-18
+# o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2006-03-28
 # o Unit indices are now one-based. /HB
 ############################################################################
-
