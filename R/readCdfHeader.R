@@ -6,6 +6,11 @@ readCdfHeader <- function(filename) {
 
   res <- .Call("R_affx_get_cdf_file_header", filename, PACKAGE="affxparser");
 
+  # Sanity check
+  if (is.null(res)) {
+    stop("Failed to read CDF file header: ", filename);
+  }
+
   # Adding backward compatibility for now. /HB 2006-09-07
   res$rows <- res$nrows;
   res$cols <- res$ncols;
@@ -20,4 +25,11 @@ readCdfHeader <- function(filename) {
   res$chiptype <- basename(res$chiptype);
 
   res;
-}
+} # readCdfHeader()
+
+
+############################################################################
+# HISTORY:
+# 2011-11-18
+# o ROBUSTNESS: Added sanity check that the native code did not return NULL.
+############################################################################

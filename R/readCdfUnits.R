@@ -151,6 +151,11 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
                 readIndices, 
                 verbose, PACKAGE="affxparser");
 
+  # Sanity check
+  if (is.null(cdf)) {
+    stop("Failed to read CDF file: ", filename);
+  }
+
   if (stratifyBy == "nothing")
     return(cdf);
 
@@ -255,9 +260,10 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
   cdf;
 } # readCdfUnits()
 
-
 ############################################################################
 # HISTORY:
+# 2011-11-18
+# o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2011-02-15
 # o DOCUMENTATION: Clarified in help(readCdfUnits) that (x,y) coordinates
 #   are zero-based and the _from (x,y) calculated_ cell indices are 
