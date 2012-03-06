@@ -16,3 +16,12 @@
 #include <w32api.h>
 #define WINVER WindowsXP	/* for Util.cpp, via TsvFile.cpp */
 #endif
+
+/* Patch for compilation errors ("'int32_t' does not name a type")
+   under R 2.15.0 devel with the Rtools 2.15.0.1915-1919 toolchain, 
+   cf. private email on 'affxparser (devel) on Windows' on 
+   Jan 25 - Mar 5, 2012. */
+#ifdef __MINGW32__
+#include <stdint.h>
+#endif
+
