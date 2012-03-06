@@ -1,6 +1,11 @@
 Package: affxparser
 ===================
 
+Version: 1.27.4 [2012-03-05]
+o BUG FIX: affxparser would not build on Windows with the new
+  Rtools toolchain (Rtools 2.15.0.1915-1919).
+
+
 Version: 1.27.3 [2011-11-18]
 o ROBUSTNESS: Added sanity checks asserting that the internal 
   readers did indeed read something and not just returned NULL.
