@@ -23,6 +23,13 @@ Version: 1.27.0 [2011-10-31]
 o The version number was bumped for the Bioconductor devel version.
 
 
+Version: 1.26.4 [2012-03-06]
+o BUG FIX: affxparser would not build on Windows with the new
+  Rtools toolchain (Rtools 2.15.0.1915-1919), which is for 
+  R (> 2.14.1), i.e. also for R v2.14.2 (but not v2.14.1).
+  This is the same bug fix that was first done in v1.27.4.
+
+
 Version: 1.26.2 [2011-11-16]
 o The version number was bumped by Bioconductor to trigger a build.
 
