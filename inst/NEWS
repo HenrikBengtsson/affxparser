@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version: 1.27.5 [2012-03-19]
+o ROBUSTNESS: Now the native code throws R errors, instead
+  of printing an error message to stdout/stderr and then
+  returning null, that is translated to errors at the R level.
+
+
 Version: 1.27.4 [2012-03-05]
 o BUG FIX: affxparser would not build on Windows with the new
   Rtools toolchain (Rtools 2.15.0.1915-1919).

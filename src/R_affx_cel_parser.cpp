@@ -179,7 +179,7 @@ extern "C" {
     cel.SetFileName(celFileName);
     // if (cel.ReadHeader() == false) {
     if (cel.Exists() == false) {
-      Rprintf("Unable to read file: %s\n", celFileName);
+      error("Unable to read file: %s\n", celFileName);
       return R_NilValue;
     }
     cel.Read();
@@ -246,7 +246,7 @@ extern "C" {
     **/
     cel.SetFileName(celFileName);
     if (cel.Read(true) == false) {
-      Rprintf("Unable to read file: %s\n", celFileName);
+      error("Unable to read file: %s\n", celFileName);
       return R_NilValue;
     }
 
