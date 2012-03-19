@@ -33,7 +33,7 @@ extern "C" {
          * - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.ReadHeader() == false) {
-            Rprintf("Unable to read file: %s\n", bpmapFileName);
+            error("Unable to read file: %s\n", bpmapFileName);
             return R_NilValue;
         }
 
@@ -210,11 +210,11 @@ extern "C" {
         }
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.Exists() == false) {
-            Rprintf("File does not exist: %s\n", bpmapFileName);
+            error("File does not exist: %s\n", bpmapFileName);
             return R_NilValue;
         }
         if (bpmap.Read() == false) {
-            Rprintf("Unable to read file: %s, is it a BPMAP file?\n", 
+            error("Unable to read file: %s, is it a BPMAP file?\n", 
                     bpmapFileName);
             return R_NilValue;
         }
@@ -236,7 +236,7 @@ extern "C" {
                 if(INTEGER(seqindices)[i] < 0 | 
                    INTEGER(seqindices)[i] > nSequences)
                     error("seqIndices out of range");
-                        }
+            }
             nSequences = nSequenceIndices;
         }
 
@@ -322,11 +322,11 @@ extern "C" {
         }
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.Exists() == false) {
-            Rprintf("File does not exist: %s\n", bpmapFileName);
+            error("File does not exist: %s\n", bpmapFileName);
             return R_NilValue;
         }
         if (bpmap.Read() == false) {
-            Rprintf("Unable to read file: %s, is it a BPMAP file?\n", 
+            error("Unable to read file: %s, is it a BPMAP file?\n", 
                     bpmapFileName);
             return R_NilValue;
         }
@@ -348,7 +348,7 @@ extern "C" {
             for(int i = 0; i < nSequenceIndices; i++){
                 if(INTEGER(seqindices)[i] < 0 | INTEGER(seqindices)[i] > nSequences)
                     error("seqIndices out of range");
-                        }
+            }
             nSequences = nSequenceIndices;
         }
 
@@ -585,7 +585,7 @@ extern "C" {
         int i_verboseFlag = INTEGER(verbose)[0];
 
         if(bpmap.TpmapExists() ==  false){
-            Rprintf("tpmap file %s does not exist.\n", tpmapFileName);
+            error("tpmap file %s does not exist.\n", tpmapFileName);
             return R_NilValue;
         }
         bpmap.SetTpmapFileName(tpmapFileName);
@@ -593,7 +593,7 @@ extern "C" {
             Rprintf("Reading tpmap file: %s\n", tpmapFileName);
         }
         if(bpmap.ReadTpmap() == false){
-            Rprintf("Tpmap file %s cannot be read\n", tpmapFileName);
+            error("Tpmap file %s cannot be read\n", tpmapFileName);
             return R_NilValue;
         }
         if(i_verboseFlag >= R_AFFX_VERBOSE){
@@ -601,7 +601,7 @@ extern "C" {
         }
         bpmap.SetFileName(bpmapFileName);
         if(bpmap.WriteBpmap() == false){
-            Rprintf("Bpmap file %s could not be written\n", bpmapFileName);
+            error("Bpmap file %s could not be written\n", bpmapFileName);
             return R_NilValue;
         }
         return R_NilValue;
