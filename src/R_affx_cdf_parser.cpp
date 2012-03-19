@@ -39,7 +39,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      Rprintf("Failed to read the CDF file.");
+      error("Failed to read the CDF file.");
       return R_NilValue;
     }
 
@@ -159,7 +159,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      Rprintf("Failed to read the CDF file.");
+      error("Failed to read the CDF file.");
       return R_NilValue;
     }
 
@@ -452,7 +452,7 @@ extern "C" {
     cdf.SetFileName(cdfFileName);
    
     if (cdf.ReadHeader() == false) {
-      Rprintf("Failed to read the CDF file header for: %s\n", cdfFileName);
+      error("Failed to read the CDF file header for: %s\n", cdfFileName);
       return R_NilValue;
     }
 
@@ -609,7 +609,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      Rprintf("Failed to read the CDF file.\n");
+      error("Failed to read the CDF file.\n");
       return R_NilValue;
     }
 
@@ -1081,7 +1081,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      Rprintf("Failed to read the CDF file.");
+      error("Failed to read the CDF file.");
       return R_NilValue;
     }
 
@@ -1340,7 +1340,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      Rprintf("Failed to read the CDF file.");
+      error("Failed to read the CDF file.");
       return R_NilValue;
     }
 
@@ -1716,7 +1716,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      Rprintf("Failed to read the CDF file.");
+      error("Failed to read the CDF file.");
       return R_NilValue;
     }
 
