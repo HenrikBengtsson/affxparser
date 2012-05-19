@@ -3,11 +3,11 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite=FALSE, verbose=0) {
     # Consistency checks
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     if (length(cdf) != cdfheader$nunits) {
-      throw("Number of units in 'cdf' does not match the number of units in the CDF header: ", length(cdf), " != ", cdfheader$nunits);
+      stop("Number of units in 'cdf' does not match the number of units in the CDF header: ", length(cdf), " != ", cdfheader$nunits);
     }
 
     if (length(cdfqc) != cdfheader$nqcunits) {
-      throw("Number of QC units in 'cdfqc' does not match the number of QC units in the CDF header: ", length(cdfqc), " != ", cdfheader$nqcunits);
+      stop("Number of QC units in 'cdfqc' does not match the number of QC units in the CDF header: ", length(cdfqc), " != ", cdfheader$nqcunits);
     }
 
 
@@ -77,6 +77,8 @@ writeCdf <- function(fname, cdfheader, cdf, cdfqc, overwrite=FALSE, verbose=0) {
 
 ############################################################################
 # HISTORY:
+# 2012-05-18
+# o Now using stop() instead of throw().
 # 2007-01-10 /HB
 # o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().  With
 #   these it is now possible to build up the CDF in chunks.

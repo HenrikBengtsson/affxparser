@@ -91,7 +91,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   hasFilter <- FALSE;
   if (!is.null(.filter)) {
     if (!is.list(.filter)) {
-      throw("Argument '.filter' must be a list: ", mode(.filter));
+      stop("Argument '.filter' must be a list: ", mode(.filter));
     }
     hasFilter <- TRUE;
   }
@@ -582,6 +582,8 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
 ############################################################################
 # HISTORY:
+# 2012-05-18
+# o Now using stop() instead of throw().
 # 2011-11-01
 # o CLEANUP: Changed signed=FALSE to signed=TRUE for readBin() calls
 #   reading 4-byte integers in internal .readCcgDataGroupHeader() and

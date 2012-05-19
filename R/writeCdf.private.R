@@ -52,7 +52,7 @@
 
     fOffset <- seek(con=con, origin="start", rw="write");
     if (offset != fOffset) {
-      throw("File format write error (step 1): File offset is not the excepted one: ", fOffset, " != ", offset);
+      stop("File format write error (step 1): File offset is not the excepted one: ", fOffset, " != ", offset);
     }
 
     ## RefSeqsequece
@@ -64,7 +64,7 @@
 
     fOffset <- seek(con=con, origin="start", rw="write");
     if (offset != fOffset) {
-      throw("File format write error (step 2): File offset is not the excepted one: ", fOffset, " != ", offset);
+      stop("File format write error (step 2): File offset is not the excepted one: ", fOffset, " != ", offset);
     }
 
 
@@ -127,7 +127,7 @@
 
     fOffset <- seek(con=con, origin="start", rw="write");
     if (offset != fOffset) {
-      throw("File format write error (step 3): File offset is not the excepted one: ", fOffset, " != ", offset);
+      stop("File format write error (step 3): File offset is not the excepted one: ", fOffset, " != ", offset);
     }
 
     bytesOfQcUnits <- 4 * nQcUnits;
