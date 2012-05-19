@@ -61,7 +61,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   hasFilter <- FALSE;
   if (!is.null(.filter)) {
     if (!is.list(.filter)) {
-      throw("Argument '.filter' must be a list: ", mode(.filter));
+      stop("Argument '.filter' must be a list: ", mode(.filter));
     }
     hasFilter <- TRUE;
   }
@@ -143,7 +143,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   hasFilter <- FALSE;
   if (!is.null(.filter)) {
     if (!is.list(.filter)) {
-      throw("Argument '.filter' must be a list: ", mode(.filter));
+      stop("Argument '.filter' must be a list: ", mode(.filter));
     }
     hasFilter <- TRUE;
   }
@@ -153,7 +153,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   magic <- readUByte(con);
   if (magic != 59)
-    throw("File format error: Not a CCG file. Magic is not 59: ", magic);
+    stop("File format error: Not a CCG file. Magic is not 59: ", magic);
 
   version <- readUByte(con);
   nbrOfDataGroups <- readInt(con);
@@ -340,6 +340,8 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
 
 ############################################################################
 # HISTORY:
+# 2012-05-18
+# o Now using stop() instead of throw().
 # 2011-11-01
 # o CLEANUP: Changed signed=FALSE to signed=TRUE for readBin() calls
 #   reading 4-byte integers in internal .readCcgFileHeader() and

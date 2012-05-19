@@ -19,11 +19,11 @@
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate 'header':
   if (!is.list(header))
-    throw("Argument 'header' must be a list: ", mode(header));
+    stop("Argument 'header' must be a list: ", mode(header));
   if (is.null(header$nbrOfDataGroups))
-    throw("Missing element 'nbrOfDataGroups' in argument 'header'.");
+    stop("Missing element 'nbrOfDataGroups' in argument 'header'.");
   if (is.null(header$dataGroupStart))
-    throw("Missing element 'dataGroupStart' in argument 'header'.");
+    stop("Missing element 'dataGroupStart' in argument 'header'.");
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -152,11 +152,11 @@
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate 'header':
   if (!is.list(header))
-    throw("Argument 'header' must be a list: ", mode(header));
+    stop("Argument 'header' must be a list: ", mode(header));
   if (is.null(header$nbrOfDataGroups))
-    throw("Missing element 'nbrOfDataGroups' in argument 'header'.");
+    stop("Missing element 'nbrOfDataGroups' in argument 'header'.");
   if (is.null(header$dataGroupStart))
-    throw("Missing element 'dataGroupStart' in argument 'header'.");
+    stop("Missing element 'dataGroupStart' in argument 'header'.");
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -195,6 +195,8 @@
 
 ############################################################################
 # HISTORY:
+# 2012-05-18
+# o Now using stop() instead of throw().
 # 2007-08-16
 # o This file only contains a stub, so there is currently no 
 #    writeCcgHeader() or writeCcg().

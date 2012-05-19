@@ -14,7 +14,7 @@
     version <- header$fileHeader$version;
   }
   if (is.null(version)) {
-    throw("Cannot identify header version.  Argument 'header' has an unknown format: ", class(header)[1]);
+    stop("Cannot identify header version.  Argument 'header' has an unknown format: ", class(header)[1]);
   }
 
   version;
@@ -37,7 +37,7 @@
     datHeader <- affxparser:::.unwrapCelHeaderV4(header)$header$DatHeader;
     datHeader <- affxparser:::.wrapDatHeader(datHeader);
   } else {
-    throw("Cannot extract DAT header from CEL header.  Unknown CEL header version: ", version);
+    stop("Cannot extract DAT header from CEL header.  Unknown CEL header version: ", version);
   }
  
   datHeader;
@@ -87,7 +87,7 @@
       }
     }
     if (is.null(datHeader)) {
-      throw("Failed to locate a valid DAT header in the AGCC file header.");
+      stop("Failed to locate a valid DAT header in the AGCC file header.");
     }
     hdr <- c(hdr, sprintf("DatHeader=%s\n", datHeader));
 
@@ -111,7 +111,7 @@
     # To do: Create a v3 header from scratch (for consistency).
     headerV3 <- header$header;
   } else {
-    throw("Cannot extract CEL header of v3 from CEL header.  Unknown CEL header version: ", version);
+    stop("Cannot extract CEL header of v3 from CEL header.  Unknown CEL header version: ", version);
   }
  
   headerV3;
@@ -135,11 +135,11 @@
     headerV4 <- .unwrapCelHeaderV4(headerV4);
     headerV4 <- .wrapCelHeaderV4(headerV4);
   } else if (version == 3) {
-    throw("Cannot get CEL header of v4 from CEL header of v3.  Non-implemented feature.");
+    stop("Cannot get CEL header of v4 from CEL header of v3.  Non-implemented feature.");
   } else if (version == 4) {
     headerV4 <- .wrapCelHeaderV4(.unwrapCelHeaderV4(header));
   } else {
-    throw("Cannot extract CEL header of v3 from CEL header.  Unknown CEL header version: ", version);
+    stop("Cannot extract CEL header of v3 from CEL header.  Unknown CEL header version: ", version);
   }
 
   headerV4;    
@@ -148,6 +148,8 @@
 
 ############################################################################
 # HISTORY:
+# 2012-05-18
+# o Now using stop() instead of throw().
 # 2007-10-12
 # o Now .getCelHeaderV3() tries to infer the DAT header from parent 
 #   parameters 'affymetrix-partial-dat-header' if 'affymetrix-dat-header' 

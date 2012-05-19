@@ -105,7 +105,7 @@ compareCels <- function(pathname, other, readMap=NULL, otherReadMap=NULL, verbos
     v1 <- cel1[[ff]];
     v2 <- cel2[[ff]];
     if (!identical(all.equal(v1, v2), TRUE)) {
-      throw("Validation of new CEL file failed. Field differ: ", ff);
+      stop("Validation of new CEL file failed. Field differ: ", ff);
     }
   }
   if (verbose >= 1)
@@ -120,6 +120,8 @@ compareCels <- function(pathname, other, readMap=NULL, otherReadMap=NULL, verbos
 
 ############################################################################
 # HISTORY:
+# 2012-05-18
+# o Now using stop() instead of throw().
 # 2007-01-03
 # o Created from compareCdfs.R.
 ############################################################################
