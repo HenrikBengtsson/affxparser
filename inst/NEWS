@@ -1,6 +1,13 @@
 Package: affxparser
 ===================
 
+Version: 1.29.2 [2012-05-22]
+o GENERALIZATION: Now system tests that launch another R process no
+  longer assumes R is on the OS's search path.
+o ROBUSTNESS/CRAN POLICY: readCel() and readCelUnits() are no longer
+  calling .Internal(qsort(...)).
+
+
 Version: 1.29.1 [2012-05-18]
 o Replaced several throw() with stop(), because the former assumes
   that R.methodsS3 is loaded, which it may not be.
