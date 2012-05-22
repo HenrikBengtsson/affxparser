@@ -10,6 +10,17 @@ readCel <- function(filename,
                     readMap = NULL, 
                     verbose = 0,
                     .checkArgs = TRUE) {
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Local functions
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    qsort <- function(x) {
+  ##    o0 <- .Internal(qsort(x, TRUE));
+  ##    o <- sort.int(x, index.return=TRUE, method="quick");
+  ##    stopifnot(identical(o, o0));
+      sort.int(x, index.return=TRUE, method="quick");
+    } # qsort()
+
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Validate arguments
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,10 +88,12 @@ readCel <- function(filename,
     # jumping around in the file.
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     if (reorder) {
-      # About 10-15 times faster than using order()!
-      o <- .Internal(qsort(indices, TRUE));  # From base::sort.int()
+      # qsort() is about 10-15 times faster than using order()!
+      # WAS: o <- .Internal(qsort(indices, TRUE));  # From base::sort.int()
+      o <- qsort(indices);
       indices <- o$x;
-      o <- .Internal(qsort(o$ix, TRUE))$ix;  # From base::sort.int()
+      # WAS: o <- .Internal(qsort(o$ix, TRUE))$ix;  # From base::sort.int()
+      o <- qsort(o$ix)$ix;
     }
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -113,6 +126,9 @@ readCel <- function(filename,
 
 ############################################################################
 # HISTORY:
+# 2012-05-22 [HB]
+# o CRAN POLICY: readCel() and readCelUnits() are no longer calling
+#   .Internal(qsort(...)).
 # 2011-11-18
 # o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2007-12-01

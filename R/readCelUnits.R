@@ -78,6 +78,17 @@
 # @keyword "IO"
 #*/######################################################################### 
 readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, readMap=NULL, verbose=FALSE) {
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Local functions
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  qsort <- function(x) {
+##    o0 <- .Internal(qsort(x, TRUE));
+##    o <- sort.int(x, index.return=TRUE, method="quick");
+##    stopifnot(identical(o, o0));
+    sort.int(x, index.return=TRUE, method="quick");
+  } # qsort()
+
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -275,10 +286,12 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   reorder <- TRUE;  # Hardwired from now on.
   if (reorder) {
     verbose && enter(verbose, "Reordering cell indices to optimize speed");
-    # About 10-15 times faster than using order()!
-    o <- .Internal(qsort(indices, TRUE));  # From base::sort.int()
+    # qsort() is about 10-15 times faster than using order()!
+    # WAS: o <- .Internal(qsort(indices, TRUE));  # From base::sort.int()
+    o <- qsort(indices);
     indices <- o$x;
-    o <- .Internal(qsort(o$ix, TRUE))$ix;  # From base::sort.int()
+    # WAS: o <- .Internal(qsort(o$ix, TRUE))$ix;  # From base::sort.int()
+    o <- qsort(o$ix)$ix;
     verbose && exit(verbose);
   }
 
@@ -452,6 +465,9 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
 ############################################################################
 # HISTORY:
+# 2012-05-22 [HB]
+# o CRAN POLICY: readCel() and readCelUnits() are no longer calling
+#   .Internal(qsort(...)).
 # 2007-12-01 [HB]
 # o Removed argument 'reorder' from readCelUnits(). Reordering is now always
 #   done.
