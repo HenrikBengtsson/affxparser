@@ -1,8 +1,7 @@
 systemR <- function(command="", ..., verbose=FALSE) {
   # Locate the R executable
   Rbin <- file.path(R.home("bin"), "R");
-
-  cmd <- sprintf('%s %s', Rbin, command);
+  cmd <- sprintf('%s %s', shQuote(Rbin), command);
   if (verbose) cat("Command: ", cmd, "\n", sep="");
   system(cmd, ...);
 } # systemR()
