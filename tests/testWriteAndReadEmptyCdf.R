@@ -7,11 +7,14 @@ systemR <- function(command="", ..., verbose=FALSE) {
 } # systemR()
 
 
-out <- systemR('-e "affxparser:::.testWriteAndReadEmptyCdf()"', intern=TRUE, verbose=TRUE);
+out <- systemR('-e "affxparser:::.testWriteAndReadEmptyCdf()"', intern=TRUE, wait=TRUE, verbose=TRUE);
 cat(out, sep="\n");
 res <- any(regexpr("COMPLETE", out) != -1);
 cat("Test result: ", res, "\n", sep="");
-
+if (!res) {
+  print(sessionInfo());
+  stop("affxparser:::.testWriteAndReadEmptyCdf() failed.");
+}
 
 ############################################################################
 # HISTORY:
