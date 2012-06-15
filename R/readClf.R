@@ -8,6 +8,7 @@ readClf <- function(file) {
 
 readClfEnv <- function(file, readBody=TRUE) {
   ## FIXME: this is an exception in more recent TsvFile.cpp
+  # Argument 'file':
   if (!file.exists(file)) {
     stop("Cannot read CLF file. File not found: ", file); 
   }

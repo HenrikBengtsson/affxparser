@@ -2,6 +2,7 @@ Package: affxparser
 ===================
 
 Version: 1.29.4 [2012-06-14]
+o readPgfEnv(..., indices=NULL) no longer gives a warning.
 o Updated the error messages for the CLF and PGF parsers.
 
 
