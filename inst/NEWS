@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.29.4 [2012-06-14]
+o Updated the error messages for the CLF and PGF parsers.
+
+
 Version: 1.29.3 [2012-05-22]
 o Now system test tests/testWriteAndReadEmptyCdf.R generates an
   error that is detected and reported by R CMD check.
