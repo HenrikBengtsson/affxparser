@@ -8,15 +8,19 @@ readPgf <- function(file, indices=NULL) {
 
 readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
   ## FIXME: this is an exception in more recent TsvFile.cpp
+  # Argument 'file':
   if (!file.exists(file)) {
     stop("Cannot read PGF file. File not found: ", file); 
   }
-  env <- new.env(parent=emptyenv());
 
-  if (!all(sort(indices) == indices)) {
-    stop("indices must be sorted.");
+  # Argument 'indices':
+  if (!is.null(indices)) {
+    if (!all(sort(indices) == indices)) {
+      stop("Argument 'indices' must be sorted.");
+    }
   }
-    
+
+  env <- new.env(parent=emptyenv());
   res <- .Call("R_affx_get_pgf_file", file, readBody, env, indices,
                PACKAGE="affxparser");
 
@@ -45,6 +49,7 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
 ############################################################################
 # HISTORY:
 # 2012-06-14 [HB]
+# o readPgfEnv(..., indices=NULL) no longer gives a warning.
 # o Moved all CLF functions to readClf.R.
 # o Harmonized the error messages.
 # 2011-11-18 [HB]
