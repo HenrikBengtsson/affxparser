@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version: 1.29.5 [2012-06-19]
+o Added arrangeCelFilesByChipType() for moving CEL files to
+  subdirectories named according to their chip types, which
+  can be useful when for instance download GEO data sets.
+
+
 Version: 1.29.4 [2012-06-14]
 o readPgfEnv(..., indices=NULL) no longer gives a warning.
 o Updated the error messages for the CLF and PGF parsers.
