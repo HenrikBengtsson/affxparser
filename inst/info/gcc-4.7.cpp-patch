@@ -1,0 +1,18 @@
+--- FileUtils.cpp	2012-06-26 15:08:14.515494317 -0700
++++ /homes/biocbuild/work/FileUtils.cpp	2012-06-26 15:08:51.681532891 -0700
+@@ -29,12 +29,15 @@
+ 
+ #ifdef _MSC_VER
+ #include <direct.h>
+-#define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
++#define         S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
+ #else
++#include <unistd.h>
+ #include <dirent.h>
+ #endif
+ 
+ 
++
++
+ using namespace affymetrix_calvin_utilities;
+ using namespace std;
