@@ -29,10 +29,13 @@
 
 #ifdef _MSC_VER
 #include <direct.h>
-#define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
+#define         S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
 #else
+#include <unistd.h>
 #include <dirent.h>
 #endif
+
+
 
 
 using namespace affymetrix_calvin_utilities;
