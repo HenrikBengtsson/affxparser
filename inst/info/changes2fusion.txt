@@ -20,3 +20,6 @@ Affy seems to use <cstdlib>, we'll see if it works.
 - use of EXIT_FAILURE and EXIT_SUCCESS
  in fusion_sdk/file/BPMAPFileData.cpp
  requires #include <stdlib.h>
+
+gcc/g++ 4.7:
+More specific about includes. See gcc-4.7.cpp-patch.
