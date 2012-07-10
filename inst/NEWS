@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version: 1.29.6 [2012-06-26]
+o COMPATIBILITY: Now package compile also with gcc/g++ 4.7.
+  Thanks Dan Tenenbaum at the Bioconductor Core Team), 
+  Fred Hutchinson Cancer Research Center, USA for this.
+
+
 Version: 1.29.5 [2012-06-19]
 o Added arrangeCelFilesByChipType() for moving CEL files to
   subdirectories named according to their chip types, which
