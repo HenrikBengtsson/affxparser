@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.29.7 [2012-08-14]
+o Rearranged patchdir.
+
 Version: 1.29.6 [2012-06-26]
 o COMPATIBILITY: Now package compile also with gcc/g++ 4.7.
   Thanks Dan Tenenbaum at the Bioconductor Core Team), 
