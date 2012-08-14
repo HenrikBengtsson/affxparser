@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -30,6 +28,8 @@
 #ifndef CHPCHECK_H
 #define CHPCHECK_H
 
+//
+#include "util/Fs.h"
 #include "util/RegressionCheck.h"
 #include "util/Util.h"
 #include "util/Verbose.h"
@@ -45,9 +45,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
-//
 
-using namespace std;
 /**
  * Class for testing that CHP files are the same +/- some epsilon. Also checks
  * to make sure that at least some of the headers are the same
@@ -60,19 +58,25 @@ public:
   /// @brief     Constructor
   /// @param     generated 
   /// @param     gold      the reference data to compare with
-  /// @param     eps       epsilon [confidence, pvalue]
+  /// @param     diffAllowed the number of differences allowed (default 0)
   /// @param     prefix    the prefix for the header string alg part
-  /// @return    diffAllowed the number of differences allowed (default 0)
-  /// @return    epsPvalue epsilon for pValue (default to epsilon)
+  /// @param     eps       epsilon [confidence, pvalue]
+  ///                      i.e. if |gen-gold| >= frac*max(|gen|,|gold|) then there is a difference.
+  /// @param     bCheckHeaders Check headers? (boolean, default: true).
+  /// @param     frac      maximum accepted fractional difference in numeric values (not used by default).
+  ///                      i.e. if |gen-gold| >= frac*max(|gen|,|gold|) then there is a difference.
   ChpCheck(std::vector<std::string> &generated, std::vector<std::string> &gold, 
            int diffAllowed=0, const std::string &prefix="apt-", double eps=0.0001,
-           bool bCheckHeaders = true) {
+           bool bCheckHeaders = true, double frac=0.0) {
     m_Name = "XDA-CHP-Check";
     m_Generated = generated;
     m_Gold = gold;
     m_Eps_confidence = eps;
     m_Eps_pvalue = eps;
     m_Eps_signal = eps;
+    m_Frac_confidence = frac;
+    m_Frac_pvalue = frac;
+    m_Frac_signal = frac;
     m_DiffAllowed = diffAllowed;
     m_Prefix = prefix;
     m_CheckHeaders = bCheckHeaders;
@@ -81,14 +85,18 @@ public:
 
     setMaxError(30);
   }
+
   ChpCheck(const std::string &generated, const std::string &gold, 
            int diffAllowed=0, const std::string &prefix="apt-", double eps=0.0001,
-           bool bCheckHeaders = true) {
+           bool bCheckHeaders = true, double frac=0.0) {
     m_Generated.push_back(generated);
     m_Gold.push_back(gold);
     m_Eps_confidence = eps;
     m_Eps_pvalue = eps;
     m_Eps_signal = eps;
+    m_Frac_confidence = frac;
+    m_Frac_pvalue = frac;
+    m_Frac_signal = frac;
     m_DiffAllowed = diffAllowed;
     m_Prefix = prefix;
     m_CheckHeaders = bCheckHeaders;
@@ -103,8 +111,8 @@ public:
   {
     bool success = true;
      try {
-            m_Generated[genIdx] = Util::convertPathName(m_Generated[genIdx].c_str());
-            m_Gold[goldIdx] = Util::convertPathName(m_Gold[goldIdx].c_str());
+            m_Generated[genIdx] = Fs::convertToUncPath(m_Generated[genIdx]);
+            m_Gold[goldIdx] = Fs::convertToUncPath(m_Gold[goldIdx]);
             if (m_CheckHeaders && !headersSame(m_Generated[genIdx], m_Gold[goldIdx], msg))
 	      success = false;
             if(!dataSame(m_Generated[genIdx], m_Gold[goldIdx], msg)) {
@@ -174,8 +182,7 @@ private:
     ignoreMap.insert(prefix + "free-mem");    
     ignoreMap.insert(prefix + "cvs-id");
     ignoreMap.insert(prefix + "version");
-    //ignoreMap.insert(prefix + "opt-out-dir");
-    ignoreMap.insert(prefix + "opt-analysis-spec");
+    ignoreMap.insert(prefix + "opt-out-dir");
   }
 
   /** 
@@ -192,8 +199,8 @@ private:
    */
   bool tagValuePairMostlySame(TagValuePairTypeList &gold, TagValuePairTypeList &test, std::string &msg) {
     bool same = true;
-    map<string,string> testMap;
-    map<string,string>::iterator testMapIter;
+    std::map<std::string,std::string> testMap;
+    std::map<std::string,std::string>::iterator testMapIter;
     TagValuePairTypeList::iterator testIter;
     // Load up test as a map which will be queried by items in gold.
     for(testIter = test.begin(); testIter != test.end(); ++testIter) {
@@ -209,11 +216,26 @@ private:
           same = false;
         }
         else {
-          if(testMapIter->second != goldIter->Value &&
-             Util::fileRoot(testMapIter->second) != Util::fileRoot(goldIter->Value)) {
-            msg += " Error: for field '" + goldIter->Tag + "' expecting: '" + goldIter->Value + 
-              "' got: '" + testMapIter->second + "'";
-            same = false;
+          bool isTestNum = false;
+          bool isGoldNum = false;
+          float testNum, goldNum;
+          testNum = Convert::toFloatCheck(testMapIter->second,&isTestNum);
+          goldNum = Convert::toFloatCheck(goldIter->Value,&isGoldNum);
+          if(isTestNum && isGoldNum) {
+            bool success = true;
+            double diff = 0.0;
+            if(!checkFloat(goldNum, testNum, m_Eps_confidence, success, diff, false, 0.0)) {
+              msg += " Error: for field '" + goldIter->Tag + "' expecting: '" + goldIter->Value + 
+                "' got: '" + testMapIter->second + "'";
+              same = false;
+            }
+          } else {
+            if(testMapIter->second != goldIter->Value &&
+               Fs::basename(testMapIter->second) != Fs::basename(goldIter->Value)) {
+              msg += " Error: for field '" + goldIter->Tag + "' expecting: '" + goldIter->Value + 
+                "' got: '" + testMapIter->second + "'";
+              same = false;
+            }
           }
         }
       }
@@ -229,12 +251,12 @@ private:
     goldChp.SetFileName(gold.c_str());
     if(!generatedChp.ReadHeader()) {
       success = false;
-	  success &= checkMsg(false, "Error: Can't read CHP Header" + ToStr(generated) + " error is: " + generatedChp.GetError(), msgs);
+	  success &= checkMsg(false, "Error: Can't read CHP Header in '" + ToStr(generated) + "' error is: " + generatedChp.GetError(), msgs);
 	  return success;
     }
     if(!goldChp.ReadHeader()) {
       success = false;
-	  success &= checkMsg(false, "Error: Can't read CHP Header" + ToStr(gold) + " error is: " + goldChp.GetError(), msgs);
+	  success &= checkMsg(false, "Error: Can't read CHP Header in '" + ToStr(gold) + "' error is: " + goldChp.GetError(), msgs);
 	  return success;
     }
     if(success) {
@@ -274,12 +296,12 @@ private:
     goldChp.SetFileName(gold.c_str());
     if(!generatedChp.Read()) {
       success = false;
-	  success &= checkMsg(false, "Error: Can't read CHP" + ToStr(generated) + " error is: " + generatedChp.GetError(), msgs);
+	  success &= checkMsg(false, "Error: Can't read CHP '" + ToStr(generated) + "' error is: " + generatedChp.GetError(), msgs);
 	  return success;
     }
     if(!goldChp.Read()) {
       success = false;
-	  success &= checkMsg(false, "Error: Can't read CHP" + ToStr(gold) + " error is: " + goldChp.GetError(), msgs);	  
+	  success &= checkMsg(false, "Error: Can't read CHP '" + ToStr(gold) + "' error is: " + goldChp.GetError(), msgs);	  
 	  return success;
     }    
 
@@ -298,14 +320,14 @@ private:
                 Err::errAbort("Failed to get entry for gold (" + ToStr(i) + "). File: " + gold + " Error: " + generatedChp.GetError());
             if(goldResults->AlleleCall != genResults->AlleleCall) 
                 localSuccess = false;
-            checkFloat(goldResults->Confidence, genResults->Confidence, m_Eps_confidence, localSuccess, maxDiffConf);
-            checkFloat(goldResults->pvalue_AA, genResults->pvalue_AA, m_Eps_pvalue, localSuccess, maxDiffPval);
-            checkFloat(goldResults->pvalue_AB, genResults->pvalue_AB, m_Eps_pvalue, localSuccess, maxDiffPval);
-            checkFloat(goldResults->pvalue_BB, genResults->pvalue_BB, m_Eps_pvalue, localSuccess, maxDiffPval);
-            checkFloat(goldResults->pvalue_NoCall, genResults->pvalue_NoCall, m_Eps_pvalue, localSuccess, maxDiffPval);
+            checkFloat(goldResults->Confidence, genResults->Confidence, m_Eps_confidence, localSuccess, maxDiffConf, false, m_Frac_confidence);
+            checkFloat(goldResults->pvalue_AA, genResults->pvalue_AA, m_Eps_pvalue, localSuccess, maxDiffPval, false, m_Frac_pvalue);
+            checkFloat(goldResults->pvalue_AB, genResults->pvalue_AB, m_Eps_pvalue, localSuccess, maxDiffPval, false, m_Frac_pvalue);
+            checkFloat(goldResults->pvalue_BB, genResults->pvalue_BB, m_Eps_pvalue, localSuccess, maxDiffPval, false, m_Frac_pvalue);
+            checkFloat(goldResults->pvalue_NoCall, genResults->pvalue_NoCall, m_Eps_pvalue, localSuccess, maxDiffPval, false, m_Frac_pvalue);
             ///@todo check RAS fields
-            //checkFloat(goldResults->RAS1, genResults->RAS1, m_Eps_ras, localSuccess, maxDiffRas);
-            //checkFloat(goldResults->RAS2, genResults->RAS2, m_Eps_ras, localSuccess, maxDiffRas);
+            //checkFloat(goldResults->RAS1, genResults->RAS1, m_Eps_ras, localSuccess, maxDiffRas, false, m_Frac_ras);
+            //checkFloat(goldResults->RAS2, genResults->RAS2, m_Eps_ras, localSuccess, maxDiffRas, false, m_Frac_ras);
             if(!localSuccess)
                 numDiff++;
             success &= localSuccess;
@@ -330,7 +352,7 @@ private:
             bool localSuccess = true;
             affxchp::CExpressionProbeSetResults *genResults = generatedChp.GetExpressionResults(i);
             affxchp::CExpressionProbeSetResults *goldResults = goldChp.GetExpressionResults(i);
-            checkFloat(goldResults->Signal, genResults->Signal, m_Eps_signal, localSuccess, maxDiffSignal);
+            checkFloat(goldResults->Signal, genResults->Signal, m_Eps_signal, localSuccess, maxDiffSignal, false, m_Frac_signal);
             ///@todo check other fields
             if(!localSuccess)
                 numDiff++;
@@ -364,10 +386,12 @@ private:
   /// Matching filenames for the chp files to be tested.
   std::vector<std::string> m_Generated;
   /// Epsilon, small value that two floats can differ by but still be considered equivalent.
-  double m_Eps;
   double m_Eps_confidence;
   double m_Eps_pvalue;
   double m_Eps_signal;
+  double m_Frac_confidence;
+  double m_Frac_pvalue;
+  double m_Frac_signal;
   bool m_CheckHeaders;
   /// How many differences will we tolerate?
   int m_DiffAllowed;

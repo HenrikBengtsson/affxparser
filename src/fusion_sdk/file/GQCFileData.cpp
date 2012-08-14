@@ -37,6 +37,7 @@
 #include <cstring>
 #include <map>
 #include <string.h>
+#include <stdio.h>
 //
 #define XERCES_STATIC_LIBRARY
 

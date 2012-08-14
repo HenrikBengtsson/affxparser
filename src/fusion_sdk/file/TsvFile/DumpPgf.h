@@ -46,12 +46,10 @@ public:
    * @param argc Number of command line arguments.
    * @param argv Command line arguments.
    * @param version Version string.
-   * @param cvsId CVS id string.
    */
 
   dumpPgf (const char* argv[],
-           const std::string& version, 
-           const std::string& cvsId);
+           const std::string& version);
 
   /** Destructor.
    */
@@ -120,8 +118,6 @@ private:
   /// private data
   /// Version string.
   const std::string& m_Version;
-  /// CVS id string.
-  const std::string& m_CvsId;
   /// Command line options.
 public:
   PgOptions m_Opts;

@@ -23,6 +23,8 @@
 #include "calvin_files/data/src/GenericData.h"
 #include "calvin_files/parsers/src/FileInput.h"
 //
+#include "util/Fs.h"
+//
 #include <sys/stat.h>
 #include <sys/types.h>
 //
@@ -264,10 +266,9 @@ bool DataSet::MapDataPosix(u_int32_t start, u_int32_t bytes)
 	mapLen = bytes + page_offset;
 
 	// Get the file size
-	struct stat st;
-	if (stat(fileName.c_str(), &st) == 0)
+	if (Fs::fileExists(fileName))
 	{
-		int fileLen = st.st_size;
+          int64_t fileLen = Fs::fileSize(fileName);
 		if (fileLen < page_start + mapLen)
 			mapLen = fileLen - page_start;
 	}
@@ -338,19 +339,19 @@ void DataSet::CheckRowColumnAndType(int32_t row, int32_t col, DataSetColumnTypes
 {
 	if (isOpen == false)
 	{
-		affymetrix_calvin_exceptions::DataSetNotOpenException e;
+		affymetrix_calvin_exceptions::DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	if (col < 0 || col >= header.GetColumnCnt())
 	{
-		affymetrix_calvin_exceptions::ColumnIndexOutOfBoundsException e;
+		affymetrix_calvin_exceptions::ColumnIndexOutOfBoundsException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	if (row < 0 || row >= header.GetRowCnt())
 	{
-		affymetrix_calvin_exceptions::RowIndexOutOfBoundsException e;
+		affymetrix_calvin_exceptions::RowIndexOutOfBoundsException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -358,7 +359,7 @@ void DataSet::CheckRowColumnAndType(int32_t row, int32_t col, DataSetColumnTypes
 
 	if (header.GetColumnInfo(col).GetColumnType() != type)
 	{
-		affymetrix_calvin_exceptions::UnexpectedColumnTypeException e;
+		affymetrix_calvin_exceptions::UnexpectedColumnTypeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -370,7 +371,7 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 {
 	if (isOpen == false)
 	{
-		affymetrix_calvin_exceptions::DataSetNotOpenException e;
+		affymetrix_calvin_exceptions::DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -408,7 +409,7 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 
 				if (MapDataWin32(reverseStartByte, header.GetDataStartFilePos() + header.GetDataSize() - reverseStartByte) == false)
 				{
-					affymetrix_calvin_exceptions::DataSetRemapException e;
+					affymetrix_calvin_exceptions::DataSetRemapException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 					throw e;
 				}
 			}
@@ -416,7 +417,7 @@ char* DataSet::FilePosition(int32_t rowStart, int32_t col, int32_t rowCount)
 			{
 				if (MapDataWin32(startByte, header.GetDataStartFilePos() + header.GetDataSize() - startByte) == false)
 				{
-					affymetrix_calvin_exceptions::DataSetRemapException e;
+					affymetrix_calvin_exceptions::DataSetRemapException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 					throw e;
 				}
 			}

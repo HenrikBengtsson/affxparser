@@ -29,6 +29,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <map>
 //
 
 #ifdef _MSC_VER
@@ -61,6 +62,8 @@ private:
 	ParameterNameValueTypeVector nameValParams;
 	/*!  */
 	std::vector<GenericDataHeader> GenericDataHdrs;
+        /*!  */
+        std::map<std::wstring, int> paramNameIdxMap;
 
 public:
 
@@ -82,8 +85,19 @@ public:
 	void SetLocale(const std::wstring &p);
 	/*!  */
 	std::wstring GetLocale() const;
-	/*!  */
+
+	/*!
+	 *	Calls AddNameValParam with the doUniqueAddds set to true.
+	*/
 	void AddNameValParam(const ParameterNameValueType &p);
+	/*!  
+	 * Adds a ParameterNameValueType to the collection.
+	 * @param Parameter to add.
+	 * @param Hint to either perform a check to ensure unique parameters are in the collection (N^2 performance), else do not 
+	 * perfomr the check.
+	*/
+	void AddNameValParam(const ParameterNameValueType &p, bool doUniqueAdds);
+
 	/*!  */
 	ParameterNameValueType GetNameValParam(int32_t index);
 	/*!  */

@@ -37,6 +37,41 @@ using namespace affymetrix_calvin_parameter;
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * Get CDF Format Version.
+ */
+int FusionCDFFileHeader::GetFormatVersion() const
+{
+	if (gcosHeader)
+		return gcosHeader->GetFormatVersion();
+	else if (calvinData)
+		return calvinData->GetFormatVersion();
+	else
+		return 0;
+}
+
+/*
+ * Get the CDF GUID.
+ */
+std::string FusionCDFFileHeader::GetGUID() const
+{
+	if (gcosHeader)
+		return gcosHeader->GetGUID();
+	else
+		return std::string("");
+}
+
+/*
+ * Get the integrity md5.
+ */
+std::string FusionCDFFileHeader::GetIntegrityMd5() const
+{
+	if (gcosHeader)
+		return gcosHeader->GetIntegrityMd5();
+	else
+		return std::string("");
+}
+
+/*
  * Get the number of feature columns in the array.
  */
 int FusionCDFFileHeader::GetCols() const
@@ -1065,6 +1100,39 @@ FusionCDFFileHeader &FusionCDFData::GetHeader()
 }
 
 /*
+ * Get the GUID of the CDF file.
+ * This only applies to CDF XDA format version >= 4.
+ */
+std::string FusionCDFData::GetGUID()
+{
+	if (!gcosData && !calvinData)
+		CreateObject();
+	if (gcosData)
+	{
+		gcosData->SetFileName(fileName.c_str());
+		return gcosData->GetGUID();
+	}
+	else
+		return std::string("");
+}
+
+/*
+ * Get the integrity md5 of the CDF file.
+ */
+std::string FusionCDFData::GetIntegrityMd5()
+{
+	if (!gcosData && !calvinData)
+		CreateObject();
+	if (gcosData)
+	{
+		gcosData->SetFileName(fileName.c_str());
+		return gcosData->GetIntegrityMd5();
+	}
+	else
+		return std::string("");
+}
+
+/*
  * Get the error string.
  */
 std::string FusionCDFData::GetError() const
@@ -1090,51 +1158,73 @@ std::string FusionCDFData::GetProbeSetName(int index) const
 
 /*
  * Get the chip type (probe array type) of the CDF file.
- * This is the name of the file without extension.
+ * This is the name of the file without extension for CDF XDA format version < 4.
+ * For CDF XDA format version >= 4, this is array name without version.
  */
-std::string FusionCDFData::GetChipType() const
+std::string FusionCDFData::GetChipType()
 {
-	int index = (int) fileName.rfind('\\');
-	if (index == -1)
-		index = (int) fileName.rfind('/');
-	std::string chiptype = fileName.c_str() + index + 1;
-	chiptype.resize(chiptype.length()-4);
-	return chiptype;
+	if (!gcosData && !calvinData)
+		CreateObject();
+	if (gcosData)
+	{
+		gcosData->SetFileName(fileName.c_str());
+		return gcosData->GetChipType();
+	}
+	else
+	{
+		int index = (int) fileName.rfind('\\');
+		if (index == -1)
+			index = (int) fileName.rfind('/');
+		std::string chiptype = fileName.c_str() + index + 1;
+		chiptype.resize(chiptype.length()-4);
+		return chiptype;
+	}
 }
 
 /*
  * Get the chip type (probe array type) of the CDF file.
- * This is the name of the file without extension. We
+ * This is the name of the file without extension for CDF XDA format version < 4. We
  * also include all substrings create by removing
  * characters to the right of each '.'
+ * For CDF XDA format version >= 4, this is retrieved from the file header.
  */
-std::vector<std::string> FusionCDFData::GetChipTypes() const
+std::vector<std::string> FusionCDFData::GetChipTypes()
 {
-    std::vector<std::string> chiptypes;
-    std::string chiptype;
+	if (!gcosData && !calvinData)
+		CreateObject();
+	if (gcosData)
+	{
+		gcosData->SetFileName(fileName.c_str());
+		return gcosData->GetChipTypes();
+	}
+	else
+	{
+		std::vector<std::string> chiptypes;
+		std::string chiptype;
 
-	int index = (int) fileName.rfind('\\');
-	if (index == -1)
-		index = (int) fileName.rfind('/');
-	chiptype = fileName.c_str() + index + 1;
-	chiptype.resize(chiptype.length()-4);
+		int index = (int) fileName.rfind('\\');
+		if (index == -1)
+			index = (int) fileName.rfind('/');
+		chiptype = fileName.c_str() + index + 1;
+		chiptype.resize(chiptype.length()-4);
 
-    // The full file name (minus .cdf extension) is the default (1st) 
-    // chip type. This matches what GetChipType() returns.
-    // ie: foo.bar.v1.r2.cdf -> foo.bar.v1.r2
-    chiptypes.push_back(chiptype);
+		// The full file name (minus .cdf extension) is the default (1st) 
+		// chip type. This matches what GetChipType() returns.
+		// ie: foo.bar.v1.r2.cdf -> foo.bar.v1.r2
+		chiptypes.push_back(chiptype);
 
-    //We then add all substrings starting at zero and ending at '.'
-    // ie: foo.bar.v1.r2.cdf -> foo.bar.v1, foo.bar, foo
-    std::string::size_type pos = chiptype.rfind(".",chiptype.size()-1);
-    while (pos != std::string::npos){
-        if(pos>0)
-            chiptypes.push_back(chiptype.substr(0,pos));
-        pos = chiptype.rfind(".",pos-1);
-    }
+		//We then add all substrings starting at zero and ending at '.'
+		// ie: foo.bar.v1.r2.cdf -> foo.bar.v1, foo.bar, foo
+		std::string::size_type pos = chiptype.rfind(".",chiptype.size()-1);
+		while (pos != std::string::npos){
+			if(pos>0)
+				chiptypes.push_back(chiptype.substr(0,pos));
+			pos = chiptype.rfind(".",pos-1);
+		}
 
-    //ie: foo.bar.v1.r2, foo.bar.v1, foo.bar, foo
-	return chiptypes;
+		//ie: foo.bar.v1.r2, foo.bar.v1, foo.bar, foo
+		return chiptypes;
+	}
 }
 
 /*

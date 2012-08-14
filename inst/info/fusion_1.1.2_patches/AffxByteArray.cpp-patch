@@ -1,0 +1,11 @@
+--- /Users/khansen/Work/packages/affxparser/src/fusion_sdk/util/AffxByteArray.cpp	2010-02-07 11:22:29.000000000 -0500
++++ AffxByteArray.cpp	2010-02-06 02:04:14.000000000 -0500
+@@ -667,7 +667,7 @@
+ 	if (getSize() > 0)
+ 	{
+ 		char *psz = (char *)malloc(getSize() + 1);
+-#ifdef WIN32
++#if defined WIN32 && !defined WIN64
+ 		strncpy_s(psz, getSize() + 1, (char *)getData(), getSize());
+ #else
+ 		strncpy(psz, (char *)getData(), getSize());

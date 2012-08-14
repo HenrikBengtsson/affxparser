@@ -251,6 +251,14 @@ public:
 	void GetMarkerABSignalsEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::MarkerABSignals &entry)
     { chpData.GetEntry(dataType, index, entry); } 
 
+	/*! Gets the probe set data.
+     * @param dataType The data type
+	 * @param index The row index.
+	 * @param entry The copy number results.
+	 */
+	void GetCytoGenotypeEntry(affymetrix_calvin_io::MultiDataType dataType, int index, affymetrix_calvin_data::CytoGenotypeCallData &entry)
+    { chpData.GetEntry(dataType, index, entry); } 
+
 	/*! Get the probe set name.
      * @param dataType The data type
 	 * @param index The row index.

@@ -173,6 +173,11 @@ public:
 	 */
 	void WriteEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::MarkerABSignals &entry);
 
+	/*! Write an entry.
+	 * @param entry A pointer to a multi data entry.
+	 */
+	void WriteEntry(MultiDataType dataType, int target, const affymetrix_calvin_data::CytoGenotypeCallData &entry);
+
 	/*! Write the content of the buffer to CHP files. */
 	void FlushBuffer();
 

@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -27,13 +25,13 @@
  *
  * @brief This header contains the AffxBinaryFile class definition.
  */
+
+//
 #include "util/AffxString.h"
 //
 #include <fstream>
 #include <iostream>
-//
 
-using namespace std;
 
 /**
  * @brief  A class for managing binary files. 
@@ -45,8 +43,8 @@ public:
 	enum m_enumOpenOptions{LOAD = 0, SAVE, APPEND}; 
 
 private:
-	ifstream* m_pistrm;
-	ofstream* m_postrm;
+  std::ifstream* m_pistrm;
+  std::ofstream* m_postrm;
 
 public:
 	AffxBinaryFile();
@@ -65,7 +63,7 @@ public:
 	}
 
 	unsigned int getOffset() {return (unsigned int)m_pistrm->tellg();}
-	void setOffset(unsigned int ui) {m_pistrm->seekg(ui, ios::beg);}
+	void setOffset(unsigned int ui) {m_pistrm->seekg(ui, std::ios::beg);}
 	void advanceOffset(unsigned int ui) {setOffset(getOffset() + ui);}
 
 	// All Affx binaries should be in Big Endian except for binary CDF file. 
@@ -377,7 +375,7 @@ public:
 		}
 	}
 
-	void writeString(char* pszBuffer, int iStringLength)
+	void writeString(const char* pszBuffer, int iStringLength)
 	{
 		if (m_postrm != NULL) {m_postrm->write(pszBuffer, iStringLength);}
 	}	

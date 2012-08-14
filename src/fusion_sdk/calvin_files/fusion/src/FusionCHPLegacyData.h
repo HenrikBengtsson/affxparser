@@ -271,22 +271,12 @@ private:
 	/*! The CHP header */
 	FusionCHPHeader header;
 
-public:
 	/*! A class to register the legacy CHP reader. */
 	class Reg : public FusionCHPDataReg
 	{
 	public:
-		/*! Constructor - register the legacy file type. */
-		Reg() : FusionCHPDataReg()
-		{
-			std::list<std::string> ids;
-			ids.push_back(CHP_EXPRESSION_ASSAY_TYPE);
-			ids.push_back(CHP_RESEQUENCING_ASSAY_TYPE);
-			ids.push_back(CHP_GENOTYPING_ASSAY_TYPE);
-			ids.push_back(CHP_UNIVERSAL_ASSAY_TYPE);
-			ids.push_back("");
-			SetFileTypeIds(ids);
-		}
+ 		/*! Constructor - register the legacy file type. */
+                Reg(); 
 
 		/*! Creates a legacy CHP object.
 		 * @return The legacy CHP object.

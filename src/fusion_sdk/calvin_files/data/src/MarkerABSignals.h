@@ -17,7 +17,6 @@
 //
 ////////////////////////////////////////////////////////////////
 
-
 #ifndef _Marker_AB_Signals_HEADER_
 #define _Marker_AB_Signals_HEADER_
 
@@ -36,14 +35,8 @@ typedef struct _MarkerABSignals
 	/*! The index to the probe set ids in the main data set. */
 	u_int32_t index;
 
-	/*! The A signal. */
-	float aSignal;
-
-	/*! The B signal. */
-	float bSignal;
-
-	/*! The scar value. */
-	float scar;
+	/* additional metric */
+	std::vector<affymetrix_calvin_parameter::ParameterNameValueType> metrics;
 
 } MarkerABSignals;
 

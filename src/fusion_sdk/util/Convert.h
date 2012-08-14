@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -39,41 +37,6 @@
 #include <string>
 #include <vector>
 //
-
-/** Little template function to make string conversion easy. 
-    this isn't the fastest way to do things, but it is easy. */
-template <class T> 
-std::string ToStr(const T &t) {
-  std::ostringstream s;
-  s.setf(std::ios_base::boolalpha);
-  s << t;
-  
-  if(s.str() == "-1.#INF")
-      return(ToStr("-inf"));
-  else if(s.str() == "1.#INF")
-      return(ToStr("inf"));
-  else if(s.str() == "-1.#IND")
-      return(ToStr("nan"));
-  else if(s.str() == "1.#IND")
-      return(ToStr("nan"));
-  else if(s.str() == "-Inf")
-      return(ToStr("-inf"));
-  else if(s.str() == "Inf")
-      return(ToStr("inf"));
-
-  return s.str();
-};
-
-// /// @brief     Convert the arg to a string.
-// /// @param     arg     which is a string already.
-// /// @return    a string
-// /// @remark    Since it is a string already, no conversion needs to be done.
-// ///            ToStr returns a new string, so we match that.
-// template <> 
-// std::string ToStr(const std::string& str) {
-//   std::string newstr=str;
-//   return newstr;
-// };
 
 /**
  *  Convert
@@ -229,6 +192,62 @@ class Convert {
    * @param vec - vector to be filled in.
    */
   static void strToIntVec(const std::string &s,char delim,std::vector<int> &vec);
+
+  /**
+   * Utility function to cut a delimited string into a vector of strings.
+   *
+   * @param s - delimited string.
+   * @param delim - delimiter to chop on.
+   * @param vec - vector to be filled in.
+   */
+  static void strToStrVec(const std::string& s, const char delim, std::vector<std::string>& vec);
+
+  /**
+   * The inverse of strToIntVec
+   *
+   * @param inputVector - the vector to convert
+   * @param delim - delimiter to use
+   * @return - the resulting string
+   */
+  static std::string intVecToString(const std::vector<int> &inputVector, const std::string &delim);
+
+  /**
+   * Same as intVecToString but using string vectors
+   *
+   * @param inputVector - the vector to convert
+   * @param delim - delimiter to use
+   * @return - the resulting string
+   */
+  static std::string strVecToString(const std::vector<std::string> &inputVector, const std::string &delim);
 };
+
+/** Little template function to make string conversion easy. 
+    this isn't the fastest way to do things, but it is easy. */
+template <class T> 
+std::string ToStr(const T &t) {
+  std::ostringstream s;
+  s.setf(std::ios_base::boolalpha);
+  s << t;
+  return s.str();
+}
+
+/// @brief     Convert the arg to a string.
+/// @param     arg     which is a string already.
+/// @return    a string
+/// @remark    Since it is a string already, no conversion needs to be done.
+///            ToStr returns a new string, so we match that.
+// template <> 
+inline std::string ToStr(const std::string& str) {
+  std::string newstr=str;
+  return newstr;
+}
+
+inline std::string ToStr(double t) {
+  return Convert::toString(t);
+}
+
+inline std::string ToStr(float t) {
+  return Convert::toString(static_cast<double>(t));
+}
 
 #endif /* _UTIL_CONVERT_H_ */

@@ -45,20 +45,15 @@ public:
    * @param argc Number of command line arguments.
    * @param argv Command line arguments.
    * @param version Version string.
-   * @param cvsId CVS id string.
    */
 
   tsvJoin (int argc,
            const char* argv[],
-           const std::string& version,
-           const std::string& cvsId);
+           const std::string& version);
 
   /** Destructor.
    */
-  ~tsvJoin()
-  {
-    clear();
-  }
+  ~tsvJoin();
 
   /** Read, process data, write output.
    */
@@ -68,15 +63,7 @@ private:
 
   /** Clear data.
    */
-  void clear()
-  {
-    delete m_Opts;
-    for (unsigned int i = 0; i < m_IndexTsvs.size(); ++i)
-    {
-      m_IndexTsvs[i]->close();
-      delete m_IndexTsvs[i];
-    }
-  }
+  void clear();
 
   /** Begin output.
    */
@@ -109,16 +96,11 @@ private:
   /** Write first part of file related header line.
    * @param i File index.
    */
-  inline void headerLine (const unsigned int i)
-  {
-    m_Out << "#%file" << i << "_";
-  }
+  void headerLine (const unsigned int i);
 
   /// private data
   /// Version string.
   const std::string& m_Version;
-  /// CVS id string.
-  const std::string& m_CvsId;
   /// Command line options.
   PgOptions* m_Opts;
   /// Command line as a string.

@@ -111,6 +111,11 @@ public:
 	 */
 	std::string GetFilename();
 
+	/*! Get format version.
+	 * @return The CDF format version.
+	 */
+	int32_t GetFormatVersion();
+
 	/*! Gets the probe set count.
 	 * @return The number of probe sets.
 	 */

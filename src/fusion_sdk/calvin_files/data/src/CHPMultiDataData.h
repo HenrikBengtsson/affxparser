@@ -30,6 +30,7 @@
 #include "calvin_files/data/src/GenericData.h"
 #include "calvin_files/data/src/MarkerABSignals.h"
 #include "calvin_files/data/src/ProbeSetMultiDataData.h"
+#include "calvin_files/data/src/CytoGenotypeCallMultiDataData.h"
 #include "calvin_files/portability/src/AffymetrixBaseTypes.h"
 //
 #include <cstring>
@@ -73,7 +74,8 @@ typedef enum MultiDataType {
     SegmentDenovoCopyNumberMultiDataType,
     SegmentHemizygousParentOfOriginMultiDataType,
 	AllelePeaksMultiDataType,
-	MarkerABSignalsMultiDataType
+	MarkerABSignalsMultiDataType,
+	CytoGenotypeCallMultiDataType
 } MultiDataType_t;
 
 /*! The data set name. */
@@ -107,7 +109,8 @@ const static std::wstring MultiDataDataSetNames[] =
     L"DenovoCopyNumber",
     L"HemizygousParentOfOrigin",
 	L"AllelePeaks",
-	L"MarkerABSignal"
+	L"MarkerABSignal",
+	L"Calls"
 };
 
 /*! The data types. */
@@ -141,7 +144,8 @@ const static MultiDataType MultiDataDataTypes[] =
     SegmentDenovoCopyNumberMultiDataType,
     SegmentHemizygousParentOfOriginMultiDataType,
 	AllelePeaksMultiDataType,
-	MarkerABSignalsMultiDataType
+	MarkerABSignalsMultiDataType,
+	CytoGenotypeCallMultiDataType
 };
 
 /*! Holds data set information. */
@@ -185,20 +189,7 @@ public:
 	std::vector<ColumnInfo> metricColumns;
 
 	/*! constructor */
-	DataSetInfo()
-    {
-        entries = NULL;
-        maxName = -1;
-        maxSegmentType = -1;
-        maxReferenceSegmentID = -1;
-        maxFamilialSegmentID = -1;
-        maxFamilialARRID = -1;
-        maxFamilialCHPID = -1;
-        maxFamilialCHPFile = -1;
-        maxFamilialRole = -1;
-        maxFamilialCHPFile = -1;
-        dataSetIndex = -1;
-    }
+	DataSetInfo();
 };
 
 /*! Holds data associated with genotype or expression CHP files. */
@@ -230,10 +221,10 @@ private:
 
 public:
 
-    std::wstring GetGroupName(MultiDataType dataType) { return dataTypeGroupNames[dataType]; }
+    std::wstring GetGroupName(MultiDataType dataType);
 
 	/*! The data set information */
-	std::map<MultiDataType, DataSetInfo> &GetDataSetInfo() { return dataSetInfo; }
+    std::map<MultiDataType, DataSetInfo> &GetDataSetInfo();
 
 	/*! The maximum length of a probe set name.
 	* @param dataType The data type
@@ -340,6 +331,11 @@ public:
 	*/
 	void AddAlgParams(const ParameterNameValueTypeList& params);
 
+	/*! Adds the application meta data information
+	* @param params The application meta data
+	*/
+        void AddAppMetaInfo(const ParameterNameValueTypeList& params);
+
 	/*! Gets the summary parameters
 	* @return The summary parameters.
 	*/
@@ -353,12 +349,12 @@ public:
 	/*! Gets the file header.
 	* @return The file header.
 	*/
-	FileHeader* GetFileHeader() { return &genericData.Header(); }
+	FileHeader* GetFileHeader(); 
 
 	/*! Gets the generic data object.
 	* @return The data object.
 	*/
-	GenericData& GetGenericData() { return genericData; }
+	GenericData& GetGenericData();
 
 	/*! Gets the probe set data.
 	* @param dataType The data type
@@ -408,6 +404,13 @@ public:
 	* @param entry The results.
 	*/
 	void GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::MarkerABSignals &entry);
+
+	/*! Gets the genotype data for cyto.
+	* @param dataType The data type
+	* @param index The row index.
+	* @param entry The results.
+	*/
+	void GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::CytoGenotypeCallData &entry);
 
 	/*! Gets the probe set data.
 	* @param dataType The data type

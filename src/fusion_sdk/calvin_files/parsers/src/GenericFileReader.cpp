@@ -25,6 +25,8 @@
 #include "calvin_files/parsers/src/FileHeaderReader.h"
 #include "calvin_files/parsers/src/FileInput.h"
 //
+#include "util/Fs.h"
+//
 #include <sys/stat.h>
 #include <sys/types.h>
 //
@@ -75,12 +77,11 @@ void GenericFileReader::ReadHeader(affymetrix_calvin_io::GenericData& data, Read
  */
 void GenericFileReader::OpenFile()
 {
-	fileStream.open(fileName.c_str(), std::ios::in | std::ios::binary);
-	if (!fileStream)
-	{
-		affymetrix_calvin_exceptions::FileNotFoundException e;
-		throw e;
-	}
+  Fs::aptOpen(fileStream,fileName, std::ios::in | std::ios::binary);
+  if (!fileStream) {
+    affymetrix_calvin_exceptions::FileNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
+    throw e;
+  }
 }
 
 /*
@@ -149,7 +150,7 @@ void GenericFileReader::Open(GenericData& data, OpenHint hint)
 	}
 	else
 	{
-		NotImplementedException e;
+		NotImplementedException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -171,14 +172,14 @@ DataGroupReader GenericFileReader::GetDataGroupReader(int32_t index)
 {
 	if (gendata==0 || fileStream.is_open() == false)
 	{
-		DataGroupNotFoundException e;
+		DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	DataGroupHeader* dch = gendata->FindDataGroupHeader(index);
 	if (dch == 0)
 	{
-		DataGroupNotFoundException e;
+		DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -192,14 +193,14 @@ DataGroupReader GenericFileReader::GetDataGroupReader(const std::wstring& name)
 {
 	if (gendata==0 || fileStream.is_open() == false)
 	{
-		DataGroupNotFoundException e;
+		DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	DataGroupHeader* dch = gendata->FindDataGroupHeader(name);
 	if (dch == 0)
 	{
-		DataGroupNotFoundException e;
+		DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 

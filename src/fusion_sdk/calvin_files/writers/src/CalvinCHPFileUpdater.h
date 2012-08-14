@@ -279,6 +279,16 @@ public:
 	 */
 	void UpdateMultiDataMarkerABSignalsEntryBuffer(MultiDataType dataType, int row_start, int bufferEntrySize, const std::vector<char *> &entryBuffer);
 
+
+	/*! Seek to appropriate file position and update Cyto genotyping call entry vector
+     * @param dataType The data type.
+	 * @param row_start The start row for updating.
+     * @param bufferEntrySize The size of the buffer for a given element in the vector
+	 * @param entryBuffer The vector contain all buffered entries to be updated.
+	 */
+	void UpdateMultiDataCytoGenotypeEntryBuffer(MultiDataType dataType, int rowStart, int bufferEntrySize, const std::vector<char*> &entryBuffer);
+
+
 	/*! Close CHP signal file. */
 	void CloseCHPFile();
 

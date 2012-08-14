@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 /**
@@ -28,6 +26,8 @@
 #ifndef MATRIXCHECK_H
 #define MATRIXCHECK_H
 
+//
+#include "util/Fs.h"
 #include "util/RegressionCheck.h"
 #include "util/Util.h"
 #include "util/Verbose.h"
@@ -59,6 +59,7 @@ public:
    *                     first column? Useful when the files aren't
    *                     necessarily in same order.
    * @param allowedMisMatch - How many can we get wrong before failing?
+   * @param frac - Maximum fractional difference from truth acceptable
    */
   MatrixCheck(
                 const std::string &generated, 
@@ -67,32 +68,51 @@ public:
                 int rowSkip, 
                 int colSkip, 
                 bool matchNames, 
-                unsigned int allowedMisMatch) :
-    m_Generated(generated), m_Gold(gold), m_Epsilon(eps),
+                unsigned int allowedMisMatch, 
+				double frac = 0.0 ) :
+    m_Generated(generated), m_Gold(gold), m_Epsilon(eps), m_Fraction(frac), 
     m_RowSkip(rowSkip), m_ColSkip(colSkip), m_MatchNames(matchNames),
-    m_AllowedMisMatch(allowedMisMatch) { 
-        m_Name = Util::fileRoot(generated);
+    m_AllowedMisMatch(allowedMisMatch), m_PrintMismatch(false), m_PrintMismatchMax(-1) { 
+    m_Name = Fs::basename(generated);
     }
+
+  /** 
+   * Utility function to enable/disable reporting of individual differences
+   * @param print - mismatches printed if true, not printed if false.
+   * @return - void
+   */
+  void setPrintMismatch(bool print) {
+    m_PrintMismatch = print;
+  }
+
+  /** 
+   * Utility function to set the max number of mismatches reported
+   * @param max - maximum number of mismatches to report (set to -1 for no limit default behavior)
+   * @return - void
+   */
+  void setPrintMismatchMax(int max) {
+    m_PrintMismatchMax = max;
+  }
 
   /** 
    * Check to make sure that two files are the same +/- some epsilon. 
    * @param msg - Fills in an error message if test fails, empty string otherwise.
    * @return - Returns true if files are close enough, false otherwise.
    */
-    bool check(std::string &msg) {
+  bool check(std::string &msg) {
     std::string generated(m_Generated), gold(m_Gold);
     msg = "";
     bool success = true;
     // Fix pathnames to work for this platform.
-    generated = Util::convertPathName(generated.c_str());
-    gold = Util::convertPathName(gold.c_str());
+    generated = Fs::convertToUncPath(generated);
+    gold = Fs::convertToUncPath(gold);
     /* Santiy checks. */
-    if(!Util::fileReadable(generated.c_str())) {
-      msg += "Can't open file: " + ToStr(generated.c_str()) + " to read.";
+    if (!Fs::isReadable(generated)) {
+      msg += "Can't open file: "+FS_QUOTE_PATH(generated)+" to read.";
       return false;
     }
-    if(!Util::fileReadable(gold.c_str())) {
-      msg += "Can't open file: " + ToStr(gold.c_str()) + " to read.";
+    if (!Fs::isReadable(gold.c_str())) {
+      msg += "Can't open file: "+FS_QUOTE_PATH(gold)+" to read.";
       return false;
     }
     if(!(m_ColSkip >= 0 && m_RowSkip >= 0 && m_Epsilon >= 0)) {
@@ -104,14 +124,15 @@ public:
     Err::setThrowStatus(true); 
     int diffCount;
     try {
-        diffCount = Util::matrixDifferences(generated.c_str(), gold.c_str() , 
-                                            m_ColSkip, m_RowSkip, m_Epsilon, false, m_MatchNames);
+        diffCount = Util::matrixDifferences(generated.c_str(), gold.c_str(), 
+                                            m_ColSkip, m_RowSkip, m_Epsilon, m_PrintMismatch, m_MatchNames, 
+											m_Fraction, m_PrintMismatchMax );
     } 
     catch(Except &e) {
         msg += "Caught exception: " + ToStr(e.what());
         return false;
     }
-    Err::popHandler();
+    Err::setThrowStatus(true); 
 
     if(diffCount > (int)m_AllowedMisMatch) {
       success = false;
@@ -125,12 +146,15 @@ public:
   std::string m_Generated;   ///< File created by application being tested.
   std::string m_Gold;        ///< File believed to be "truth"
   double m_Epsilon;      ///< Maximum abosolute difference from truth acceptable.
+  double m_Fraction;     ///< Maximum fractional difference from truth acceptable
   int m_RowSkip;        ///< Number of rows to skip before comparing.
   int m_ColSkip;        ///< Number of columns to skip before comparing.
   bool m_MatchNames;    ///< Should we try to match the names using
                         ///  first column? Useful when the files aren't
                         ///  necessarily in same order.
   unsigned int m_AllowedMisMatch;  ///< How many can we get wrong before failing?
+  bool m_PrintMismatch;   ///< Mismatches printed if true, not printed if false.
+  int m_PrintMismatchMax; ///< Maximum number of mismatches to print (default -1 for no limit)
 };
 
 #endif /* MATRIXCHECK_H */

@@ -1,0 +1,13 @@
+--- fusion_sdk/file/CDFFileData.cpp	2012-08-14 11:50:21.000000000 -0600
++++ affxparser/src/fusion_sdk/file/CDFFileData.cpp	2012-08-14 12:38:16.000000000 -0600
+@@ -919,8 +919,8 @@
+         ReadNextLine(instr, str, MAXLINELENGTH); // #qc ProbeSets
+         subStr=strchr(str,'=')+1;
+         m_Header.m_NumQCProbeSets = atoi(subStr);
+-        char strref[65000];
+-        ReadNextLine(instr, strref, 65000);    // The reference string.
++        char strref[400000];
++        ReadNextLine(instr, strref, 400000);    // The reference string.
+         subStr=strchr(strref,'=')+1;
+         m_Header.m_Reference = subStr;
+     }

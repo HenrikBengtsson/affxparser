@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -31,12 +29,11 @@
 #define _VERBOSE_H
 
 //
+#include "portability/apt-win-dll.h"
 #include "util/MsgHandler.h"
 #include "util/MsgStream.h"
 #include "util/ProgressDot.h"
 #include "util/ProgressHandler.h"
-//
-#include "apt/apt.h"
 //
 #include <cassert>
 #include <cstring>
@@ -44,7 +41,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
-//
+
+
+void em_out(const std::string& msg);
+
 
 /**
  *  Verbose
@@ -66,8 +66,14 @@ public:
       m_ProHandler.push_back(progHandler);
       m_MsgHandler.push_back(msgHandler);
       m_WarnHandler.push_back(warnHandler);
+      m_ProgDefault = progHandler;
+      m_MsgDefault = msgHandler;
+      m_WarnDefault = warnHandler;
     }
 
+    ProgressHandler *m_ProgDefault;
+    MsgHandler *m_MsgDefault;
+    MsgHandler *m_WarnDefault;
     std::vector<ProgressHandler *> m_ProHandler; ///< Vector of handlers to be called with progress reports.
     std::vector<MsgHandler *> m_MsgHandler; ///< Vector of handlers for messages (i.e. log files, consoles, dialogs).
     std::vector<MsgHandler *> m_WarnHandler; ///< Vector of handlers for warnings
@@ -88,14 +94,22 @@ public:
   /// @brief Functions to add and remove handlers for communcation functions.
   static void pushProgressHandler(ProgressHandler *handler);
   static void popProgressHandler();
+  static void removeProgressHandler(ProgressHandler *h);
+  static void removeProgressHandler(std::vector<ProgressHandler *> &vec, ProgressHandler *h);
+
   static void pushMsgHandler(MsgHandler *handler);
   static void popMsgHandler();
+  static void removeMsgHandler(MsgHandler *handler);
+  static void removeMsgHandler(std::vector<MsgHandler *> &vec, MsgHandler *h);
+
   static void pushWarnHandler(MsgHandler *handler);
   static void popWarnHandler();
 
   static void progressBegin(int verbosity, const std::string &msg, int total, int dotMod, int maxCalls);
   static void progressStep(int verbosity);
   static void progressEnd(int verbosity, const std::string &msg);
+
+  static void removeDefault();
 
   /** 
    * @brief Set whether or not output messages are logged

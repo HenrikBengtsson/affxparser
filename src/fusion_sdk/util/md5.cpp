@@ -31,7 +31,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
-//
+
+#ifdef _MSC_VER
+#pragma warning( disable: 4244 )
+#endif
 
 //////////
 

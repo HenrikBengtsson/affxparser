@@ -37,7 +37,7 @@
 #include <streambuf>
 #include <string>
 #include <vector>
-//
+
 
 /// The default number of decimal places in output
 #define TSV_DEFAULT_PRECISION 6
@@ -99,10 +99,16 @@ namespace affx {
     TSV_ERR_FILEIO           = -15, ///< Some sort of file IO error
     TSV_ERR_FORMAT           = -16, ///< The format of the file is bad
     TSV_ERR_EOF              = -17, ///< Hit the end of the file
+    //
     TSV_HEADER               = -30, ///< A header line was read
     TSV_HEADER_LAST          = -31, ///< Did not read a header line
     TSV_LEVEL_LAST           = -32, ///< Did not read a line of the correct level
     TSV_FIND_LAST            = -33, ///< Found the last matching value
+    //
+    TSV_ERR_BINARY           = -40, ///< This is some sort of binary file.
+    TSV_ERR_CALVIN           = -41, ///< This is a calvin file.
+    TSV_ERR_HDF5             = -42, ///< This is a HDF5 file.
+    //
     TSV_LASTVALUE            = -99, ///< end of errors
   };
 
@@ -150,13 +156,23 @@ namespace affx {
     TSV_ADD_COMMENTS = 0x02, /// return comments
     TSV_ADD_ALL      = (TSV_ADD_KEYS|TSV_ADD_COMMENTS) /// keys and comments
   };
+  /// misc optional flags
+  enum tsv_optionflag_t {
+    TSV_OPT_NONE           = 0x00,
+    TSV_OPT_CASESENSTIVE   = 0x01,
+    TSV_OPT_CASEINSENSTIVE = 0x02,
+  };
 
   // string functions
   void ltrim(std::string& str);
   void rtrim(std::string& str);
   void trim(std::string& str);
+  //
+  std::string tolower(const std::string& str);
+  //
   void dequote(std::string& str);
   int  splitstr(const std::string& str,char c,std::vector<std::string>& vec);
+  int  countchars(const std::string& str,char c);
   //
   int unescapeChar(int c);
   int escapeChar(int c);
@@ -285,6 +301,7 @@ public:
 
   // get the value of the column
   int get(std::string*  val);
+  int get(short*        val);
   int get(int*          val);
   int get(double*       val);
   int get(float*        val);
@@ -292,7 +309,6 @@ public:
   int get(uint64_t*     val);
   //
 #ifndef SWIG
-  //
   int get(std::vector<int>* val,char sep=',');
   int get(std::vector<float>* val,char sep=',');
   int get(std::vector<double>* val,char sep=',');
@@ -302,9 +318,11 @@ public:
   //
   int set(const std::string& val); ///< set the val
   int set(int           val); ///< set the val
+  int set(short         val); ///< set the val
   int set(double        val); ///< set the val
   int set(unsigned int  val); ///< set the val
   int set(uint64_t      val); ///< set the val
+
 #ifndef SWIG
   int set(float         val); ///< set the val
 #endif
@@ -411,11 +429,13 @@ public:
   bool m_optAutoIndex;          ///< ?
   bool m_optAutoSenseSep;       ///< Autosense between tabs and commas
   bool m_optAutoTrim;           ///< remove whitespace from value?
+  bool m_optCheckFormatOnOpen;  ///< Automatically check for binary files?
   bool m_optDoQuote;            ///< Put quotes on output?
   char m_optEscapeChar;         ///< the escape char to use
   bool m_optEscapeOk;           ///< Obey the escapechar?
   bool m_optHasColumnHeader;    ///< read the first line as column headers?
   bool m_optThrowOnError;       ///< ?
+
   unsigned char m_optQuoteChar; ///< Quote char to use
   std::string m_optEndl;        ///< End of line sequence to use
   unsigned char m_optFieldSep;  ///< Field seperator defaults to TAB.
@@ -442,6 +462,8 @@ public:
 
 private:
 
+  bool m_rawOpen;
+  
   // marked private to force use of the accessors.
   int m_lineNum; ///< The current line number
   int m_lineLvl; ///< The level of the current line
@@ -501,6 +523,9 @@ public:
 
 #ifndef SWIG
   TsvFile& operator=(const TsvFile& that) {
+#ifdef _MSC_VER
+    (that); /* unused var */
+#endif
     Err::errAbort("TsvFile: Assigment of TsvFile not allowed.");
     return *this;
   };
@@ -523,7 +548,10 @@ public:
   std::string getFileName() { return m_fileName; }
   int getLevelCount();
   int getColumnCount(int clvl);
+  static int getLineCountInFile(const std::string& filename, bool abortOnError = false);
 
+  static int replaceCharInFile(const std::string &filename, char a, char b, bool abortOnError = true);
+  
   /// \brief Opens a file -- attempts to guess some defaults
   int open(const std::string& filename);
   /// Open a Csv file
@@ -532,12 +560,17 @@ public:
   int openTable(const std::string& filename);
   /// Close the file
   int close();
+private:
+  /// init a new object
+  void init();
+public:
   /// Closes the file and clears bindings and other info
   void clear();
   void clearBindings();
   void clearIndexes();
   void clearFields();
   void clearFieldsBelowClvl(int clvl_start);
+  void clearColumnHeaders();
   void clearHeaders();
   int  headerCount();
   /// Resets the options to the defaults
@@ -545,8 +578,8 @@ public:
   /// Check if file is opened
   int isFileOpen() { return (m_fileStream.is_open()? TSV_OK : TSV_ERR_FILEIO); }
   // same as the filestream
-  int is_open() { return m_fileStream.is_open(); }
-  int good() { return m_fileStream.good(); }
+  bool is_open() { return m_fileStream.is_open(); }
+  bool good() { return m_fileStream.good(); }
 
   // These are internal methods.
   int f_getline(std::string& line);
@@ -600,6 +633,9 @@ public:
   int getHeader(const std::string& key,double& val);
   int getHeader(const std::string& key,std::vector<std::string>& val);
   int getHeaderAppend(const std::string& key,std::vector<std::string>& val);
+  // obtain the vector of header values whose header names contain the substring in key
+  int getHeaderMatchingKeySubstr(const std::string& key,std::vector<std::string>& val);
+  int getHeaderMatchingKeySubstrAppend(const std::string& key,std::vector<std::string>& val);
 
   // check to see if there is a header which is equal to val.
   // this is handy for checking chip types.
@@ -636,6 +672,8 @@ public:
 #endif
   int addHeaderComment(const std::string& comment);
   int addHeaderComment(const std::string& comment,int order);
+  int addHeaderComments(const std::vector<std::string>& comments);
+
   //
   void repackHeaders();
   void resortHeaders();
@@ -644,11 +682,25 @@ public:
 
   //
   int  cname2cidx(int clvl,int cidx);
-  int  cname2cidx(int clvl,const std::string& cname);
+  int  cname2cidx(int clvl,
+                  const std::string& cname,
+                  tsv_optionflag_t options=TSV_OPT_NONE);
   // find the first column name which matches.
-  int  cname2cidx(int clvl,const std::string& alias1,const std::string& alias2);
-  int  cname2cidx(int clvl,const std::string& alias1,const std::string& alias2,const std::string& alias3);
-  int  cname2cidx(int clvl,const std::string& alias1,const std::string& alias2,const std::string& alias3,const std::string& alias4);
+  int  cname2cidx(int clvl,
+                  const std::string& alias1,
+                  const std::string& alias2,
+                  tsv_optionflag_t options=TSV_OPT_NONE);
+  int  cname2cidx(int clvl,
+                  const std::string& alias1,
+                  const std::string& alias2,
+                  const std::string& alias3,
+                  tsv_optionflag_t options=TSV_OPT_NONE);
+  int  cname2cidx(int clvl,
+                  const std::string& alias1,
+                  const std::string& alias2,
+                  const std::string& alias3,
+                  const std::string& alias4,
+                  tsv_optionflag_t options=TSV_OPT_NONE);
 
 #ifndef SWIG
   TsvFileField* clvlcidx2colptr(int clvl,int cidx);
@@ -739,6 +791,7 @@ public:
 
   // Get a value given a clvl and cidx
   int get(int clvl,int cidx,std::string& val);
+  int get(int clvl,int cidx,short&       val);
   int get(int clvl,int cidx,int&         val);
   int get(int clvl,int cidx,double&      val);
   int get(int clvl,int cidx,float&       val);
@@ -746,6 +799,7 @@ public:
   int get(int clvl,int cidx,uint64_t&    val);
   //
   int get(int clvl,const std::string& cname,std::string& val);
+  int get(int clvl,const std::string& cname,short&       val);
   int get(int clvl,const std::string& cname,int&         val);
   int get(int clvl,const std::string& cname,double&      val);
   int get(int clvl,const std::string& cname,float&       val);

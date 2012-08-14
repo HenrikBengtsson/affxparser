@@ -21,6 +21,8 @@
 //
 #include "file/FileIO.h"
 //
+#include "util/Fs.h"
+//
 #include <cstring>
 #include <fstream>
 #include <istream>
@@ -178,7 +180,8 @@ std::string CCHPFileHeader::GetSummaryParameter(const char *tag)
 
 BackgroundZoneType CCHPFileHeader::GetBackgroundZone(int x, int y)
 {
-	BackgroundZoneType zone;
+	BackgroundZoneType zone = {0.0, 0.0, 0.0};
+
 	BackgroundZoneTypeList::iterator iter;
 	for (iter=m_BackgroundZoneInfo.zones.begin(); iter!=m_BackgroundZoneInfo.zones.end(); ++iter)
 	{
@@ -476,7 +479,7 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 	bool bXDA = false;
 	if (IsXDACompatibleFile())
 		bXDA = true;
-	instr.open(m_FileName.c_str(), std::ios::in | std::ios::binary);
+	Fs::aptOpen(instr, m_FileName, std::ios::in | std::ios::binary);
 
 	// Check if open
 	if (!instr)
@@ -1358,7 +1361,8 @@ bool CCHPFileData::Open(bool bReadHeaderOnly)
 bool CCHPFileData::IsXDACompatibleFile()
 {
 	// Open the file.
-	std::ifstream instr(m_FileName.c_str(), std::ios::in | std::ios::binary);
+	std::ifstream instr;
+	Fs::aptOpen(instr, m_FileName.c_str(), std::ios::in | std::ios::binary);
 	if (!instr)
 		return false;
 
@@ -1376,7 +1380,8 @@ bool CCHPFileData::IsXDACompatibleFile()
 bool CCHPFileData::IsMas5File()
 {
 	// Open the file.
-	std::ifstream instr(m_FileName.c_str(), std::ios::in | std::ios::binary);
+	std::ifstream instr;
+	Fs::aptOpen(instr, m_FileName.c_str(), std::ios::in | std::ios::binary);
 	if (!instr) return false;
 
 	// Read the string that defines the CHP file (older format).

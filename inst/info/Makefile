@@ -4,10 +4,11 @@
 ##     check for files and directories that ought to be deleted
 ##   then copy
 
-fusion=~/Work/packages/affy/sdk
+fusion=~/Work/packages/fusion_sdk
 affxparser_base=~/Work/packages/affxparser
 affxparser_fusion=${affxparser_base}/src/fusion_sdk
 affxparser_patchdir_1.1.0=${affxparser_base}/inst/info/fusion_1.1.0_patches
+affxparser_patchdir_1.1.2=${affxparser_base}/inst/info/fusion_1.1.2_patches
 
 compare :
 	diff -rq ${fusion} ${affxparser_fusion} | grep Only | grep -v svn | cat
@@ -21,11 +22,18 @@ cleanfusion :
 	${fusion}/libraries_and_tools \
 	${fusion}/parser_examples \
 	${fusion}/sample_data \
+	${fusion}/images \
+	${fusion}/css \
 	${fusion}/*.html \
 	${fusion}/*.gif \
 	${fusion}/portability/CPPTest \
 	${fusion}/file/CPPTest \
 	${fusion}/file/readme.html \
+	${fusion}/file/TsvFile/*.vcproj \
+	${fusion}/file/TsvFile/*.csv \
+	${fusion}/file/TsvFile/*.pgf \
+	${fusion}/file/TsvFile/*.tsv \
+	${fusion}/file/TsvFile/*.txt \
 	${fusion}/calvin_files/makefile.g5 \
 	${fusion}/calvin_files/template/test \
 	${fusion}/calvin_files/array/test \
@@ -51,7 +59,9 @@ cleanfusion :
 	${fusion}/file/file.vcproj \
 	${fusion}/file/file.sln \
 	${fusion}/file/lib-file-apt.vcproj \
+	${fusion}/util/lib-util-devnet.vcproj \
 	${fusion}/style.css \
+
 
 patch_1.1.0:
 #	patch -N ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir_1.1.0}/CDFFileData.cpp-patch
@@ -59,3 +69,13 @@ patch_1.1.0:
 	patch -N ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir_1.1.0}/AffxConv.cpp-patch
 	patch -N ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir_1.1.0}/AffxByteArray.cpp-patch
 	patch -N ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir_1.1.0}/AffymetrixBaseTypes.h-patch
+
+patch_1.1.2:
+	patch -N ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir_1.1.2}/CDFFileData.cpp-patch
+	patch -N ${affxparser_fusion}/portability/affy-base-types.h ${affxparser_patchdir_1.1.2}/affy-base-types.h-patch
+	patch -N ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir_1.1.2}/AffxConv.cpp-patch
+	patch -N ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir_1.1.2}/AffxByteArray.cpp-patch
+	patch -N ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir_1.1.2}/AffymetrixBaseTypes.h-patch
+	patch -N ${affxparser_fusion}/calvin_files/utils/src/FileUtils.cpp ${affxparser_patchdir_1.1.2}/FileUtils.cpp-patch
+
+

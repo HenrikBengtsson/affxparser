@@ -2,26 +2,26 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
 //
+#include "util/AptVersionInfo.h"
 #include "util/BaseEngine.h"
 #include "util/Engines.h"
+#include "util/Fs.h"
 #include "util/LogStream.h"
 #include "util/PgOptions.h"
 #include "util/Util.h"
@@ -30,95 +30,12 @@
 #include <list>
 #include <string>
 #include <vector>
+
 //
 #ifndef WIN32
 #include <unistd.h>
 #endif /* WIN32 */
 
-/**
-\page apt-engine-wrapper MANUAL: apt-engine-wrapper (NON-OFFICIAL-RELEASE)
-
-\section Contents Contents
-
-<ul>
-<li><a href="#intro">Introduction.</a></li>
-<li><a href="#options">Program Options - command line options.</a></li>
-</ul>
-
-<a name="intro">
-\section intro Introduction
-
-This program allows you to directly call an analysis engine. You essentially specify the
-engine and then all the engine parameters. You can get help on using the wrapper like this:
-
-\verbatim
-   apt-engine-wrapper --help
-\endverbatim
-
-This will also provide a listing of known analysis engines. You can get help on what options 
-are available to each engine like so:
-
-\verbatim
-   apt-engine-wrapper --engine ProbesetSummarizeEngine --help
-\endverbatim
-
-And you can actually run the engine like this:
-
-\verbatim
-   apt-engine-wrapper --engine ProbesetSummarizeEngine -- [engine options]
-\endverbatim
-
-
-<a name="options">
-\subsection manualOptions Options:
-
-<!-- Do not edit this verbatim section.
-     It will be replaced automatically w/ the results
-     of running this program with the -h option
-     --->
-
-\verbatim
-apt-engine-wrapper - Generic wrapper around the engine
-factory. You probably want to use one of the engine
-specific wrappers. Use ' -- ' to separate wrapper args
-from engine args.
-
-usage:
-   apt-engine-wrapper --help 
-   apt-engine-wrapper --engine ProbesetSummarizeEngine --help 
-   apt-engine-wrapper --engine ProbesetSummarizeEngine -- \
-     --cdf-file=... 
-
-
-
-options:
-     --engine                   The engine to run. [default ''] 
-     --log-file The file to write out log items to. [default ''] 
-   -h, --help This message. [default 'false'] 
-     --version Display version information. [default 'false'] 
-     --verbose Verbosity Level. [default '1'] 
-
-Available Engines:
-   MAS5Engine
-   GenoQC
-   ProbesetGenotypeEngine
-   ProbesetSummarizeEngine
-   SummaryGenotypeEngine
-   CanaryEngine
-   DmetCHPWriter
-   DmetCopyNumberEngine
-   DmetEngine
-   CNAnalysisEngine
-   CNCytoEngine
-   CNLog2RatioEngine
-   CNReferenceEngine
-   CNWorkflowEngine
-   TranslationEngine
-
-version: NON-OFFICIAL-RELEASE-$Id: apt-engine-wrapper.cpp,v 1.24.2.1 2009/10/13 14:18:52 awilli Exp $
-\endverbatim
-
-*/
 
 using namespace std;
 
@@ -130,9 +47,10 @@ int main(int argc, char *argv[]) {
   bool closeLog = false;
     
   try {
-  const string version ("NON-OFFICIAL-RELEASE");
-  const string cvsId ("$Id: apt-engine-wrapper.cpp,v 1.24.2.1 2009/10/13 14:18:52 awilli Exp $");
-  const string versionToReport = version + "-" + cvsId;
+  const string version = AptVersionInfo::version();
+  const string cvsId = AptVersionInfo::cvsId();
+  const string versionToReport = AptVersionInfo::versionToReport();
+    
 
   /* Parse options. */
   PgOptions opts;
@@ -162,7 +80,7 @@ int main(int argc, char *argv[]) {
                     "1");
 
   int argvPos = opts.parseArgv(argv);
-  const string progName = Util::fileRoot(opts.getProgName());
+  const string progName = Fs::basename(opts.getProgName());
 
   // does the user want the version 
   if(opts.getBool("version")) {
@@ -198,7 +116,7 @@ int main(int argc, char *argv[]) {
         Verbose::setLevel(opts.getInt("verbose"));
         if(opts.get("log-file") != "") {
             string logName = opts.get("log-file");
-            Util::mustOpenToWrite(logOut, logName.c_str());
+            Fs::mustOpenToWrite(logOut, logName.c_str());
             log.setStream(&logOut);
             Verbose::pushMsgHandler(&log);
             Verbose::pushProgressHandler(&log);

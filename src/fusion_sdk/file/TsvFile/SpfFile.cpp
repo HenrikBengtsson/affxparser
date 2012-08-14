@@ -75,6 +75,7 @@ affx::SpfFile::clearCidx()
   m_v3_context_lbl_cidx=-1;
   m_v3_context_code_cidx=-1;
   m_v3_channel_code_cidx=-1;
+  m_v3_rep_type_cidx=-1;
   m_v3_annotation_code_cidx=-1;
   // level 3
   m_v3_probe_id_cidx=-1;
@@ -112,7 +113,7 @@ void affx::SpfFile::dumpCidx()
   DUMP_CIDX(m_v2_num_blocks_cidx);
   DUMP_CIDX(m_v2_block_sizes_cidx);
   DUMP_CIDX(m_v2_block_annotations_cidx);
-    DUMP_CIDX(m_v2_num_probes_cidx);
+  DUMP_CIDX(m_v2_num_probes_cidx);
   DUMP_CIDX(m_v2_probes_cidx);
   DUMP_CIDX(m_v2_block_alleles_cidx);
   DUMP_CIDX(m_v2_block_contexts_cidx);
@@ -360,6 +361,10 @@ affx::SpfFile::determineFormat()
   m_spf_format=0;
   return m_spf_format;
 }
+
+// on second thought, the headers arent really required.
+// but the return value should still be checked.
+// #define getRequiredHeader(_key,_val) { if (getHeader(_key,_val)!=TSV_OK) { APT_ERR_ABORT("SpfFile::readSpf(): missing header: '" _key "'") } }
 
 int 
 affx::SpfFile::openSpf(const std::string& fileName)

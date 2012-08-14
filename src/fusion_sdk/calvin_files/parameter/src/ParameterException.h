@@ -35,6 +35,12 @@ namespace affymetrix_calvin_exceptions
  */
 class ParameterMismatchException : public CalvinException
 {
+public:
+  ParameterMismatchException() : CalvinException() {}
+  ParameterMismatchException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+    
+  const std::wstring ToString();
 };
 
 /*! This exception indicates the parameter type does not match the expected type
@@ -43,7 +49,10 @@ class ParameterMismatchException : public CalvinException
 class UnexpectedParameterException : public CalvinException
 {
 public:
-	UnexpectedParameterException(const std::wstring& expectedType_) : expectedType(expectedType_) {}
+    UnexpectedParameterException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode, const std::wstring& expectedType_):
+      CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode),
+      expectedType(expectedType_){}
+  const std::wstring ToString();
 protected:
 	/*! String with the name of the expected type */
 	std::wstring expectedType;
@@ -57,8 +66,10 @@ public:
 	 *	@param lower_ lower limit of the range
 	 *	@param upper_ upper limit of the range
 	 */
-	OutOfRangeParameterException(const std::wstring& lower_, const std::wstring& upper_):
-		lower(lower_), upper(upper_) {}
+	OutOfRangeParameterException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode, const std::wstring& lower_, const std::wstring& upper_):
+          CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode), 
+          lower(lower_), upper(upper_) {}
+  const std::wstring ToString();
 protected:
 	std::wstring lower;
 	std::wstring upper;
@@ -71,7 +82,9 @@ public:
 	/*! Constructor
 	 *	@param len Max length of the string
 	 */
-	ParameterStringTooLongException(int32_t len): maxLen(len) {}
+	ParameterStringTooLongException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode, int32_t len):
+          CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode), maxLen(len) {}
+          const std::wstring ToString();
 protected:
 	int32_t maxLen;
 };

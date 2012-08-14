@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -27,6 +25,7 @@
 
 //
 #include "util/AffxByteArray.h"
+#include "util/Fs.h"
 //
 #include <cstring>
 #include <limits>
@@ -351,7 +350,7 @@ bool AffxByteArray::operator==(const AffxByteArray &ba)
 	return bEqual;
 }
 
-bool AffxByteArray::equals(const AffxString &str)
+bool AffxByteArray::equals(const AffxString &str) const
 {
 	bool bEqual = false;
 
@@ -552,42 +551,28 @@ AffxByteArray& AffxByteArray::getColumn(int iColumnNumber, AffxByteArray& ba)
 	return ba;
 }
 
-char AffxByteArray::parseChar()
+char AffxByteArray::parseChar() const
 {
 	if (getLength() > 0) {return getAt(0);}
 	else return 0;
 }
 
 // Convert the byte array into an int value.
-int AffxByteArray::parseInt()
+int AffxByteArray::parseInt() const
 {
-	int iIndex = 0;
-	char buffer[64];
-	short i = 0;
-
-	trim();
-	int iSize = getSize();
-
-	while ((iIndex < iSize) && (i < 63) && ((isdigit(getAt(iIndex))) || (getAt(iIndex) == '-')))
-	{
-		buffer[i] = (char)(getAt(iIndex));
-		iIndex++;
-		i++;
-	}
-	buffer[i] = '\0';
-	int iResult = atol(buffer);
-	AffxByteArray ba;
-	ba.append(iResult);
-	return iResult;
+  char *endPtr = NULL;
+  return (int) strtol(this->toString().c_str(), &endPtr, 0);
 }
 
-bool AffxByteArray::parsebool()
+bool AffxByteArray::parsebool() const
 {
 	bool b = false;
-    toLowerCase();
-    trimTabs();
-	if ((equals("1")) || (equals("y")) || (equals("yes")) || (equals("true")) || (equals("t"))) {b = true;}
-   	else if ((equals("")) || (equals("0")) || (equals("n")) || (equals("no")) || (equals("false")) || (equals("f"))) {b = false;}
+        AffxByteArray ba(*this);
+        
+        ba.toLowerCase();
+        ba.trimTabs();
+	if ((ba.equals("1")) || (ba.equals("y")) || (ba.equals("yes")) || (ba.equals("true")) || (ba.equals("t"))) {b = true;}
+   	else if ((ba.equals("")) || (ba.equals("0")) || (ba.equals("n")) || (ba.equals("no")) || (ba.equals("false")) || (ba.equals("f"))) {b = false;}
 	return b;
 }
 
@@ -660,14 +645,14 @@ AffxByteArray& AffxByteArray::trim()
 	return *this;
 }
 
-AffxString AffxByteArray::toString()
+AffxString AffxByteArray::toString() const
 {
 	AffxString str;
 
 	if (getSize() > 0)
 	{
 		char *psz = (char *)malloc(getSize() + 1);
-#if defined WIN32 && !defined WIN64 && !defined(__MINGW32__)
+#if defined WIN32 && !defined WIN64
 		strncpy_s(psz, getSize() + 1, (char *)getData(), getSize());
 #else
 		strncpy(psz, (char *)getData(), getSize());
@@ -829,14 +814,14 @@ AffxByteArray AffxByteArray::reverseComplement()
 	return ba;
 }  
   
-double AffxByteArray::parseDouble()
+double AffxByteArray::parseDouble() const
 {
-	trim();
-	double d = atof(toString().c_str());
-	if ((equals("1.#IND")) || (equals("-1.#IND")) || (equals("1.#QNAN")) || (equals("nan"))) {d = numeric_limits<double>::quiet_NaN();}
-	if ((equals("1.#INF")) || (equals("Inf")) || (equals("inf"))) {d = numeric_limits<double>::infinity();}
-	if ((equals("-1.#INF")) || (equals("-Inf")) || (equals("-inf"))) {d = -numeric_limits<double>::infinity();}
-	return d;
+  char *endPtr = NULL;
+  double d = strtod(toString().c_str(), &endPtr);
+  if ((equals("1.#IND")) || (equals("-1.#IND")) || (equals("1.#QNAN")) || (equals("nan"))) {d = numeric_limits<double>::quiet_NaN();}
+  if ((equals("1.#INF")) || (equals("Inf")) || (equals("inf"))) {d = numeric_limits<double>::infinity();}
+  if ((equals("-1.#INF")) || (equals("-Inf")) || (equals("-inf"))) {d = -numeric_limits<double>::infinity();}
+  return d;
 }
 
 AffxByteArray& AffxByteArray::append(char bytes[], int offset, int len) {
@@ -1278,16 +1263,15 @@ bool AffxByteArray::nextField(int iStart, int iIndex, int iLength, AffxByteArray
 }
 
 // This function is used by AffxArray for sorting and searching.
-int AffxByteArray::compareTo(AffxByteArray obj, int iCompareCode)
+int AffxByteArray::compareTo(const AffxByteArray &obj, int iCompareCode) const
 {
 	int iCompareResult = 0;
-	AffxByteArray objThat = obj;
 	int iThis = 0;
 	int iThat = 0;
 	switch(iCompareCode)
 	{
 	case 0:
-	    iCompareResult = compareTo(objThat);
+	    iCompareResult = compareTo(obj);
 	    break;
 	case 1: 
 		iThis = parseInt();
@@ -1305,7 +1289,7 @@ int AffxByteArray::compareTo(AffxByteArray obj, int iCompareCode)
 	return iCompareResult;
 }
 
-int AffxByteArray::compareTo(AffxByteArray that)
+int AffxByteArray::compareTo(const AffxByteArray & that) const
 {
     int iResult = 0;
 	int iLength = __minimum(this->m_nSize, that.m_nSize);
@@ -1325,7 +1309,7 @@ int AffxByteArray::compareTo(AffxByteArray that)
 	return iResult;
 }
 
-int AffxByteArray::compareTo(AffxString that)
+int AffxByteArray::compareTo(const AffxString & that) const
 {
     int iResult = 0;
 	int iLength = __minimum(this->m_nSize, (int)that.length());
@@ -1422,4 +1406,25 @@ int AffxByteArray::getCount(char byBase)
 		if (getAt(iBaseIndex) == byBase) {iCount++;}
 	}
 	return (iCount);
+}
+
+// Read a the entire file into a byte array.
+bool AffxByteArray::readFile(const AffxString& strFileName)
+{
+  std::ifstream file;
+  bool bSuccessful = false;
+  unsigned int uiNumberBytes = Fs::fileSize(strFileName);
+
+  Fs::aptOpen(file, strFileName);
+  setSize(uiNumberBytes);
+  if (uiNumberBytes > 0)   {
+    memset(getData(), 0, uiNumberBytes);
+    file.read(getData(), uiNumberBytes);
+    bSuccessful = true;
+  }
+  file.close();
+  
+  setOffset(0);
+
+  return bSuccessful;
 }

@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -27,9 +25,50 @@
  * @brief  Class for doing logging and some command line ui.
  */
 
+//
+#include "calvin_files/utils/src/StringUtils.h"
+#include "portability/affy-system-api.h"
+#include "util/Fs.h"
+#include "util/Util.h"
 #include "util/Verbose.h"
+//
+#include <cstdlib>
+#include <fstream>
 
 using namespace std;
+using namespace affymetrix_calvin_utilities;
+
+/**
+ * @brief This function will create log file for test 
+ * purposes.  
+ * The path and name of the log file needs to be specified
+ * prior to use (see fname).
+ */
+
+/// a static pointer to the fstream which will be used for "emergency debugging output".
+std::fstream* em_out_fstream;
+
+void em_out(const std::string& msg)
+{
+  // if the stream isnt setup, then open it.
+	if (em_out_fstream==NULL) {
+		em_out_fstream=new std::fstream();
+		std::string fname="EM-OUT-"+ToStr((int)getpid())+"-"+ToStr((int)rand())+".log";
+#ifdef _MSC_VER
+		std::wstring wfname=StringUtils::ConvertMBSToWCS(fname);
+		em_out_fstream->open(wfname.c_str(),ios::out);
+#else
+    em_out_fstream->open(fname.c_str(),ios::out);
+#endif
+	}
+  
+  // now send the message...
+	*em_out_fstream << msg << "\n";
+  // ...and be sure the output goes to the file right away, as
+  // this function is used when we have a hard to debug crash.
+	em_out_fstream->flush();
+}
+
 
 /**
  * @brief Print a dot out to let the user know we are still alive
@@ -64,15 +103,18 @@ void Verbose::progressStep(int verbosity) {
 Verbose::Param &Verbose::getParam() {
 
   // Avoid weird windows .NET/Forms bug where linking to cout/cerr can cause problems...
+  static std::ostream *out = NULL;
+  if (std::cerr.good()) {
+    out = &std::cerr;
+  }
 #ifdef _NO_STD_OUT
   static ProgressDot progHandler(0, NULL);
   static MsgStream  msgHandler(0, NULL);
 #else
   // Normal console mode is ok.
-  static ProgressDot progHandler(1, &std::cerr);
-  static MsgStream msgHandler(1, &std::cerr);
+  static ProgressDot progHandler(1, out);
+  static MsgStream msgHandler(1, out);
 #endif
-
   // By default we just use a normal message handler as the warning handler.
   static Verbose::Param m_Param(&progHandler, &msgHandler, &msgHandler);
   return m_Param;
@@ -89,10 +131,12 @@ void Verbose::popProgressHandler() {
 
 void Verbose::pushMsgHandler(MsgHandler *handler) {
   getParam().m_MsgHandler.push_back(handler);
+  //  pushWarnHandler(handler); // @todo - Make this simpler. Too many push/pop calls currently
 }
 
 void Verbose::popMsgHandler() {
   getParam().m_MsgHandler.pop_back();
+  //  popWarnHandler(); // @todo - Make this simpler. Too many push/pop calls currently
 }
 
 void Verbose::pushWarnHandler(MsgHandler *handler) {
@@ -133,6 +177,52 @@ void Verbose::progressEnd(int verbosity, const std::string &msg) {
   }
 }
 
+void Verbose::removeMsgHandler(MsgHandler *h) {
+  Verbose::Param &p = getParam();
+  removeMsgHandler(p.m_MsgHandler, h);
+  removeMsgHandler(p.m_WarnHandler, h);
+}
+
+void Verbose::removeProgressHandler(ProgressHandler *h) {
+  Verbose::Param &p = getParam();
+  removeProgressHandler(p.m_ProHandler, h);
+}
+
+void Verbose::removeMsgHandler(std::vector<MsgHandler *> &vec, MsgHandler *h) {
+  vector<MsgHandler *>::iterator i;
+  for (i = vec.begin(); i < vec.end(); i++) {
+    if (*i == h) {
+      vec.erase(i);
+      break;
+    }
+  }
+} 
+
+void Verbose::removeProgressHandler(std::vector<ProgressHandler *> &vec, ProgressHandler *h) {
+  vector<ProgressHandler *>::iterator i;
+  for (i = vec.begin(); i < vec.end(); i++) {
+    if (*i == h) {
+      vec.erase(i);
+      break;
+    }
+  }
+} 
+
+void Verbose::removeDefault() {
+  Verbose::Param &p = getParam();
+  if (!p.m_ProHandler.empty() && p.m_ProHandler[0] == p.m_ProgDefault) {
+    p.m_ProHandler.erase(p.m_ProHandler.begin());
+    p.m_ProgDefault = NULL;
+  }
+  if (!p.m_MsgHandler.empty() && p.m_MsgHandler[0] == p.m_MsgDefault) {
+    p.m_MsgHandler.erase(p.m_MsgHandler.begin());
+    p.m_MsgDefault = NULL;
+  }
+  if (!p.m_WarnHandler.empty() && p.m_WarnHandler[0] == p.m_WarnDefault) {
+    p.m_WarnHandler.erase(p.m_WarnHandler.begin());
+  }
+}
+
 /** 
  * @brief Set whether or not output messages are logged
  *        useful to turn off output when catching expected errors
@@ -151,6 +241,7 @@ void Verbose::setOutput(bool output) {
  */  
 void Verbose::setLevel(int level) {
   Verbose::Param &p = getParam();
+  p.m_Verbosity = level;
   for(unsigned int i = 0; i < p.m_ProHandler.size(); i++) {
     p.m_ProHandler[i]->setBaseVerbosity(level);
   }
@@ -165,13 +256,16 @@ void Verbose::setLevel(int level) {
  * @param s - Message to be printed.
  * @param nl - Should a newline be appended to message?
  */
-void Verbose::out(int level, const std::string &s, bool nl) {
+void Verbose::out(int level, const std::string &s, bool nl) { 
   Verbose::Param &p = getParam();
   if(p.m_Output) {
       for(unsigned int i = 0; i < p.m_MsgHandler.size(); i++) {
           p.m_MsgHandler[i]->message(level, s, nl);
       }
   }
+  // this forces our messages out to the OS, so we know what is going on.
+  // If someone (errabort) calls exit, the messages might be left in our buffers and not written out.  
+  fflush(NULL); 
 }
 
 /** 

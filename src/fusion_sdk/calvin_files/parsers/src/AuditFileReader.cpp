@@ -23,6 +23,8 @@
 #include "calvin_files/parsers/src/AuditFileConstants.h"
 #include "calvin_files/utils/src/StringUtils.h"
 //
+#include "util/Fs.h"
+//
 #include <cstring>
 #include <fstream>
 #include <string.h>
@@ -58,7 +60,7 @@ bool AuditFileReader::Read(const std::string &fileName, affymetrix_calvin_array:
 
 	// Open the file.
 	std::ifstream fileStream;
-	fileStream.open(fileName.c_str(), std::ios::in);
+        Fs::aptOpen(fileStream, fileName);
 	if (!fileStream)
 	{
 		return false;

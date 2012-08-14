@@ -41,6 +41,22 @@ FusionCHPLegacyData::Reg FusionCHPLegacyData::reg;
 /*! The class name. */
 static AffymetrixGuidType ObjectName = "FusionCHPLegacyData";
 
+
+/*! Constructor - register the legacy file type. */
+namespace affymetrix_fusion_io
+{
+FusionCHPLegacyData::Reg ::Reg() : FusionCHPDataReg()
+{
+  std::list<std::string> ids;
+  ids.push_back(CHP_EXPRESSION_ASSAY_TYPE);
+  ids.push_back(CHP_RESEQUENCING_ASSAY_TYPE);
+  ids.push_back(CHP_GENOTYPING_ASSAY_TYPE);
+  ids.push_back(CHP_UNIVERSAL_ASSAY_TYPE);
+  ids.push_back("");
+  SetFileTypeIds(ids);
+}
+};
+
 /*
  */
 FusionCHPHeader::FusionCHPHeader()
@@ -209,7 +225,7 @@ void FusionCHPHeader::CheckAdapter() const
 {
 	if (adapter == 0)
 	{
-		FileNotOpenException e;
+		FileNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -227,7 +243,7 @@ void FusionCHPLegacyData::CheckAdapter() const
 {
 	if (adapter == 0)
 	{
-		FileNotOpenException e;
+		FileNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -337,7 +353,7 @@ void FusionCHPLegacyData::CreateAdapter()
 				else
 				{
                     adapter = 0;
-					UnableToOpenFileException e;
+					UnableToOpenFileException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
                     if(gcosAdapter!= NULL)
                         delete gcosAdapter;
                     gcosAdapter = 0;
@@ -347,7 +363,7 @@ void FusionCHPLegacyData::CreateAdapter()
 			else
 			{
                 adapter = 0;
-				UnableToOpenFileException e;
+				UnableToOpenFileException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
                 if(gcosAdapter!= NULL)
                     delete gcosAdapter;
                 gcosAdapter = 0;

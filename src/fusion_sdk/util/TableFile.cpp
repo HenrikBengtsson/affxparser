@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -31,6 +29,7 @@
 //
 #include "util/Convert.h"
 #include "util/Err.h"
+#include "util/Fs.h"
 #include "util/RowFile.h"
 #include "util/Util.h"
 #include "util/Verbose.h"
@@ -113,15 +112,18 @@ bool TableFile::open(const std::string& fileName, const std::vector<std::string>
   unsigned int i = 0;
   int count = 0;
   RowFile rf;
+
   rowOffset = (m_UseRowNames == true) ? 1 : 0;
-  rf.open(fileName.c_str());
+
+  std::string tmp_unc_path=Fs::convertToUncPath(fileName);
+  rf.open(tmp_unc_path.c_str());
 
   /* Read in any header. */
   rf.readHeader(rf, m_Header, m_HeaderLines);
 
   /* Read in column names. */
   if(!(rf.nextRow(words)) || words.empty())
-    Err::errAbort("Nothing after header in file: " + string(fileName));
+    Err::errAbort("Nothing after header in file: "+FS_QUOTE_PATH(tmp_unc_path));
 
   if(m_UseColNames) {
     /* Read in the column header names. */
@@ -137,7 +139,7 @@ bool TableFile::open(const std::string& fileName, const std::vector<std::string>
       }
       if(m_ColNameMap.find(name) != m_ColNameMap.end())
         Verbose::out(1, "Warning: Duplicate name: " + words[i] + 
-                     " in column headers from file: " + Util::fileRoot(fileName));
+                     " in column headers from file: " + Fs::basename(fileName));
       m_ColNameMap[name] = m_ColNames.size();
       m_ColNames.push_back(words[i]);
     }

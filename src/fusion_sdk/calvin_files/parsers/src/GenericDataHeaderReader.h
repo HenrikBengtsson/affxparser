@@ -49,6 +49,12 @@ public:
 	 *  @param gdh Reference to the GenericDataHeader object to which to add the GenericDataHeader information.
 	 */
 	void Read(GenericDataHeader& gdh);
+	/*! Read the GenericDataHeader and all parent GenericDataHeaders from the input stream.
+	 *  @param gdh Reference to the GenericDataHeader object to which to add the GenericDataHeader information.
+	 *  @param doUniqueAdds Hint to indicate to ensure no duplicates are added to the collection. If true, the 
+	 * check is made and performance is N^2, if false, no check is made and is assuming you are just reading from a file.
+	 */
+	void Read(GenericDataHeader& gdh, bool doUniqueAdds);
 
 protected:
 	/*! A reference to the file stream. */

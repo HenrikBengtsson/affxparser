@@ -19,8 +19,12 @@
 //
 ////////////////////////////////////////////////////////////////
 
-#ifndef _APT_H_
-#define _APT_H_
+/// @file This is used to put in the decls for windows DLLs
+///       It expands to nothing when APT_LIB_EXPORTS is not set.
+
+#ifndef _PORTABILITY_APT_WIN_DLL_H_
+#define _PORTABILITY_APT_WIN_DLL_H_
+
 
 #ifdef WIN32
 #ifdef APT_LIB_EXPORTS // when building DLL, target project defines this macro
@@ -34,5 +38,5 @@
 #define APTLIB_API
 #endif // WIN32
 
-#endif /* _APT_H_ */
+#endif
 

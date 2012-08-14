@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -27,11 +25,10 @@
  */
 
 //
-#include "util/PgOptions.h"
-//
-#include "util/AffxFile.h"
+
 #include "util/Convert.h"
 #include "util/Err.h"
+#include "util/PgOptions.h"
 #include "util/Util.h"
 //
 #include <cstdio>
@@ -54,7 +51,8 @@
 #include "../../external/xerces/src/xercesc/util/XMLString.hpp"
 #include "../../external/xerces/src/xercesc/framework/LocalFileInputSource.hpp"
 #include "../../external/xerces/src/xercesc/framework/URLInputSource.hpp"
-
+#include "util/AffxString.h"
+#include "util/Fs.h"
 class PgOptionsSAXHandler : public XERCES_CPP_NAMESPACE::HandlerBase
 {
 private:
@@ -79,6 +77,7 @@ public :
 	void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exc) {Err::errAbort(toString(exc.getMessage()));}
 
 	void startDocument() {m_uiOptionCount = 0;}
+
 	void endDocument()
 	{
 		if (m_strAnalysis != "")
@@ -94,6 +93,7 @@ public :
 			}
 		}
 	}
+
 	static std::string toString(const XMLCh* const in)
 	{
 		char* p = XERCES_CPP_NAMESPACE::XMLString::transcode(in);
@@ -101,8 +101,10 @@ public :
 		XERCES_CPP_NAMESPACE::XMLString::release(&p);
 		return str.trim();
 	}
-    void startElement(const XMLCh* const name, XERCES_CPP_NAMESPACE::AttributeList& attributes)
-	{
+
+
+        void startElement(const XMLCh* const name, XERCES_CPP_NAMESPACE::AttributeList& attributes)
+        {
 		std::string strElementName = toString(name);
 //		Verbose::out(1, "Element=" + strElementName);
 		m_uiOptionCount++;
@@ -192,8 +194,8 @@ public :
 				{
 					Verbose::out(1, "\t" + strOptionName + " = " + strCurrentValue);
 					if (strOptionName == "xml-file") {
-            m_pPgOptions->setOptionsFromXMLFile(strCurrentValue, *m_pvFileNames);
-          }
+                                                m_pPgOptions->setOptionsFromXMLFile(strCurrentValue, *m_pvFileNames);
+                                        }
 					else 
 					{
 						if (m_pPgOptions->mustFindOpt(strOptionName)->m_allowMultiple)
@@ -396,9 +398,9 @@ PgOptions& PgOptions::operator=(const PgOptions &options) {
 void PgOptions::appendOptions(const PgOptions &options)
 {
   // where do our options end?
-  int initial_end=m_option_vec.size();
+  size_t initial_end=m_option_vec.size();
   // add all the new options.
-  for(int i=0; i<options.m_option_vec.size(); i++) {
+  for(size_t i=0; i<options.m_option_vec.size(); i++) {
     addPgOpt(options.m_option_vec[i]);
   }
   // now add the section headings, adjusted for end.
@@ -416,7 +418,7 @@ PgOptions::PgOptions(const PgOptions &options) {
   m_strXMLParameterFileName=options.m_strXMLParameterFileName;
   m_strXMLParameterFileGuid=options.m_strXMLParameterFileGuid;
 
-  for(int i=0; i<options.m_option_vec.size(); i++) {
+  for(size_t i=0; i<options.m_option_vec.size(); i++) {
       addPgOpt(options.m_option_vec[i]);
   }
 
@@ -467,11 +469,11 @@ void PgOptions::setArgv(const char * const * const argv) {
 
 std::string PgOptions::commandLine() {
   std::ostringstream stream;
-  int m_argv_size=m_argv.size();
+  size_t m_argv_size=m_argv.size();
 
   if (0<m_argv_size) {
     stream << m_argv[0];
-    for (int i=1;i<m_argv_size;i++) {
+    for (size_t i=1;i<m_argv_size;i++) {
       stream << " ";
       stream << m_argv[i];
     }
@@ -510,6 +512,12 @@ PgOpt* PgOptions::addPgOpt_nocopy(PgOpt* opt)
   optionMapIterator_t i = m_option_map.find(opt->m_longName);
   if(i!=m_option_map.end()) {
     Err::errAbort("Option '" + opt->m_longName + "' already defined.");
+  }
+  if(!opt->m_shortName.empty()) {
+    i = m_option_map.find(opt->m_shortName);
+    if(i!=m_option_map.end()) {
+      Err::errAbort("Option '" + opt->m_shortName + "' already defined.");
+    }
   }
   // we will eventually free every opt in this vector.
   m_option_vec.push_back(opt);
@@ -560,22 +568,6 @@ PgOpt* PgOptions::defOptMult(const std::string& shortName,
 {
   PgOpt* opt=defineOption(shortName,longName,type,help,defaultValue);
   opt->allowMutipleValues(1);
-  return opt;
-}
-
-PgOpt* PgOptions::findOpt(const std::string &longName) {
-  optionMapIterator_t i = m_option_map.find(longName);
-  if (i == m_option_map.end()) {
-    return NULL;
-  }
-  return i->second;
-}
-
-PgOpt* PgOptions::mustFindOpt(const std::string &name) {
-  PgOpt *opt = findOpt(name);
-  if(opt == NULL) {
-    Err::errAbort("Don't recognize option with name: '" + name + "'.");
-  }
   return opt;
 }
 
@@ -652,7 +644,6 @@ void PgOptions::usage(std::set<std::string> &hiddenOpts, bool printOpts) {
 
 int PgOptions::parseArgv(const char * const * const argv, int start) {
   assert(argv!=NULL);
-
   setArgv(argv);
 
   // Loop through and match options with arguments.
@@ -660,7 +651,6 @@ int PgOptions::parseArgv(const char * const * const argv, int start) {
   while (arg_idx<m_argv.size() && m_argv[arg_idx] != "--") {
     matchOneArg(&arg_idx);
   }
-
   // dump the values at the end.
   // dump(); // debug
 
@@ -832,11 +822,6 @@ void PgOptions::clear(const std::string &name)
     mustFindOpt(name)->clearValues();
 }
 
-std::string PgOptions::get(const std::string& opt_name)
-{
-  PgOpt *opt = mustFindOpt(opt_name);
-  return opt->getValue(0);
-}
 bool PgOptions::getBool(const std::string& opt_name)
 {
   PgOpt *opt = mustFindOpt(opt_name);
@@ -878,9 +863,9 @@ void PgOptions::setOptionsFromXMLFile(const std::string& strFileNameIn, std::vec
 	if (vFileNames.size() > 7) {Err::errAbort("Possible run away recursion situation found in PgOptions::setOptionsFromXMLFile(...)");}
 	for (int iIndex = 0; (iIndex < (int)vFileNames.size()); iIndex++)
 	{
-		if (AffxFile::parseFileName(strFileName) == vFileNames[iIndex]) {Err::errAbort("Possible run away recursion situation found in PgOptions::setOptionsFromXMLFile(...)");}
+		if (Fs::basename(strFileName) == vFileNames[iIndex]) {Err::errAbort("Possible run away recursion situation found in PgOptions::setOptionsFromXMLFile(...)");}
 	}
-	vFileNames.push_back(AffxFile::parseFileName(strFileName));
+	vFileNames.push_back(Fs::basename(strFileName));
 	
 	if (m_strXMLParameterFileName == "")
 	{

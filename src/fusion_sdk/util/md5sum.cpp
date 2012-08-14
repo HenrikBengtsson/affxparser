@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -23,6 +21,7 @@
 //
 #include <util/md5sum.h>
 //
+#include <util/Fs.h>
 #include <util/md5.h>
 //
 #include <cassert>
@@ -30,8 +29,10 @@
 #include <cstring>
 #include <fstream>
 #include <string>
-//
 
+#ifdef _WIN32
+#include <winsock2.h> 
+#endif
 #ifndef _MSC_VER
 #include <netinet/in.h>
 #include <stdint.h>
@@ -121,6 +122,18 @@ int affx::md5sum::update_nbo(uint8_t val)
   return 0;
 }
 
+/// @brief     Update the md5 with all the values of the vector
+/// @param     vec   vector of ints to add to the checksum.
+/// @return    
+int affx::md5sum::update_nbo(const std::vector<int>& vec)
+{
+  for (int i=0;i<vec.size();i++) {
+    update_nbo(vec[i]);
+  }
+
+  return 0;
+}
+
 /*
  * Not needed for now.
  *
@@ -200,13 +213,24 @@ affx::md5sum::ofFile(const std::string filename,std::string& sum)
 {
   ifstream istm;
   char* buf_ptr;
-  int buf_size=(1<<12);
+  int buf_size=(1<<12); // 4MB
+
+  // clear the output now in case of an error later.
+  sum="";
+  init();
 
   buf_ptr=new char[buf_size];
   assert(buf_ptr!=NULL);
 
+  std::string uncfilename=Fs::convertToUncPath(filename);
+
   //istm.exceptions(ios_base::bad_bit|ios_base::fail_bit);
-  istm.open(filename.c_str(),ios_base::binary);
+  istm.open(uncfilename.c_str(),ios_base::binary);
+
+  if (istm.fail()) {
+    delete[] buf_ptr;
+    return -1;
+  }
 
   do {
     istm.read(buf_ptr,buf_size);
