@@ -71,11 +71,11 @@ patch_1.1.0:
 	patch -N ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir_1.1.0}/AffymetrixBaseTypes.h-patch
 
 patch_1.1.2:
-	# patch -N ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir_1.1.2}/CDFFileData.cpp-patch
-	# patch -N ${affxparser_fusion}/portability/affy-base-types.h ${affxparser_patchdir_1.1.2}/affy-base-types.h-patch
-	# patch -N ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir_1.1.2}/AffxConv.cpp-patch
-	# patch -N ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir_1.1.2}/AffxByteArray.cpp-patch
-	# patch -N ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir_1.1.2}/AffymetrixBaseTypes.h-patch
+	patch -N ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir_1.1.2}/CDFFileData.cpp-patch
+	patch -N ${affxparser_fusion}/portability/affy-base-types.h ${affxparser_patchdir_1.1.2}/affy-base-types.h-patch
+	patch -N ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir_1.1.2}/AffxConv.cpp-patch
+	patch -N ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir_1.1.2}/AffxByteArray.cpp-patch
+	patch -N ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir_1.1.2}/AffymetrixBaseTypes.h-patch
 	patch -N ${affxparser_fusion}/calvin_files/utils/src/FileUtils.cpp ${affxparser_patchdir_1.1.2}/FileUtils.cpp-patch
 
 
