@@ -35,6 +35,7 @@
 #include <direct.h>
 #define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
 #else
+#include <unistd.h>
 #include <dirent.h>
 #endif
 
