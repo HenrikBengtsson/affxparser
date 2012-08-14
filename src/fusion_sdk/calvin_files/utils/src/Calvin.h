@@ -31,11 +31,11 @@
 #include "calvin_files/parsers/src/GenericFileReader.h"
 #include "calvin_files/utils/src/StringUtils.h"
 #include "calvin_files/writers/src/GenericFileWriter.h"
-//
-#include "chipstream/BioTypes.h"
+
+//#include "chipstream/BioTypes.h" - not needed to build lib project
 #include "file/CHPFileData.h"
+#include "file/TsvFile/TsvFile.h"
 #include "util/AffxArray.h"
-#include "util/AffxFile.h"
 #include "util/AffxString.h"
 //
 #include <set>
@@ -147,6 +147,19 @@ public:
 		}
 		return iCompareResult;
 	}
+
+    template<int k> struct ComparePred {
+        bool operator()(const CalvinParameter* lhs, const CalvinParameter* rhs) const {
+            Err::errAbort("CalvinParameter: ComparePred instantiated with an invalid compare code = " + ToStr(k));
+            return false;
+        }
+    };
+};
+
+template<> struct CalvinParameter::ComparePred<0> {
+    bool operator()(const CalvinParameter* lhs, const CalvinParameter* rhs) const {
+        return lhs->m_strName.compareTo(rhs->m_strName, 0) < 0;
+    }
 };
 
 /**
@@ -289,13 +302,22 @@ public:
 	AffxArray<CalvinDataGroup>& getCalvinDataGroups() {return m_vCalvinDataGroups;}
 	
 	bool load(const AffxString& strFileName);
-	void dump(const AffxString& strFileName, int iPrecision = 6);
 	bool equivalent(Calvin& that, std::set<std::string>& setIgnore, std::map<std::string, float>& mapEpsilon, float fEpsilon = 0.0001, bool bCheckHeader = true, float fFraction = 0.0);
+        static bool equivalent(	const AffxString& strFileName1,
+                                const AffxString& strFileName2,
+                                std::set<std::string>& setIgnore,
+                                std::set<std::string>& setSetIgnore,
+                                std::map<std::string, float>& mapEpsilon,
+				float fEpsilon = 0.0001,
+                                double dCorrelationCutoff = 1.0,
+                                bool bCheckHeader = true,
+                                int iMessageLimit = 1000,
+                                float fFraction=0.0);
+
 	static bool equivalent(const AffxString& strFileName1, const AffxString& strFileName2, std::set<std::string>& setIgnore, std::map<std::string, float>& mapEpsilon, float fEpsilon = 0.0001, double dCorrelationCutoff = 1.0, bool bCheckHeader = true, int iMessageLimit = 1000, float fFraction = 0.0);
 
 protected:
 	void loadHeader(affymetrix_calvin_io::GenericDataHeader& Header, CalvinHeader& header);
-	void dumpHeader(CalvinHeader& header, int iPrecision, AffxFile& file);
 
 	bool equivalentHeader(const AffxString& strPrompt, CalvinHeader& headerThis, CalvinHeader& headerThat, std::set<std::string>& setIgnore, std::map<std::string, float>& mapEpsilon, float fEpsilon, float fFraction = 0.0);
 	static bool equivalentParameter(const AffxString& strPrompt, CalvinParameter& This, CalvinParameter& That, std::set<std::string>& setIgnore, std::map<std::string, float>& mapEpsilon, float fEpsilon, float fFraction = 0.0);

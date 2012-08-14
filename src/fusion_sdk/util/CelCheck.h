@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 /**
@@ -29,12 +27,12 @@
 #ifndef CELCHECK_H
 #define CELCHECK_H
 
+#include "calvin_files/fusion/src/FusionCELData.h"
+#include "calvin_files/utils/src/StringUtils.h"
+#include "util/Fs.h"
 #include "util/RegressionCheck.h"
 #include "util/Util.h"
 #include "util/Verbose.h"
-//
-#include "calvin_files/fusion/src/FusionCELData.h"
-#include "calvin_files/utils/src/StringUtils.h"
 //
 #include <algorithm>
 #include <cmath>
@@ -46,8 +44,6 @@
 #include <sys/stat.h>
 #include <vector>
 //
-
-using namespace std;
 using namespace affymetrix_fusion_io;
 
 /**
@@ -104,10 +100,9 @@ public:
   {
     bool success = true;
     try {
-			// currently the cel file readers do not appear to like the "\\?\" trick to 
-		    // deal with long paths/filenames. So we set singleFile to false to disable this.
-            m_Generated[genIdx] = Util::convertPathName(m_Generated[genIdx].c_str(),false);
-            m_Gold[goldIdx] = Util::convertPathName(m_Gold[goldIdx].c_str(),false);
+           // currently the cel file readers do not appear to like the "\\?\" , use normalizePath and not convertToUncPath
+            m_Generated[genIdx] = Fs::normalizePath(m_Generated[genIdx]);
+            m_Gold[goldIdx] = Fs::normalizePath(m_Gold[goldIdx]);
             if(!headersSame(m_Generated[genIdx], m_Gold[goldIdx], msg))
                 success = false;
             if(!dataSame(m_Generated[genIdx], m_Gold[goldIdx], msg)) {
@@ -182,7 +177,7 @@ private:
     for (int celIx = 0; celIx < numCells; celIx++) {
       bool localSuccess = true;
       checkFloat(goldCel.GetIntensity(celIx), generatedCel.GetIntensity(celIx), m_Eps, localSuccess, maxDiff);
-      if(!success) {
+      if(!localSuccess) {
         numDiff++;
       }
       success &= localSuccess;

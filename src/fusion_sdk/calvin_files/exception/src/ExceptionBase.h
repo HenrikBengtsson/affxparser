@@ -164,6 +164,13 @@ namespace affymetrix_calvin_exceptions
 		* @return Returns a string describing the exception.
 		*/
 		const std::wstring ToString();
+
+                /*! Format source file, line and time stamp.
+                 *
+                 * @return Returns a string combining source file, line number and time stamp.
+                 */
+                std::wstring SystemInfo();
+                
 	};
 
 }

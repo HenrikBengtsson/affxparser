@@ -63,6 +63,21 @@ protected:
 	friend class FusionCDFData;
 
 public:
+	/*! Get CDF Format Version
+	 * @return CDF Format Version
+	 */
+	int GetFormatVersion() const;
+
+	/*! Get GUID
+	 * @return GUID
+	 */
+	std::string GetGUID() const;
+
+	/*! Get integrity md5
+	 * @return integrity md5
+	 */
+	std::string GetIntegrityMd5() const;
+
 	/*! Gets the number of feature columns in the array.
 	 * @return The number of columns.
 	 */
@@ -508,6 +523,16 @@ public:
 	 */
 	FusionCDFFileHeader &GetHeader();
 
+	/*! Get GUID
+	 * @return GUID
+	 */
+	std::string GetGUID();
+
+	/*! Get integrity md5
+	 * @return integrity md5
+	 */
+	std::string GetIntegrityMd5();
+
 	/*! Gets the error string.
 	 * @return A string describing the last read error.
 	 */
@@ -522,12 +547,12 @@ public:
 	/*! Gets the chip type (probe array type) of the CDF file.
 	 * @return The chip type. This is just the name (without extension) of the CDF file.
 	 */
-	std::string GetChipType() const;
+	std::string GetChipType();
 
 	/*! Gets the chip types (probe array type) of the CDF file. Allow substrings deliminated by '.'
 	 * @return vector of chip types
 	 */
-    std::vector<std::string> GetChipTypes() const;
+    std::vector<std::string> GetChipTypes();
 
 	/*! Reads the entire file.
 	 * @return True if successful.

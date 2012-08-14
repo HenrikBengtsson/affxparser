@@ -23,6 +23,7 @@
 #include "calvin_files/data/src/DataSetHeader.h"
 #include "calvin_files/data/src/GenericDataTypes.h"
 #include "calvin_files/exception/src/ExceptionBase.h"
+#include "calvin_files/utils/src/FileUtils.h"
 #include "calvin_files/utils/src/StringUtils.h"
 //
 #include <sys/stat.h>
@@ -133,8 +134,7 @@ bool CelFileData::Exists()
 	if (filename != "")
 	{
 		// Find the file stats.
-		struct stat st;
-		return ((stat(filename.c_str(), &st) == 0)? true: false);
+          return FileUtils::Exists(filename.c_str());
 	}
 
 	return false;

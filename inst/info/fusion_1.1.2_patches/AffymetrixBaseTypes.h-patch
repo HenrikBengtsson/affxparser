@@ -1,0 +1,13 @@
+--- /Users/khansen/Work/packages/affxparser/src/fusion_sdk/calvin_files/portability/src/AffymetrixBaseTypes.h	2010-01-29 13:20:58.000000000 -0500
++++ AffymetrixBaseTypes.h	2010-02-06 01:55:20.000000000 -0500
+@@ -24,6 +24,10 @@
+ /*! \file AffymetrixBaseTypes.h This file provides type definitions for atom types.
+  */ 
+ 
++#ifdef WIN64
++#include <stdint.h>
++#endif
++
+ /* Define the type for the Windows platform. */
+ #ifdef WIN32
+ 

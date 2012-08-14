@@ -2,29 +2,31 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
+//
 #include "util/BaseEngine.h"
 //
-#include "util/AffxConv.h"
-//
 #include "calvin_files/utils/src/StringUtils.h"
-//
+#include "util/AffxConv.h"
+#include "util/AptVersionInfo.h"
+#include "util/Fs.h"
+#include "util/MsgSocketHandler.h"
+
+using namespace std;
 
 /*
  * The head of the engine data objects.
@@ -84,7 +86,7 @@ std::list<std::string> EngineReg::GetEngineNames()
 BaseEngine::BaseEngine() : m_OptionsChecked(false), m_DiskChecked(false), m_created_new_tempdir(false) {
 
     defineOptions();
-
+    m_SocketHandler = NULL;
     /* Track our memory usage */
     uint64_t freeRam = 0, totalRam = 0, swapAvail = 0, memAvail = 0;
     Util::memInfo(freeRam, totalRam, swapAvail, memAvail, false);
@@ -93,24 +95,120 @@ BaseEngine::BaseEngine() : m_OptionsChecked(false), m_DiskChecked(false), m_crea
 }
 
 BaseEngine::BaseEngine( char * argv[] ) : m_OptionsChecked(false), m_DiskChecked(false), m_created_new_tempdir(false) {
-    Options::parseArgv( argv );
+    m_SocketHandler = NULL;
+    parseArgv(argv);
 }
 
 BaseEngine::~BaseEngine() {
-    Verbose::out(3,"In Base Engine Destructor");
+  Freez(m_SocketHandler);
+  Verbose::out(3,"In Base Engine Destructor");
 }
  
+/**
+ * Parse and set options from argv
+ *
+ * @param argv - arg vector
+ */
+int BaseEngine::parseArgv( const char * const * const argv, int start ) {
+  int rv = Options::parseArgv( argv, start );
+    if (getOptBool("console-off")) {
+      Verbose::Param p = Verbose::getParam(); // To trigger setting up defaults.
+      Verbose::removeDefault();
+    }
+    if (!getOpt("use-socket").empty()) {
+      Verbose::out(1, "Setting up socket for reporting.");
+      string url = getOpt("use-socket");
+      string host = url.substr(0, url.find(':'));
+      string port = url.substr(url.find(':') + 1);
+      int verbosity = getOptInt("verbose");
+      m_SocketHandler = new MsgSocketHandler(verbosity);
+#ifndef _MSC_VER
+      m_SocketHandler->setEndOfLine("\n");
+#endif
+      m_SocketHandler->openSocket(host, port);
+      Verbose::pushMsgHandler(m_SocketHandler);
+      Verbose::pushProgressHandler(m_SocketHandler);
+	  Err::configureErrHandler(true, true, true, 0);
+    }
+    return rv;
+}
+
 std::string BaseEngine::getProgName() { 
     return Options::getProgName(); 
 }
 
 void BaseEngine::setLibFileOpt(const std::string &option) {
-    setOpt(option,Util::findLibFile(getOpt(option), getOpt("analysis-files-path")));
+    setOpt(option,Fs::findLibFile(getOpt(option), getOpt("analysis-files-path")));
+}
+
+
+void BaseEngine::openStandardLog(const std::string& log_name,
+                                 std::ofstream& log_ofstream,
+                                 LogStream& log_logstream)
+{
+  if (!Fs::isWriteableDir(getOpt("out-dir"))) {
+    if (Fs::mkdirPath(getOpt("out-dir")) != APT_OK) {
+      Err::errAbort("Can't make or write to directory: '"+getOpt("out-dir")+"'");
+    }
+  }
+
+  std::string log_path;
+
+  if (getOpt("log-file") != "") {
+    log_path = getOpt("log-file");
+  }
+  else {
+    log_path = Fs::join(getOpt("out-dir"),log_name);
+  }
+  Fs::mustOpenToWrite(log_ofstream, log_path);
+  log_logstream.setStream(&log_ofstream);
+  Verbose::pushMsgHandler(&log_logstream);
+  Verbose::pushProgressHandler(&log_logstream);
+  Verbose::pushWarnHandler(&log_logstream);
+}
+
+std::vector<std::pair<std::string, std::string> >  BaseEngine::getMetaDataDescription() {
+  vector<pair<string, string> >  pairVec;
+  PgOpt *meta = getPgOpt("meta-data-info");
+
+  for (int i = 0; i < meta->getValueCount(); i++) {
+    pair<string, string> p;
+    string param = meta->getValue(i);
+    size_t pos = param.find('=');
+    
+    if (pos == string::npos) {
+      Err::errAbort("meta-data-info value not in key=value pair: '" + param + "'");
+    }
+    
+    p.first = param.substr(0,pos);
+    p.second = param.substr(pos+1);
+
+    if (p.first.length() == 0) {
+      Err::errAbort("meta-data-info value has empty key in key=value pair: '" + param + "'");
+    }
+    if (p.second.length() == 0) {
+      Err::errAbort("meta-data-info value has empty value in key=value pair: '" + param + "'");
+    }
+    // APT-510: we dont want to enforce this as it prevents having "="s in filenames.
+    // if (p.second.find('=') != string::npos) {
+    //   Err::errAbort("meta-data-info value has multiple '=' delimiters in key=value pair: '" + param + "'");
+    // }
+    pairVec.push_back(p);
+  }
+  return pairVec;
 }
 
 void BaseEngine::checkOptions() {
-
-    if(m_OptionsChecked)
+   
+  /* @todo commenting out until implementation finished
+    setVersionOptions();
+    if (getOptBool("report-version-information"))
+    {
+        printEngineOptions("ReportVersionInformation ");
+        Err::errAbort("The --report-version-information has been invoked.  This will give you a listing of all options, including version data, and then cause the program to exit.  To restore normal functionality remove this option from the command line input."  );
+    }
+  */
+    if (m_OptionsChecked)
         return;
 
     // Note what options we started with
@@ -120,17 +218,17 @@ void BaseEngine::checkOptions() {
     // The children will cal their defineStates() in checkOptionsImp()
     BaseEngine::defineStates();
 
-    if(getOptBool("throw-exception")) { 
+    if (getOptBool("throw-exception")) { 
         Err::setThrowStatus(true); 
     }
 
     // does the user want the version 
-    if(getOptBool("version")) {
+    if (getOptBool("version")) {
         std::cout << "version: " << getOpt("version-to-report") << std::endl;
         exit(0);
     }
     // Do we need help? (I know I do...)
-    else if(getOptBool("help")) {
+    else if (getOptBool("help")) {
         std::set<std::string> toHide;
         optionUsage(toHide, true);
 
@@ -144,19 +242,33 @@ void BaseEngine::checkOptions() {
 
     m_OptionsChecked = true;
 
-    if(getOptBool("throw-exception")) { 
+    if (getOptBool("throw-exception")) { 
         ErrHandler *handler = Err::popHandler();
         Freez(handler);
     }
 }
 
+/* @todo commenting out until implementation finished
+void BaseEngine::setVersionOptions(){
+    AptVersionInfo  aptVersionInfo; 
+    setOpt("BAMBOO_BUILD", aptVersionInfo.reportBambooBuild());
+    setOpt("COMPILE_CC_VERSION", aptVersionInfo.reportCompileCCVersion());
+    setOpt("COMPILE_DATE", aptVersionInfo.reportCompileDate());
+    setOpt("COMPILE_HOST", aptVersionInfo.reportCompileHost());
+    setOpt("COMPILE_OS", aptVersionInfo.reportCompileOS());
+    setOpt("RELEASE", aptVersionInfo.reportRelease());
+    setOpt("SVN_VERSION", aptVersionInfo.reportSVNVersion());
+    setOpt("SVN_URL", aptVersionInfo.reportSVNVersion());
+}
+*/
+
 void BaseEngine::checkDiskSpace() {
 
     checkOptions();
-    if(m_DiskChecked) 
+    if (m_DiskChecked) 
         return;
 
-    if(getOptBool("throw-exception")) { 
+    if (getOptBool("throw-exception")) { 
         Err::setThrowStatus(true); 
     }
 
@@ -164,7 +276,7 @@ void BaseEngine::checkDiskSpace() {
 
     m_DiskChecked = true;
 
-    if(getOptBool("throw-exception")) { 
+    if (getOptBool("throw-exception")) { 
         ErrHandler *handler = Err::popHandler();
         Freez(handler);
     }
@@ -177,7 +289,7 @@ void BaseEngine::checkDiskSpace() {
  */
 void BaseEngine::run() {
 
-  if(getOptBool("throw-exception")) { 
+  if (getOptBool("throw-exception")) { 
       Err::setThrowStatus(true); 
   }
 
@@ -208,9 +320,15 @@ void BaseEngine::run() {
   printEngineOptions("Final ");
   Verbose::out(1, "Done running " + getEngineName() + ".");
 
-  if(getOptBool("throw-exception")) { 
+  if (getOptBool("throw-exception")) { 
       ErrHandler *handler = Err::popHandler();
       Freez(handler);
+  }
+  if (m_SocketHandler != NULL) {
+    Verbose::removeMsgHandler(m_SocketHandler);
+    Verbose::removeProgressHandler(m_SocketHandler);
+    m_SocketHandler->finishedMsg();
+    Freez(m_SocketHandler);
   }
 } 
 
@@ -223,6 +341,12 @@ void BaseEngine::defineOptions() {
   defineOption("v", "verbose", PgOpt::INT_OPT,
                      "How verbose to be with status messages 0 - quiet, 1 - usual messages, 2 - more messages.",
                      "1");
+  defineOption("", "console-off", PgOpt::BOOL_OPT,
+                     "Turn off the default messages to the console but not logging or sockets.",
+                     "false");
+  defineOption("", "use-socket", PgOpt::STRING_OPT,
+                     "Host and port to print messages over in localhost:port format",
+                     "");
   defineOption("", "version", PgOpt::BOOL_OPT,
                      "Display version information.",
                      "false");
@@ -273,6 +397,46 @@ void BaseEngine::defineOptions() {
   defineOption("", "free-mem-at-start", PgOpt::STRING_OPT,
                      "How much physical memory was available when the engine run started.",
                      "0");
+  defOptMult("","meta-data-info", PgOpt::STRING_OPT,
+                "Meta data in key=value pair that will be output in headers.",
+                "");
+
+  /* @todo commenting out until implementation finished 
+  defineOption("", "report-version-information", PgOpt::BOOL_OPT,
+                     "Reports version information, command line options and exits.",
+                     "false");
+  // The values that the following states are set to are created during the build process.  
+  // The information is initilized from environment variables in sdk/Makefile.defs and passed to the compiler
+  // with the -D compiler option. The preprocessor run then sets them within the AptVersionInfo.h file
+  // to the values set in the Makefile.defs.  They are then available to the apt code base via the access 
+  // functions defined in AptVersionInfo.h 
+  // Note that all the names of the states are the names given in the #define's in the AptVersionInfo.h file
+  // with the APT_VER prefix removed.  This avoids any preprocessor overwrites.  
+  defineOption("","BAMBOO_BUILD", PgOpt::STRING_OPT,
+                     "The bamboo version used while building the binary",
+                     "");
+  defineOption("","COMPILE_CC_VERSION", PgOpt::STRING_OPT,
+                     "The version of the compiler used while building the binary.",
+                     "");
+  defineOption("","COMPILE_DATE", PgOpt::STRING_OPT,
+                     "The date on which the binary was built.",
+                     "");
+  defineOption("","COMPILE_HOST", PgOpt::STRING_OPT,
+                     "The host on which the binary was built.",
+                     "");
+  defineOption("","COMPILE_OS", PgOpt::STRING_OPT,
+                     "The operating system on which the binary was built.",
+                     "");
+  defineOption("","RELEASE", PgOpt::STRING_OPT,
+                     "The apt version eg. 1.12.0 set when the binary was built.",
+                     "");
+  defineOption("","SVN_VERSION", PgOpt::STRING_OPT,
+                     "The version number of the SVN repository from which the binary was built.",
+                     "");
+  defineOption("","SVN_URL", PgOpt::STRING_OPT,
+                     "The URL at which the SVN repository is rooted.",
+                     "");
+  */
 }
 
 void BaseEngine::defineStates() {
@@ -288,22 +452,28 @@ void BaseEngine::defineStates() {
   defineOption("","analysis-guid", PgOpt::STRING_OPT,
                      "The GUID for the analysis run.",
                      "");
+
 }
 
+//////////
 
+// @todo this is wrong "m_created_new_tempdir" is object state,
+//       but the temp_dir path is being passed in;
+//       temp_dir should be state as well.
 void BaseEngine::makeTempDir(std::string temp_dir) {
-  if (!Util::directoryWritable(temp_dir)) {
-    // Util::makeDir returns true if "temp-dir" is created, or false if
-    // "temp-dir" already existed.  otherwise, fatal error
-    m_created_new_tempdir = Util::makeDir(temp_dir);
-    if (!m_created_new_tempdir) {
-      Err::errAbort("Can't make or write to directory: " + temp_dir);
-    }
+  m_created_new_tempdir=false;
+
+  if (Fs::dirExists(temp_dir)==false) {
+    m_created_new_tempdir=true;
+    Fs::ensureWriteableDirPath(temp_dir);
+  }
+  if (Fs::isWriteableDir(temp_dir)==false) {
+    Err::errAbort("Can't make or write to directory: "+FS_QUOTE_PATH(temp_dir));
   }
 }
 
 void BaseEngine::removeTempDir(std::string temp_dir) {
-  if (m_created_new_tempdir && Util::directoryWritable(temp_dir)) {
-    Util::dirRemove(temp_dir);
+  if (m_created_new_tempdir) {
+    Fs::rmdir(temp_dir);
   }
 }

@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -26,12 +24,14 @@
 #ifndef _MSC_VER
 #include <stdint.h>
 #endif
+
 //
 #include <util/md5.h>
 //
 #include <cstring>
 #include <string>
-//
+#include <vector>
+
 
 namespace affx {
   class md5sum;
@@ -49,11 +49,16 @@ public:
   int update(void* buff,uint32_t buf_size);
   int update(const std::string& str);
   int update(char const * const str);
+
   //
   int update_nbo(int32_t val);
   int update_nbo(uint32_t val);
   int update_nbo(uint16_t val);
   int update_nbo(uint8_t  val);
+
+  //
+  int update_nbo(const std::vector<int>& vec);
+
   // not needed for now.
   // int update_nbo(val);
   // int update(double val);

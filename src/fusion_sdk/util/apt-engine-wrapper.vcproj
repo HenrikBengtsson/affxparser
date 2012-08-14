@@ -45,14 +45,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\stats;..\portability..;..\calvin_files\utils\src;..\calvin_files\data\src;..\calvin_files\portability\src;..\calvin_files\parameter\src;..\calvin_files\exception\src;..\calvin_files\parsers\src;..\calvin_files\fusion\src;..\file;..\..\..\external\hdf5\windows\src\;..\..\..\external\hdf5\src\CVS;..\..\..\robertnz\newmat"
+				AdditionalIncludeDirectories="..;..\..\..\external\hdf5\windows\src\;..\..\..\external\hdf5\src\CVS;..\..\..\robertnz\newmat"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="4"
+				WarningLevel="0"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -123,14 +123,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\stats;..\portability..;..\calvin_files\utils\src;..\calvin_files\data\src;..\calvin_files\portability\src;..\calvin_files\parameter\src;..\calvin_files\exception\src;..\calvin_files\parsers\src;..\calvin_files\fusion\src;..\file;..\..\..\external\hdf5\windows\src\;..\..\..\external\hdf5\src\CVS;..\..\..\robertnz\newmat"
+				AdditionalIncludeDirectories="..;..\..\..\external\hdf5\windows\src\;..\..\..\external\hdf5\src\CVS;..\..\..\robertnz\newmat"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="4"
+				WarningLevel="0"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -203,13 +203,13 @@
 				Optimization="2"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..;..\stats;..\portability..;..\calvin_files\utils\src;..\calvin_files\data\src;..\calvin_files\portability\src;..\calvin_files\parameter\src;..\calvin_files\exception\src;..\calvin_files\parsers\src;..\calvin_files\fusion\src;..\file;..\..\..\external\hdf5\windows\src\;..\..\..\external\hdf5\src\CVS;..\..\..\robertnz\newmat"
+				AdditionalIncludeDirectories="..;..\..\..\external\hdf5\windows\src\;..\..\..\external\hdf5\src\CVS;..\..\..\robertnz\newmat"
 				PreprocessorDefinitions="WIN32;_CONSOLE"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="0"
 				DebugInformationFormat="3"
 				OmitDefaultLibName="false"
 			/>
@@ -282,15 +282,17 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="..;..\stats;..\portability..;..\calvin_files\utils\src;..\calvin_files\data\src;..\calvin_files\portability\src;..\calvin_files\parameter\src;..\calvin_files\exception\src;..\calvin_files\parsers\src;..\calvin_files\fusion\src;..\file;..\..\..\external\hdf5\windows\src\;..\..\..\external\hdf5\src\CVS;..\..\..\robertnz\newmat"
+				AdditionalIncludeDirectories="..;..\..\..\external\hdf5\windows\src\;..\..\..\external\hdf5\src\CVS;..\..\..\robertnz\newmat"
 				PreprocessorDefinitions="WIN32;_CONSOLE"
 				MinimalRebuild="true"
 				RuntimeLibrary="2"
 				RuntimeTypeInfo="true"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="0"
 				DebugInformationFormat="3"
 				OmitDefaultLibName="false"
 			/>
@@ -305,6 +307,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalOptions="/LTCG"
 				AdditionalDependencies="Ws2_32.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"

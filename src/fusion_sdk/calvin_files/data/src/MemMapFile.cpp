@@ -144,7 +144,7 @@ bool MemMapFile::Open(RWAccess rwAccess, ShareMode shareMode)
 
 	DWORD dwSizeHigh = 0;
 	DWORD dwSizeLow  = GetFileSize(fileHandle, &dwSizeHigh);
-	fileSize = __int64(dwSizeHigh << 32) + __int64(dwSizeLow);
+	fileSize = (__int64(dwSizeHigh) << 32) + __int64(dwSizeLow);
 
 	// Create a file map handle
 	DWORD dwProtect = (dwMapMode == FILE_MAP_READ) ? PAGE_READONLY : PAGE_READWRITE;

@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -23,20 +21,21 @@
  * @file   Util.cpp
  * @author Chuck Sugnet
  * @date   Mon May 16 16:04:48 2005
- * 
+ *
  * @brief   General Utilities.
  */
 
 //
 #include "util/Util.h"
 //
-#include "util/AffxFile.h"
+#include "calvin_files/utils/src/StringUtils.h"
+
 #include "util/Convert.h"
 #include "util/Err.h"
+#include "util/Fs.h"
 #include "util/RowFile.h"
 #include "util/TableFile.h"
 #include "util/Verbose.h"
-#include "calvin_files/utils/src/StringUtils.h"
 //
 #include <cerrno>
 #include <cmath>
@@ -44,14 +43,15 @@
 #include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
+#include <iostream>
 #include <map>
-#include <sstream>
 #include <stdarg.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <vector>
-//
+
+// silences some warnings.
+#include "portability/apt-no-warnings.h"
 
 #define POSIX_OPEN open
 #define POSIX_CLOSE close
@@ -68,11 +68,16 @@
 #define S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
 #define BUFFSIZE 10000
 
-#ifndef __MINGW32__
+//
+#ifndef POSIX_OPEN
 #define POSIX_OPEN _open
+#endif
+#ifndef POSIX_CLOSE
 #define POSIX_CLOSE _close
+#endif
+#ifndef POSIX_MKDIR
 #define POSIX_MKDIR _mkdir
-#endif /* __MINGW32__ */
+#endif
 
 #else
 #include <unistd.h>
@@ -107,7 +112,7 @@ void sleep(unsigned int ms) {
 
 using namespace std;
 
-/** 
+/**
  * Create a copy of a string. Free this with delete [] (or freezArray()) when
  * done.
  * @param s - c-string to be copied.
@@ -179,300 +184,13 @@ bool Util::endsWithStr(const std::string& str,const std::string& ending)
   return endsWithStr(str,ending,0);
 }
 
-
-std::string Util::findLibFile(const std::string &fileName, const std::string &searchPath){
-
-    if(fileName == "") {
-        // empty string is not valid file name. just return it back
-        return fileName;
-    } else if(fileExists(fileName)) {
-        // file exists as already specified
-        return fileName;
-    } else {
-        // Now lets search for the file
-        std::vector<std::string> searchPathVec;
-        if(searchPath != "") {
-            ///@todo do we handle ';' on windows?
-            chopString(searchPath,':',searchPathVec);
-        } else {
-            char *sp = getenv("AFFX_ANALYSIS_FILES_PATH");
-            if(sp == NULL) {
-                return fileName;
-            } else {
-                chopString(sp,':',searchPathVec);
-            }
-        }
-
-        for(int i=0; i< searchPathVec.size(); i++) {
-            if(fileExists(searchPathVec[i] + PATH_SEPARATOR + fileName))
-                return searchPathVec[i] + PATH_SEPARATOR + fileName;
-        }
-    }
-
-    // did not find anything, so just return what we started with
-    return fileName;
-}
-
-/** 
- * Open an ofstream for writing to. Abort if can't open
- * for some reason.
- * @param out - stream to be opened.
- * @param fileName - name of file to be opened.
- */
-void Util::mustOpenToWrite(std::ofstream &out, const std::string &fileName) {
-  assert(fileName.c_str());
-  out.open(fileName.c_str());
-  if(!out.is_open() || !out.good()) {
-    out.open(Util::convertPathName(fileName).c_str());
-    if(!out.is_open() || !out.good()) {
-        Err::errAbort("Couldn't open file: " + Util::convertPathName(fileName) + " to write.");
-    }
-  }
-  // Set to throw an exception if something bad happens rather than silently fail.
-  out.exceptions(ofstream::eofbit | ofstream::failbit | ofstream::badbit );
-}
-
-/** 
- * Close an output stream making sure that it is ok before doing so.
- * @param out - stream to be closed.
- */
-void Util::carefulClose(std::ofstream &out) {
-  // If file is open, do some checks to make sure that it was successful...
-  if(out.is_open()) {
-    if(out.bad()) {
-      Err::errAbort("Util::carefulClose() - ofstream bad.");
-    }
-  }
-  out.close();
-}
-
-/** 
- * Close an output stream making sure that it is ok before doing so.
- * @param out - stream to be closed.
- */
-void Util::carefulClose(std::fstream &out) {
-  // If file is open, do some checks to make sure that it was successful...
-  if(out.is_open()) {
-    if(out.bad()) {
-      Err::errAbort("Util::carefulClose() - ofstream bad.");
-    }
-  }
-  out.close();
-}
-
-/** 
- * Return true if file is readable, false otherwise.
- * @param fileName 
- */
-bool Util::fileReadable(const std::string &fileName) {
-  int f;
-  f = POSIX_OPEN(fileName.c_str(), O_RDONLY);
-  if(f < 0) {
-    f = POSIX_OPEN(Util::convertPathName(fileName).c_str(), O_RDONLY);
-    if(f < 0) {
-      return false;
-    }
-  }
-  POSIX_CLOSE(f);
-  return true;
-}
-
-/** 
- * Return true if file exists, false otherwise.
- * @param fileName 
- */
-bool Util::fileExists(const std::string &fileName) {
-  ///@todo do we want to make a distinction between Exists and Readable?
-  // _stat() on windows does not handle "\\?\" style long names. One
-  // suggestion was to use FindFirstFile() instead of _stat(). For now
-  // we just return whether or not the file is readable on windows.
-#ifdef WIN32
-  return Util::fileReadable(fileName);
-#else
-  struct stat st;
-  if(stat(fileName.c_str(), &st) == 0) {
-    return true;
-  } else {
-    if(stat(Util::convertPathName(fileName).c_str(), &st) == 0) {
-      return true;
-    }
-  } 
-  return false;
-#endif
-}
-
 /**
- * Not intended to direct use. Only indirectly via Util::fileRemove()
- * We make multiple attempts to get around read lock issues.
- */
-bool _uncheckedFileRemove(const std::string &fileName, int tries, int sec) {
-    tries--;
-    sec *= 3;
-    bool success = true;
-#ifdef WIN32
-    if (DeleteFile(fileName.c_str()) == false) {
-        if (DeleteFile(Util::convertPathName(fileName).c_str()) == false) {
-            success = false;
-        }
-    } 
-#else
-    if (remove(fileName.c_str()) != 0)
-        success = false;
-#endif
-
-    // AGCC (and potentially other file indexers) may have a lock on the file. 
-    // So retry a few times before giving up.
-    if(success) {
-        return success;
-    } else if(tries > 0) {
-        sleep(sec);
-        return _uncheckedFileRemove(fileName, tries, sec);
-    } else {
-        return false;
-    }
-}
-
-/** 
- * Return true if file removed or does not exist, false otherwise.
- * @param fileName 
- */
-bool Util::fileRemove(const std::string &fileName, bool throwOnError) {
-    bool success = true;
-    if(fileExists(fileName)) {
-        success = _uncheckedFileRemove(fileName, 4, 10);
-    }
-    if(throwOnError && !success)
-        Err::errAbort("Unable to remove file: '" + fileName + "'");
-    return success;
-}
-
-void Util::fileRemove(std::vector<std::string> &filesToRemove) {
-    string errors = "Failed to remove files: ";
-    bool error = false;
-    for (int chip=0; chip < filesToRemove.size(); chip++) {
-        if(!Util::fileRemove(filesToRemove[chip].c_str())) {
-            error = true;
-            errors += filesToRemove[chip] + ", ";
-        }
-    }
-    if(error) {
-        Err::errAbort(errors);
-    }
-}
-
-
-bool Util::dirRemove(const std::string& dirname, bool throwOnError)
-{
-  bool success=true;
-
-#ifdef WIN32
-  if (RemoveDirectory(dirname.c_str())==false) {
-    if (RemoveDirectory(Util::convertPathName(dirname).c_str())==false) {
-        success=false;
-    }
-  }
-#else
-  int rv;
-  rv=rmdir(dirname.c_str());
-  if (rv!=0) {
-    success=false;
-  }
-#endif
-
-  if(throwOnError && !success) {
-    Err::errAbort("Unable to remove dir: '" + dirname + "'");
-  }
-  return success;
-}
-
-/**
- * Return true on success. False otherwise
- * @param in - file to copy
- * @param out - name of the new file
- */
-bool Util::fileCopy(const std::string &in, const std::string &out, bool throwOnError) {
-  ///@todo there is probably a better way to copy files and check for errors
-  bool success = true;
-
-  std::ifstream is;
-  std::ofstream os;
-  std::string iName = in;
-  std::string oName = out;
-
-  is.open(in.c_str(), ios::binary);
-  if(!is.is_open() || !is.good()) {
-    iName = Util::convertPathName(in);
-    is.open(iName.c_str(),ios::binary);
-  }
-
-  os.open(out.c_str(), ios::binary);
-  if(!os.is_open() || !os.good()) {
-    oName = Util::convertPathName(out);
-    is.open(oName.c_str(),ios::binary);
-  }
-
-  if(!is.good() || !os.good())
-      success = false;
-
-  os << is.rdbuf();
-  if(!is.good() || !os.good())
-      success = false;
-
-  is.close();
-  os.close();
-  if(!is.good() || !os.good())
-      success = false;
-
-  if(throwOnError && !success)
-      Err::errAbort("Unable to copy file '" + iName + "' to '" + oName + "'");
-  return success;
-}
-
-/**
- * Not intended to direct use. Only indirectly via Util::fileRename()
- * We make multiple attempts to get around read lock issues.
- */
-bool _uncheckedFileRename(const std::string &in, const std::string &out, int tries, int sec) {
-    tries--;
-    sec *= 3;
-    bool success = true;
-#ifdef WIN32
-    success = (MoveFile(in.c_str(), out.c_str()) == TRUE);
-    if(!success) {
-        success = (MoveFile(Util::convertPathName(in).c_str(), Util::convertPathName(out).c_str()) == TRUE);
-    }
-#else
-    success = (rename(in.c_str(), out.c_str()) == 0);
-#endif
-    if(success) {
-        return success;
-    } else if(tries > 0) {
-        sleep(sec);
-        return _uncheckedFileRename(in, out, tries, sec);
-    } else {
-        return false;
-    }
-}
-/**
- * Return true on success. False otherwise
- * @param in - file to move
- * @param out - name of the new file
- */
-bool Util::fileRename(const std::string &in, const std::string &out, bool throwOnError) {
-    bool success = true;
-    _uncheckedFileRename(in,out,4,10);
-  if(throwOnError && !success)
-      Err::errAbort("Unable to rename file '" + in + "' to '" + out + "'");
-  return success;
-}
-
-/** 
 * @brief Chop off the last character if it is a path separator.
 * windows stat() can't handle having it there.
 * @param s - string to have '/' or '\' chopped off if last.
 */
 void Util::chompLastIfSep(std::string &s) {
-    string::size_type i = s.rfind(PATH_SEPARATOR);
+  string::size_type i = s.rfind(Fs::osPathSep());
     if(i != string::npos && i == s.length() -1)
         s.erase(i);
 }
@@ -491,7 +209,7 @@ std::string Util::chopSuffix(const std::string& s, char d) {
 }
 
 #ifdef WIN32
-// Windows doesn't seem to have these defined, so we'll define them 
+// Windows doesn't seem to have these defined, so we'll define them
 // here for utility. Note that with the windows _stat() function all
 // users have id 0 and group 0.
 #ifndef __MINGW32__
@@ -508,158 +226,35 @@ std::string Util::chopSuffix(const std::string& s, char d) {
 #define S_IWOTH 00002 //others have write permisson
 #define S_IXOTH 00001 // others have execute permission
 #endif
-/** 
- * Return true if directory exists and is readable, false otherwise.
- * @param dirName 
- */
-bool Util::directoryReadable(const std::string &dirName) {
-  std::string dirString=dirName;
-  chompLastIfSep(dirString); // Windows doesn't like the trailing '\'
-  struct stat s;
-  int val = 0;
-#ifdef WIN32
-  int group = 0;
-  int user = 0;
-#else
-  gid_t group = getgid();
-  uid_t user = getuid();
-#endif
-  bool readable = false;
-  ///@todo this will fail on long file names under windows
-  val = stat( dirString.c_str() , &s);
-  /* if it doesn't exist or isn't readable, can't read it. */
-  if(!S_ISDIR(s.st_mode) || val != 0) {
-    return false;
-  }
-  /* If user owns directory and user readable then we can read it. */
-  if(user == s.st_uid) {
-    readable = (S_IRUSR & s.st_mode) && (S_IXUSR & s.st_mode);
-  }
-  /* if group owns directory and it is user readable then we can read it. */
-  else if(group == s.st_gid) {
-    readable = (S_IRGRP & s.st_mode) && (S_IXGRP & s.st_mode);
-  }
-  /* if anybody can read directory then we can too. */
-  else if((S_IROTH & s.st_mode) && (S_IXOTH & s.st_mode)) {
-    readable = true;
-  }
-  return readable;
-}
 
-/** 
- * @brief return true if directory exists and is readable, false otherwise
- * @param dirname The dir to test for write-ability
- */
-bool Util::directoryWritable(const std::string &dirname) {
-  std::string dirname_tmp;
-  struct stat s;
-  bool writable = false;
 
-#ifdef WIN32
-  int group = 0;
-  int user = 0;
-#else
-  gid_t group = getgid();
-  uid_t user = getuid();
-#endif
-
-  // we dont want the trailing slash.
-  dirname_tmp=dirname;
-  chompLastIfSep(dirname_tmp);
-
-  ///@todo this will fail on long file names under windows
-  int rv = stat(dirname_tmp.c_str(), &s);
-
-  /* Cant write if not found. */
-  if (rv!=0) {
-    return false;
-  }
-  /* If it isn't a directory we can't write to it... */
-  if (!S_ISDIR(s.st_mode)) {
-    return false;
-  }
-  /* If user owns directory and user writeable then we can write it. */
-  if (user == s.st_uid) {  
-      writable = (S_IWUSR & s.st_mode) && (S_IXUSR & s.st_mode);
-  }
-  /* if group owns directory and it is user writeable then we can write it. */
-  else if (group == s.st_gid) {
-    writable = (S_IWGRP & s.st_mode) && (S_IXGRP & s.st_mode);
-  }
-  /* if anybody can write directory then we can too. */
-  else if((S_IWOTH & s.st_mode) && (S_IXOTH & s.st_mode)) {
-      writable = true;
-  }
-  //
-  return writable;
-}
-
-/** 
- * Make a directory. Returns true if directory is created
- * successfully, false if directory exists and aborts if any other
- * error is encountered.
- * @param dirName - Directory name to be made.
- * @return - true if created sucessfully, false if already exists.
- */
-bool Util::makeDir(const std::string &dirName) {
-  int error;
-
-  ///@todo handle long file names on windows
-
-  // Need to trim off trailing slash (or backslash)
-  std::string tmpDirName=dirName;
-  if (tmpDirName.rfind("/")==(tmpDirName.size()-1)) {
-    tmpDirName.erase(tmpDirName.size()-1);
-  }
-  else if (tmpDirName.rfind("\\")==(tmpDirName.size()-1)) {
-    tmpDirName.erase(tmpDirName.size()-1);
-  }
-
-#ifdef WIN32
-  error = POSIX_MKDIR(tmpDirName.c_str());
-#else
-  error = POSIX_MKDIR(tmpDirName.c_str(), 0777);
-#endif
-  
-  if (error==0) {
-    return true; // we made it
-  }
-  else {
-    if ((errno==EEXIST)&&directoryWritable(tmpDirName)) {
-      return false; // we didnt make it but it exists and is writeable.
+void Util::breakByString(const std::string &s, const std::string &delim, std::vector<std::string> &words) {
+    words.clear();
+    int curPos = 0;
+    APT_ERR_ASSERT(delim.length() > 0, "delim must be non-empty.");
+    while(1) {
+        size_t pos = s.find(delim,curPos);
+        if (pos == string::npos) {
+            words.push_back(s.substr(curPos, s.size()));
+            break;
+        }
+        string sub = s.substr(curPos, pos - curPos);
+        words.push_back(sub);
+        curPos = pos + delim.size();
+        if ( curPos >= s.length() ) {
+            break;
+        }
     }
-  }
-  // opps! Not there or not writeable.
-  Err::errAbort("Error: Util::makeDir() - failed to make directory '"+tmpDirName+"'");
-  // to keep gcc happy.
-  return true;
 }
 
-bool Util::makeDirPath(const std::string& pathName)
-{
-  std::vector<std::string> parts;
-  chopString(pathName,'/',parts);
-  
-  std::string path;
-
-  for (int i=0;i<parts.size();i++) {
-    path+=parts[i];
-    if (directoryReadable(path)) {
-      continue;
-    }
-    // this will call errAbort
-    makeDir(path);
-  }
-  return true;
-}
-
-/** 
+/**
  * Chop up a string into a vector of words.
- * 
+ *
  * @param s - string of interest.
  * @param delim - delimiter to split on.
  * @param words - vector to put words into, will be cleared then filled.
  */
+/// @todo shouldnt this be "split"?
 void Util::chopString(const std::string& s,const char delim,std::vector<std::string>& words) {
   string::size_type len = 0, start = 0, next = 0;
   words.clear();
@@ -675,33 +270,35 @@ void Util::chopString(const std::string& s,const char delim,std::vector<std::str
   }
 }
 
-/** 
- * @brief Get the root of a filename. Chops on '/' for unix and
- * '\' or '/' windows.
- * @param s - File name to find root of.
- * @return - Root of string.
+/**
+ * Chop up a string into a vector of words.
+ *
+ * @param s - string of interest.
+ * @param delims - delimiters to split on. The split will occur at any character
+ *               - among those present in the string.
+ * @param words - vector to put words into, will be cleared then filled.
  */
-std::string Util::fileRoot(const std::string& filename) {
-    return AffxFile::parseFileName(filename);
-}
+void Util::chopString(const std::string& s, const char* delims, std::vector<std::string>& words) {
+  string::size_type len = 0, start = 0, next = 0;
+  words.clear();
+  len = s.length();
 
-/// @brief     Preform the fileRoot on a vector of filenames.
-/// @param     filename_vec     the vector files to 'fileRoot'
-/// @return    
-std::vector<std::string> Util::fileRoot(const std::vector<std::string>& filename_vec)
-{
-  std::vector<std::string> rootname_vec;
-  for (int i=0;i<filename_vec.size();i++) {
-    rootname_vec.push_back(AffxFile::parseFileName(filename_vec[i]));
+  while(start < len) {
+    next = s.find_first_of(delims, start);
+    if(next == string::npos) {
+      next = s.size(); // entire string.
+    }
+    words.push_back(s.substr(start, next - start));
+    start = next+1;
   }
-  return rootname_vec;
 }
 
-/** 
+
+/**
  * Check each entry in two matrices to see if they are the same.  If
  * doing 'match-rows' we will attempt to find the matching row by the
  * row name.
- * 
+ *
  * @param targetFile - File to read target matrix from.
  * @param queryFile - File to read the query matrix from.
  * @param colSkip - How many of initial columns to ignore (i.e. row names)
@@ -710,16 +307,19 @@ std::vector<std::string> Util::fileRoot(const std::vector<std::string>& filename
  *                  i.e. if q[i][j] - t[i][j] >= epsilon then there is a difference.
  * @param printMismatch - Should we print out the cases where difference is >= epsilon
  * @param matchRows - Should we try to match the rows based on the row identifiers.
- * 
+ * @param fraction - What fractional difference is tolerated, test for value equivalence (not used by default).
+ *                  i.e. if q[i][j] - t[i][j] < fraction*max( |q[i][j]|, |t[i][j]| )
+ *
  * @return - Number of differences >= epsilon found.
  */
 int Util::matrixDifferences(const std::string& targetFile,
-                            const std::string& queryFile, 
-                            int colSkip, int rowSkip, double epsilon, bool printMismatch,
-                            bool matchRows) {
-
-  ///@todo handle long file names on windows
-
+                            const std::string& queryFile,
+                            int colSkip, int rowSkip,
+                            double epsilon,
+                            bool printMismatch,
+                            bool matchRows,
+                            double fraction,
+                            int printMismatchMax ) {
   vector< vector<double> > qMatrix, tMatrix;
   unsigned int rowIx = 0, colIx = 0;
   unsigned int numCol = 0, numRow = 0;
@@ -729,19 +329,25 @@ int Util::matrixDifferences(const std::string& targetFile,
   unsigned int diffCount = 0;
   unsigned int rowDiffCount = 0;
   double maxDiff = 0;
-  Verbose::out(2, "Reading in file: " + ToStr(targetFile));
-  RowFile::matrixFromFile(targetFile, qMatrix, rowSkip, colSkip);
-  Verbose::out(2, "Reading in file: " + ToStr(queryFile));
-  RowFile::matrixFromFile(queryFile, tMatrix, rowSkip, colSkip);
+
+  std::string tmp_target_name=Fs::convertToUncPath(targetFile);
+  Verbose::out(2, "Reading in file: "+tmp_target_name);
+  RowFile::matrixFromFile(tmp_target_name, qMatrix, rowSkip, colSkip);
+
+  std::string tmp_query_name=Fs::convertToUncPath(queryFile);
+  Verbose::out(2, "Reading in file: " +tmp_query_name);
+  RowFile::matrixFromFile(tmp_query_name, tMatrix, rowSkip, colSkip);
 
   /* If we are matching by rows grab the first column from each file
-     and assume it is the unique row names. Create a map from the 
+     and assume it is the unique row names. Create a map from the
      names to the indexes for qMatrix */
-  if(matchRows) {
+  if (matchRows) {
     colIx = 0;
     Verbose::out(2, "Reading in rownames.");
-    TableFile::columnFromFile(targetFile, qMatrixRows, colIx, rowSkip, true);
-    TableFile::columnFromFile(queryFile, tMatrixRows, colIx, rowSkip, true);
+    // @todo these are named backwards. (q/t)
+    TableFile::columnFromFile(tmp_target_name, qMatrixRows, colIx, rowSkip, true);
+    TableFile::columnFromFile(tmp_query_name,  tMatrixRows, colIx, rowSkip, true);
+    //
     for(rowIx = 0; rowIx < qMatrixRows.size(); rowIx++) {
       if(qMatrixMap.find(qMatrixRows[rowIx]) != qMatrixMap.end()) {
         Err::errAbort("Duplicate row names: " + qMatrixRows[rowIx] + " in matrix 1");
@@ -749,7 +355,7 @@ int Util::matrixDifferences(const std::string& targetFile,
       qMatrixMap[qMatrixRows[rowIx]] = rowIx;
     }
   }
-  
+
   Verbose::out(2,"Looking for differences.");
   if((!matchRows && qMatrix.size() != tMatrix.size()) || qMatrix[0].size() != tMatrix[0].size()) {
     Err::errAbort("Matrices are different sizes, not comparable.");
@@ -765,24 +371,31 @@ int Util::matrixDifferences(const std::string& targetFile,
       if(matchRows) {
         if(qMatrixMap.find(tMatrixRows[rowIx]) == qMatrixMap.end() )
           Err::errAbort("Can't find rowname: " + tMatrixRows[rowIx] + " in matrix 1");
-        else 
+        else
           qMatRowIx = qMatrixMap[tMatrixRows[rowIx]];
       }
       double val = qMatrix[qMatRowIx][colIx] - tMatrix[rowIx][colIx];
-      maxDiff = max(maxDiff, fabs(val));
-      bool failed = (fabs(val) > epsilon);
+      maxDiff = Max(maxDiff, fabs(val));
+      // allowed absolute difference from fractional tolerance (zero by default)
+      double epsilon2 = fraction*Max( fabs(qMatrix[qMatRowIx][colIx]), fabs(tMatrix[rowIx][colIx]) );
+      // absolute difference is acceptable if it satisfies either (least restrictive) tolerance
+      bool failed = (fabs(val) > Max(epsilon,epsilon2));
       bool okFinite = true;
       okFinite &= isFinite(qMatrix[qMatRowIx][colIx]);
       okFinite &= isFinite(tMatrix[rowIx][colIx]);
-      if(!okFinite) 
-        Verbose::out(1, "Non-finite floating point numbers at row: " + ToStr(rowIx) + " column: " + ToStr(colIx));
+      if(!okFinite)
+        Verbose::out(2, "Non-finite floating point numbers at row: " + ToStr(rowIx) + " column: " + ToStr(colIx));
       if(failed || !okFinite) {
         same = false;
         rowDiff = true;
         diffCount++;
-        if(printMismatch) {
-          Verbose::out(1, "row: " + ToStr(rowIx) + " col: " + ToStr(colIx) + " (" +
+        // report mismatches up to maximum count, if set, with warning if maximum count exceeded.
+        if( printMismatch && ((int)diffCount<=printMismatchMax || printMismatchMax<0) ) {
+          Verbose::out(2, "row: " + ToStr(rowIx) + " col: " + ToStr(colIx) + " (" +
                        ToStr(qMatrix[qMatRowIx][colIx]) + " vs. " + ToStr( tMatrix[rowIx][colIx]) + ")" + " Diff: " + ToStr(val));
+        }
+        if( printMismatch && diffCount==printMismatchMax+1 && printMismatchMax>0 ) {
+          Verbose::out(2, "Number of differences exceeds maximum number (" + ToStr(printMismatchMax) + ") to report.");
         }
       }
     }
@@ -792,141 +405,34 @@ int Util::matrixDifferences(const std::string& targetFile,
   if(maxDiff > 0) {
     Verbose::out(2, "Max difference is: " + ToStr(maxDiff));
   }
-  if(same) 
+  if(same)
     Verbose::out(2,"Same.");
   else {
     unsigned int total = numRow * numCol;
     float percent = (float) rowDiffCount / numRow * 100;
-    Verbose::out(2, "Different in " + ToStr(rowDiffCount) + " of " + ToStr(numRow) + " ( " + ToStr(percent) + "% )  entries.");
+    Verbose::out(2, "Different in " + ToStr(rowDiffCount) + " of " + ToStr(numRow) + " ( " + ToStr(percent) + "% )  rows.");
     percent = (float) diffCount / total * 100;
-    Verbose::out(2, "Different at " + ToStr(diffCount) + " of " + ToStr(total) + " ( " + ToStr(percent) + "% )  entries.");
+    Verbose::out(2, "Different at " + ToStr(diffCount) + " of " + ToStr(total) + " ( " + ToStr(percent) + "% )  values.");
   }
   return diffCount;
 }
 
-/* Private method to this file used to convert a relative path
-   into an absolute path, and if successful to add "\\?\"
-   prefix. This prevents the system APIs for failing on long
-   filenames/paths by forcing them to pass the filename
-   directly down into the low level file system APIs. */
-#if defined (WIN32)
-std::string _getFullPathWindows(const std::string &in) {
-    DWORD  retval=1;
-    wchar_t  *wbuffer = new wchar_t[BUFFSIZE];  // Wide Char buffer for input path
-    wchar_t  *buffer = new wchar_t[BUFFSIZE];   // Wide Char buffer for output absolute path
-    char   *abuffer = new char[BUFFSIZE];       // Asci Char buffer for output absolute path
-    uint32_t strLen = 0;
-
-    // Setup wbuffer with our input
-    const char *inPtr = in.c_str();
-    strLen = strlen(inPtr);
-    if(strLen > BUFFSIZE - 1) {
-        Err::errAbort("Cannot handle string longer than " + ToStr(BUFFSIZE) + ": '" + 
-                in + "' is " + ToStr(strLen));
+void Util::replaceString(std::string &s, const std::string &from, const std::string &to) {
+    vector<string> words;
+    breakByString(s, from.c_str(), words);
+    std::ostringstream ss;
+    ss << words[0];
+    for (int i = 1; i < words.size(); i++) {
+        ss << to;
+        ss << words[i];
     }
-    mbstowcs(wbuffer,inPtr, strLen + 1);
-
-    // Compute the absolute path. We use the wide char
-    // version which can handle > MAX_PATH
-    retval = GetFullPathNameW(wbuffer,BUFFSIZE - 1,buffer,NULL);
-
-    // If no characters were converted, then simply return the original string
-    if (retval < 1) {
-        Freez(wbuffer);
-        Freez(buffer);
-        Freez(abuffer);
-        return in;
-    }
-
-    // If we will overflow our buffer, then abort.
-    if(retval > BUFFSIZE-1) {
-        Err::errAbort("Unexpected failure. Converted more characters than expected");
-    }
-
-    // Convert the absolute path to asci char from wide char
-    wcstombs(abuffer, (wchar_t *)buffer, retval + 1);
-
-    // Free up memory and return our string
-    string rs;
-    rs = abuffer;
-    Freez(wbuffer);
-    Freez(buffer);
-    Freez(abuffer);
-    if(rs == "") {
-        // If our result is empty, return input string
-        return in;
-    } else {
-        // Otherwise we have an absolute path, so add the "\\?\" magic
-        if(rs == "") {
-            return in;
-        } else {
-            if(rs.substr(0,2) == "\\\\")
-                return rs;
-            else
-                return "\\\\?\\" + rs;
-        }
-    }
+    s = ss.str();
 }
-#endif
 
-/** 
- * Simple minded function for converting unix paths to windows and
- * vice-versa. Will fail if any drives are specified or any escaping of 
- * characters are going on. On windows this method will attempt to handle
- * long paths/filenames by converting the specified path to a UNC absolute
- * path with a leading "\\?\".
- * 
- * @param path -       filename/dirname to be converted
- * @param singleFile - boolean to indicate if the path/string is a single file 
- *                     or if it has multiple files (eg a whole command line). 
- *                     If it is a whole command line then to attempt to handle 
- *                     long paths/filenames on windows will be attempted
- * 
- * @return converted filename for that platform.
- */
-std::string Util::convertPathName(const std::string &path, bool singleFile) {
-  std::string s = path;
-  if(s.find(':') != std::string::npos)
-      return s;
-
-#if defined (WIN32)
-  // Convert forward slash to back slash -- 92 is the ascii code for '\'
-  subChar(s, '/', 92);
-  // If we are given a single file name, then try and cope with extra long names
-  // by using '\\?\C:\...\' magic
-  if(singleFile) {
-    // First we split into a path and filename parts
-    size_t pos=s.rfind("\\");
-    string pathPart, filePart;
-    if(pos != std::string::npos) {
-        pathPart = s.substr(0,pos);
-        filePart = s.substr(pos+1);
-    } else {
-        // No path part found, so assume CWD
-        pathPart = ".";
-        filePart = s;
-    }
-    //Verbose::out(1,"Path Part = '" + pathPart + "'");
-    //Verbose::out(1,"File Part = '" + filePart + "'");
-    // Now we call this method to convert the minimal path part to
-    // an absolute path. _getFullPathWindows() will add the
-    // "\\?\" magic if appropriate.
-    pathPart = _getFullPathWindows(pathPart);
-    s = pathPart + PATH_SEPARATOR + filePart;
-  }
-#else
-  // Unix deals with long filenames/paths as one would expect.
-  // So all we need to do is flip back slashes to forward slashes.
-  // 92 is the ascii code for '\'
-  subChar(s, 92, '/');
-#endif
-  //Verbose::out(1, "Converted '" + path + "' to '" + s + "'");
-  return s;
-}
 
 
 /**
- * Schrage's algorithm for generating random numbers in 32 bits.  
+ * Schrage's algorithm for generating random numbers in 32 bits.
  * @param ix - pointer to integer seed, cannot be zero.
  */
 int32_t Util::schrageRandom(int32_t *ix) {
@@ -943,7 +449,7 @@ int32_t Util::schrageRandom(int32_t *ix) {
   if((*ix) < 0) {
     (*ix) = (*ix) + p;
   }
-  rand = (*ix); 
+  rand = (*ix);
   return rand;
 }
 
@@ -951,7 +457,7 @@ std::string Util::asMB(uint64_t x) {
   return ToStr(x/MEGABYTE) + "MB";
 }
 
-#ifdef WIN32 
+#ifdef WIN32
 #define memInfo_defined 1
 /// @brief     Query windows for its memInfo.
 /// @param     free      The amount of free memory. (bytes)
@@ -975,7 +481,7 @@ bool memInfo_win32(uint64_t &free, uint64_t &total,
   return true;
 }
 #endif
-  
+
 #ifdef __linux__
 #define memInfo_defined 1
 
@@ -998,7 +504,7 @@ bool memInfo_linux(std::string proc_meminfo_filename,
   uint64_t val;
   std::string units;
   uint64_t buffersUsed=0, cached=0;
-  
+
   free=total=swapAvail=memAvail=0;
 
   // 2.4
@@ -1012,12 +518,12 @@ bool memInfo_linux(std::string proc_meminfo_filename,
   // Buffers:         33776 kB
   // Cached:        1618328 kB
 
-  proc_meminfo.open(proc_meminfo_filename.c_str());
+  Fs::aptOpen(proc_meminfo, proc_meminfo_filename);
   while (!proc_meminfo.eof()) {
     getline(proc_meminfo,line);
     //cout<<"L: "<<line<<"\n";
     std::istringstream line_stm(line);
-    
+
     //proc_meminfo.getline(line_buf,sizeof(line_buf));
     //line_stm.seekg(0,ios_base::beg);
     //cout << line_stm;
@@ -1055,7 +561,7 @@ bool memInfo_linux(std::string proc_meminfo_filename,
     //
     if (units=="kB") {
       val=val*1024;
-    } 
+    }
     else if (units=="MB") {
       val=val*1024*1024;
     } else {
@@ -1078,12 +584,12 @@ bool memInfo_linux(std::string proc_meminfo_filename,
     }
     else if (key=="Cached:") {
       cached=val;
-    } 
+    }
   }
   proc_meminfo.close();
-  
+
   memAvail=(uint64_t)(free+0.90*buffersUsed+cached);
-  
+
   return true;
 }
 #endif
@@ -1099,24 +605,24 @@ bool memInfo_linux(std::string proc_meminfo_filename,
 bool memInfo_darwin(uint64_t &free, uint64_t &total,
                     uint64_t &swapAvail, uint64_t& memAvail)
 {
-  // ask mach 
+  // ask mach
   struct vm_statistics vm_stat;
   vm_size_t   my_pagesize;
   mach_port_t my_host=mach_host_self();
   mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
-  
+
   if (host_page_size(my_host,&my_pagesize)!=KERN_SUCCESS) {
     Err::errAbort("Util::memInfo() - Didnt succeed with 'host_page_size'.");
   }
   if (host_statistics(my_host, HOST_VM_INFO,(integer_t*)&vm_stat,&count) != KERN_SUCCESS) {
     Err::errAbort("Util::memInfo() - Didnt succeed with 'host_statistics'.");
   }
-  
+
   // there isnt a total in the struct; sum it up.
   total=(vm_stat.free_count+vm_stat.active_count+vm_stat.inactive_count+vm_stat.wire_count);
   // THEN multiply by the page size.  (a 64b multiply)
   total=total*my_pagesize;
-  
+
 //#define PRINT_IT(x) printf("%-30s: %8d\n",#x,x)
 //  PRINT_IT(vm_stat.free_count);
 //  PRINT_IT(vm_stat.active_count);
@@ -1130,7 +636,7 @@ bool memInfo_darwin(uint64_t &free, uint64_t &total,
   swapAvail=0;
   // our guess as to what we can allocate
   memAvail=(uint64_t)(0.90*(vm_stat.free_count+vm_stat.inactive_count)*my_pagesize);
-  
+
   return true;
 }
 #endif
@@ -1185,19 +691,9 @@ bool memInfo_sysinfo(uint64_t &free, uint64_t &total,
 }
 #endif
 
-/** 
- * Determine the free and total amount of memory in bytes on this machine.
- * 
- * @param free      - Bytes available currently.
- * @param total     - Total bytes installed on machine.
- * @param swapAvail - Amount of swap available on machine.
- * @param memAvail  - Amount of space we should consider available.
- * @param cap32bit  - Cap the memory at 4GB.
- * 
- * @return true if successful, false otherwise.
- */
-bool Util::memInfo(uint64_t &free, uint64_t &total, 
-                   uint64_t &swapAvail, uint64_t& memAvail, 
+
+bool Util::memInfo(uint64_t &free, uint64_t &total,
+                   uint64_t &swapAvail, uint64_t& memAvail,
                    bool cap32bit) {
   bool success = false;
   bool is32bit = true;
@@ -1243,166 +739,13 @@ bool Util::memInfo(uint64_t &free, uint64_t &total,
   return success;
 }
 
-#ifdef WIN32
-static int64_t getAvailableDiskSpace_win32(const std::string& path) {
-    ULARGE_INTEGER lpFreeBytesAvailable;
-    ULARGE_INTEGER lpTotalNumberOfBytes;
-    ULARGE_INTEGER lpTotalNumberOfFreeBytes;
 
-    if (!GetDiskFreeSpaceEx(
-                            path.c_str(),
-                            &lpFreeBytesAvailable,
-                            &lpTotalNumberOfBytes,
-                            &lpTotalNumberOfFreeBytes
-    )){
-        Verbose::warn(1, "Util::getAvailableDiskSpace() - Could not determine available disk space with GetDiskFreeSpaceEx().");
-        return -1;
-    }
-
-    return lpTotalNumberOfFreeBytes.QuadPart;
-}
-#endif
-
-#ifdef __linux__
-static int64_t getAvailableDiskSpace_linux(const std::string& path) {
-    struct statfs retBuf;
-    if(statfs(path.c_str(), &retBuf)) {
-        Verbose::warn(1, "Util::getAvailableDiskSpace() - Could not determine available disk space with statfs().");
-        return -1;
-    }
-    return int64_t(retBuf.f_bavail) * int64_t(retBuf.f_bsize);
-}
-#endif
-
-#ifdef __APPLE__
-static int64_t getAvailableDiskSpace_mac(const std::string& path) {
-    struct statfs retBuf;
-    if(statfs(path.c_str(), &retBuf)) {
-        Verbose::warn(1, "Util::getAvailableDiskSpace() - Could not determine available disk space with statfs().");
-        return -1;
-    }
-    return int64_t(retBuf.f_bavail) * int64_t(retBuf.f_bsize);
-}
-#endif
-
-/** 
- * Determine the available space in bytes on given volume.
- * 
- * @param path - path to any file on the volume.
- * 
- * @return available space in bytes or -1 on unsupported platforms.
- */
-int64_t Util::getAvailableDiskSpace(const std::string& path) {
-#ifdef WIN32
-    return getAvailableDiskSpace_win32(path);
-#endif
-
-#ifdef __linux__
-    return getAvailableDiskSpace_linux(path);
-#endif
-
-#ifdef __APPLE__
-    return getAvailableDiskSpace_mac(path);
-#endif
-
-    return -1;
-}
-
-#ifdef WIN32
-static int64_t isSameVolume_win32(const std::string& path1, const std::string& path2) {
-    TCHAR volumeNameBuffer1[MAX_PATH+1];
-    if(!GetVolumePathName(
-                            path1.c_str(),
-                            volumeNameBuffer1,
-                            MAX_PATH+1
-    )){
-        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(1) with GetVolumePathName().");
-        return -1;
-    }
-    TCHAR volumeNameBuffer2[MAX_PATH+1];
-    if(!GetVolumePathName(
-                            path2.c_str(),
-                            volumeNameBuffer2,
-                            MAX_PATH+1
-    )){
-        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(2) with GetVolumePathName().");
-        return -1;
-    }
-    if (_stricmp(volumeNameBuffer1, volumeNameBuffer2) == 0)
-        return 1;
-
-    return 0;
-}
-#endif
-
-#ifdef __linux__
-static int64_t isSameVolume_linux(const std::string& path1, const std::string& path2) {
-    struct stat retBuf1, retBuf2;
-    if (stat(path1.c_str(), &retBuf1)) {
-        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(1) with stat().");
-        return -1;
-    }
-    if (stat(path2.c_str(), &retBuf2)) {
-        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(2) with stat().");
-        return -1;
-    }
-    if (retBuf1.st_dev == retBuf2.st_dev)
-        return 1;
-
-    return 0;
-}
-#endif
-
-#ifdef __APPLE__
-static int64_t isSameVolume_mac(const std::string& path1, const std::string& path2) {
-    struct stat retBuf1, retBuf2;
-    if (stat(path1.c_str(), &retBuf1)) {
-        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(1) with stat().");
-        return -1;
-    }
-    if (stat(path2.c_str(), &retBuf2)) {
-        Verbose::warn(1, "Util::isSameVolume() - Could not determine volume path name(2) with stat().");
-        return -1;
-    }
-    if (retBuf1.st_dev == retBuf2.st_dev)
-        return 1;
-
-    return 0;
-}
-#endif
-
-/** 
- * Determine if two files/dirs are on the same volume.
- * 
- * @param path1 - first path to any file/dir on the volume.
- * @param path2 - second path to any file/dir on the volume.
- * 
- * @return 1 if same volume, 0 if not, -1 if unsupported platform.
- */
-int64_t Util::isSameVolume(const std::string& path1, const std::string& path2) {
-
-#ifdef WIN32
-    return isSameVolume_win32(path1, path2);
-#endif
-
-#ifdef __linux__
-    return isSameVolume_linux(path1, path2);
-#endif
-
-#ifdef __APPLE__
-    return isSameVolume_mac(path1, path2);
-#endif
-
-    return -1;
-}
-
-
-/** 
+/**
  * Return a pointer to the next character that is white space
- * or NULL if none found. 
+ * or NULL if none found.
  * @param s - cstring to find white space in.
  * @return - Pointer to next whitespace character or NULL if none
- *   found. 
+ *   found.
  */
 const char *Util::nextWhiteSpace(const char *s) {
   while(s[0] != '\0' && !isspace(s[0])) {
@@ -1418,7 +761,7 @@ const char *Util::nextWhiteSpace(const char *s) {
  * @param str - The cstring to be printed.
  * @param prefix - How many spaces to put on begining of newline.
  * @param maxWidth - Where to wrap text at.
- * @param currentPos - What position in the line is 
+ * @param currentPos - What position in the line is
  *                      cursor currently at.
  */
 void Util::printStringWidth(std::ostream &out,const std::string& str,
@@ -1432,12 +775,12 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
 
   /* While there are still characters to be printed. */
   while(*wStart != '\0') {
-    
+
     /* Clean out any whitespace. */
     while(isspace(*wStart) && *wStart != '\0') {
       if(*wStart == '\n') {
         out.put('\n');
-        for(i = 0; i < prefix; i++) 
+        for(i = 0; i < prefix; i++)
           out.put(' ');
         fflush(stdout);
         position = prefix;
@@ -1452,15 +795,15 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
     wEnd = wStart;
     while(!isspace(*wEnd) && *wEnd != '\0')
       wEnd++;
-    
+
     /* Time for a newline? */
     if((wEnd - wStart) + position >= maxWidth) {
       out.put('\n');
-      for(i = 0; i < prefix; i++) 
-         out.put(' ');      
+      for(i = 0; i < prefix; i++)
+         out.put(' ');
       position = prefix;
     }
-    
+
     /* Print out the word. */
     while(wStart < wEnd) {
       out.put(*wStart);
@@ -1473,13 +816,13 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
     while(isspace(*wEnd)) {
       if(*wEnd == '\n') {
         out.put('\n');
-        for(i = 0; i < prefix; i++) 
-            out.put(' ');      
+        for(i = 0; i < prefix; i++)
+            out.put(' ');
         position = prefix;
       }
       wEnd++;
     }
-     
+
     /* Figure out the size of the next word. */
     wStart = nextWhiteSpace(wEnd);
     if(wStart != NULL)
@@ -1487,10 +830,10 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
     else
       nextSize = 0;
 
-    /* Print a space if we're not going to 
+    /* Print a space if we're not going to
        print a newline. */
     if(wEnd != '\0' &&
-       nextSize + position < maxWidth && 
+       nextSize + position < maxWidth &&
        position != 0) {
       out.put(' ');
       position++;
@@ -1500,7 +843,7 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
   }
 }
 
-/** 
+/**
  * Wrapper for different version of isnan() on different systems.
  * @param x - number to be checked for NaN or INF
  * @return - true if x is finite (-INF < x && x < +INF && x != nan), false otherwise
@@ -1511,30 +854,18 @@ bool Util::isFinite(double x) {
   isOk = _finite(x);
 #else
   isOk = finite(x);
-#endif 
+#endif
   return isOk;
 }
 
-std::string Util::getTimeStamp() 
+std::string Util::getTimeStamp()
 {
-  char *timeStr = NULL;
-  struct tm *tp;
-  time_t t = time(NULL);
-  tp = localtime(&t);
-  timeStr = asctime(tp); // timestamp prefix for log entries
-  if(timeStr == NULL) {
-    timeStr = "unknown";
-  } else if(strlen(timeStr) < 24) {
-    timeStr[strlen(timeStr) - 1] = '\0'; // knock off trailing '\n'
-  } else {
-    // we knock of to a fixed size as we've seen
-    // trailing garbage if using strlen() suggesting
-    // that there are times when the null term is not
-    // where we expect it.
-    timeStr[24] = '\0'; // knock off trailing '\n'
-  }
-  std::string timess = timeStr;
-  return timess;
+  time_t now=time(NULL);
+  const char* ctime_ptr=ctime(&now);
+  APT_ERR_ASSERT(ctime_ptr != NULL, "Got null value from ctime()");
+  std::string ctime_str=ctime_ptr;
+  trimString(ctime_str);
+  return ctime_str;
 }
 
 
@@ -1561,8 +892,8 @@ std::vector<std::string> Util::listToVector(const char* in[])
   for (int i = 0; in[i] != NULL; i++)
   {
     fullName.push_back(in[i]);
-  } 
-  
+  }
+
   return fullName;
 }
 
@@ -1574,24 +905,24 @@ std::vector<std::string> Util::listToVector(const char* in[], int size)
     {
       fullName.push_back(in[i]);
     }
-  
+
   return fullName;
 }
 
-std::vector<std::string> Util::addPrefixSuffix(std::vector<std::string> middle, 
+std::vector<std::string> Util::addPrefixSuffix(std::vector<std::string> middle,
                            const std::string &prefix, const std::string &suffix)
 {
   std::vector<std::string> fullName;
 
   for (std::vector<std::string>::iterator i = middle.begin(); i < middle.end();i++)
   {
-     fullName.push_back(prefix + (*i) + suffix);
+    fullName.push_back(Fs::Unc(prefix + (*i) + suffix));
   }
 
   return fullName;
 }
 
-std::vector<std::string> Util::addPrefixSuffix(const char* middle[], 
+std::vector<std::string> Util::addPrefixSuffix(const char* middle[],
                            const std::string &prefix, const std::string &suffix)
 {
   std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle), prefix, suffix);
@@ -1599,7 +930,7 @@ std::vector<std::string> Util::addPrefixSuffix(const char* middle[],
   return fullName;
 }
 
-std::vector<std::string> Util::addPrefixSuffix(const char* middle[], int size, 
+std::vector<std::string> Util::addPrefixSuffix(const char* middle[], int size,
                            const std::string &prefix, const std::string &suffix)
 {
   std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle, size), prefix, suffix);
@@ -1607,7 +938,7 @@ std::vector<std::string> Util::addPrefixSuffix(const char* middle[], int size,
   return fullName;
 }
 
-std::vector<std::string> Util::addPrefixSuffix(const char* middle[], 
+std::vector<std::string> Util::addPrefixSuffix(const char* middle[],
                            const std::string &prefix)
 {
   std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle), prefix, "");
@@ -1615,7 +946,7 @@ std::vector<std::string> Util::addPrefixSuffix(const char* middle[],
   return fullName;
 }
 
-//String Stuff 
+//String Stuff
 //Assumes a sentintel exists (equal to "") as the last element in the array.
 std::vector<std::string> Util::listToVector(std::string in[])
 {
@@ -1625,7 +956,7 @@ std::vector<std::string> Util::listToVector(std::string in[])
   {
     fullName.push_back(in[i]);
   }
-  
+
   return fullName;
 }
 
@@ -1637,30 +968,30 @@ std::vector<std::string> Util::listToVector(std::string in[], int size)
   {
     fullName.push_back(in[i]);
   }
-  
+
   return fullName;
 }
 
-std::vector<std::string> Util::addPrefixSuffix(std::string middle[], 
+std::vector<std::string> Util::addPrefixSuffix(std::string middle[],
                            const std::string &prefix, const std::string &suffix)
 {
   std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle), prefix, suffix);
-  
+
   return fullName;
 }
 
-std::vector<std::string> Util::addPrefixSuffix(std::string middle[], int size, 
+std::vector<std::string> Util::addPrefixSuffix(std::string middle[], int size,
                            const std::string &prefix, const std::string &suffix)
 {
   std::vector<std::string> fullName = addPrefixSuffix(listToVector(middle,size), prefix, suffix);
-  
+
   return fullName;
 }
 
 std::string Util::joinVectorString(std::vector<std::string> toJoin, const std::string &sep)
 {
   std::string fullString="";
-  
+
   for (std::vector<std::string>::iterator i = toJoin.begin(); i < toJoin.end();i++)
   {
     fullString += (*i)+sep;
@@ -1693,4 +1024,12 @@ void Util::pushMemFreeAtStart() {
     uint64_t freeRam = 0, totalRam = 0, swapAvail = 0, memAvail = 0;
     Util::memInfo(freeRam, totalRam, swapAvail, memAvail, false);
     mem.pushMemFreeAtStart(memAvail);
+}
+
+std::string Util::toString( const std::wstring &src )  {
+  char* szSource = new char[ src.length()+1 ];
+  wcstombs( szSource, src.c_str(), src.length()+1 );
+  std::string result(szSource);
+  delete [] szSource;
+  return result;
 }

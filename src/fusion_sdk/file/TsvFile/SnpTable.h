@@ -54,60 +54,31 @@ public:
    * Entries are -1 = NN, 0 = AA, 1 = AB, 2 = BB 
    * @param fileName - name of file to open.
    */
-  void open(const std::string& fileName) {
-    affx::TsvFile tsv;
-    std::string snpName;
-    std::vector<int> gTypes;
-    tsv.open(fileName);
-    int colCount = tsv.getColumnCount(0);
-    tsv.bind(0,"probeset_id", &snpName);
-    gTypes.resize(colCount - 1);
-    /* Bind up the variables. */
-    for(int i = 1; i < colCount; i++) {
-      std::string s;
-      tsv.cidx2cname(0, i, s);
-      m_ColNames.push_back(s);
-      tsv.bind(0, i, &gTypes[i-1]);
-      m_ColNameMap[s] = i - 1;
-    }
-    int count = 0;
-    while(tsv.nextLevel(0) == TSV_OK) {
-      m_RowNames.push_back(snpName);
-      m_GTypes.push_back(gTypes);
-      m_RowNameMap[snpName] = count++;
-    }
-    tsv.close();
-  }
+  void open(const std::string& fileName);
 
   /** @brief     Return the number of rows in the file
    *  @return    rows
    */
-  inline int getNumRows() { return (int)m_GTypes.size(); }
+  int getNumRows();
 
   /** @brief     Return the number of columns in the file.
    *  @return    columns
    */
-  inline int getNumCols() { return m_GTypes.empty() ? 0 : (int)m_GTypes[0].size(); }
+  int getNumCols();
 
 
   /** @brief     Get the name of row rowIx
    *  @param     rowIx     
    *  @return    the name
    */
-  inline const std::string &getRowName(int rowIx) {
-    assert(rowIx < (int)m_RowNames.size());
-    return m_RowNames[rowIx];
-  }
+  const std::string &getRowName(int rowIx);
 
 
   /** @brief  Get the name of column colIx
    *  @param  colIx
    *  @return the name
    */
-  inline const std::string &getColName(int colIx) {
-    assert(colIx < (int)m_ColNames.size());
-    return m_ColNames[colIx];
-  }
+  const std::string &getColName(int colIx);
 
   /** 
    * Find the row index associated with a particular identified, -1 if
@@ -116,13 +87,7 @@ public:
    * @param s - row identifier.
    * @return - index if found, -1 otherwise.
    */
-  int getRowIndex(const std::string &s) {
-    std::map<std::string, int>::iterator iter = m_RowNameMap.find(s);
-    if(m_RowNameMap.end() == iter) 
-      return -1;
-    else
-      return iter->second;
-  }
+  int getRowIndex(const std::string &s);
 
   /** 
    * Find the col index associated with a particular identified, -1 if
@@ -131,13 +96,7 @@ public:
    * @param s - col identifier.
    * @return - index if found, -1 otherwise.
    */
-  int getColIndex(const std::string &s) {
-    std::map<std::string, int>::iterator iter = m_ColNameMap.find(s);
-    if(m_ColNameMap.end() == iter) 
-      return -1;
-    else
-      return iter->second;
-  }
+  int getColIndex(const std::string &s);
 
   /** 
    * Get the genotype for the particular row and index of the genotype matrix.
@@ -146,11 +105,7 @@ public:
    * @param colIndex - Column of interest.
    * @return the genotype requested.
    */
-  int getGenotypeForSnp(int rowIndex, int colIndex) {
-    assert(rowIndex < (int)m_GTypes.size());
-    assert(colIndex < (int)m_GTypes[0].size());
-    return m_GTypes[rowIndex][colIndex];
-  }
+  int getGenotypeForSnp(int rowIndex, int colIndex);
 
 private:
   /// Unique identifiers (usually probeset ids) associated with each row.

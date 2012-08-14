@@ -2,20 +2,18 @@
 //
 // Copyright (C) 1989, 1991 Free Software Foundation, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -24,11 +22,77 @@
 //
 #include "broadutil/BroadException.h"
 #include "calvin_files/exception/src/ExceptionBase.h"
-//
+#include "util/Fs.h"
+#include "util/Util.h"
 
 using namespace std;
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_parameter;
+
+
+// Constructor.
+CalvinToTextFile::CalvinToTextFile()
+{
+  m_cb = NULL;	
+  m_pfileStream = NULL;
+}
+
+// Destructor.
+CalvinToTextFile::~CalvinToTextFile()
+{
+  if (isOpen()) {
+    m_pfileStream->close();
+    delete m_pfileStream;
+  }
+  if (m_cb != NULL) {delete[] m_cb;}
+}
+
+bool CalvinToTextFile::isOpen() {
+  return ((m_pfileStream != NULL) && (m_pfileStream->is_open()));
+}
+
+void CalvinToTextFile::close(void)
+{
+  if (isOpen()) {
+      m_pfileStream->close();
+      delete m_pfileStream;
+      m_pfileStream =  NULL;
+      if (m_cb != NULL) {delete[] m_cb; m_cb = NULL;}
+  }
+}
+
+
+// Open the file.
+bool CalvinToTextFile::open(const AffxString& strFileName ) 
+{
+
+  m_pfileStream = new std::fstream;
+
+  Fs::aptOpen(*m_pfileStream, strFileName, fstream::out | fstream::binary | fstream::trunc);
+
+  if (!isOpen()) {
+    delete m_pfileStream;
+    m_pfileStream = NULL;
+  }
+  return isOpen();
+}
+
+
+
+void CalvinToTextFile::write(const char *psz) {
+  if (m_pfileStream != NULL) {
+    m_pfileStream->write(psz, (std::streamsize)strlen(psz));
+  }
+}
+
+void CalvinToTextFile::writeLine(const AffxString& str) 
+{
+  std::ostringstream line;
+  line << str << std::endl;
+  write(line.str().c_str());
+}
+
+
 
 /** 
  * Error handling for the class.
@@ -39,69 +103,68 @@ void CalvinToText::error(const AffxString& strMessage)
 	Err::errAbort(strMessage);
 }
 
-void CalvinToText::run(const std::string strFileNameIn, const std::string strFileNameOut, bool bHeader, bool bBody, bool bNewGuid)
+void CalvinToText::run(const std::string& strFileNameIn,
+                       const std::string& strFileNameOut,
+                       bool bHeader,
+                       bool bBody, 
+                       bool bNewGuid)
 {
-	try 
-	{
-		if (isCalvinFile(strFileNameIn))
-		{		
-			m_strFileNameIn = strFileNameIn;
-			m_strFileNameOut = strFileNameOut;
-			AffxByteArray chpFileName;
-			chpFileName.assign(strFileNameIn);
-			AffxFile file;
-			Verbose::out(1, "Writing file: " + strFileNameOut);
-			if (m_file.open(strFileNameOut, AffxFile::SAVE))
-			{	
-				m_bHeader = bHeader;
-				affymetrix_calvin_io::GenericData genericData;
-				OutputHeader(strFileNameIn, genericData, bNewGuid);
-				if (bBody)
-				{
-					OutputGroupsAndSets(genericData);
-				}
-				m_file.close();
-			}
-			else 
-			{
-				Err::errAbort("A problem occurred while processing file (Cannot open output file) " + strFileNameIn);
-			}
-		}
-	} 
+  try 	{
+    m_strFileNameIn = Fs::convertToUncPath(strFileNameIn);
+    m_strFileNameOut = Fs::convertToUncPath(strFileNameOut);
 
-//When things go wrong see if we can die gracefully here. 
+    if (isCalvinFile(m_strFileNameIn)) {		
+      AffxByteArray chpFileName;
+      chpFileName.assign(m_strFileNameIn);
+      Verbose::out(1, "Writing file: " + m_strFileNameOut);
+      if (m_file.open(m_strFileNameOut) ){
+        m_bHeader = bHeader;
+        affymetrix_calvin_io::GenericData genericData;
+        OutputHeader(m_strFileNameIn, genericData, bNewGuid);
+        if (bBody){
+            OutputGroupsAndSets(genericData);
+        }
+        m_file.close();
+      }
+      else 			{
+        Err::errAbort("A problem occurred while processing file (Cannot open output file) " + m_strFileNameIn);
+      }
+    }
+  } 
+
+  //When things go wrong see if we can die gracefully here. 
   catch(Except &e) {
     Verbose::out(0,"");
     error("Exception caught. "
-                  "Message is: " + ToStr(e.what()));
+          "Message is: " + ToStr(e.what()));
   }
   catch(const std::bad_alloc &e) {
     Verbose::out(0,"");
-	error("std::bad_alloc caught. "
-                  "The application has run out of memory, or the calvin file is malformed."
-                  "Message is: " + ToStr(e.what()));
+    error("std::bad_alloc caught. "
+          "The application has run out of memory, or the calvin file is malformed."
+          "Message is: " + ToStr(e.what()));
   }
   catch(affymetrix_calvin_exceptions::CalvinException &ce) {
     Verbose::out(0,"");
-	error("affymetrix_calvin_exceptions::CalvinException caught. "
-			 	  "Affymetrix GeneChip Command Console library has thrown an exception. "
-                  "Message is: " + affymetrix_calvin_utilities::StringUtils::ConvertWCSToMBS(ce.Description()));
+    error("affymetrix_calvin_exceptions::CalvinException caught. "
+          "Affymetrix GeneChip Command Console library has thrown an exception. "
+          "Message is: " + affymetrix_calvin_utilities::StringUtils::ConvertWCSToMBS(ce.Description()));
   }
   catch(BroadException &e) {
     Verbose::out(0,"");
-	error("BroadException caught. "
-                  "Message is: '" + ToStr(e.m_msg) + "' source file: '" + ToStr(e.m_sourcefile) +
-                  ":" + ToStr(e.m_sourceline) + "'");
+    error("BroadException caught. "
+          "Message is: '" + ToStr(e.m_msg) + "' source file: '" + ToStr(e.m_sourcefile) +
+          ":" + ToStr(e.m_sourceline) + "'");
   }
   catch(const std::exception &e) {
     Verbose::out(0,"");
-	error("std::exception caught. "
-                  "Message is: " + ToStr(e.what()));
+    error("std::exception caught. "
+          "Message is: " + ToStr(e.what()));
   }
   catch(...) {
     Verbose::out(0,"");
     error("Unknown exception caught. "
-                  "No message is available.");
+          "No message is available.");
   }
 }
 
@@ -266,7 +329,7 @@ void CalvinToText::OutputFileHeaderParameters(GenericData &gdata, bool bNewGuid)
 		else
 		{
 			m_file.writeLine("#%File=" + m_strFileNameIn);
-			m_file.writeLine("#%FileSize=" + ::getUnsignedInt(AffxFile::getFileSize(m_strFileNameIn)));
+			m_file.writeLine("#%FileSize=" + ::getUnsignedInt(Fs::fileSize(m_strFileNameIn)));
 			if (gdata.Header().GetGenericDataHdr()->GetFileCreationTime().length() > 0)
 			{
 				m_file.writeLine("#%FileCreationTime=" + StringUtils::ConvertWCSToMBS(gdata.Header().GetGenericDataHdr()->GetFileCreationTime()));
@@ -447,3 +510,8 @@ bool CalvinToText::isCalvinFile(const AffxString& strFileName)
 	if (ucFileType == 59) {return true;}
 	else {return false;}
 }
+
+
+
+
+

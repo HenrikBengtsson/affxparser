@@ -84,16 +84,39 @@ std::wstring GenericDataHeader::GetLocale() const
 
 void GenericDataHeader::AddNameValParam(const ParameterNameValueType &entry)
 {
-	ParameterNameValueTypeIt ii = FindNameValParam(entry);
-	if (ii == nameValParams.end())
+	AddNameValParam(entry, true);
+}
+
+/**
+This override of the original method of the same name adds the parameter bool doUniqueAdds.
+
+This parameter is a hint flag to determine whether to bypass the FindParameter call within. FindParameter
+is used to ensure duplicates do not get entered into the collection. In most cases, the calling application is not updating or 
+adding parameter to the collection, but is just reading the header parameters. Through testing it has been found
+that bypassing the FindParameter call made, will reduce reads of the header greatly. 
+
+If an application is updating or adding parameters to the collection and require no duplicates to be added, then do not use this
+override method, but if you are just reading header parameters, then this will save time reading headers.
+*/
+void GenericDataHeader::AddNameValParam(const ParameterNameValueType &entry, bool doUniqueAdds)
+{
+	if(doUniqueAdds == true)
 	{
-		// Add
-		nameValParams.push_back(entry);
+		ParameterNameValueTypeIt ii = FindNameValParam(entry);
+		if((ii == nameValParams.end()) == false)
+		{
+			*ii = entry;
+		}
+		else
+		{
+			paramNameIdxMap[entry.GetName()] =  nameValParams.size();
+			nameValParams.push_back(entry);
+		}
 	}
 	else
 	{
-		// Update
-		*ii = entry;
+		paramNameIdxMap[entry.GetName()] =  nameValParams.size();
+		nameValParams.push_back(entry);
 	}
 }
 
@@ -169,17 +192,12 @@ bool GenericDataHeader::FindNameValParam(const std::wstring& name, ParameterName
 
 ParameterNameValueTypeIt GenericDataHeader::FindNameValParam(const ParameterNameValueType& p)
 {
-	ParameterNameValueTypeIt begin, end;
-	begin = nameValParams.begin();
-	end = nameValParams.end();
+  std::map<std::wstring, int>::const_iterator idx = paramNameIdxMap.find(p.GetName());
+  if (idx == paramNameIdxMap.end()) {
+    return nameValParams.end();
+  }
+  return nameValParams.begin() + idx->second;
 
-	ParameterNameValueTypeIt ii = std::find(begin, end, p);
-	if (ii != end)
-	{
-		return ii;
-	}
-	else
-		return end;
 }
 
 bool GenericDataHeader::GetNameValParamsBeginsWith(const std::wstring& beginsWith, ParameterNameValueTypeVector& p)

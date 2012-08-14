@@ -64,6 +64,11 @@ void CDFData::Clear()
 	nameToFilePosMap.clear();
 }
 
+int32_t CDFData::GetFormatVersion()
+{
+	return 0;
+}
+
 void CDFData::SetArrayRows(u_int32_t value)
 {
 	SetUInt32ToGenericHdr(CDF_ROWS_PARAM, value);
@@ -283,13 +288,13 @@ void CDFData::GetProbeSetInformation(int32_t index, CDFProbeSetInformation& info
 {
 	if (GetDataTypeId() == AFFY_CNTRL_PS)
 	{
-		ProbeSetNotFoundException e;
+		ProbeSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	if (index >= genericData.Header().GetNumDataGroups()-1)
 	{
-		ProbeSetNotFoundException e;
+		ProbeSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -306,7 +311,7 @@ void CDFData::GetProbeSetInformation(int32_t index, CDFProbeSetInformation& info
 		}
 		else
 		{
-			CDFAccessNotSupportedByModeException e;
+			CDFAccessNotSupportedByModeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 			throw e;
 		}
 	}
@@ -318,7 +323,7 @@ void CDFData::GetProbeSetInformation(int32_t index, CDFProbeSetInformation& info
 	}
 	else
 	{
-		CDFAccessNotSupportedByModeException e;
+		CDFAccessNotSupportedByModeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -327,13 +332,13 @@ void CDFData::GetProbeSetInformation(const std::wstring& probeSetName, CDFProbeS
 {
 	if (GetDataTypeId() == AFFY_CNTRL_PS)
 	{
-		ProbeSetNotFoundException e;
+		ProbeSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	if (mode != ProbeSetNameMode)
 	{
-		CDFAccessNotSupportedByModeException e;
+		CDFAccessNotSupportedByModeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -347,13 +352,13 @@ void CDFData::GetQCProbeSetInformation(int32_t index, CDFQCProbeSetInformation& 
 {
 	if (GetDataTypeId() != AFFY_CNTRL_PS)
 	{
-		ProbeSetNotFoundException e;
+		ProbeSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	if (index >= genericData.Header().GetNumDataGroups()-1)
 	{
-		ProbeSetNotFoundException e;
+		ProbeSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -371,7 +376,7 @@ void CDFData::GetQCProbeSetInformation(int32_t index, CDFQCProbeSetInformation& 
 		}
 		else
 		{
-			CDFAccessNotSupportedByModeException e;
+			CDFAccessNotSupportedByModeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 			throw e;
 		}
 	}
@@ -384,7 +389,7 @@ void CDFData::GetQCProbeSetInformation(int32_t index, CDFQCProbeSetInformation& 
 	}
 	else
 	{
-		CDFAccessNotSupportedByModeException e;
+		CDFAccessNotSupportedByModeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -393,13 +398,13 @@ void CDFData::GetQCProbeSetInformation(const std::wstring& probeSetName, CDFQCPr
 {
 	if (GetDataTypeId() != AFFY_CNTRL_PS)
 	{
-		ProbeSetNotFoundException e;
+		ProbeSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	if (mode != ProbeSetNameMode)
 	{
-		CDFAccessNotSupportedByModeException e;
+		CDFAccessNotSupportedByModeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -413,7 +418,7 @@ u_int32_t CDFData::GetTOCFilePosByIndex(int32_t index)
 {
 	if (tocDataSet == 0 || tocDataSet->IsOpen() == false)
 	{
-		DataSetNotOpenException e;
+		DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -426,14 +431,14 @@ u_int32_t CDFData::GetTOCFilePosByName(const std::wstring& name)
 {
 	if (tocDataSet == 0 || tocDataSet->IsOpen() == false)
 	{
-		DataSetNotOpenException e;
+		DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
 	std::map<std::wstring, u_int32_t>::iterator ii = nameToFilePosMap.find(name);
 	if (ii == nameToFilePosMap.end())
 	{
-		ProbeSetNotFoundException e;
+		ProbeSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 	else
@@ -450,7 +455,7 @@ std::wstring CDFData::GetProbeSetName(int32_t index)
 
 		if (tocDataSet == 0)
 		{
-			DataSetNotOpenException e;
+			DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 			throw e;
 		}
 	}
@@ -460,14 +465,14 @@ std::wstring CDFData::GetProbeSetName(int32_t index)
 		tocDataSet->Open();
 		if (tocDataSet->IsOpen() == false)
 		{
-			DataSetNotOpenException e;
+			DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 			throw e;
 		}
 	}
 	
 	if (index < 0 || index >= tocDataSet->Rows())
 	{
-		ProbeSetNotFoundException e;
+		ProbeSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 

@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2009 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 #include "canary/CanaryEngine.h"
@@ -25,6 +23,7 @@
 #include "chipstream/apt-summary-genotype/SummaryGenotypeEngine.h"
 #include "copynumber/CNAnalysisEngine.h"
 #include "copynumber/CNCytoEngine.h"
+#include "copynumber/CNFamilialEngine.h"
 #include "copynumber/CNLog2RatioEngine.h"
 #include "copynumber/CNReferenceEngine.h"
 #include "copynumber/CNWorkflowEngine.h"
@@ -47,6 +46,7 @@ void touchEngines() {
     { SummaryGenotypeEngine engine; }
     { CNAnalysisEngine engine; }
     { CNCytoEngine engine; }
+    { CNFamilialEngine engine; }
     { CNLog2RatioEngine engine; }
     { CNReferenceEngine engine; }
     { CNWorkflowEngine engine; }

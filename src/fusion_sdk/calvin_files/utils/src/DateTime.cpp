@@ -162,7 +162,7 @@ DateTime DateTime::Parse(std::wstring value)
 	int32_t posT = (int32_t) value.find(DATETIME_SEPERATOR_FORMAT_SPECIFIER);
 	if (posT == std::wstring::npos)
 	{
-		FormatException e;
+		FormatException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -176,7 +176,7 @@ DateTime DateTime::Parse(std::wstring value)
 	{
 		if (posZ < posT)
 		{
-			FormatException e;
+			FormatException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 			throw e;
 		}
 		utc = true;
@@ -241,7 +241,7 @@ void DateTime::CheckDateFormat(std::wstring& date)
 		}
 		else
 		{
-			FormatException e;
+			FormatException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 			throw e;
 		}
 	}
@@ -255,7 +255,7 @@ void DateTime::CheckTimeFormat(std::wstring& time)
 	int32_t h, M, s;
 	if (swscanf(time.c_str(), L"%d:%d:%d", &h, &M, &s) != 3)
 	{
-		FormatException e;
+		FormatException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }

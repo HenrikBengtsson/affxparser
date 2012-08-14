@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -31,6 +29,7 @@
 //
 #include "util/Convert.h"
 #include "util/Err.h"
+#include "util/Fs.h"
 #include "util/Util.h"
 //
 #include <cstring>
@@ -38,7 +37,6 @@
 #include <map>
 #include <string>
 #include <vector>
-//
 
 using namespace std; 
 
@@ -59,10 +57,11 @@ RowFile::RowFile(char delimChar, char commentChar, char commentChar2):
  * @param char * fileName - full path of fileName to be opened.
  */
 void RowFile::open(const std::string& fileName) {
+
   m_FileName = fileName;
-  m_In.open(fileName.c_str(), ios_base::in);
+  Fs::aptOpen( m_In, fileName, ios_base::in);
   if(m_In.fail()) {
-    Err::errAbort("Can't open file " + string(fileName) + " to read.");
+    Err::errAbort("Can't open file "+FS_QUOTE_PATH(fileName) +" to read.");
   }
   m_EndType = determineLineEndingType(m_In);
 }

@@ -32,7 +32,6 @@
 #include <map>
 #include <string>
 #include <vector>
-//
 
 
 class AlleleRecord {
@@ -90,28 +89,13 @@ public:
 	       const std::vector<std::string> report_allele,
 	       const int allele_count,
 	       const std::vector<unsigned char> allowable_cn_states
-   ) :
-    m_probeset_id(probeset_id), 
-    m_abstract_allele(abstract_allele), 
-    m_reference_allele(reference_allele),
-    m_report_allele(report_allele),
-    m_allele_count(allele_count),
-    m_allowable_cn_states(allowable_cn_states)
-      {}
+               );
 
   AlleleRecord(const std::string probeset_id, 
 	       const std::vector<std::string> abstract_allele, 
 	       const std::vector<std::string> reference_allele,
 	       const std::vector<std::string> report_allele
-   ) :
-    m_probeset_id(probeset_id), 
-    m_abstract_allele(abstract_allele), 
-    m_reference_allele(reference_allele),
-    m_report_allele(report_allele)
-      {
-	m_allele_count = 2;
-	m_allowable_cn_states.push_back(2);
-      }
+               );
 
   std::string m_probeset_id;
   std::vector<std::string> m_abstract_allele;
@@ -133,9 +117,7 @@ public:
 /*       return (a.m_abstract_allele < b.m_abstract_allele);     */
 /*     } */
 /*   } */
-  static bool compareAlleleRecordsByProbesetId(AlleleRecord a, AlleleRecord b) {
-    return (a.m_probeset_id < b.m_probeset_id);
-  }
+  static bool compareAlleleRecordsByProbesetId(AlleleRecord a, AlleleRecord b);
 
 };
 

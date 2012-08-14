@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 /**
@@ -29,18 +27,20 @@
 #ifndef CALVINCHPCHECK_H
 #define CALVINCHPCHECK_H
 
-#include "util/AffxByteArray.h"
-#include "util/RegressionCheck.h"
-#include "util/Util.h"
-#include "util/Verbose.h"
 //
 #include "calvin_files/data/src/CHPData.h"
 #include "calvin_files/data/src/CHPMultiDataData.h"
 #include "calvin_files/parsers/src/CHPFileReader.h"
 #include "calvin_files/parsers/src/CHPMultiDataFileReader.h"
+#include "calvin_files/parsers/src/CHPQuantificationDetectionFileReader.h"
 #include "calvin_files/parsers/src/CHPQuantificationFileReader.h"
 #include "calvin_files/utils/src/StringUtils.h"
 #include "portability/affy-base-types.h"
+#include "util/AffxByteArray.h"
+#include "util/Fs.h"
+#include "util/RegressionCheck.h"
+#include "util/Util.h"
+#include "util/Verbose.h"
 //
 #include <algorithm>
 #include <cmath>
@@ -50,11 +50,9 @@
 #include <string>
 #include <sys/stat.h>
 #include <vector>
-//
 
 using namespace affymetrix_calvin_io;
 using namespace affymetrix_calvin_data;
-using namespace std;
 
 /**
  * Class for testing that CHP files are the same +/- some epsilon. Also checks
@@ -69,10 +67,13 @@ public:
    * Constructor.
    * @param generated - vector of filenames to be tested.
    * @param gold - matching vector of filenames for gold standard data to test against.
-   * @param diffAllowed - 
-   * @param prefix -
-   * @param eps - epsilon: small amount that two floats can differ by,
-   * but still be considered equivalent.
+   * @param diffAllowed - number of differences allowed
+   * @param prefix - argument name prefix in header (default: "apt-")
+   * @param eps - epsilon: Maximum accepted absolute difference in numeric values.
+   *            i.e. if |generated-gold| >= eps then there is a difference.
+   * @param bCheckHeaders Check headers? (boolean, default: true).
+   * @param frac - Maximum accepted fractional difference in numeric values (not used by default).
+   *            i.e. if |generated-gold| >= frac*max(|generated|,|gold|) then there is a difference.
    */
   CalvinChpCheck(
                  std::vector<std::string> &generated, 
@@ -80,15 +81,19 @@ public:
                  int diffAllowed=0,
                  const std::wstring &prefix=L"apt-", 
                  double eps=0.0001,
-                 bool bCheckHeaders = true) {
+                 bool bCheckHeaders = true,
+				 double fraction = 0.0 ) {
     m_Name = "AGCC-CHP-Check";
     m_Generated = generated;
     m_Gold = gold;
     m_EpsConfidence = eps;
+    m_FracConfidence = fraction;
     m_EpsQuantification = eps;
+    m_FracQuantification = fraction;
     m_CheckHeaders = bCheckHeaders;
     /// @todo allow for a vector of eps for checking extra metrics
     m_EpsParam = eps;
+	m_FracParam = fraction;
     m_DiffAllowed = diffAllowed;
     m_Prefix = prefix;
 
@@ -97,18 +102,22 @@ public:
     setMaxError(30);
   }
   CalvinChpCheck(const std::string &generated, 
-		 const std::string &gold, 
+                 const std::string &gold, 
                  int diffAllowed=0,
                  const std::wstring &prefix=L"apt-", 
                  double eps=0.0001,
-                 bool bCheckHeaders = true) {
+                 bool bCheckHeaders = true,
+				 double fraction = 0.0) {
     m_Generated.push_back(generated);
     m_Gold.push_back(gold);
     m_EpsConfidence = eps;
+    m_FracConfidence = fraction;
     m_EpsQuantification = eps;
+    m_FracQuantification = fraction;
     m_CheckHeaders = bCheckHeaders;
     /// @todo allow for a vector of eps for checking extra metrics
     m_EpsParam = eps;
+	m_FracParam = fraction;
     m_DiffAllowed = diffAllowed;
     m_Prefix = prefix;
 
@@ -117,6 +126,17 @@ public:
     setMaxError(30);
   }
 
+
+  /** 
+   * Utility function to set the max number of errors to report
+   * @param max - maximum number of errors to report (-1 for no limit)
+   * @return - void
+   */
+  void setDiffReportMax(int max) {
+    setMaxError(max);
+  }
+
+
   /** 
    * Check to make sure that two files are the same +/- some epsilon. 
    * @param msg - Fills in an error message if test fails, empty string otherwise.
@@ -124,8 +144,9 @@ public:
    */
   bool check(std::string &msg) {
     bool success = true;
-
-    map<MultiDataType, bool> validDataSets;
+    std::string current_filename;
+            
+    std::map<MultiDataType, bool> validDataSets;
     validDataSets[CopyNumberMultiDataType] = true;
     validDataSets[GenotypeMultiDataType] = true;
     validDataSets[ExpressionMultiDataType] = true;
@@ -137,20 +158,23 @@ public:
     if(m_Generated.size() != m_Gold.size()) {
       return checkMsg(false, "CalvinChpCheck::check() - generated and gold vectors must be same size.",msg);
     }
-    for(unsigned int i = 0; i < m_Generated.size(); i++) {
+
+    for (size_t i = 0; i < m_Generated.size(); i++) {
         try {
-            m_Generated[i] = Util::convertPathName(m_Generated[i].c_str());
-            m_Gold[i] = Util::convertPathName(m_Gold[i].c_str());
+            m_Generated[i] = Fs::convertToUncPath(m_Generated[i]);
+            m_Gold[i] = Fs::convertToUncPath(m_Gold[i]);
+
             CHPData chp1, chp2;
             CHPFileReader reader;
             reader.SetFilename(m_Generated[i]);
+            current_filename=m_Generated[i];
             reader.Read(chp1);
             reader.SetFilename(m_Gold[i]);
+            current_filename=m_Gold[i];
             reader.Read(chp2);
 
-
-            string chp1Type = chp1.GetFileHeader()->GetGenericDataHdr()->GetFileTypeId();
-            string chp2Type = chp2.GetFileHeader()->GetGenericDataHdr()->GetFileTypeId();
+            std::string chp1Type = chp1.GetFileHeader()->GetGenericDataHdr()->GetFileTypeId();
+            std::string chp2Type = chp2.GetFileHeader()->GetGenericDataHdr()->GetFileTypeId();
 
             success &= checkMsg(chp2Type == chp1Type, 
                                 "Error: Different CHP Types: " + chp2Type + ", " + chp1Type, msg);
@@ -162,9 +186,12 @@ public:
                 CHPMultiDataData generatedChp, goldChp;
                 CHPMultiDataFileReader chpReader;
                 chpReader.SetFilename(m_Generated[i]);
+                current_filename=m_Generated[i];
                 chpReader.Read(generatedChp);
                 chpReader.SetFilename(m_Gold[i]);
+                current_filename=m_Gold[i];
                 chpReader.Read(goldChp);
+
 	            std::map<MultiDataType, DataSetInfo> dataSets;
 	            std::map<MultiDataType, DataSetInfo>::iterator dataIter;
                 dataSets = generatedChp.GetDataSetInfo();
@@ -201,10 +228,24 @@ public:
                 CHPQuantificationData generatedChp, goldChp;
                 CHPQuantificationFileReader chpReader;
                 chpReader.SetFilename(m_Generated[i]);
+                current_filename=m_Generated[i];
                 chpReader.Read(generatedChp);
                 chpReader.SetFilename(m_Gold[i]);
+                current_filename=m_Gold[i];
                 chpReader.Read(goldChp);
                 if(!quantificationDataSame(goldChp, generatedChp, msg)) {
+                    success = false;
+                }
+            } else if(chp1Type == "affymetrix-expression-probeset-analysis") {
+                CHPQuantificationDetectionData generatedChp, goldChp;
+                CHPQuantificationDetectionFileReader chpReader;
+                chpReader.SetFilename(m_Generated[i]);
+                current_filename=m_Generated[i];
+                chpReader.Read(generatedChp);
+                chpReader.SetFilename(m_Gold[i]);
+                current_filename=m_Gold[i];
+                chpReader.Read(goldChp);
+                if(!quantificationDetectionDataSame(goldChp, generatedChp, msg)) {
                     success = false;
                 }
             } else if(chp1Type == CHP_GENOTYPING_ASSAY_TYPE) {
@@ -221,8 +262,9 @@ public:
             success &= checkMsg(false, "Error: " + ToStr(e.what()),msg);
         }
         catch(affymetrix_calvin_exceptions::CalvinException &ce) {
-            success &= checkMsg(false, "Error: AGCC library exception: " + 
-                            StringUtils::ConvertWCSToMBS(ce.Description()),msg);
+            success &= checkMsg(false, "Error: AGCC library exception: " +
+                                FS_QUOTE_PATH(current_filename) +
+                                StringUtils::ConvertWCSToMBS(ce.Description()),msg);
         }
         catch(const std::exception &e) {
             success &= checkMsg(false, "Error: standard exception: " + ToStr(e.what()),msg);
@@ -255,6 +297,7 @@ private:
   static void fillInToIgnore(std::set<std::wstring> &ignoreMap, const std::wstring &prefix) {
     ignoreMap.clear();
     ignoreMap.insert(L"program-version");
+    ignoreMap.insert(L"apt-opt-program-version");
     ignoreMap.insert(prefix + L"exec-guid");
     ignoreMap.insert(prefix + L"analysis-guid");
     ignoreMap.insert(prefix + L"time-str"); 
@@ -263,9 +306,9 @@ private:
     ignoreMap.insert(prefix + L"version");
     ignoreMap.insert(prefix + L"opt-out-dir");
     ignoreMap.insert(prefix + L"opt-temp-dir");
-    ignoreMap.insert(prefix + L"opt-analysis-spec");
     ignoreMap.insert(prefix + L"opt-exec-guid");
     ignoreMap.insert(prefix + L"state-exec-guid");
+    ignoreMap.insert(prefix + L"opt-out-dir");
 	
     ignoreMap.insert(L"option-program-cvs-id");
     ignoreMap.insert(L"option-version-to-report");
@@ -275,7 +318,6 @@ private:
     ignoreMap.insert(L"option-cels");
     ignoreMap.insert(L"option-out-dir");
     ignoreMap.insert(L"option-temp-dir");
-
     ignoreMap.insert(prefix + L"state-time-start");
     ignoreMap.insert(prefix + L"state-free-mem-at-start");
     ignoreMap.insert(prefix + L"state-analysis-guid");
@@ -285,6 +327,7 @@ private:
     ignoreMap.insert(prefix + L"opt-command-line");
 
     ignoreMap.insert(prefix + L"state-program-cvs-id");
+    ignoreMap.insert(prefix + L"state-program-version");
     ignoreMap.insert(prefix + L"state-version-to-report");
     ignoreMap.insert(prefix + L"state-command-line");
 
@@ -300,7 +343,7 @@ private:
    * @return - true if same, false otherwise.
    */
   bool paramNamValTypeSame(ParameterNameValueType &gold, ParameterNameValueType &generated) {
-    string goldName, genName, goldValue, genValue;
+    std::string goldName, genName, goldValue, genValue;
     /* For ease in debugger... */
     goldName = StringUtils::ConvertWCSToMBS(gold.GetName());
     genName = StringUtils::ConvertWCSToMBS(generated.GetName());
@@ -312,7 +355,7 @@ private:
         float goldFloat = gold.GetValueFloat();
         float genFloat = generated.GetValueFloat();
         double maxDiff = 0;
-        checkFloat(goldFloat, genFloat, m_EpsParam, match, maxDiff);
+        checkFloat(goldFloat, genFloat, m_EpsParam, match, maxDiff, false, m_FracParam);
     }
     // othewise compare as string.
     else {
@@ -332,11 +375,11 @@ private:
    * @param generated - Vector to be tested against the gold values.
    * @return - true if same, false othewise.
    */
-  bool paramVectorsSame(vector<ParameterNameValueType> &gold, vector<ParameterNameValueType> &generated) {
+  bool paramVectorsSame(std::vector<ParameterNameValueType> &gold, std::vector<ParameterNameValueType> &generated) {
     bool match = true;
     if(gold.size() != generated.size())
       return false;
-    for(int i = 0; i < gold.size(); i++) {
+    for(size_t i = 0; i < gold.size(); i++) {
       match &= paramNamValTypeSame(gold[i], generated[i]);
     }
     return match;
@@ -346,8 +389,8 @@ private:
   bool ParameterNameValueTypeMostlySame(ParameterNameValueTypeVector &gold, ParameterNameValueTypeVector &test, 
                                         std::string &msg, std::wstring &prefix) {
     bool same = true;
-    map<wstring,ParameterNameValueType> testMap;
-    map<wstring,ParameterNameValueType>::iterator testMapIter;
+    std::map<std::wstring,ParameterNameValueType> testMap;
+    std::map<std::wstring,ParameterNameValueType>::iterator testMapIter;
     ParameterNameValueTypeVector::iterator goldIter; 
     ParameterNameValueTypeVector::iterator testIter;
     // Load up test as a map which will be queried by items in gold.
@@ -363,14 +406,14 @@ private:
           same = false;
         }
         else {
-          string goldName, genName, goldValue, genValue;
+          std::string goldName, genName, goldValue, genValue;
           /* For ease in debugger... */
           goldName = StringUtils::ConvertWCSToMBS(goldIter->GetName());
           genName = StringUtils::ConvertWCSToMBS(testMapIter->second.GetName());
           goldValue = StringUtils::ConvertWCSToMBS(goldIter->ToString());
           genValue = StringUtils::ConvertWCSToMBS(testMapIter->second.ToString());
           if(!paramNamValTypeSame(testMapIter->second, *goldIter) &&
-            Util::fileRoot(genValue) != Util::fileRoot(goldValue)) {
+            Fs::basename(genValue) != Fs::basename(goldValue)) {
             msg += " Error: for field '" + goldName + "' expecting: '" + goldValue + "' got: '" + genValue + "'";
             same = false;
           }
@@ -411,7 +454,7 @@ private:
     
     /* Algorithm version. */
     success &= checkMsg(goldChp.GetAlgVersion() == generatedChp.GetAlgVersion(), 
-                        "Error: Different algorithm names.", msgs);
+                        "Error: Different algorithm version.", msgs);
     
     
     ParameterNameValueTypeVector goldList = goldChp.GetChipSums();
@@ -455,8 +498,8 @@ private:
                   ToStr(goldEntry.upper) + "' test: '" + ToStr(generatedEntry.upper) + "'");
     }
 
-    checkFloat(goldEntry.confidence, generatedEntry.confidence, m_EpsConfidence, localSuccess, maxConfDiff);
-    checkFloat(goldEntry.estimate, generatedEntry.estimate, m_EpsConfidence, localSuccess, maxSignalDiff);
+    checkFloat(goldEntry.confidence, generatedEntry.confidence, m_EpsConfidence, localSuccess, maxConfDiff, false, m_FracConfidence);
+    checkFloat(goldEntry.estimate, generatedEntry.estimate, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
 
     if(!paramVectorsSame(goldEntry.metrics, generatedEntry.metrics)) {
       localSuccess = false;
@@ -529,14 +572,14 @@ private:
                   ToStr(goldEntry.alleleCount) + "' test: '" + ToStr(generatedEntry.alleleCount) + "'");
     }
 
-    checkFloat(goldEntry.confidence, generatedEntry.confidence, m_EpsConfidence, localSuccess, maxConfDiff);
+    checkFloat(goldEntry.confidence, generatedEntry.confidence, m_EpsConfidence, localSuccess, maxConfDiff, false, m_FracConfidence);
 
-    checkFloat(goldEntry.signalA, generatedEntry.signalA, m_EpsConfidence, localSuccess, maxSignalDiff);
-    checkFloat(goldEntry.signalB, generatedEntry.signalB, m_EpsConfidence, localSuccess, maxSignalDiff);
-    checkFloat(goldEntry.signalC, generatedEntry.signalC, m_EpsConfidence, localSuccess, maxSignalDiff);
-    checkFloat(goldEntry.signalD, generatedEntry.signalD, m_EpsConfidence, localSuccess, maxSignalDiff);
-    checkFloat(goldEntry.signalE, generatedEntry.signalE, m_EpsConfidence, localSuccess, maxSignalDiff);
-    checkFloat(goldEntry.signalF, generatedEntry.signalF, m_EpsConfidence, localSuccess, maxSignalDiff);
+    checkFloat(goldEntry.signalA, generatedEntry.signalA, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
+    checkFloat(goldEntry.signalB, generatedEntry.signalB, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
+    checkFloat(goldEntry.signalC, generatedEntry.signalC, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
+    checkFloat(goldEntry.signalD, generatedEntry.signalD, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
+    checkFloat(goldEntry.signalE, generatedEntry.signalE, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
+    checkFloat(goldEntry.signalF, generatedEntry.signalF, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
 
     if(!paramVectorsSame(goldEntry.metrics, generatedEntry.metrics)) {
       localSuccess = false;
@@ -579,10 +622,10 @@ private:
                   ToStr(goldEntry.contextB) + "' test: '" + ToStr(generatedEntry.contextB) + "'");
     }
 
-    checkFloat(goldEntry.confidence, generatedEntry.confidence, m_EpsConfidence, localSuccess, maxConfDiff);
+    checkFloat(goldEntry.confidence, generatedEntry.confidence, m_EpsConfidence, localSuccess, maxConfDiff, false, m_FracConfidence);
 
-    checkFloat(goldEntry.signalA, generatedEntry.signalA, m_EpsConfidence, localSuccess, maxSignalDiff);
-    checkFloat(goldEntry.signalB, generatedEntry.signalB, m_EpsConfidence, localSuccess, maxSignalDiff);
+    checkFloat(goldEntry.signalA, generatedEntry.signalA, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
+    checkFloat(goldEntry.signalB, generatedEntry.signalB, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
 
     if(!paramVectorsSame(goldEntry.metrics, generatedEntry.metrics)) {
       localSuccess = false;
@@ -613,7 +656,9 @@ private:
       reportError("Different calls for snp: '" + goldEntry.name + "'. gold: '" + 
                   goldEntry.name + "' test: '" + generatedEntry.name + "'");
     }
-    checkFloat(goldEntry.confidence, generatedEntry.confidence, m_EpsConfidence, localSuccess, maxDiff);
+    if(!checkFloat(goldEntry.confidence, generatedEntry.confidence, m_EpsConfidence, localSuccess, maxDiff, false, m_FracConfidence)) {
+      reportError("Confidence is different for snp: '" + goldEntry.name + "'.");
+    }
     if(!paramVectorsSame(goldEntry.metrics, generatedEntry.metrics)) {
       localSuccess = false;
       reportError("Param vectors different for snp: '" + goldEntry.name + "'.");
@@ -637,7 +682,7 @@ private:
       localSuccess = false;
       reportError("Different names. gold: '" + goldEntry.name + "' test: '" + generatedEntry.name + "'");
     }
-    checkFloat(goldEntry.quantification, generatedEntry.quantification, m_EpsQuantification, localSuccess, maxDiff);
+    checkFloat(goldEntry.quantification, generatedEntry.quantification, m_EpsQuantification, localSuccess, maxDiff, false, m_FracQuantification);
     if(!paramVectorsSame(goldEntry.metrics, generatedEntry.metrics)) {
       localSuccess = false;
       reportError("Param vectors different for probeset: '" + goldEntry.name + "'.");
@@ -681,15 +726,15 @@ private:
     if (localSuccess)
         checkFloat(goldEntry.metrics.at(1).GetValueFloat(), 
                    generatedEntry.metrics.at(1).GetValueFloat(), 
-                   m_EpsConfidence, localSuccess, maxLog2RatioDiff);
+                   m_EpsConfidence, localSuccess, maxLog2RatioDiff, false, m_FracConfidence);
     if (localSuccess) 
         checkFloat(goldEntry.metrics.at(2).GetValueFloat(), 
                    generatedEntry.metrics.at(2).GetValueFloat(), 
-                   m_EpsConfidence, localSuccess, maxSmoothSignalDiff);
+                   m_EpsConfidence, localSuccess, maxSmoothSignalDiff, false, m_FracConfidence);
     if (localSuccess) 
         checkFloat(goldEntry.metrics.at(4).GetValueFloat(), 
                    generatedEntry.metrics.at(4).GetValueFloat(), 
-                   m_EpsConfidence, localSuccess, maxAllelicDifferenceDiff);
+                   m_EpsConfidence, localSuccess, maxAllelicDifferenceDiff, false, m_FracConfidence);
     if ((goldEntry.metrics.at(3).GetValueFloat() == 0) || (goldEntry.metrics.at(3).GetValueFloat() == 1) ||
         (generatedEntry.metrics.at(3).GetValueFloat() == 0) || (generatedEntry.metrics.at(3).GetValueFloat() == 1)) {
         if (goldEntry.metrics.at(3).GetValueFloat() != generatedEntry.metrics.at(3).GetValueFloat()) {
@@ -723,12 +768,12 @@ private:
       reportError("Different calls. gold: '" + ToStr(goldEntry.call) + "' test: '" + ToStr(generatedEntry.call));
     }
     if (localSuccess) {
-        checkFloat(goldEntry.signal, generatedEntry.signal, m_EpsConfidence, localSuccess, maxSignalDiff);
+        checkFloat(goldEntry.signal, generatedEntry.signal, m_EpsConfidence, localSuccess, maxSignalDiff, false, m_FracConfidence);
         if(!localSuccess)
             reportError("Different signals. gold: '" + ToStr(goldEntry.signal) + "' test: '" + ToStr(generatedEntry.signal));
     }
     if (localSuccess){
-        checkFloat(goldEntry.confidenceScore, generatedEntry.confidenceScore, m_EpsConfidence, localSuccess, maxConfidenceDiff);
+        checkFloat(goldEntry.confidenceScore, generatedEntry.confidenceScore, m_EpsConfidence, localSuccess, maxConfidenceDiff, false, m_FracConfidence);
         if(!localSuccess)
             reportError("Different confidences. gold: '" + ToStr(goldEntry.confidenceScore) + "' test: '" + ToStr(generatedEntry.confidenceScore));
     }
@@ -754,7 +799,23 @@ private:
       localSuccess = false;
       reportError("Different ids. gold: '" + ToStr(goldEntry.id) + "' test: '" + ToStr(generatedEntry.id) + "'");
     }
-    checkFloat(goldEntry.quantification, generatedEntry.quantification, m_EpsQuantification, localSuccess, maxDiff);
+    checkFloat(goldEntry.quantification, generatedEntry.quantification, m_EpsQuantification, localSuccess, maxDiff, false, m_FracQuantification);
+    if(!localSuccess) {
+      numDiff++;
+    }
+  }
+  void checkQuantificationDetectionEntry(ProbeSetQuantificationDetectionData &goldEntry, ProbeSetQuantificationDetectionData &generatedEntry, 
+                         bool &localSuccess, double &maxDiff, int &numDiff, double &pvalMaxDiff) {
+    if(goldEntry.name != generatedEntry.name) {
+      localSuccess = false;
+      reportError("Different names. gold: '" + goldEntry.name + "' test: '" + generatedEntry.name + "'");
+    }
+    if(goldEntry.id != generatedEntry.id) {
+      localSuccess = false;
+      reportError("Different ids. gold: '" + ToStr(goldEntry.id) + "' test: '" + ToStr(generatedEntry.id) + "'");
+    }
+    checkFloat(goldEntry.quantification, generatedEntry.quantification, m_EpsQuantification, localSuccess, maxDiff, false, m_FracQuantification);
+    checkFloat(goldEntry.pvalue, generatedEntry.pvalue, m_EpsConfidence, localSuccess, pvalMaxDiff, false, m_FracConfidence);
     if(!localSuccess) {
       numDiff++;
     }
@@ -1140,14 +1201,64 @@ private:
     return success;
   }
 
+  /** 
+   * Check to see if the expression entries for Quantification  are the same.
+   * @param goldChp - "correct" data.
+   * @param generatedChp - chp file data to test against gold standard.
+   * @param msgs - any ongoing messages for user.
+   * @return - true if expression entries are equivalent, false otherwise.
+   */
+  bool quantificationDetectionDataSame(CHPQuantificationDetectionData &goldChp, CHPQuantificationDetectionData &generatedChp, std::string &msgs) {
+    bool success = true;
+    double maxDiff = -1;
+    double pvalMaxDiff = -1;
+    int numDiff = 0;
+    int numExpr = goldChp.GetEntryCount();
+    int genNum = generatedChp.GetEntryCount();
+    Verbose::out(4, ToStr(numExpr) + " expression probesets.");
+    if(!checkMsg(numExpr == genNum, "Wrong number of expression probesets.", msgs))
+      return false;
+    // if nothing to check, skip it.
+    if(numExpr == 0)
+      return true;
+    for(int i = 0; i < numExpr; i++) {
+      bool localSuccess = true;
+      ProbeSetQuantificationDetectionData goldEntry, generatedEntry;
+      goldChp.GetQuantificationDetectionEntry(i, goldEntry);
+      generatedChp.GetQuantificationDetectionEntry(i, generatedEntry);
+      checkQuantificationDetectionEntry(goldEntry, generatedEntry, localSuccess, maxDiff, numDiff, pvalMaxDiff);
+      success &= localSuccess;
+    }
+    if(maxDiff > m_EpsQuantification)
+      Verbose::out(1, "Max diff: " + ToStr(maxDiff) + " is greater than expected (" + ToStr(m_EpsQuantification) + ") [quantification]");
+    if(numDiff > 0 )
+      Verbose::out(1, ToStr(numDiff) + " of " + ToStr(numExpr) + " (" + 
+                   ToStr(100.0 * numDiff/numExpr) + "%) were different.");
+    if(!success) {
+      msgs += "Error: " + generatedChp.GetFilename() + " is different from " + goldChp.GetFilename() + ". ";
+      
+    }
+    std::string res = "different";
+    if(success) 
+        res = "equivalent";
+    Verbose::out(1, generatedChp.GetFilename() + ": checked " + ToStr(numExpr) + " quantification entries.");
+    Verbose::out(1, generatedChp.GetFilename() + ": max signal diff is: " + ToStr(maxDiff));
+    Verbose::out(1, generatedChp.GetFilename() + ": max pval diff is: " + ToStr(pvalMaxDiff));
+    Verbose::out(1, generatedChp.GetFilename() + ": chip is " + res + ".");
+    return success;
+  }
+
   /// Filenames for the gold standard or correct data chp files.
   std::vector<std::string> m_Gold;
   /// Matching filenames for the chp files to be tested.
   std::vector<std::string> m_Generated;
   /// Epsilon, small value that two floats can differ by but still be considered equivalent.
   double m_EpsConfidence;
+  double m_FracConfidence;
   double m_EpsQuantification;
+  double m_FracQuantification;
   double m_EpsParam;
+  double m_FracParam;
   bool m_CheckHeaders;
   /// How many differences will we tolerate?
   int m_DiffAllowed;

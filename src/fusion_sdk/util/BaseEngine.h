@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -30,17 +28,19 @@
 #define _BASEENGINE_H_
 
 //
+#include "portability/apt-win-dll.h"
+#include "util/LogStream.h"
 #include "util/Options.h"
 #include "util/PgOptions.h"
 #include "util/Util.h"
-//
-#include "apt/apt.h"
 //
 #include <cstring>
 #include <list>
 #include <string>
 #include <vector>
-//
+#include <utility>
+ 
+class MsgSocketHandler;
 
 /**
    @brief Base class for analysis engines
@@ -50,7 +50,9 @@ class APTLIB_API BaseEngine : public Options {
 
 public:
 
-  virtual std::string getEngineName() = 0;
+  virtual std::string getEngineName() {
+    return "BaseEngine";
+  }
 
   /**
    * Constructor
@@ -75,6 +77,20 @@ public:
   void run();
 
   /**
+   * Parse and set options from argv
+   *
+   * @param argv - arg vector
+   */
+  virtual int parseArgv( const char * const * const argv, int start = 1 );
+
+  // @todo commenting out until implementation finished
+  // /**
+  //   * Set the build versioning infomation. 
+  //   *
+  //   */
+  // void setVersionOptions();
+
+  /**
    * Get the name of the Engine
    */
   std::string getProgName();
@@ -91,10 +107,25 @@ public:
   void checkDiskSpace();
 
   /**
+   * Opens the log file in the normal way.
+   * Cant take ownership of these as we done know when to close them.
+   */
+  void openStandardLog(const std::string& log_name,std::ofstream& log_ofstream,LogStream& log_logstream);
+
+  /**
    * Swap the option value to include the full path if found
    * @param option
    */
   void setLibFileOpt(const std::string &option);
+
+  /** 
+   * Get a vector of the key=value pairs specified via the "meta-data-info"
+   * parameters
+   * @return vector of pairs of strings with first string being key and second being the value
+   */
+  std::vector< std::pair<std::string, std::string> >  getMetaDataDescription();
+
+  virtual void defineOptions();
 
 protected:
   /** 
@@ -119,13 +150,13 @@ protected:
   void removeTempDir(std::string temp_dir);
 
 private:
-  virtual void defineOptions();
+  
   virtual void defineStates();
   bool m_OptionsChecked;
   bool m_DiskChecked;
   /*! flag to indicate if tempdir should be deleted at end of run */
   bool m_created_new_tempdir;
-
+  MsgSocketHandler *m_SocketHandler;
 };
 
 
@@ -167,7 +198,6 @@ private:
 
     /*! The name of the engine. */
     std::string name;
-
 };
 
 

@@ -35,7 +35,6 @@
 //
 #include <algorithm>
 #include <cassert>
-#include <cstring>
 #include <iostream>
 #include <map>
 #include <string>
@@ -110,6 +109,56 @@ int choose(int top, int bottom) {
   return 0;
 }
 
+  /** 
+   * @brief Constructor
+   * @param probeset_id - string identifying marker
+   * @param abstract_allele - string (char) identifying allele independently of bases
+   * @param reference_allele - string representing delimited list of design-time allele bases
+   * @param report_allele - string representing delimited list of allele bases as they should be reported
+   * @param allowable_cn_states = string representing delimited list of allowable copy number states for this marker
+   * @param allele_count - number of alleles for this marker
+   */
+AlleleRecord::AlleleRecord(const std::string probeset_id, 
+                           const std::vector<std::string> abstract_allele, 
+                           const std::vector<std::string> reference_allele,
+                           const std::vector<std::string> report_allele,
+                           const int allele_count,
+                           const std::vector<unsigned char> allowable_cn_states
+                           ) :
+  m_probeset_id(probeset_id), 
+  m_abstract_allele(abstract_allele), 
+  m_reference_allele(reference_allele),
+  m_report_allele(report_allele),
+  m_allele_count(allele_count),
+  m_allowable_cn_states(allowable_cn_states)
+{}
+
+AlleleRecord::AlleleRecord(const std::string probeset_id, 
+                           const std::vector<std::string> abstract_allele, 
+                           const std::vector<std::string> reference_allele,
+                           const std::vector<std::string> report_allele
+                           ) :
+  m_probeset_id(probeset_id), 
+  m_abstract_allele(abstract_allele), 
+  m_reference_allele(reference_allele),
+  m_report_allele(report_allele)
+{
+  m_allele_count = 2;
+  m_allowable_cn_states.push_back(2);
+}
+
+/*   static bool compareAlleleRecords(AlleleRecord a, AlleleRecord b) { */
+/*     if (a.m_probeset_id != b.m_probeset_id) { */
+/*       return (a.m_probeset_id < b.m_probeset_id); */
+/*     } */
+/*     else { */
+/*       return (a.m_abstract_allele < b.m_abstract_allele);     */
+/*     } */
+/*   } */
+bool AlleleRecord::compareAlleleRecordsByProbesetId(AlleleRecord a, AlleleRecord b)
+{
+    return (a.m_probeset_id < b.m_probeset_id);
+}
 
 /** 
  * @brief constructor
@@ -291,7 +340,7 @@ GenoCallCoder::GenoCallCoder(const int max_allele_count,
   int marker_annotation_file_cnames_count = sizeof(m_marker_annotation_file_cnames) / sizeof (m_marker_annotation_file_cnames[0]);
 
   vector<int> annot_csv_cidxs;
-  unsigned int i;
+  size_t i;
   for (i = 0; i < marker_annotation_file_cnames_count; i++) {
     int temp_idx = annot_csv.cname2cidx(0, m_marker_annotation_file_cnames[i]);
     if (temp_idx == TSV_ERR_NOTFOUND) {
@@ -449,7 +498,7 @@ void GenoCallCoder::initialize(const int max_allele_count,
   int version_zero_codes_count = sizeof(m_version_zero_codes) / sizeof(m_version_zero_codes[0]);
   unsigned int extra_codes_count = sizeof(m_extra_codes) / sizeof(m_extra_codes[0]);
   int num2alpha_count = sizeof(m_num2alpha) / sizeof(m_num2alpha[0]);
-  unsigned int i;
+  int i;
 
   m_max_extra_code = (1 << m_data_size_bits) - 1;
   m_abstract_codes.resize(m_max_extra_code + 1);
@@ -600,7 +649,7 @@ void GenoCallCoder::initialize(const int max_allele_count,
       for (i = m_min_translatable_code; i <= m_max_code; i++) {
 	string new_allele_string;
 	new_allele_string = m_abstract_codes[i][0];
-	for (int j = 1; j < m_abstract_codes[i].size(); j++) {
+	for (size_t j = 1; j < m_abstract_codes[i].size(); j++) {
 	  new_allele_string += allele_delimiter;
 	  new_allele_string += m_abstract_codes[i][j];
 	}

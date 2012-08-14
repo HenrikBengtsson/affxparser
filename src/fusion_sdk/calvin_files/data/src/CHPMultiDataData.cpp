@@ -219,6 +219,32 @@ const static std::wstring A_SIGNAL = L"ASignal";
 const static std::wstring B_SIGNAL = L"BSignal";
 const static std::wstring SCAR = L"SCAR";
 
+const static std::wstring CONTRAST = L"Contrast";
+const static std::wstring SIGNAL_STRENGTH = L"SignalStrength";
+
+	/*! constructor */
+DataSetInfo::DataSetInfo()    {
+  entries = NULL;
+  maxName = -1;
+  maxSegmentType = -1;
+  maxReferenceSegmentID = -1;
+  maxFamilialSegmentID = -1;
+  maxFamilialARRID = -1;
+  maxFamilialCHPID = -1;
+  maxFamilialCHPFile = -1;
+  maxFamilialRole = -1;
+  maxFamilialCHPFile = -1;
+  dataSetIndex = -1;
+}
+
+std::wstring CHPMultiDataData::GetGroupName(MultiDataType dataType) {
+  return dataTypeGroupNames[dataType];
+}
+
+/*! The data set information */
+std::map<MultiDataType, DataSetInfo> &CHPMultiDataData::GetDataSetInfo() {
+  return dataSetInfo;
+}
 
 /*! used for full column index for log2Ratio */
 const static int cnlog2RatioIndexOffset = 4;
@@ -284,6 +310,20 @@ void CHPMultiDataData::Clear()
 	dataSetInfo.clear();
     dataTypeGroupNames.clear();
 	genericData.Header().Clear();
+}
+
+/*! Gets the file header.
+ * @return The file header.
+ */
+FileHeader* CHPMultiDataData::GetFileHeader() {
+  return &genericData.Header();
+}
+
+/*! Gets the generic data object.
+ * @return The data object.
+ */
+GenericData& CHPMultiDataData::GetGenericData() {
+  return genericData;
 }
 
 void CHPMultiDataData::SetFilename(const std::string &p)
@@ -534,16 +574,36 @@ void CHPMultiDataData::GetEntry(MultiDataType dataType, int index, affymetrix_ca
 	}
 }
 
+
+
 void CHPMultiDataData::GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::MarkerABSignals &entry)
+{
+	DataSetInfo *ds = OpenMultiDataDataSet(dataType);	
+
+	if (ds && ds->entries && ds->entries->IsOpen())
+	{
+		int colIndex = 0;
+		ds->entries->GetData(index, colIndex++, entry.index);
+		GetExtraMetricEntries(ds, index, colIndex, entry.metrics);
+	}
+}
+
+
+void CHPMultiDataData::GetEntry(MultiDataType dataType, int index, affymetrix_calvin_data::CytoGenotypeCallData &entry)
 {
 	DataSetInfo *ds = OpenMultiDataDataSet(dataType);
 	if (ds && ds->entries && ds->entries->IsOpen())
 	{
 		int colIndex = 0;
 		ds->entries->GetData(index, colIndex++, entry.index);
+		ds->entries->GetData(index, colIndex++, entry.call);
+		ds->entries->GetData(index, colIndex++, entry.confidence);
+		ds->entries->GetData(index, colIndex++, entry.forcedCall);
 		ds->entries->GetData(index, colIndex++, entry.aSignal);
 		ds->entries->GetData(index, colIndex++, entry.bSignal);
-		ds->entries->GetData(index, colIndex++, entry.scar);
+		ds->entries->GetData(index, colIndex++, entry.signalStrength);
+		ds->entries->GetData(index, colIndex++, entry.contrast);
+		GetExtraMetricEntries(ds, index, colIndex, entry.metrics);
 	}
 }
 
@@ -1060,9 +1120,20 @@ void CHPMultiDataData::AddColumns(DataSetInfo &info, DataSetHeader& hdr)
 
 	case MarkerABSignalsMultiDataType:
 		hdr.AddUIntColumn(PROBE_SET_INDEX);
+		/*hdr.AddFloatColumn(A_SIGNAL);
+		hdr.AddFloatColumn(B_SIGNAL);
+		hdr.AddFloatColumn(SCAR);*/
+		break;
+
+	case CytoGenotypeCallMultiDataType:
+		hdr.AddUIntColumn(PROBE_SET_INDEX);
+		hdr.AddByteColumn(CALL);
+		hdr.AddFloatColumn(CONFIDENCE);
+		hdr.AddByteColumn(FORCE);
 		hdr.AddFloatColumn(A_SIGNAL);
 		hdr.AddFloatColumn(B_SIGNAL);
-		hdr.AddFloatColumn(SCAR);
+		hdr.AddFloatColumn(SIGNAL_STRENGTH);
+		hdr.AddFloatColumn(CONTRAST);
 		break;
 
 	default:
@@ -1180,7 +1251,11 @@ DataSetInfo *CHPMultiDataData::OpenMultiDataDataSet(MultiDataType dataType)
 		}
 		else if (dataType == MarkerABSignalsMultiDataType)
 		{
-			startCol = 4;
+			startCol = 1;
+		}
+		else if (dataType = CytoGenotypeCallMultiDataType)
+		{
+			startCol = 8;
 		}
 		for (int32_t icol=startCol; icol<ncols; icol++)
 		{
@@ -1255,6 +1330,19 @@ void CHPMultiDataData::AddAlgParams(const ParameterNameValueTypeList& params)
 		hdr->AddNameValParam(param);
 	}
 }
+
+void CHPMultiDataData::AddAppMetaInfo(const ParameterNameValueTypeList& params)
+{
+	ParameterNameValueType param;
+	GenericDataHeader* hdr = genericData.Header().GetGenericDataHdr();
+	for (ParameterNameValueTypeList::const_iterator it=params.begin(); it != params.end(); ++it)
+	{
+		param = *it;
+		param.SetName(APPLICATION_META_INFO_PREFIX_S + param.GetName());
+		hdr->AddNameValParam(param);
+	}
+}
+
 
 ParameterNameValueTypeList CHPMultiDataData::GetSummaryParams()
 {

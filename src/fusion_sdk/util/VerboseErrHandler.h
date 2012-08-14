@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -46,9 +44,14 @@
 class VerboseErrHandler : public ErrHandler {
 
 public:
-  VerboseErrHandler(bool doThrow=false, bool verbose=true) { 
+  VerboseErrHandler(bool doThrow=false, 
+					bool verbose=true,
+					bool exitOnError=true,
+					int  exitOnErrorValue=-1) {
     m_Throw = doThrow;
     m_Verbose = verbose;
+    m_ExitOnError = exitOnError;
+    m_ExitOnErrorValue = exitOnErrorValue;
   }
 
   /** Virtual destructor for a virtual class. */
@@ -64,19 +67,38 @@ public:
    * @param msg - Message about what went wrong.
    */
   virtual void handleError(const std::string &msg) {
-    if(m_Verbose)
+  if(m_Verbose){
         Verbose::out(1, msg);
-    if(m_Throw) {
-      throw Except(msg);
-    }
-    else {
-      exit(1);
-    }
+	}
+	
+	if (m_ExitOnError) {	
+		#ifdef _WIN32
+		// windows needs time for the other process to run, yeild to it.
+		Sleep(500);
+		#endif
+		exit(m_ExitOnErrorValue);
+	}
+
+  if (m_Throw) {
+    throw Except(msg);
   }
+
+  // We shouldnt hit here; We should be exiting or rethrowing the error.
+  // If we do, then something is wrong.
+  // abort(1);
+  }
+
+  /** Will this error handler be throwing exceptions? */
+  virtual bool getThrows() { return m_Throw; }
+
+  /** Will this error handler be throwing exceptions? */
+  virtual void setThrows(bool doThrow) { m_Throw= doThrow; }
 
 private:
   bool m_Throw;          ///< Determines if we throw an exception or just call abort()
   bool m_Verbose;        ///< Determines if we call Verbose::out
+  bool m_ExitOnError;    ///< Determines if overriding default value to return when exiting on error
+  int  m_ExitOnErrorValue;  ///< Value to set if setting the value to return when exiting on errors
 };
 
 

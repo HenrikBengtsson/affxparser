@@ -32,38 +32,86 @@ namespace affymetrix_calvin_exceptions
 
 class DataSetNotOpenException : public CalvinException
 {
+public:
+  DataSetNotOpenException() : CalvinException() {}
+  DataSetNotOpenException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+  const std::wstring ToString();
 };
 
 class ColumnIndexOutOfBoundsException : public CalvinException
 {
+public:
+  ColumnIndexOutOfBoundsException() : CalvinException() {}
+  ColumnIndexOutOfBoundsException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+  const std::wstring ToString();
 };
 
 class RowIndexOutOfBoundsException : public CalvinException
 {
+public:
+  RowIndexOutOfBoundsException() : CalvinException() {}
+  RowIndexOutOfBoundsException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+  const std::wstring ToString();
 };
 
 class UnexpectedColumnTypeException : public CalvinException
 {
+public:
+  UnexpectedColumnTypeException() : CalvinException() {}
+  UnexpectedColumnTypeException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+  const std::wstring ToString();
 };
 
 class DataGroupNotFoundException : public CalvinException
 {
+public:
+  DataGroupNotFoundException() : CalvinException() {}
+  DataGroupNotFoundException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+  const std::wstring ToString();
 };
 
 class DataSetNotFoundException : public CalvinException
 {
+public:
+  DataSetNotFoundException() : CalvinException() {}
+  DataSetNotFoundException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+    
+  const std::wstring ToString();
 };
 
 class ProbeSetNotFoundException : public CalvinException
 {
+public:
+  ProbeSetNotFoundException() : CalvinException() {}
+  ProbeSetNotFoundException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+  const std::wstring ToString();
 };
 
 class CDFAccessNotSupportedByModeException : public CalvinException
 {
+public:
+  CDFAccessNotSupportedByModeException() : CalvinException() {}
+  CDFAccessNotSupportedByModeException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+  const std::wstring ToString();
 };
 
 class DataSetRemapException : public CalvinException
 {
+public:
+  DataSetRemapException() : CalvinException() {}
+  DataSetRemapException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+
+  const std::wstring ToString();
+
 };
 
 }

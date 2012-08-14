@@ -20,6 +20,8 @@
 
 #include "calvin_files/writers/src/TextFileWriter.h"
 //
+#include "util/Fs.h"
+//
 
 using namespace affymetrix_calvin_io;
 
@@ -52,10 +54,10 @@ void TextFileWriter::WriteFile(const std::string &fileName, std::map<std::string
  */
 void TextFileWriter::OpenFile(const std::string &fileName)
 {
-	fileStream.open(fileName.c_str(), std::ios::out);
-	if (!fileStream)
+  Fs::aptOpen(fileStream, fileName, std::ios::out);
+  if (!fileStream.is_open() && !fileStream.good())
 	{
-		affymetrix_calvin_exceptions::FileCreateException e;
+		affymetrix_calvin_exceptions::FileCreateException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -68,7 +70,7 @@ void TextFileWriter::CloseFile()
 	fileStream.close();
 	if (fileStream.fail())
 	{
-		affymetrix_calvin_exceptions::FileWriteException e;
+		affymetrix_calvin_exceptions::FileWriteException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }

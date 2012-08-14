@@ -210,10 +210,8 @@ public:
 	 * @param c The number of columns.
 	 * @return The index to the intensity arrays.
 	 */
-	static int XYToIndex(int x, int y, int r, int c)
-	{
-		return ((y*c) + x);
-	}
+	static int XYToIndex(int x, int y, int r, int c);
+
 
 	// Accessors for intensity information.
 

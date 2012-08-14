@@ -24,6 +24,8 @@
 #include "calvin_files/parsers/src/DataGroupHeaderReader.h"
 #include "calvin_files/parsers/src/DataSetHeaderReader.h"
 //
+#include "util/Fs.h"
+//
 #include <algorithm>
 #include <cstring>
 #include <iterator>
@@ -132,7 +134,7 @@ u_int32_t GenericData::DataSetCnt(u_int32_t dataGroupIdx)
 		return dch->GetDataSetCnt();
 	else
 	{
-		affymetrix_calvin_exceptions::DataGroupNotFoundException e;
+		affymetrix_calvin_exceptions::DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -147,7 +149,7 @@ u_int32_t GenericData::DataSetCnt(const std::wstring& dataGroupName)
 		return dch->GetDataSetCnt();
 	else
 	{
-		affymetrix_calvin_exceptions::DataGroupNotFoundException e;
+		affymetrix_calvin_exceptions::DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -160,7 +162,7 @@ void GenericData::DataSetNames(u_int32_t dataGroupIdx, std::vector<std::wstring>
 	DataGroupHeader* dch = FindDataGroupHeader(dataGroupIdx);
 	if (dch == 0)
 	{
-		affymetrix_calvin_exceptions::DataGroupNotFoundException e;
+		affymetrix_calvin_exceptions::DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -182,7 +184,7 @@ void GenericData::DataSetNames(const std::wstring& dataGroupName, std::vector<st
 	DataGroupHeader* dch = FindDataGroupHeader(dataGroupName);
 	if (dch == 0)
 	{
-		affymetrix_calvin_exceptions::DataGroupNotFoundException e;
+		affymetrix_calvin_exceptions::DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -203,7 +205,7 @@ DataSet* GenericData::DataSet(u_int32_t dataGroupIdx, u_int32_t dataSetIdx)
 {
 	if (Open() == false)
 	{
-		affymetrix_calvin_exceptions::FileNotOpenException e;
+		affymetrix_calvin_exceptions::FileNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -217,13 +219,13 @@ DataSet* GenericData::DataSet(u_int32_t dataGroupIdx, u_int32_t dataSetIdx)
 		}
 		else
 		{
-			affymetrix_calvin_exceptions::DataSetNotFoundException e;
+			affymetrix_calvin_exceptions::DataSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 			throw e;
 		}
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::DataGroupNotFoundException e;
+		affymetrix_calvin_exceptions::DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -235,7 +237,7 @@ DataSet* GenericData::DataSet(const std::wstring& dataGroupName, const std::wstr
 {
 	if (Open() == false)
 	{
-		affymetrix_calvin_exceptions::FileNotOpenException e;
+		affymetrix_calvin_exceptions::FileNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -249,13 +251,13 @@ DataSet* GenericData::DataSet(const std::wstring& dataGroupName, const std::wstr
 		}
 		else
 		{
-			affymetrix_calvin_exceptions::DataSetNotFoundException e;
+			affymetrix_calvin_exceptions::DataSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 			throw e;
 		}
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::DataGroupNotFoundException e;
+		affymetrix_calvin_exceptions::DataGroupNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -287,7 +289,7 @@ affymetrix_calvin_io::DataGroup GenericData::DataGroup(u_int32_t dataGroupFilePo
 {
 	if (Open() == false)
 	{
-		affymetrix_calvin_exceptions::FileNotOpenException e;
+		affymetrix_calvin_exceptions::FileNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -437,10 +439,10 @@ bool GenericData::IsDSHPartiallyRead(const DataSetHeader* dph)
  */
 void GenericData::OpenFStream(std::ifstream& ifs)
 {
-	ifs.open(Header().GetFilename().c_str(), std::ios::in | std::ios::binary);
-	if (!ifs)
+  Fs::aptOpen(ifs, Header().GetFilename(), std::ios::in | std::ios::binary);
+  if (!ifs.is_open() && !ifs.good())
 	{
-		affymetrix_calvin_exceptions::FileNotFoundException e;
+		affymetrix_calvin_exceptions::FileNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -472,13 +474,16 @@ bool GenericData::MapFile()
 #ifdef _MSC_VER	// On Windows the map is open in the GenericData object, otherwise it is opened in the DataSet
 	if (fileHandle == INVALID_HANDLE_VALUE)
 	{
-		// Create the file.
-		fileHandle = CreateFile(Header().GetFilename().c_str(), GENERIC_READ, FILE_SHARE_READ,
-				NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-		if (fileHandle == INVALID_HANDLE_VALUE)
-		{
-			return false;
-		}
+          // Create the file.
+          std::wstring filename = Fs::convertToUncPathW(Header().GetFilename(), 10);
+
+          fileHandle = CreateFileW(filename.c_str(), GENERIC_READ, FILE_SHARE_READ,
+                                  NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+          if (fileHandle == INVALID_HANDLE_VALUE)
+            {
+				Verbose::out(1, Fs::MSC_VER_GetLastErrorString(std::string("GenericData::MapFile ") + Util::toString(filename) + ": "));
+              return false;
+            }
 	}
 	if (fileMapHandle == NULL)
 	{
@@ -489,6 +494,7 @@ bool GenericData::MapFile()
 		if (fileMapHandle == NULL)
 			return false;
 	}
+
 #endif
 	return true;
 }

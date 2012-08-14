@@ -39,8 +39,19 @@ GenericDataHeaderReader::GenericDataHeaderReader(std::ifstream& fs)
 
 /*
  * Reads the GenericDataHeader and all parent GenericDataHeaders.
+ * Calls Read() with true to retain originqal intent.
  */
 void GenericDataHeaderReader::Read(GenericDataHeader& gdh)
+{
+	// retain original calling logic.
+	Read(gdh, true);
+}
+
+/*
+ * Reads the GenericDataHeader and all parent GenericDataHeaders.
+ * In call to AddNameValParam, doUniqueAdds is passed.
+ */
+void GenericDataHeaderReader::Read(GenericDataHeader& gdh, bool doUniqueAdds)
 {
 	// Read data type identifier
 	gdh.SetFileTypeId(FileInput::ReadString8(fileStream));
@@ -66,7 +77,7 @@ void GenericDataHeaderReader::Read(GenericDataHeader& gdh)
                 // deleting a "const void*" generates a warning under gcc.
                 // cast to a "char*" to quiet it.
 		delete[] (char*)mimeValue;
-		gdh.AddNameValParam(nvt);
+		gdh.AddNameValParam(nvt,doUniqueAdds);
 	}
 
 	// Read number of generic data parent header

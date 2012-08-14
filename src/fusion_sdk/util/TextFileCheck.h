@@ -2,19 +2,17 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
-// 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
-// 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License
+// (version 2.1) as published by the Free Software Foundation.
+//
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
 // 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 //
 ////////////////////////////////////////////////////////////////
@@ -26,12 +24,12 @@
 #ifndef TEXTFILECHECK_H
 #define TEXTFILECHECK_H
 
+//
+#include "util/Fs.h"
+#include "util/LineFile.h"
 #include "util/RegressionCheck.h"
 //
-#include <cstring>
-#include <fstream>
 #include <string>
-//
 
 /**
  * Class for testing that two text files are equal, except
@@ -47,11 +45,17 @@ public:
    * @param goldFile Comparison file, assumed to be correct.
    * @param skipLines Number of lines to skip.
    */
-  TextFileCheck (const std::string &generatedFile, const std::string &goldFile, const unsigned int skipLines)
-    : m_GeneratedFile (generatedFile), m_GoldFile (goldFile), m_SkipLines (skipLines)
-  {
-        m_Name = Util::fileRoot(generatedFile);
+  TextFileCheck(const std::string &generatedFile, const std::string &goldFile, const unsigned int skipLines)
+    : m_GeneratedFile(generatedFile), m_GoldFile(goldFile), m_SkipLines(skipLines)    {
+    m_Name = Fs::basename(generatedFile);
+    m_HeaderDelimiter = "";
   }
+
+  TextFileCheck(const std::string &generatedFile, const std::string &goldFile, const std::string &headerDelimiter)
+    : m_GeneratedFile(generatedFile), m_GoldFile(goldFile), m_SkipLines(0), m_HeaderDelimiter(headerDelimiter) {
+    m_Name = Fs::basename(generatedFile);
+  }
+
 
   /**
    * Check that the two files are the same.
@@ -59,59 +63,70 @@ public:
    * @param errorMsg Error message generated if the test fails.
    * @return bool Returns true if files the same, else false.
    */
-  bool check (std::string& errorMsg)
-  {
+  bool check(std::string& errorMsg)  {
     // Open files.
-    std::ifstream generatedStream (m_GeneratedFile.c_str());
-    if (! generatedStream )
-    {
+    LineFile generatedStream;
+    generatedStream.open(m_GeneratedFile, false);
+    if(! generatedStream.is_open()) {
       errorMsg = "Unable to open generated file " + m_GeneratedFile;
       return false;
     }
-    std::ifstream goldStream (m_GoldFile.c_str());
-    if (! goldStream )
-    {
+    LineFile goldStream;
+    goldStream.open(m_GoldFile, false);
+    if(! goldStream.is_open()) {
       errorMsg = "Unable to open gold file " + m_GoldFile;
       return false;
     }
+
     unsigned int lineCount = 0;
-    const char* lineEndings = "\r\n";
+    bool inHeader = !m_HeaderDelimiter.empty();
+    bool goldPastHeader = false;
+    bool genPastHeader = false;
+
     std::string goldLine, generatedLine;
-    while (! goldStream.eof() && ! goldStream.fail())
-    {
-      getline (goldStream, goldLine);
-      getline (generatedStream, generatedLine);
-      if (generatedStream.eof() && ! goldStream.eof())
-      {
+    while(! goldStream.eof() && ! goldStream.fail()) {
+      if(!inHeader || !goldPastHeader)
+        goldStream.getline(goldLine);
+      if(!inHeader ||  !genPastHeader)
+        generatedStream.getline(generatedLine);
+      if(generatedStream.eof() && ! goldStream.eof()) {
         errorMsg = "The generated file, " + m_GeneratedFile
-  	+ ", has fewer lines than the gold file, " + m_GoldFile;
+                   + ", has fewer lines than the gold file, " + m_GoldFile;
         return false;
       }
+      if(inHeader) {
+        if(!goldPastHeader &&
+            ((goldLine.size() < m_HeaderDelimiter.size()) ||
+             (goldLine.substr(0, m_HeaderDelimiter.size()) != m_HeaderDelimiter))) {
+          goldPastHeader = true;
+        }
+        if(!genPastHeader &&
+            ((generatedLine.size() < m_HeaderDelimiter.size()) ||
+             (generatedLine.substr(0, m_HeaderDelimiter.size()) != m_HeaderDelimiter))) {
+          genPastHeader = true;
+        }
+        inHeader = !goldPastHeader || !genPastHeader;
+      }
       // Skip header lines which need not be equal.
-      if (++lineCount > m_SkipLines)
-      {
-        // Avoid line ending hassles.
-        goldLine = goldLine.erase (goldLine.find_last_not_of (lineEndings) + 1);
-        generatedLine = generatedLine.erase (generatedLine.find_last_not_of (lineEndings) + 1);
-        if (goldLine != generatedLine)
-        {
+      if((++lineCount > m_SkipLines) && !inHeader) {
+        if(goldLine != generatedLine) {
           errorMsg = "Mismatch reading generated file " + m_GeneratedFile
-  	  + ":\ngold line: '" + goldLine
-  	  + "'\ngenerated line: '" + generatedLine + "'";
+                     + ":\ngold line: '" + goldLine
+                     + "'\ngenerated line: '" + generatedLine + "'";
           return false;
         }
       }
     }
     // The two files should reach eof at the same time.
-    if (! generatedStream.eof())
-    {
+    if(! generatedStream.eof()) {
       errorMsg = "The generated file, " + m_GeneratedFile
-        + ", has more lines than the gold file, " + m_GoldFile;
+                 + ", has more lines than the gold file, " + m_GoldFile;
       return false;
     }
 
     return true;
   }
+
 
 private:
   /// Name of file generated by application being tested.
@@ -120,6 +135,9 @@ private:
   std::string m_GoldFile;
   /// Number of lines to skip.
   const unsigned int m_SkipLines;
+  /// Header Delimiter
+  std::string m_HeaderDelimiter;
+
 };
 
 #endif /* TEXTFILECHECK_H */

@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -28,12 +26,15 @@
  * 
  */
 
-#include "util/AffxConv.h"
-#include "util/AffxString.h"
-#include "util/Verbose.h"
 //
 #include "util/SQLite.h"
 //
+#include "util/AffxConv.h"
+#include "util/AffxString.h"
+#include "util/Fs.h"
+#include "util/Verbose.h"
+//
+#include <limits>
 
 // A test function.
 void SQLiteDatabase::test()
@@ -123,7 +124,18 @@ void SQLiteDatabase::error(int iReturnCode, const std::string& strMessage)
 	std::string str;
 	ss << iReturnCode;
 	ss >> str;
-	std::string strMsg = "ERROR: SQLiteCode: " + str + ", Message: " + strMessage;
+            
+          
+	std::string strMsg;
+        /* Note: the journal file is always created in the same directory as the database file.
+         * Changing the temp directory has no affect on the journal file.
+         */
+        if ( (iReturnCode == SQLITE_CANTOPEN ) && !Fs::isWriteableDir(Fs::dirname( m_dbName) ) ) {
+          strMsg = "ERROR: sqlite3 update permission denied...journal file write failed because parent directory is not writeable: " + Fs::dirname(m_dbName);
+        }
+        else{
+          strMsg = "ERROR: SQLiteCode: " + str + ", Message: " + strMessage;
+        }
 	throw SQLiteException(strMsg);
 
 } 
@@ -141,9 +153,12 @@ void SQLiteDatabase::open(const std::string& strFileName, bool bReadOnly)
 	int iReturnCode = sqlite3_open_v2(strFileName.c_str(), &m_pdb, iFlags, NULL);
 	if (iReturnCode != SQLITE_OK) {error(iReturnCode, "Failed to open SQLite file:\t" + strFileName);}
 	*/
-	int iReturnCode = sqlite3_open(strFileName.c_str(), &m_pdb);
-	if (iReturnCode != SQLITE_OK) {error(iReturnCode, "Failed to open SQLite file:\t" + strFileName);}
-	m_bOpen = true;
+        m_dbName = strFileName;
+       std::string tmp_unc_path=Fs::convertToUncPath(m_dbName);
+	int iReturnCode = sqlite3_open(tmp_unc_path.c_str(), &m_pdb);
+	if (iReturnCode != SQLITE_OK) {error(iReturnCode, "Failed to open SQLite file: "+FS_QUOTE_PATH(tmp_unc_path));}
+        sqlite3_extended_result_codes(m_pdb, 1);
+        m_bOpen = true;
 }
 
 /** 
@@ -156,27 +171,45 @@ void SQLiteDatabase::close()
 		int iReturnCode = sqlite3_close(m_pdb);
 		if (iReturnCode != SQLITE_OK) {error(iReturnCode, "Failed to close SQLite file.");}
 		m_bOpen = false;
+                m_dbName.clear();
 	}
 }
 
 /** 
  * Executes a SQL statement. Does not return any data.
  * @param strSQL - The SQL statement to execute.
- * @param bError - Set to true to trap errors, or false to ignore errors.
+ * @param bError - Set to true to trap SQL statement errors, or false to ignore.
+ * @param abortOnErr - true calls Err::abort on SQLite exception, else just throw the exception.
  */
-void SQLiteDatabase::execute(const std::string& strSQL, bool bError)
+void SQLiteDatabase::execute(const std::string& strSQL, bool bError, bool abortOnErr )
 {
-	if (m_pdb == NULL) {throw SQLiteException("ERROR: SQLite Database has not been opened."); }
-	char* pszMsg = NULL;
-	int iReturnCode = sqlite3_exec(m_pdb, strSQL.c_str(), NULL, NULL, &pszMsg);
-	if (bError)
-	{
-		if (iReturnCode != SQLITE_OK) {std::string str = pszMsg; sqlite3_free(pszMsg); error(iReturnCode, str);}
-	}
-	else
-	{
-		if (iReturnCode != SQLITE_OK) {sqlite3_free(pszMsg);}
-	}
+  try  {
+    if (m_pdb == NULL) {
+      throw SQLiteException("ERROR: SQLite Database has not been opened.");
+    }
+    char* pszMsg = NULL;
+    int iReturnCode = sqlite3_exec(m_pdb, strSQL.c_str(), NULL, NULL, &pszMsg);
+    if (bError)  {
+      if (iReturnCode != SQLITE_OK) {
+        std::string str = pszMsg;
+        sqlite3_free(pszMsg);
+        error(iReturnCode, str);
+      }
+    }
+    else {
+      if (iReturnCode != SQLITE_OK) {
+        sqlite3_free(pszMsg);
+      }
+    }
+  }   
+  catch(SQLiteException e)  {
+    if ( abortOnErr ) {
+      Err::errAbort(std::string("SQLite Database exception: ") + e.getMessage());
+    }
+    else {
+      throw(e);
+    }
+  } 
 }
 
 /** 
@@ -221,11 +254,12 @@ void SQLiteRecordset::close()
 {
 	if (m_bOpen)
 	{
-		int iReturnCode = sqlite3_finalize(m_pstmt);
-		if (iReturnCode != SQLITE_OK) {m_pdb->error(iReturnCode, "Failed to finalize SQL statement.");}
-		m_bOpen = false;
-		m_bFirstRow = false;
+		//int iReturnCode = 
+    sqlite3_finalize(m_pstmt);
+//		if (iReturnCode != SQLITE_OK) {m_pdb->error(iReturnCode, "Failed to finalize SQL statement.");}
 	}
+	m_bOpen = false;
+	m_bFirstRow = false;
 }
 
 /** 
@@ -269,5 +303,6 @@ int SQLiteRecordset::getInteger(int iColumnIndex)
  */
 double SQLiteRecordset::getDouble(int iColumnIndex) 
 {
+	if (sqlite3_column_type(m_pstmt, iColumnIndex) == SQLITE_NULL) {return std::numeric_limits<double>::quiet_NaN();}
 	return sqlite3_column_double(m_pstmt, iColumnIndex);
 } 

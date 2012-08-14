@@ -950,6 +950,33 @@ void CalvinCHPFileUpdater::UpdateMultiDataMarkerABSignalsEntryBuffer(MultiDataTy
 	buffer = NULL;
 }
 
+void CalvinCHPFileUpdater::UpdateMultiDataCytoGenotypeEntryBuffer(MultiDataType dataType, int rowStart, int bufferEntrySize, const std::vector<char*> &entryBuffer)
+{
+    if (entryBuffer.size() == 0)
+	{
+		return;
+	}
+	// Copy the data to the buffer
+	int bufferSize = bufferEntrySize * (int)entryBuffer.size();
+	char *buffer = new char[bufferSize];
+	memset(buffer, 0, bufferSize);
+	char *pbuffer = buffer;
+	for (int i=0; i<(int)entryBuffer.size(); i++) 
+	{
+		memcpy(pbuffer, entryBuffer[i], bufferEntrySize);
+		pbuffer += bufferEntrySize;
+	}
+	// seek to start of update row (note NAME_COLUMN is 0)
+	int dsIndex = dataSetIndexMap[dataType];
+    int dgIndex = dataGroupIndexMap[dataType];
+	SeekToPosition(*m_CHPFile, dgIndex, dsIndex, rowStart, NAME_COLUMN);
+
+	// Write the buffer.
+	m_CHPFile->write(buffer, bufferSize);
+	delete[] buffer;
+	buffer = NULL;
+}
+
 void CalvinCHPFileUpdater::UpdateMetrics(const std::vector<affymetrix_calvin_parameter::ParameterNameValueType> &metrics)
 {
 	int ncols = (int) metrics.size();
