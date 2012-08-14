@@ -39,6 +39,7 @@ PKG_SOURCES = \
 	fusion_sdk/calvin_files/data/src/CHPQuantificationDetectionData.cpp\
 	fusion_sdk/calvin_files/data/src/CHPGenotypeEntry.cpp\
 	fusion_sdk/calvin_files/data/src/CHPUniversalEntry.cpp\
+	fusion_sdk/calvin_files/data/src/ColumnInfo.cpp\
 	fusion_sdk/calvin_files/data/src/DataGroup.cpp\
 	fusion_sdk/calvin_files/data/src/DataGroupHeader.cpp\
 	fusion_sdk/calvin_files/data/src/DataSet.cpp\
@@ -92,13 +93,15 @@ PKG_SOURCES = \
 	fusion_sdk/file/CHPFileData.cpp\
 	fusion_sdk/file/FileIO.cpp\
 	fusion_sdk/file/FileWriter.cpp\
+	fusion_sdk/file/TsvFile/ClfFile.cpp\
+	fusion_sdk/file/TsvFile/PgfFile.cpp\
 	fusion_sdk/file/TsvFile/TsvFile.cpp\
 	fusion_sdk/util/AffxByteArray.cpp\
 	fusion_sdk/util/AffxConv.cpp\
-	fusion_sdk/util/AffxFile.cpp\
 	fusion_sdk/util/MsgStream.cpp\
 	fusion_sdk/util/Util.cpp\
 	fusion_sdk/util/Err.cpp\
+	fusion_sdk/util/Fs.cpp\
 	fusion_sdk/util/Verbose.cpp\
 	fusion_sdk/util/RowFile.cpp\
 	fusion_sdk/util/TableFile.cpp\

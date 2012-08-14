@@ -77,6 +77,19 @@ check_trim()
   assert(trimstr2=="");
 }
 
+
+void
+check_tolower()
+{
+  assert(affx::tolower("123")=="123");
+  assert(affx::tolower("123")!="456");
+  //
+  assert(affx::tolower("abc")=="abc");
+  assert(affx::tolower("abc")!="ABC");
+  assert(affx::tolower("ABC")=="abc");
+  assert(affx::tolower("DEF")=="def");
+}
+
 /// Check the dequoting of a string.
 #define CHECK_DEQUOTE(Xstr1,Xstr2) \
   str1=Xstr1; \
@@ -102,6 +115,16 @@ check_dequote()
   CHECK_DEQUOTE("\"abc\"","abc");
   CHECK_DEQUOTE("\'abc\"","\'abc\"");
   CHECK_DEQUOTE("\"abc\'","\"abc\'");
+}
+
+/// @brief     Check splitstr works.
+void
+check_countchars()
+{
+  assert(countchars("",'-')==0);
+  assert(countchars("abc",'-')==0);
+  assert(countchars("a-b-c",'-')==2);
+  assert(countchars("---",'-')==3);
 }
 
 /// @brief     print the results of splitstr
@@ -176,6 +199,12 @@ check_field_name()
   //printf("0:%s=%d\n",cname.c_str(),cidx);
   assert(cidx==1);
 
+  // check case senseitivty
+  cidx=tsv->cname2cidx(0,"ABC");
+  assert(cidx==affx::TSV_ERR_NOTFOUND);
+  cidx=tsv->cname2cidx(0,"ABC",affx::TSV_OPT_CASEINSENSTIVE);
+  assert(cidx==1);
+
   cname="def";
   tsv->defineColumn(0,10,cname);
   cidx=tsv->cname2cidx(0,cname);
@@ -243,6 +272,7 @@ check_field_convert()
   affx::TsvFileField col;
   double val_double;
   int val_int;
+  short val_short;
   int rv;
 
   // a good int conversion
@@ -269,6 +299,25 @@ check_field_convert()
   rv=col.get(&val_int);
   assert((rv==TSV_ERR_CONVERSION)&&(val_int==-1));
 
+  // good short
+  col.clear();
+  col.setBuffer("456");
+  rv=col.get(&val_short);
+  assert((rv==TSV_OK)&&(val_short==456));
+  rv=col.get(&val_short);
+  assert((rv==TSV_OK)&&(val_short==456));
+
+  // bad short
+  col.clear();
+  col.setBuffer("123456");
+  rv=col.get(&val_short);
+  assert((rv==TSV_ERR_CONVERSION)&&(val_short==-1));
+  rv=col.get(&val_short);
+  assert((rv==TSV_ERR_CONVERSION)&&(val_short==-1));
+
+  // bad short but still a good int.
+  rv=col.get(&val_int);
+  assert((rv==TSV_OK)&&(val_int==123456));
 
   // a good double conversion
   col.clear();
@@ -464,6 +513,55 @@ check_headers_1()
   assert(test_str_out==test_str_in);
   // should fail.
   assert(tsv.getHeader("test_str_none",test_str_out)!=TSV_OK);
+
+  // test multiple exact matches returned in a vector
+  std::vector<std::string> test_vec_out;
+  std::string test_str_in_2="test_val_2";
+  tsv.addHeader("test_str_2",test_str_in_2);
+
+  tsv.getHeader("test_str_2",test_vec_out);
+  assert(test_vec_out.size()==1 && test_vec_out[0]==test_str_in_2);
+  assert(tsv.getHeader("test_str_none",test_vec_out)!=TSV_OK);
+  assert(test_vec_out.size()==0);
+  tsv.getHeader("test_str_1",test_vec_out);
+  assert(test_vec_out.size()==1 && test_vec_out[0]==test_str_in);
+
+  tsv.getHeaderAppend("test_str_2",test_vec_out);
+  assert(test_vec_out.size()==2 && test_vec_out[1]==test_str_in_2);
+  assert(tsv.getHeaderAppend("test_str_none",test_vec_out)!=TSV_OK);
+  assert(test_vec_out.size()==2);
+  tsv.getHeaderAppend("test_str_1",test_vec_out);
+  assert(test_vec_out.size()==3 && test_vec_out[2]==test_str_in);
+
+  // test multiple exact matches returned in a vector
+  tsv.getHeaderMatchingKeySubstr("test_str_2",test_vec_out);
+  assert(test_vec_out.size()==1 && test_vec_out[0]==test_str_in_2);
+  assert(tsv.getHeaderMatchingKeySubstr("test_str_none",test_vec_out)!=TSV_OK);
+  assert(test_vec_out.size()==0);
+  tsv.getHeaderMatchingKeySubstr("test_str_1",test_vec_out);
+  assert(test_vec_out.size()==1 && test_vec_out[0]==test_str_in);
+
+  tsv.getHeaderMatchingKeySubstrAppend("test_str_2",test_vec_out);
+  assert(test_vec_out.size()==2 && test_vec_out[1]==test_str_in_2);
+  assert(tsv.getHeaderMatchingKeySubstrAppend("test_str_none",test_vec_out)!=TSV_OK);
+  assert(test_vec_out.size()==2);
+  tsv.getHeaderMatchingKeySubstrAppend("test_str_1",test_vec_out);
+  assert(test_vec_out.size()==3 && test_vec_out[2]==test_str_in);
+
+  // test multiple partial matches returned in a vector
+  tsv.getHeaderMatchingKeySubstr("test",test_vec_out);
+  assert(test_vec_out.size()==2);
+  assert(tsv.getHeaderMatchingKeySubstr("test_str_none",test_vec_out)!=TSV_OK);
+  assert(test_vec_out.size()==0);
+  tsv.getHeaderMatchingKeySubstr("str_1",test_vec_out);
+  assert(test_vec_out.size()==1 && test_vec_out[0]==test_str_in);
+
+  tsv.getHeaderMatchingKeySubstrAppend("test",test_vec_out);
+  assert(test_vec_out.size()==3);
+  assert(tsv.getHeaderMatchingKeySubstrAppend("test_str_none",test_vec_out)!=TSV_OK);
+  assert(test_vec_out.size()==3);
+  tsv.getHeaderMatchingKeySubstrAppend("str_1",test_vec_out);
+  assert(test_vec_out.size()==4 && test_vec_out[3]==test_str_in);
 
   int test_int_in=123;
   int test_int_out=0;
@@ -882,18 +980,18 @@ void check_read_vec_1()
   tsv.nextLevel(0);
 
   rv=tsv.get(0,"col_00",&vec_i);
-  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]=1)&&(vec_i[2]==3));
+  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]==1)&&(vec_i[2]==3));
   
   rv=tsv.get(0,"col_01",&vec_i);
-  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]=4)&&(vec_i[2]==6));
+  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]==4)&&(vec_i[2]==6));
 
   tsv.nextLevel(0);
 
   rv=tsv.get(0,"col_00",&vec_i);
-  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]=7)&&(vec_i[2]==9));
+  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]==7)&&(vec_i[2]==9));
   
   rv=tsv.get(0,"col_01",&vec_i,':');
-  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]=10)&&(vec_i[2]==12));
+  assert((rv==TSV_OK)&&(vec_i.size()==3)&&(vec_i[0]==10)&&(vec_i[2]==12));
 
   tsv.nextLevel(0);
   std::string tmp_str;
@@ -1016,6 +1114,42 @@ void check_read_pgf_1()
   pgf.close();
 }
 
+void check_line_count()
+{
+
+  
+  assert(affx::TsvFile::getLineCountInFile("no_eol_test.txt")==1);
+  assert(affx::TsvFile::getLineCountInFile("data-table-1.txt")==12);
+  assert(affx::TsvFile::getLineCountInFile("data-table-1.txt",true)==12);
+  assert(affx::TsvFile::getLineCountInFile("", false)==0);
+  assert(affx::TsvFile::getLineCountInFile("bogus43Fzx",false)==0);
+
+  // Tests preserved from  util/CPPTest/UtilTest.cpp
+
+#ifdef _WIN32
+  assert(affx::TsvFile::getLineCountInFile("input\\t.e_s#-$tc\\test.txt", false)==0);
+  assert(affx::TsvFile::getLineCountInFile("input\\1lqcdfpsi_win.asdf") == 7238);
+  assert(affx::TsvFile::getLineCountInFile("input/1lqcdfpsi_win.asdf") == 7238);
+  assert(affx::TsvFile::getLineCountInFile("input/1lqcdfpsi_bin.bcdf") == 345 );
+#else
+  assert(affx::TsvFile::getLineCountInFile("input/t.e_s#-$tc/test.txt", false)==0);
+  assert(affx::TsvFile::getLineCountInFile("input/1lqcdfpsi_unix.asdf", false) == 7238);
+  assert(affx::TsvFile::getLineCountInFile("input/1lqcdfpsi_bin.bcdf", false) == 345);
+#endif
+  
+}
+
+void check_replace()
+{
+
+  assert(affx::TsvFile::replaceCharInFile("data-table-1.txt", '\n', '^', false)==affx::TSV_OK);
+  assert(affx::TsvFile::getLineCountInFile("data-table-1.txt")==1);
+  
+
+  assert(affx::TsvFile::replaceCharInFile("data-table-1.txt", '^', '\n', false)==affx::TSV_OK);
+  assert(affx::TsvFile::getLineCountInFile("data-table-1.txt")==12);
+
+}
 
 //////////
 
@@ -1028,6 +1162,8 @@ main(int argc,char* argv[])
 {
   // Tests the strings
   check_trim();
+  check_tolower();
+  check_countchars();
   check_splitstr();
   check_dequote();
   check_escapeString();
@@ -1060,6 +1196,10 @@ main(int argc,char* argv[])
   check_read_colvec_1();
   //
   check_read_pgf_1();
+  //
+  check_line_count();
+  //
+  check_replace();
   //
   printf("ok.\n");
 }

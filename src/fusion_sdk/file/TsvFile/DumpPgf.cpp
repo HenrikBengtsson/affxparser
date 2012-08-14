@@ -22,6 +22,7 @@
 
 #include "file/TsvFile/DumpPgf.h"
 //
+#include "util/Fs.h"
 #include "util/Guid.h"
 #include "util/Util.h"
 //
@@ -87,15 +88,13 @@ void define_dumppgf_options(PgOptions* opts) {
  *  @param argc Number of command line arguments.
  *  @param argv Command line arguments.
  *  @param version Version string.
- *  @param cvsId CVS id string.
  *
  *  Errors: throw exception to display help messages, if unsupported
  *  option choices were made.
 */
 dumpPgf::dumpPgf (const char* argv[], 
-                  const std::string& version,
-                  const std::string& cvsId)
-  : m_Version (version), m_CvsId (cvsId), m_GetProbeCoordinates (0)
+                  const std::string& version)
+  : m_Version (version), m_GetProbeCoordinates (0)
 {
   // Prefer throw() to exit().
   Err::setThrowStatus (true);
@@ -112,14 +111,13 @@ dumpPgf::dumpPgf (const char* argv[],
   if (m_Opts.getBool("help") || (m_Opts.argc() <= 1))
   {
     m_Opts.usage();
-    cout << "version:\n" << "   " << version << "\n";
-    cout << "   " << cvsId;
+    cout << "version: " << version << "\n";
     exit(0);
   }
   // Optionally display version.
   if (m_Opts.getBool("version"))
   {
-    cout << "version: " << version << "   " << cvsId;
+    cout << "version: " << version << "\n";
     exit(0);
   }
 
@@ -172,7 +170,7 @@ dumpPgf::dumpPgf (const char* argv[],
     Err::errAbort ("Must provide an output file, --out-file option.");
   else
   {
-    Util::mustOpenToWrite (m_FileOut, m_Outfile);
+    Fs::mustOpenToWrite(m_FileOut, m_Outfile);
     m_Out = &m_FileOut;
   }
 
@@ -248,7 +246,7 @@ void dumpPgf::readIdFiles()
 */
 void dumpPgf::beginOutput()
 {
-    Verbose::out(1,"MODULE: " + m_Version + " " + m_CvsId);
+    Verbose::out(1,"MODULE: " + m_Version);
     Verbose::out(1,"CMD: " + m_CommandLine);
     m_ExecGuid = affxutil::Guid::GenerateNewGuid();
     Verbose::out(1,"exec_guid " + m_ExecGuid);
@@ -379,7 +377,7 @@ void dumpPgf::writeOutputHeader()
   const string guid = affxutil::Guid::GenerateNewGuid();
   *m_Out << "#%guid=" << guid << "\n";
   *m_Out << "#%exec_guid=" << m_ExecGuid << "\n";
-  *m_Out << "#%exec_version=" << m_Version << " " << m_CvsId << "\n";
+  *m_Out << "#%exec_version=" << m_Version << "\n";
   *m_Out << "#%create_date=" << Util::getTimeStamp() << "\n";
   *m_Out << "#%cmd=" << m_CommandLine << "\n";
 

@@ -32,6 +32,12 @@ namespace affymetrix_calvin_exceptions
 
 class NotImplementedException : public CalvinException
 {
+public:
+  NotImplementedException() : CalvinException() {}
+  NotImplementedException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+  const std::wstring ToString();
+  
 };
 
 }

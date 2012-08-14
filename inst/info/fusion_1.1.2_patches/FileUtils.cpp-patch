@@ -1,0 +1,10 @@
+--- affxparser/src/fusion_sdk/calvin_files/utils/src/FileUtils.cpp	2012-08-14 14:11:38.000000000 -0600
++++ fusion_sdk/calvin_files/utils/src/FileUtils.cpp	2012-08-14 11:50:21.000000000 -0600
+@@ -35,7 +35,6 @@
+ #include <direct.h>
+ #define 	S_ISDIR(m)   (((m) & S_IFMT) == S_IFDIR)
+ #else
+-#include <unistd.h>
+ #include <dirent.h>
+ #endif
+ 

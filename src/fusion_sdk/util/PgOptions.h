@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -96,16 +94,14 @@ int main (int argc,char* argv[]) {
 // providing an option to disable
 
 //
+#include "portability/apt-win-dll.h"
 #include "util/Err.h"
-//
-#include "apt/apt.h"
 //
 #include <cstring>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
-//
 
 /// @class PgOpt
 /// @brief The definition of this option and the values.
@@ -315,7 +311,7 @@ public:
   /// @return    pointer to the passed in option
   PgOpt* addPgOpt_nocopy(PgOpt *option);
 
-  /// @brief     Bind the name to the option.
+  /// @brief     Add the option name and PgOpt to our map of name,value pairs
   /// @param     opt_name  name to bind.  null strings ("") are ignored.
   /// @param     opt       option for this name.
   void bind(const std::string& opt_name,PgOpt* opt);
@@ -323,11 +319,25 @@ public:
   /// @brief     Finds the option which is bound to this name.
   /// @param     name
   /// @return    pointer to option or NULL
-  PgOpt* findOpt(const std::string &name);
+  PgOpt* findOpt(const std::string &longName)
+  {
+    optionMapIterator_t i = m_option_map.find(longName);
+    if (i == m_option_map.end()) {
+        return NULL;
+    }
+    return i->second;
+  }
   /// @brief     Same as findOpt, but aborts if not option is not found.
   /// @param     name
   /// @return    pointer to option
-  PgOpt* mustFindOpt(const std::string &name);
+  PgOpt* mustFindOpt(const std::string &name)
+  {
+    PgOpt *opt = findOpt(name);
+    if(opt == NULL) {
+        Err::errAbort("Don't recognize option with name: '" + name + "'.");
+    }
+    return opt;
+  }
 
   /// @brief Print a string wrapping at max width from the current position.
   /// @param str - The cstring to be printed.
@@ -386,7 +396,11 @@ public:
   /// @brief     Get the value of the option as a string.
   /// @param     opt_name  option name (short or long)
   /// @return    the value.  Abort if not found.
-  std::string get(const std::string& opt_name);
+  std::string get(const std::string& opt_name)
+  {
+    PgOpt *opt = mustFindOpt(opt_name);
+    return opt->getValue(0);
+  }
   /// @brief     Get the value of the option as a boolean.
   /// @param     opt_name  option name (short or long)
   /// @return    the value.  Abort if not found.

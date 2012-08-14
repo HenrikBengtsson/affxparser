@@ -32,6 +32,7 @@
 #include <sstream>
 #include <string.h>
 #include <string>
+#include <stdio.h>
 //
 
 #ifdef _MSC_VER

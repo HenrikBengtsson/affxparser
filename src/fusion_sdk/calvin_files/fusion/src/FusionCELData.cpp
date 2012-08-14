@@ -23,6 +23,9 @@
 #include "calvin_files/fusion/src/CalvinAdapter/CalvinCELDataAdapter.h"
 #include "calvin_files/fusion/src/GCOSAdapter/GCOSCELDataAdapter.h"
 #include "calvin_files/parsers/src/FileException.h"
+#include "calvin_files/utils/src/FileUtils.h"
+//
+#include "util/Fs.h"
 //
 #include <cassert>
 #include <sys/stat.h>
@@ -87,6 +90,17 @@ GenericData *FusionCELData::GetGenericData()
 	return adapter->GetGenericData();
 }
 
+/*! Maps X/Y coordinates to CEL file index.
+ * @param x The x coordinate.
+ * @param y The y coordinate.
+ * @param r The number of rows.
+ * @param c The number of columns.
+ * @return The index to the intensity arrays.
+ */
+int FusionCELData::XYToIndex(int x, int y, int r, int c)
+{
+  return ((y*c) + x);
+}
 
 /*
  * Returns the list of parameters associated with a data set, empty for GCOS files
@@ -475,15 +489,7 @@ void FusionCELData::Close()
  */
 unsigned int FusionCELData::GetFileSize()
 {
-	assert(filename != "");
-
-	unsigned int size = 0;
-	struct stat st;
-	if (stat(filename.c_str(), &st) == 0)
-	{
-		size = st.st_size;
-	}
-	return size;
+  return Fs::fileSize(filename);
 }
 
 /*
@@ -491,11 +497,9 @@ unsigned int FusionCELData::GetFileSize()
  */
 bool FusionCELData::Exists()
 {
+  
 	assert(filename != "");
-
-	// Find the file stats.
-	struct stat st;
-	return ((stat(filename.c_str(), &st) == 0)? true: false);
+        return FileUtils::Exists(filename.c_str());
 }
 
 /*
@@ -601,13 +605,13 @@ void FusionCELData::CreateAdapter()
 				}
 				else
 				{
-					UnableToOpenFileException e;
+					UnableToOpenFileException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 					throw e;
 				}
 			}
 			else
 			{
-				UnableToOpenFileException e;
+				UnableToOpenFileException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 				throw e;
 			}
 		}
@@ -629,7 +633,7 @@ void FusionCELData::CheckAdapter() const
 {
 	if (adapter == 0)
 	{
-		FileNotOpenException e;
+		FileNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }

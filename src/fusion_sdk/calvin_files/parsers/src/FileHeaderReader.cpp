@@ -66,7 +66,7 @@ void FileHeaderReader::ReadMagicNumber()
 	u_int8_t fileMagicNumber = FileInput::ReadInt8(fileStream);
 	if (fileMagicNumber != DATA_FILE_MAGIC_NUMBER)
 	{
-		affymetrix_calvin_exceptions::InvalidFileTypeException e;
+		affymetrix_calvin_exceptions::InvalidFileTypeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -80,7 +80,7 @@ void FileHeaderReader::ReadVersion()
 	u_int8_t fileVersionNumber = FileInput::ReadInt8(fileStream);
 	if (fileVersionNumber != DATA_FILE_VERSION_NUMBER)
 	{
-		affymetrix_calvin_exceptions::InvalidVersionException e;
+		affymetrix_calvin_exceptions::InvalidVersionException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }

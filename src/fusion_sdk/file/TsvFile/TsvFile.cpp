@@ -25,17 +25,19 @@
 //
 #include "util/Convert.h"
 #include "util/Err.h"
+#include "util/Fs.h"
 #include "util/Util.h"
 #include "util/Verbose.h"
 //
 #include <algorithm>
 #include <cassert>
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <ctype.h>
 #include <iostream>
 #include <sstream>
 #include <string>
-//
 
 //
 using namespace std;
@@ -44,7 +46,9 @@ using namespace affx;
 // macros for TSV_ERR_AT stringification.
 #define TSV_STRINGIFY(_str) #_str
 #define TSV_TOSTR(_sym)   TSV_STRINGIFY(_sym)
+
 // used to report where the error occured.
+// @todo should set the error code too.
 #define TSV_ERR_ABORT(_msg) APT_ERR_ABORT(_msg);
 
 
@@ -68,6 +72,8 @@ using namespace affx;
 #define TSV_CHAR_TAB     (0x09)
 /// Hex code for LF char
 #define TSV_CHAR_LF      (0x0a)
+/// Hex code for a COMMA char
+#define TSV_CHAR_COMMA   (0x2c)
 /// Hex code for CR char
 #define TSV_CHAR_CR      (0x0d)
 /// Hex code for comment char
@@ -131,6 +137,17 @@ affx::trim(std::string& str)
   rtrim(str);
 }
 
+// Turn a string into a lowercase string.
+std::string affx::tolower(const string& str)
+{
+  std::string str_lc=str;
+  for (size_t i=0;i<str_lc.size();i++) {
+    // call the C function of the same name
+    str_lc[i]=::tolower(str_lc[i]);
+  }
+  return str_lc;
+}
+
 /// @brief     Remove quotes from a string if they are matching
 /// @param     str       String to remove them from
 void
@@ -149,6 +166,18 @@ affx::dequote(std::string& str)
     str.erase(str.size()-1,1); // remove last quote
     str.erase(0,1);            // remove first quote
   }
+}
+
+int
+affx::countchars(const std::string& str,char chr)
+{
+  int cnt=0;
+  for (size_t i=0;i<str.size();i++) {
+    if (str[i]==chr) {
+      cnt++;
+    }
+  }
+  return cnt;
 }
 
 /// @brief     Split a string into a vector
@@ -243,7 +272,7 @@ affx::escapeString(const std::string& str,const char eChar)
   
   return estring;
 }
-      
+
 ////////////////////
 
 /// @brief     Create a new Binding to map a column to a lvalue.
@@ -475,6 +504,31 @@ affx::TsvFileField::get(std::string* val)
   // Avoid data sharing by clearing then appending the contents.
   val->erase();
   val->append(m_buffer.begin(),m_buffer.end());
+  return TSV_OK;
+}
+
+/// @brief     Get the value as an int
+/// @param     val       val to set
+/// @return    tsv_error_t
+int
+affx::TsvFileField::get(short* val)
+{
+  int tmp_val;
+  int rv;
+
+  // reset the val.
+  *val=-1;
+
+  //
+  rv=get(&tmp_val);
+  if (rv!=TSV_OK) {
+    return rv;
+  }
+    
+  if ((tmp_val<-32767)||(tmp_val>32767)) {
+    return TSV_ERR_CONVERSION;
+  }
+  *val=tmp_val;
   return TSV_OK;
 }
 
@@ -714,7 +768,7 @@ affx::TsvFileField::get(std::vector<std::string>* vec,char sep)
 #define TSV_CONCAT_VEC_BODY() {                 \
   if (vec.size()>0) {                           \
     stream << vec[0];                           \
-    for (int i=1;i<vec.size();i++) {            \
+    for (size_t i=1;i<vec.size();i++) {         \
       stream << sep << vec[i];                  \
     }                                           \
   }                                             \
@@ -976,10 +1030,12 @@ affx::TsvFileIndex::~TsvFileIndex()
 void
 affx::TsvFileIndex::init()
 {
-  m_bindto_clvl=-1;
-  m_bindto_type=TSV_BINDTO_NONE;
   m_bindto_cidx=-1;
+  m_bindto_clvl=-1;
   m_bindto_cname="";
+  m_bindto_type=TSV_BINDTO_NONE;
+  m_flags=0;
+  m_kind=0;
   //
   clear();
 }
@@ -1252,6 +1308,7 @@ affx::header_ptr_less(const affx::TsvFileHeaderLine* a,const affx::TsvFileHeader
 /// @return    lvalue
 affx::TsvFile::TsvFile()
 {
+  init();
   clear();
   default_options();
 }
@@ -1260,6 +1317,7 @@ affx::TsvFile::TsvFile()
 /// @return    lvalue
 affx::TsvFile::TsvFile(const std::string& filename)
 {
+  init();
   clear();
   open(filename);
 }
@@ -1267,6 +1325,7 @@ affx::TsvFile::TsvFile(const std::string& filename)
 /// @brief  Dont allow a TsvFile to be copied.
 affx::TsvFile::TsvFile(const affx::TsvFile& that)
 {
+  init();
 	TSV_ERR_ABORT("Copy of TsvFile not allowed.");
 }
 
@@ -1282,6 +1341,7 @@ affx::TsvFile::~TsvFile()
 void
 affx::TsvFile::default_options()
 {
+  m_rawOpen = false;
   m_optAllowDataComment=true;
   m_optAbortOnError=true;
   m_optAutoColumns=false;
@@ -1289,9 +1349,16 @@ affx::TsvFile::default_options()
   m_optAutoIndex=true;
   m_optAutoSenseSep=true;
   m_optAutoTrim=false;
+  m_optCheckFormatOnOpen=true;
   //m_optCommentChar='#';
   m_optDoQuote=false;
+  // This seems to be a common use case. - jhg
+  // If you really care, then call tsv->setEscapeOk(whatEverYouWant)
+  // #ifdef WIN32
+  //   m_optEscapeOk=false;
+  // #else
   m_optEscapeOk=true;
+  // #endif
   m_optEscapeChar='\\';
   m_optQuoteChar1='\'';
   m_optQuoteChar2='"';
@@ -1348,6 +1415,15 @@ affx::TsvFile::setFilename(const std::string& filename)
   return TSV_OK;
 }
 
+/// @brief init a new TsvFile.
+void
+affx::TsvFile::init()
+{
+#ifdef TSV_USER_RDBUF
+  m_rdbuf=NULL;
+#endif
+  m_headers_curptr=NULL;
+}
 
 /// @brief     clear all the resources of a TsvFile.
 void
@@ -1364,15 +1440,14 @@ affx::TsvFile::clear()
   clearIndexes();
   // and the headers
   clearHeaders();
-
+  // and the column headers
+  clearColumnHeaders();
+  
   //
   m_lineLvl=0;
   m_lineNum=0;
   m_eof=false;
   m_index_done=false;
-  // now get rid of the column info.
-  m_column_map.clear();
-  m_cnametocidx_map.clear();
 }
 
 /// @brief Clear the bindings of columns to variables.
@@ -1585,6 +1660,17 @@ affx::TsvFile::clearHeaders()
   headersBegin();
 }
 
+/// @brief     clear all the column headers.
+void
+affx::TsvFile::clearColumnHeaders()
+{
+
+  // now get rid of the column info.
+  m_column_map.clear();
+  m_cnametocidx_map.clear();
+
+}
+
 /// @brief     Start at the beginning of the headers
 /// @remarks   This acts as the begin for all the ways of walking the headers.
 void
@@ -1742,7 +1828,22 @@ affx::TsvFile::addHeader(const std::string& key,double val)
   // cast to a string and add it.
   std::ostringstream stream;
   stream << val;
-  addHeader(key,stream.str());
+  std::string valString = stream.str();
+  // For Windows, check to see if a three digit exponent with a leading zero is
+  // being used for double representation.  if so, remove the extra zero (2
+  // exponent digits conforms to 1999 C standard) 
+  //e.g. 1.234e003 and 1.234e-003 become 1.234e03 and 1.234e-03
+  #ifdef WIN32
+  if (valString.size() >= 5 &&
+      valString.at(valString.size() - 3) == '0' && 
+      (valString.at(valString.size() - 4) == 'e' ||
+       valString.at(valString.size() - 5) == 'e'        
+       )
+      ) {
+    valString.erase(valString.size() - 3, 1);
+  }
+  #endif
+  addHeader(key,valString);
   return TSV_OK;
 }
 
@@ -1753,7 +1854,7 @@ affx::TsvFile::addHeader(const std::string& key,double val)
 int
 affx::TsvFile::addHeader(const std::string& key,const std::vector<std::string>& val)
 {
-  for (int i=0;i<val.size();i++) {
+  for (size_t i=0;i<val.size();i++) {
     addHeader(key,val[i]);
   }
   return TSV_OK;
@@ -1777,6 +1878,15 @@ int
 affx::TsvFile::addHeaderComment(const std::string& comment)
 {
   return addHeader_nocheck("",comment,(int)m_headers_vec.size());
+}
+
+int
+affx::TsvFile::addHeaderComments(const std::vector<std::string>& comments)
+{
+  for (size_t i=0;i<comments.size();i++) {
+    addHeaderComment(comments[i]);
+  }
+  return TSV_OK;
 }
 
 /// @brief     Add a header to the TSV without checking to see if it is legal
@@ -1906,13 +2016,12 @@ int
 affx::TsvFile::getHeader(const std::string& key,int& val)
 {
   std::string tmp_str;
-  int tmp_val;
   const char* str_in;
   char* str_out;
 
   if (getHeader(key,tmp_str)==TSV_OK) {
     str_in=tmp_str.c_str();
-    tmp_val=strtol(str_in,&str_out,0);
+    int tmp_val=strtol(str_in,&str_out,0);
     if (str_in==str_out) {
       return TSV_ERR_FORMAT;
     }
@@ -1930,13 +2039,12 @@ int
 affx::TsvFile::getHeader(const std::string& key,double& val)
 {
   std::string tmp_str;
-  double tmp_val;
   const char* str_in;
   char* str_out;
 
   if (getHeader(key,tmp_str)==TSV_OK) {
     str_in=tmp_str.c_str();
-    tmp_val=strtod(str_in,&str_out);
+    double tmp_val=strtod(str_in,&str_out);
     if (str_in==str_out) {
       return TSV_ERR_FORMAT;
     }
@@ -1946,6 +2054,10 @@ affx::TsvFile::getHeader(const std::string& key,double& val)
   return TSV_ERR_NOTFOUND;
 }
 
+/// @brief     Get string values of all headers exactly matching a key
+/// @param     key       key to find
+/// @param     val       string vector for matching values.
+/// @return    tsv_error_t
 int
 affx::TsvFile::getHeader(const std::string& key,std::vector<std::string>& val)
 {
@@ -1953,18 +2065,50 @@ affx::TsvFile::getHeader(const std::string& key,std::vector<std::string>& val)
   return getHeaderAppend(key,val);
 }
 
+/// @brief     Append string values of all headers exactly matching a key
+/// @param     key       key to find
+/// @param     val       string vector for appended values.
+/// @return    tsv_error_t
 int
 affx::TsvFile::getHeaderAppend(const std::string& key,std::vector<std::string>& val)
 {
+  int result = TSV_ERR_NOTFOUND;
   affx::TsvFile::header_iter_t i;
   for (i=m_headers_bykey.find(key);(i!=m_headers_bykey.end())&&(i->first==key);i++) {
     val.push_back(i->second->m_value);
+    result = affx::TSV_OK;
   }
-  // didnt find any.
-  if (val.size()==0) {
-    return TSV_ERR_NOTFOUND;
+  return result;
+}
+
+/// @brief     Get string values of all headers containing the substring
+/// @param     key       key substring to find
+/// @param     val       string vector for matching values.
+/// @return    tsv_error_t
+int
+affx::TsvFile::getHeaderMatchingKeySubstr(const std::string& key,std::vector<std::string>& val)
+{
+  val.clear();
+  return getHeaderMatchingKeySubstrAppend(key,val);
+}
+
+/// @brief     Append string values of all headers containing the substring
+/// @param     key       key substring to find
+/// @param     val       string vector for appended values.
+/// @return    tsv_error_t
+int
+affx::TsvFile::getHeaderMatchingKeySubstrAppend(const std::string& key,std::vector<std::string>& val)
+{
+  int result = TSV_ERR_NOTFOUND;
+  affx::TsvFile::header_iter_t i;
+  for (i=m_headers_bykey.begin();i!=m_headers_bykey.end();i++) {
+	if (i->first.find(key)!=string::npos)
+	{
+      val.push_back(i->second->m_value);
+      result = affx::TSV_OK;
+	}
   }
-  return affx::TSV_OK;
+  return result;
 }
 
 /// @brief     Does the file have a key==value header which matches
@@ -2041,7 +2185,7 @@ affx::TsvFile::deleteHeaders(const std::string& key)
 int
 affx::TsvFile::deleteHeaders(const std::vector<std::string>& keys)
 {
-  for (int i=0;i<keys.size();i++) {
+  for (size_t i=0;i<keys.size();i++) {
     deleteHeaders(keys[i]);
   }
   return affx::TSV_OK;
@@ -2117,18 +2261,17 @@ affx::TsvFile::f_read_header_v1()
 
   // Try and sense what the fieldsep is?
   if (m_optAutoSenseSep==true) {
-    // split on each
-    std::vector<std::string> colname_tab_vec;
-    splitstr(line,'\t',colname_tab_vec);
-    std::vector<std::string> colname_comma_vec;
-    splitstr(line,',',colname_comma_vec);
-    //printf("auto: c=%d t=%d ",colname_comma_vec.size(),colname_tab_vec.size());
-    // Dont autosense if there are both separators present.
-    if ((colname_tab_vec.size()==1)&&(colname_comma_vec.size()>0)) {
-      m_optFieldSep=',';
-    }
-    if ((colname_comma_vec.size()==1)&&(colname_tab_vec.size()>0)) {
-      m_optFieldSep='\t';
+    int cnt_fieldsep=countchars(line,m_optFieldSep);
+    if (cnt_fieldsep==0) {
+      // whoah We didnt see our fieldsep, take a guess...
+      int cnt_tabs=countchars(line,TSV_CHAR_TAB);
+      int cnt_comma=countchars(line,TSV_CHAR_COMMA);
+      if (cnt_tabs>0) {
+        m_optFieldSep=TSV_CHAR_TAB;
+      }
+      else if (cnt_comma>0) {
+        m_optFieldSep=TSV_CHAR_COMMA;
+      }
     }
   }
 
@@ -2314,20 +2457,41 @@ affx::TsvFile::defineColumn(int clvl,int cidx,const std::string& cname,tsv_type_
 /// @param     cname     column name
 /// @return    level or less than zero on error
 int
-affx::TsvFile::cname2cidx(int clvl,const std::string& cname)
+affx::TsvFile::cname2cidx(int clvl,const std::string& cname,tsv_optionflag_t options)
 {
   if ((clvl<0)||(clvl>=(int)m_column_map.size())) {
     return TSV_ERR_NOTFOUND;
   }
   map<string,int>::iterator i;
   i=m_cnametocidx_map[clvl].find(cname);
-  if (i==m_cnametocidx_map[clvl].end()) {
+  // found it?
+  if (i!=m_cnametocidx_map[clvl].end()) {
+    return ((*i).second);
+  }
+  // is this a case sensitve match?
+  if ((options&affx::TSV_OPT_CASEINSENSTIVE)!=affx::TSV_OPT_CASEINSENSTIVE) {
+    // yes... so fail now.
     return TSV_ERR_NOTFOUND;
   }
-  return ((*i).second);
+
+  // Doing a case-insenstive search is rare, we dont keep an index.
+  // Rather, we do a linear search across the keys.
+  std::string cname_lc=affx::tolower(cname);
+  std::string key_lc;
+  for (i=m_cnametocidx_map[clvl].begin();i!=m_cnametocidx_map[clvl].end();i++) {
+    key_lc=affx::tolower((*i).first);
+    if (key_lc==cname_lc) {
+      // found a lowercase match...
+      return ((*i).second);
+    }
+  }
+
+  // isnt there as lowercase either.
+  return TSV_ERR_NOTFOUND;
 }
 
-#define CNAME_FIND(name) { int rv; rv=cname2cidx(clvl,name); if (rv>=0) { return rv; } }
+// Requres "clvl" and "options" to be defined.
+#define CNAME_FIND(_name) { int rv; rv=cname2cidx(clvl,_name,options); if (rv>=0) { return rv; } }
 
 /// @brief     Find a column index by one of its names.
 /// @param     clvl      level
@@ -2335,7 +2499,10 @@ affx::TsvFile::cname2cidx(int clvl,const std::string& cname)
 /// @param     alias2    second alias to try
 /// @return
 int
-affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& alias2)
+affx::TsvFile::cname2cidx(int clvl,
+                          const std::string& alias1,
+                          const std::string& alias2,
+                          tsv_optionflag_t options)
 {
   CNAME_FIND(alias1);
   CNAME_FIND(alias2);
@@ -2348,7 +2515,11 @@ affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& 
 /// @param     alias3    third alias to try
 /// @return
 int
-affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& alias2,const std::string& alias3)
+affx::TsvFile::cname2cidx(int clvl,
+                          const std::string& alias1,
+                          const std::string& alias2,
+                          const std::string& alias3,
+                          tsv_optionflag_t options)
 {
   CNAME_FIND(alias1);
   CNAME_FIND(alias2);
@@ -2363,7 +2534,12 @@ affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& 
 /// @param     alias4    fourth alias to try
 /// @return
 int
-affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& alias2,const std::string& alias3,const std::string& alias4)
+affx::TsvFile::cname2cidx(int clvl,
+                          const std::string& alias1,
+                          const std::string& alias2,
+                          const std::string& alias3,
+                          const std::string& alias4,
+                          tsv_optionflag_t options)
 {
   CNAME_FIND(alias1);
   CNAME_FIND(alias2);
@@ -2371,7 +2547,6 @@ affx::TsvFile::cname2cidx(int clvl,const std::string& alias1,const std::string& 
   CNAME_FIND(alias4);
   return TSV_ERR_NOTFOUND;
 }
-
 
 /// @brief     Covert a column index to a column index
 /// @param     clvl      level
@@ -2464,22 +2639,45 @@ affx::TsvFile::open(const std::string& fname)
   int rv;
 
   close();
-
+  
   // remeber the name
   m_fileName=fname;
   //
   if (m_fileName.empty()) {
-    TSV_ERR_ABORT("Cant open an empty filename. (filename='"+fname+"')");
+    TSV_ERR_ABORT("Cant open an empty filename. (filename='"+m_fileName+"')");
   }
 
+  // should we check to see if this file is wacked out?
+  if (m_optCheckFormatOnOpen) {
+    if (Fs::isCalvinFile(m_fileName)) {
+      TSV_ERR_ABORT("This file is a Calvin file. (filename='"+m_fileName+"')");
+      return TSV_ERR_CALVIN;
+    }
+    if (Fs::isHdf5File(m_fileName)) {
+      TSV_ERR_ABORT("This file is an HDF5 file. (filename='"+m_fileName+"')");
+      return TSV_ERR_HDF5;
+    }
+    // test for binary last, as it is a general test.
+    // Failing for this text file, commented out for Windows.
+    // 
+    //26357	15-Dec-2010 19:09:40	FATAL ERROR:TsvFile.cpp:2664: This file appears to be binary. (filename='../../regression-data/data/idata/translation/regression-data/20080109_31set_DMET3_cn_16various.txt')
+#ifndef _WIN32    
+    if (Fs::isBinaryFile(m_fileName)) {
+      TSV_ERR_ABORT("This file appears to be binary. (filename='"+m_fileName+"')");
+      return TSV_ERR_BINARY;
+    }
+#endif
+    
+  }
+  
   // clear before opening -- errors are sticky.
   m_fileStream.clear();
   // hello?!?
-  m_fileStream.open(Util::convertPathName(m_fileName).c_str(),std::fstream::in|std::fstream::binary);
+  Fs::aptOpen(m_fileStream,fname,std::fstream::in|std::fstream::binary);
   // Check an error opening the file.
   if(!m_fileStream.is_open() || !m_fileStream.good()) {
     if (m_optAbortOnError) {
-      TSV_ERR_ABORT("open: Could not open file: '" + Util::convertPathName(m_fileName) + "' to read.");
+      TSV_ERR_ABORT("open: Could not open file: '" + fname + "' to read.");
     }
     else {
       return (TSV_ERR_FILEIO);
@@ -2503,6 +2701,10 @@ affx::TsvFile::open(const std::string& fname)
     return (TSV_ERR_FILEIO);
   }
 
+  if ( m_rawOpen ) {
+    return TSV_OK;
+  }
+  
   // parse the headers
   f_read_headers();
 
@@ -2721,7 +2923,6 @@ affx::TsvFile::f_read_column(TsvFileField* col)
   //char* buf_ptr;
   //int   buf_len;
   int   bi;
-  bool  finished;
   char  in_quotes;
 
   //
@@ -2742,8 +2943,6 @@ affx::TsvFile::f_read_column(TsvFileField* col)
   // Mark it as not being null.
   col->m_isnull=false;
 
-  // set when the field is finished being read.
-  finished=false;
   in_quotes=0;
 
   // The common case is the field is the same size as last time.
@@ -2886,7 +3085,7 @@ void
 affx::TsvFile::linkvars_free()
 {
   linkvars_clear();
-  for (int i=0;i<m_linkvars_vec.size();i++) {
+  for (size_t i=0;i<m_linkvars_vec.size();i++) {
     delete m_linkvars_vec[i];
     m_linkvars_vec[i]=NULL;
   }
@@ -3373,6 +3572,12 @@ affx::TsvFile::get(int clvl,int cidx,std::string& val)
   TSV_GET_VALUE_CIDX();
 }
 
+int
+affx::TsvFile::get(int clvl,int cidx,short& val)
+{
+  TSV_GET_VALUE_CIDX();
+}
+
 /// @brief     Get the integer value of a field
 /// @param     clvl      The column level level of field
 /// @param     cidx      The column index (0-based) of the field
@@ -3442,6 +3647,12 @@ affx::TsvFile::get(int clvl,int cidx,uint64_t& val)
 /// @return    a tsv_return_t code
 int
 affx::TsvFile::get(int clvl,const std::string& cname,std::string& val)
+{
+  TSV_GET_VALUE_CNAME();
+}
+
+int
+affx::TsvFile::get(int clvl,const std::string& cname,short& val)
 {
   TSV_GET_VALUE_CNAME();
 }
@@ -3903,7 +4114,7 @@ void affx::TsvFile::currentLineAsString(std::string& line)
     line.append("\t");
   }
   //
-  for (int c_idx=0;c_idx<m_column_map[m_lineLvl].size();c_idx++) {
+  for (size_t c_idx=0;c_idx<m_column_map[m_lineLvl].size();c_idx++) {
     if (c_idx!=0) {
       line.append("\t");
     }
@@ -4334,7 +4545,8 @@ affx::TsvFile::writeOpen(const std::string& filename)
   m_fileStream.clear();
   // start
   m_fileName=filename;
-  m_fileStream.open(m_fileName.c_str(),std::ios::out|std::ios::binary);
+
+  Fs::aptOpen(m_fileStream, filename,std::ios::out|std::ios::binary);
   // throw if something really bad happens.
   m_fileStream.exceptions(ios_base::badbit|ios_base::failbit);
   //
@@ -4663,4 +4875,117 @@ affx::tsv_type_t TsvFile::stringToColType(const std::string& str)
   }
   // it is an error if we couldnt convert the string.
   return TSV_TYPE_ERR;
+}
+
+
+/// @brief     Count the number of total lines, assuming a text file. 
+/// @param     filename     name of file to open
+/// @return    Line count. TSV_ERR_FILEIO, TSV_ERR_NOTFOUND on error.
+
+int TsvFile::getLineCountInFile(const std::string& filename, bool abortOnError)
+{
+
+  if ( filename.empty() || !Fs::fileExists(filename) ) {
+    if (abortOnError) {
+      TSV_ERR_ABORT("affx::TsvFile::getLineCountInFile: file not found: '" + filename + "'.");
+    }
+    else {
+      return 0;
+    }
+  }
+
+  std::ifstream fstream;
+  Fs::aptOpen(fstream, filename, std::ios_base::binary);
+  
+  // Check an error opening the file.
+  if(!fstream.is_open() || !fstream.good()) {
+    if (abortOnError) {
+      TSV_ERR_ABORT("affx::TsvFile::getLineCountInFile: Could not open file: '" + filename + "' to read.");
+    }
+    else {
+      return 0;
+    }
+  }
+  
+  int count = TSV_ERR_FILEIO;
+
+  try {
+    count = std::count(std::istreambuf_iterator<char>(fstream), std::istreambuf_iterator<char>(), '\n');
+    fstream.seekg(-1, std::ios_base::end);
+    char last = NULL;
+    fstream.get(last);
+    if ( last != '\n' ) {
+      count++;
+    }
+  }
+  catch (exception e) {
+    if ( abortOnError) {
+      TSV_ERR_ABORT(std::string("affx::TsvFile::getLineCountInFile: read error '")+strerror(errno)+"'.");
+    }
+    else {
+      fstream.close();
+      return 0;
+    }
+  }
+  fstream.close();
+  return count;
+  
+}
+
+/// @brief     Replace a character in a file with another. 
+/// @param     filename name of file for replacement
+/// @param     a source character
+/// @param     b replacement character
+/// @return    TSV_OK or (TSV_ERR_FILEIO, TSV_ERR_NOTFOUND) on error.
+int TsvFile::replaceCharInFile(const std::string& filename, char a, char b, bool abortOnError )
+{
+
+  tsv_return_t rv = TSV_OK;
+
+  if ( filename.empty() || !Fs::fileExists(filename) ) {
+    if (abortOnError) {
+      TSV_ERR_ABORT("affx::TsvFile::replace: file not found: '" + filename + "'.");
+    }
+    else {
+      return TSV_ERR_NOTFOUND;
+    }
+  }
+
+
+  std::string tmp_name = filename + "~";
+  
+  // Aborts if permission denied
+  if ( Fs::touch(tmp_name, abortOnError)  != APT_OK ) {
+    return TSV_ERR_FILEIO;
+  }
+
+  try {
+    std::ifstream in_file(filename.c_str());
+    std::ofstream out_file(tmp_name.c_str());
+    std::istreambuf_iterator<char> in(in_file);
+    std::istreambuf_iterator<char> eos;
+    std::ostreambuf_iterator<char> out(out_file);
+    std::replace_copy(in, eos, out, a, b);
+  }
+  catch (exception e) {
+    if ( abortOnError) {
+      TSV_ERR_ABORT(std::string("affx::TsvFile::replace: error '")+strerror(errno)+"'.");
+    }
+    else {
+      rv = TSV_ERR_FILEIO;
+    }
+  }
+    
+  if ( Fs::rm(filename, false) == APT_OK ) {
+    if ( !Fs::fileRename(tmp_name, filename, false )) {
+      rv = TSV_ERR_FILEIO;
+    }
+  }
+  else{
+    Fs::rm(tmp_name, false);
+    rv = TSV_ERR_FILEIO;
+  }
+  
+  return rv;
+  
 }

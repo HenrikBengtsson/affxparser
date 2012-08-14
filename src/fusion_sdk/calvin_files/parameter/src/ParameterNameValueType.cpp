@@ -234,7 +234,7 @@ float ParameterNameValueType::GetValueFloat() const
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::ParameterMismatchException e;
+		affymetrix_calvin_exceptions::ParameterMismatchException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -266,7 +266,7 @@ std::wstring ParameterNameValueType::GetValueText() const
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::ParameterMismatchException e;
+		affymetrix_calvin_exceptions::ParameterMismatchException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -309,7 +309,7 @@ std::string ParameterNameValueType::GetValueAscii() const
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::ParameterMismatchException e;
+		affymetrix_calvin_exceptions::ParameterMismatchException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -349,7 +349,7 @@ u_int32_t ParameterNameValueType::ValueToInt(const wchar_t* mimeType) const
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::ParameterMismatchException e;
+		affymetrix_calvin_exceptions::ParameterMismatchException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -632,7 +632,7 @@ float ParameterNameValueDefaultRequiredType::GetDefaultValueFloat() const
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::ParameterMismatchException e;
+		affymetrix_calvin_exceptions::ParameterMismatchException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -665,7 +665,7 @@ std::wstring ParameterNameValueDefaultRequiredType::GetDefaultValueText() const
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::ParameterMismatchException e;
+		affymetrix_calvin_exceptions::ParameterMismatchException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -707,7 +707,7 @@ std::string ParameterNameValueDefaultRequiredType::GetDefaultValueAscii() const
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::ParameterMismatchException e;
+		affymetrix_calvin_exceptions::ParameterMismatchException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }
@@ -746,7 +746,7 @@ u_int32_t ParameterNameValueDefaultRequiredType::DefaultValueToInt(const wchar_t
 	}
 	else
 	{
-		affymetrix_calvin_exceptions::ParameterMismatchException e;
+		affymetrix_calvin_exceptions::ParameterMismatchException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 }

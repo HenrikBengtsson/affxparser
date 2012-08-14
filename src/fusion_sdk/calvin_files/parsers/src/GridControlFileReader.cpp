@@ -59,7 +59,7 @@ void GridControlFileReader::Read(const std::string &fileName, GridControlData& d
 	// Check the file identifier
 	if (gdata.FileIdentifier() != GRD_FILE_TYPE_IDENTIFIER)
 	{
-		affymetrix_calvin_exceptions::InvalidFileTypeException e;
+		affymetrix_calvin_exceptions::InvalidFileTypeException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -81,7 +81,7 @@ void GridControlFileReader::Read(const std::string &fileName, GridControlData& d
 	dataSet = gdata.DataSet(GRD_FILE_COORDINATE_GROUP_NAME, GRD_FILE_B1_SET_NAME);
 	if (dataSet->Open() == false)
 	{
-		affymetrix_calvin_exceptions::DataSetNotOpenException e;
+		affymetrix_calvin_exceptions::DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 	nRows = dataSet->Rows();
@@ -101,7 +101,7 @@ void GridControlFileReader::Read(const std::string &fileName, GridControlData& d
 	dataSet = gdata.DataSet(GRD_FILE_COORDINATE_GROUP_NAME, GRD_FILE_B2_SET_NAME);
 	if (dataSet->Open() == false)
 	{
-		affymetrix_calvin_exceptions::DataSetNotOpenException e;
+		affymetrix_calvin_exceptions::DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 	nRows = dataSet->Rows();
@@ -121,7 +121,7 @@ void GridControlFileReader::Read(const std::string &fileName, GridControlData& d
 	dataSet = gdata.DataSet(GRD_FILE_COORDINATE_GROUP_NAME, GRD_FILE_NS_SET_NAME);
 	if (dataSet->Open() == false)
 	{
-		affymetrix_calvin_exceptions::DataSetNotOpenException e;
+		affymetrix_calvin_exceptions::DataSetNotOpenException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 	nRows = dataSet->Rows();

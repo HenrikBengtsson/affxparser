@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -32,7 +30,7 @@
 //
 
 /**
- * @brief  A class for managing large byte arrays. Used in association with the AffxFile class. 
+ * @brief  A class for managing large byte arrays. 
  * 
  */
 class AffxByteArray
@@ -107,13 +105,13 @@ public:
 	bool getLine(AffxByteArray& ba);
 	int getColumnCount();
 	AffxByteArray& getColumn(int iColumnNumber, AffxByteArray& ba);
-	int parseInt();
-	char parseChar();
-	bool parsebool();
-	double parseDouble();
+	int parseInt() const;
+	char parseChar() const;
+	bool parsebool() const;
+	double parseDouble() const;
 	AffxByteArray& trim();
 	AffxByteArray& trimTabs();
-	AffxString toString();
+	AffxString toString() const; 
 	bool startsWith(const AffxString& strCompare);
 	AffxString substring(int iIndex, int iEndIndex = -1);
 	AffxByteArray& toLowerCase();
@@ -121,10 +119,10 @@ public:
 	void trimInternal();
 	AffxString firstWord(int iOffset = 0);
 	AffxByteArray reverseComplement();
-	bool equals(const AffxString &str);
+	bool equals(const AffxString &str) const;
 	bool equalsIgnoreCase(const AffxString &str);
 	int length() const {return getSize();}
-	int getLength() {return getSize();}
+	int getLength() const {return getSize();}
 	bool nextLine(AffxByteArray& ba);
 	int getWordCount();
 	AffxString getWord(int iWordIndex);
@@ -141,15 +139,16 @@ public:
 	bool isValid() {return isValid(false);}
 	bool isValid(bool bParameterFile);
 	AffxByteArray nextColumn(AffxByteArray& ba);
-	int compareTo(AffxString that);
-	int compareTo(AffxByteArray that);
-	int compareTo(AffxByteArray obj, int iCompareCode);
+	int compareTo(const AffxString &that) const ;
+	int compareTo(const AffxByteArray &that) const;
+	int compareTo(const AffxByteArray &obj, int iCompareCode) const;
 	
 	int getMaxRun(char byBase);
 	int getCountInWindow(char byBase, int iWindowSize);
 	int getCount(char byBase);
 	AffxByteArray nextField(AffxByteArray& ba);
 
+        bool readFile(const AffxString& strFileName);
 
 // Implementation
 protected:

@@ -60,7 +60,7 @@ DataSetReader DataGroupReader::GetDataSetReader(int32_t index)
 {
 	if (index < 0 || index > dataGroupHdr.GetDataSetCnt())
 	{
-		DataSetNotFoundException e;
+          DataSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 
@@ -77,7 +77,7 @@ DataSetReader DataGroupReader::GetDataSetReader(const std::wstring& name)
 	DataSetHeader* dph = dataGroupHdr.FindDataSetHeader(name);
 	if (dph == 0)
 	{
-		DataSetNotFoundException e;
+		DataSetNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 

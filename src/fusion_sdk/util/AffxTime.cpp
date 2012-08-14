@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -25,9 +23,13 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <stdio.h>
 #include <string>
-//
 
+#ifdef _MSC_VER
+// dont warn about some funcs...
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #define MIN_DATE                (-657434L)  // about year 100
 #define MAX_DATE                2958465L    // about year 9999
@@ -38,6 +40,9 @@
 // One-based array of days in year at month start
 static int rgMonthDays[13] =
 	{0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
+
+long AffxTime::m_lStartTime = 0;
+long AffxTime::m_lStopTime = 0;
 
 AffxTime::AffxTime()
 	{empty();}
@@ -225,6 +230,68 @@ AffxTime AffxTime::getCurrentTime()
 	return time;
 }
 
+// return runtime string -- timeElapsed = clock() - lStart
+AffxString AffxTime::getRuntime(AffxString strAction, double timeElapsed)
+{
+	double milliElapsed = timeElapsed / CLOCKS_PER_SEC * 1000;
+	double MILLISECONDS_PER_HOUR   = 60 * 60 * 1000;
+	double MILLISECONDS_PER_MINUTE = 60 * 1000;
+	double MILLISECONDS_PER_SECOND = 1000;
+
+	AffxString strTime;
+	if (timeElapsed > MILLISECONDS_PER_HOUR)
+	{
+		strTime.sprintf("%.1lf hours", milliElapsed / MILLISECONDS_PER_HOUR);
+	}
+	else if (timeElapsed > MILLISECONDS_PER_MINUTE)
+	{
+		strTime.sprintf("%.1lf minutes", milliElapsed / MILLISECONDS_PER_MINUTE);
+	}
+	else
+	{
+		strTime.sprintf("%.1lf seconds", milliElapsed / MILLISECONDS_PER_SECOND);
+	}
+
+	return (strAction + " = " + strTime);
+}
+
+void AffxTime::startTime()
+{
+#ifdef WIN32
+    m_lStartTime = clock();
+#else
+    m_lStartTime = time(NULL);
+#endif
+}
+
+AffxString AffxTime::getRuntime(AffxString strAction)
+{
+#ifdef WIN32
+    m_lStopTime = clock();
+    return AffxTime::getRuntime(strAction, m_lStopTime - m_lStartTime);
+#else
+    m_lStopTime = time(NULL);
+    double timeElapsed = m_lStopTime - m_lStartTime;
+	double SECONDS_PER_HOUR   = 60 * 60;
+	double SECONDS_PER_MINUTE = 60;
+
+	AffxString strTime;
+	if (timeElapsed > SECONDS_PER_HOUR)
+	{
+		strTime.sprintf("%.1lf hours", timeElapsed / SECONDS_PER_HOUR);
+	}
+	else if (timeElapsed > SECONDS_PER_MINUTE)
+	{
+		strTime.sprintf("%.1lf minutes", timeElapsed / SECONDS_PER_MINUTE);
+	}
+	else
+	{
+		strTime.sprintf("%.1lf seconds", timeElapsed);
+	}
+
+	return (strAction + " = " + strTime);
+#endif
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // AffxTimeSpan - relative time

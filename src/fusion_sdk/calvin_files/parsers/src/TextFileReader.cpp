@@ -20,6 +20,8 @@
 //
 #include "calvin_files/parsers/src/TextFileReader.h"
 //
+#include "util/Fs.h"
+//
 #include <cstring>
 #include <string.h>
 #include <string>
@@ -48,10 +50,10 @@ void TextFileReader::ReadFile(const std::string &fileName, std::map<std::string,
 {
 	textData.clear();
 	std::ifstream fileStream;
-	fileStream.open(fileName.c_str(), std::ios::in);
+        Fs::aptOpen(fileStream, fileName);
 	if (!fileStream)
 	{
-		affymetrix_calvin_exceptions::FileNotFoundException e;
+		affymetrix_calvin_exceptions::FileNotFoundException e(L"Calvin",L"Default Description, Please Update!",affymetrix_calvin_utilities::DateTime::GetCurrentDateTime().ToString(),std::string(__FILE__),(u_int16_t)__LINE__,0);
 		throw e;
 	}
 	ReadFileBody(fileStream, textData);

@@ -75,10 +75,7 @@ protected:
 	 *	@param len_ Number of elements of type in the column.
 	 *	@param overhead_ Number of extra bytes in the column
 	 */
-	ColumnInfo(const std::wstring& name_, DataSetColumnTypes type_, int32_t size_, int32_t len_, int32_t overhead_)
-		: name(name_), type(type_), size(size_), len(len_), overhead(overhead_)
-	{
-	}
+	ColumnInfo(const std::wstring& name_, DataSetColumnTypes type_, int32_t size_, int32_t len_, int32_t overhead_);
 
 public:
 
@@ -87,24 +84,7 @@ public:
 	 *	@param type_ Type of data in the column.
 	 *	@param totalSize Total size of the colum in bytes.
 	 */
-	ColumnInfo(const std::wstring& name_, DataSetColumnTypes type_, int32_t totalSize)
-		: name(name_), type(type_), size(totalSize), len(1), overhead(0)
-	{
-		if (type == ASCIICharColType || type == UnicodeCharColType)
-		{
-			overhead = 4;
-			if (type == UnicodeCharColType)
-			{
-				size = sizeof(int16_t);
-				len = (totalSize-overhead)/sizeof(int16_t);
-			}
-			else if (type == ASCIICharColType)
-			{
-				size = sizeof(int8_t);
-				len = (totalSize-overhead)/sizeof(int8_t);
-			}
-		}
-	}
+	ColumnInfo(const std::wstring& name_, DataSetColumnTypes type_, int32_t totalSize);
 
 	/*! Equiality operator
 	 *	@param p object to compare against

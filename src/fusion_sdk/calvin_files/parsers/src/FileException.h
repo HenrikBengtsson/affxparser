@@ -32,22 +32,52 @@ namespace affymetrix_calvin_exceptions
 
 class FileNotFoundException : public CalvinException
 {
+public:
+  FileNotFoundException() : CalvinException() {}
+  FileNotFoundException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+    
+  const std::wstring ToString();
 };
 
 class InvalidVersionException : public CalvinException
 {
+public:
+  InvalidVersionException() : CalvinException() {}
+  InvalidVersionException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+    
+  const std::wstring ToString();
 };
 
 class InvalidFileTypeException : public CalvinException
 {
+public:
+  InvalidFileTypeException() : CalvinException() {}
+  InvalidFileTypeException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+    
+  const std::wstring ToString();
 };
 
 class UnableToOpenFileException : public CalvinException
 {
+public:
+  UnableToOpenFileException() : CalvinException() {}
+  UnableToOpenFileException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+    
+  const std::wstring ToString();
 };
 
 class FileNotOpenException : public CalvinException
 {
+public:
+  FileNotOpenException() : CalvinException() {}
+  FileNotOpenException(std::wstring _Source, std::wstring _Description, std::wstring _TimeStamp, std::string _FileName, u_int16_t _LineNumber, u_int64_t _ErrorCode):
+    CalvinException(_Source, _Description, _TimeStamp, _FileName,  _LineNumber, _ErrorCode) {}
+    
+  const std::wstring ToString();
 };
 
 }

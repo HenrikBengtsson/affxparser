@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -43,6 +41,7 @@
 #include <cstring>
 #include <sstream>
 #include <string>
+#include <limits>
 //
 
 using namespace std;
@@ -75,18 +74,36 @@ std::string Convert::toString(double d) {
 
   // we prefer the linux format (inf/nan) to that of the windows output.
   // convert the strings to our perfered format.
+  if (str == "-Inf") {
+    str = "-inf";
+  }
+  else if (str == "Inf") {
+    str = "inf";
+  }
 #ifdef WIN32
-  if (str == "-1.#INF") {
-    str="-inf";
-  } 
-  else if (str == "1.#INF") {
-    str="inf";
-  }
-  else if (str == "-1.#IND") {
-    str="nan";
-  }
-  else if (str == "1.#IND") {
-    str="nan";
+  else if (str.size() >= 5) {
+    if (str == "-1.#INF") {
+      str="-inf";
+    } 
+    else if (str == "1.#INF") {
+      str="inf";
+    }
+    else if (str == "-1.#IND") {
+      str="nan";
+    }
+    else if (str == "1.#IND") {
+      str="nan";
+    }
+    // For Windows, check to see if a three digit exponent with a leading zero
+    // is being used for double representation.  if so, remove the extra zero
+    // (2 exponent digits conforms to 1999 C standard) 
+    // e.g. 1.234e003 and 1.234e-003 become 1.234e03 and 1.234e-03
+    else if (str.at(str.size() - 3) == '0' &&
+             (str.at(str.size() - 4) == 'e' || 
+              str.at(str.size() - 5) == 'e')
+             ) {
+      str.erase(str.size() - 3, 1);
+    }
   }
 #endif
   return str;
@@ -252,8 +269,9 @@ float Convert::toFloat(const std::string& num) {
  */
 float Convert::toFloatCheck(const std::string& num, bool *success) {
   double d = toDoubleCheck(num, success);
-  if(d >= FLT_MAX && d < DBL_MAX)
+  if(d > FLT_MAX && d < DBL_MAX) {
     (*success) = false;
+  }
   return float(d);
 }
 
@@ -281,25 +299,53 @@ double Convert::toDouble(const std::string& num){
  * @return - Double representation of num
  */
 double Convert::toDoubleCheck(const std::string& num, bool *success){
+  const char* num_c_str=num.c_str();
+  assert(num_c_str);
+
   double d = 0;
+
+  if (num == "NaN") {
+      d = numeric_limits<double>::quiet_NaN();
+      *success = true;
+      return d;
+  }
+
   char *end = NULL;
   bool ok = true;
-  const char* num_c_str=num.c_str();
-
-  assert(num_c_str);
   errno = 0;
   d = strtod(num_c_str, &end);
 
   // end will point at NULL if conversion successful
   ok = (*end != '\0' || end == num_c_str) ? false : true;
 
-  // errno should be set if over/under flow.
-  if(errno != 0)
-    ok = false;
-  
-  if(!ok)
-    d = 0.0;
+  /* errno should be set if over/under flow. ERANGE is a special case
+     though of number not being represetable. For ERANGE just let things
+     be with a warning...
 
+     from https://www.securecoding.cert.org:
+     "For numeric conversion functions in the strtod(), strtol(),
+     wcstod(), and wcstol() families, if the correct result is outside
+     the range of representable values, an appropriate minimum or
+     maximum value is returned, and the value ERANGE is stored in
+     errno.  For floating-point conversion functions in the strtod()
+     and wcstod() families, if an underflow occurs, whether errno
+     acquires the value ERANGE is implementation-defined."
+  */
+
+  if (errno != 0 && errno != ERANGE) {
+    ok = false;
+  }
+
+  if (errno == ERANGE) {
+    Verbose::out(3, "Warning - number: " + num + " is out of range (ERANGE set)");
+    errno = 0;
+  }
+  /* If not ok set to NAN to be non-usable. */
+  if (!ok) {
+    d = 0.0;
+    // @todo - check that NAN won't break everything...
+    // d = NAN;
+  }
   if(success != NULL)
     (*success) = ok;
 
@@ -386,7 +432,53 @@ Convert::strToIntVec(const std::string& s,const char delim,std::vector<int>& vec
   Util::chopString(s,delim, words);
   vec.clear();
   vec.resize(words.size());
-  for(int i = 0; i < words.size(); i++) {
+  for(size_t i = 0; i < words.size(); i++) {
     vec[i] = Convert::toInt(words[i]);
+  }
+}
+
+/**
+ * Convert an integer vector to string
+ */
+std::string Convert::intVecToString(const std::vector<int> &inputVector, const std::string &delim)
+{
+    if (inputVector.empty()) {
+        return "";
+    }
+
+    std::string str;
+    for (std::vector<int>::const_iterator it = inputVector.begin(); it != inputVector.end(); ++it)
+    {
+        str += delim + toString(*it);
+    }
+    return str.substr(delim.size());
+}
+
+/**
+ * Convert a string vector to string. Silly but someone's got to do it.
+ */
+std::string Convert::strVecToString(const std::vector<std::string> &inputVector, const std::string &delim)
+{
+    if (inputVector.empty()) {
+        return "";
+    }
+
+    std::string str;
+    for (std::vector<std::string>::const_iterator it = inputVector.begin(); it != inputVector.end(); ++it)
+    {
+        str += delim + *it;
+    }
+    return str.substr(delim.size());
+}
+
+void
+Convert::strToStrVec(const std::string& s, const char delim, std::vector<std::string>& vec)
+{
+  std::vector<string> words;
+  Util::chopString(s,delim, words);
+  vec.clear();
+  vec.resize(words.size());
+  for(size_t i = 0; i < words.size(); i++) {
+    vec[i] = words[i];
   }
 }

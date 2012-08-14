@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -33,12 +31,14 @@
 
 //
 #include "util/ProgressHandler.h"
+#include "util/Convert.h"
 //
 #include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <time.h>
 //
 
 /**
@@ -58,6 +58,7 @@ public:
    * @return 
    */
   ProgressDot(int verbosity, std::ostream *out) {
+    m_Total=0;
     m_Verbosity = verbosity;
     m_Out = out;
   }
@@ -78,6 +79,7 @@ public:
     m_Total = total;
     // flush any C io before doing our IO
     fflush(NULL); 
+    m_StartTime = time(NULL);
     if(verbosity <= m_Verbosity && m_Out != NULL) {
       (*m_Out) << msg;
       m_Out->flush();
@@ -106,8 +108,10 @@ public:
    * @param msg - Closing message from calling function.
    */
   void progressEnd(int verbosity, const std::string &msg) {
+    time_t endTime = time(NULL);
+    int t = int(  (float)(endTime - m_StartTime) / 60.0 * 100); // convert to minutes
     if(verbosity <= m_Verbosity && m_Out != NULL) {
-      (*m_Out) << msg << std::endl;
+      (*m_Out) << msg << " (" << ToStr((float)t/100) << " min)" << std::endl;
       m_Out->flush();
     }
   }
@@ -115,6 +119,7 @@ public:
 private:
   std::ostream *m_Out; ///< Stream to print messages to. Can be NULL to indicate no printing.
   int m_Total;         ///< How many steps total are we expecting?
+  time_t m_StartTime;
 };
 
 #endif /* PROGRESSDOT_H */

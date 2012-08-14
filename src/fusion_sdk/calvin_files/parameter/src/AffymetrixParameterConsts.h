@@ -190,6 +190,12 @@ namespace affymetrix_calvin_parameter
 /*! Defines the static attribute prefix (as a wstring) for algorithm parameter names */
 #define ALGORITHM_PARAM_NAME_PREFIX_S std::wstring(ALGORITHM_PARAM_NAME_PREFIX)
 
+/*! Defines the static attribute prefix for the application meta data. */
+#define APPLICATION_META_INFO_PREFIX L"affymetrix-application-meta-data-info-"
+
+/*! Defines the static attribute prefix (as a wstring) for the application meta data. */
+#define APPLICATION_META_INFO_PREFIX_S std::wstring(APPLICATION_META_INFO_PREFIX)
+
 /*! Defines the static attribute name for the DATHeader */
 #define DAT_HEADER_PARAM_NAME L"affymetrix-dat-header"
 

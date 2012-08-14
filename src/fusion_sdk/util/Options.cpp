@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -37,13 +35,13 @@ Options::Options() {
 Options::~Options() { }
 
 void Options::getOptionNames(std::vector<std::string> &names, int oI){ 
-    for(int i=0; i < m_Options[oI].m_option_vec.size(); i++) {
+    for(size_t i=0; i < m_Options[oI].m_option_vec.size(); i++) {
         names.push_back(m_Options[oI].m_option_vec[i]->m_longName);
     }
 }
 
 void Options::getOptionTypes(std::vector<PgOpt::PgOptType> &types, int oI) {
-    for(int i=0; i < m_Options[oI].m_option_vec.size(); i++) {
+    for(size_t i=0; i < m_Options[oI].m_option_vec.size(); i++) {
         types.push_back(m_Options[oI].m_option_vec[i]->m_type);
     }
 }
@@ -103,7 +101,7 @@ void Options::setOpt(const std::string & name, std::vector< std::vector<std::str
   ///@todo should roll into PgOptions support for this rather than using a stand alone hack
   if (!isOptDefined(name)) {Err::errAbort("Option " + name + " cannot be found in the options for this engine.");}
   m_Options[0].mustFindOpt(name)->setValue(ToStr(values.size()));
-  for ( int i =0; i < values.size(); i++ ) {
+  for (size_t i =0; i < values.size(); i++ ) {
     pushOpt(name, values[i]);
   }
 }
@@ -147,14 +145,9 @@ int Options::parseArgv( const char * const * const argv, int start ) {
   return m_Options[0].parseArgv( argv, start );
 }
 
-/**
- * Get the value of an option
- *
- * @param name - the name of the option
- */
-std::string Options::getOpt(const std::string& name, int oI) {
+PgOpt* Options::getPgOpt(const std::string& name, int oI) {
   if (!isOptDefined(name, oI)) {Err::errAbort("Option " + name + " cannot be found in the options for this engine.");}
-  return m_Options[oI].get( name );
+  return m_Options[oI].mustFindOpt(name);
 }
 
 /**
@@ -219,15 +212,15 @@ std::string Options::getProgName(int oI) {
 void Options::printOptions(const std::string &prefix, int oI) {
   // Spit out to the log the options
   ///@todo kind of ugly how we are abusing PgOptions
-  for(int i=0; i<m_Options[oI].m_option_vec.size(); i++) {
+  for(size_t i=0; i<m_Options[oI].m_option_vec.size(); i++) {
     std::string name = m_Options[oI].m_option_vec[i]->m_longName;
     std::string vals;
     if(m_Options[oI].m_option_vec[i]->m_values.size() > 0) {
       vals =  "'" + m_Options[oI].m_option_vec[i]->m_values[0] + "'";
-      for(int j=1; j< m_Options[oI].m_option_vec[i]->m_values.size(); j++)
+      for(size_t j=1; j< m_Options[oI].m_option_vec[i]->m_values.size(); j++)
         vals += ", '" + m_Options[oI].m_option_vec[i]->m_values[j] + "'";
     }
     else {vals = "'" + m_Options[oI].m_option_vec[i]->getValue() + "'";}
-    Verbose::out(2,prefix + "Option '" + name + "' = " + vals);
+    Verbose::out(2, prefix + "Option '" + name + "' = " + vals);
   }
 }

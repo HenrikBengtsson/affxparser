@@ -2,20 +2,18 @@
 //
 // Copyright (C) 2005 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
@@ -26,20 +24,19 @@
  * 
  * @brief base class for tracking class options
  */
+
 #ifndef _OPTIONS_H_
 #define _OPTIONS_H_
 
 //
+#include "portability/apt-win-dll.h"
 #include "util/Options.h"
 #include "util/PgOptions.h"
 #include "util/Util.h"
 //
-#include "apt/apt.h"
-//
 #include <cstring>
 #include <string>
 #include <vector>
-//
 
 /**
  * @brief base class for tracking class options
@@ -69,7 +66,7 @@ public:
    */
   std::string getProgName(int oI = 0);
 
-  int getArgCount(int oI = 0) {
+ int getArgCount(int oI = 0) {
       return m_Options[oI].getArgCount();
   }
   std::string getArg(int index, int oI = 0){
@@ -171,11 +168,22 @@ public:
   virtual int parseArgv( const char * const * const argv, int start = 1 );
 
   /**
+   * Get the underlying PgOpt containing information
+   *
+   * @param name - the name of the option
+   */
+  PgOpt* getPgOpt(const std::string& name, int oI = 0);
+  
+  /**
    * Get the value of an option
    *
    * @param name - the name of the option
    */
-  std::string getOpt(const std::string& name, int oI = 0);
+  std::string getOpt(const std::string& name, int oI = 0)
+  {
+    if (!isOptDefined(name, oI)) {Err::errAbort("Option " + name + " cannot be found in the options for this engine.");}
+    return m_Options[oI].get( name );
+  }
   
   /**
    * Get the boolean value of an option
@@ -211,7 +219,7 @@ public:
   std::string getXMLParameterFileGuid(int oI = 0);
 
   void setOptions(PgOptions &opts) {
-      for(int i=0; i<opts.m_option_vec.size(); i++)
+      for(unsigned int i=0; i<opts.m_option_vec.size(); i++)
           if(opts.m_option_vec[i]->isSet())
                 m_Options[0].mustFindOpt(opts.m_option_vec[i]->m_longName)->m_values = opts.m_option_vec[i]->m_values;
   }
@@ -222,7 +230,7 @@ public:
   }
 
   int snapshotOptions(const std::string &label){
-      int index = m_Options.size();
+      int index = int(m_Options.size());
       m_Options.push_back(m_Options[0]);
       if(label != "")
         m_Labels[label] = index;

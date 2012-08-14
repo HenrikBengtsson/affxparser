@@ -20,7 +20,7 @@
 // 
 // affy/sdk/file/TsvFile/TsvFileDiff.cpp ---
 // 
-// $Id: TsvFileDiff.cpp,v 1.3 2009/09/18 03:37:25 mspald Exp $
+// $Id: TsvFileDiff.cpp,v 1.3 2009-09-18 03:37:25 mspald Exp $
 // 
 
 //

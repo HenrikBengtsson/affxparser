@@ -387,22 +387,52 @@ void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target
 void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target, const MarkerABSignals &entry)
 {
 	if (dataBufferSz[dataType] == 0)
-		dataBufferSz[dataType] = sizeof(entry.index) + sizeof(entry.aSignal) + sizeof(entry.bSignal) + sizeof(entry.scar);
+		dataBufferSz[dataType] = sizeof(entry.index) + GetMetricBufferSize(entry.metrics);
 	char *buffer = new char[dataBufferSz[dataType]];
 	memset(buffer, 0, dataBufferSz[dataType]);
 	char *pbuffer = buffer;
 
 	MmSetUInt32_N((uint32_t *)pbuffer, entry.index);
 	pbuffer += sizeof(int);
+	CopyMetricToBuffer(entry.metrics, pbuffer);
 
+	dataBuffers[dataType][target].push_back(buffer);
+	m_BufferSize += dataBufferSz[dataType];
+
+	if (m_BufferSize > m_MaxBufferSize)
+	{
+		FlushBuffer();
+	}
+}
+
+void CHPMultiDataFileBufferWriter::WriteEntry(MultiDataType dataType, int target, const CytoGenotypeCallData &entry)
+{
+	if (dataBufferSz[dataType] == 0)
+		dataBufferSz[dataType] = sizeof(entry.index) + sizeof(entry.call) + sizeof(entry.confidence) + sizeof(entry.forcedCall)
+		+ sizeof(entry.aSignal) + sizeof(entry.bSignal) + sizeof (entry.signalStrength) + sizeof(entry.contrast) +		
+		GetMetricBufferSize(entry.metrics);
+
+	char *buffer = new char[dataBufferSz[dataType]];
+	memset(buffer, 0, dataBufferSz[dataType]);
+	char *pbuffer = buffer;
+
+	MmSetUInt32_N((uint32_t *)pbuffer, entry.index);
+	pbuffer += sizeof(entry.index);   
+	MmSetUInt8((uint8_t *)pbuffer, entry.call);
+	pbuffer += sizeof(entry.call);
+	MmSetFloat_N((float *)pbuffer, entry.confidence);
+	pbuffer += sizeof(entry.confidence);
+	MmSetUInt8((uint8_t *)pbuffer, entry.forcedCall);
+	pbuffer += sizeof(entry.forcedCall);
 	MmSetFloat_N((float *)pbuffer, entry.aSignal);
-	pbuffer += sizeof(float);
-
+	pbuffer += sizeof(entry.confidence);
 	MmSetFloat_N((float *)pbuffer, entry.bSignal);
-	pbuffer += sizeof(float);
-
-	MmSetFloat_N((float *)pbuffer, entry.scar);
-	pbuffer += sizeof(float);
+	pbuffer += sizeof(entry.confidence);
+	MmSetFloat_N((float *)pbuffer, entry.signalStrength);
+	pbuffer += sizeof(entry.confidence);
+	MmSetFloat_N((float *)pbuffer, entry.contrast);
+	pbuffer += sizeof(entry.confidence);
+	CopyMetricToBuffer(entry.metrics, pbuffer);
 
 	dataBuffers[dataType][target].push_back(buffer);
 	m_BufferSize += dataBufferSz[dataType];
@@ -1071,6 +1101,17 @@ void CHPMultiDataFileBufferWriter::FlushBuffer()
                 ClearBuffer(dataBuffers[dataType][target]);
 			}
 
+			dataType = CytoGenotypeCallMultiDataType;
+			if (dataBuffers.find(dataType) != dataBuffers.end() && dataBuffers[dataType][target].size() > 0)
+			{
+				updater.UpdateMultiDataCytoGenotypeEntryBuffer(dataType,
+                    rowIndexes[dataType][target],
+                    dataBufferSz[dataType],
+                    dataBuffers[dataType][target]);
+				rowIndexes[dataType][target] += (int) dataBuffers[dataType][target].size();
+                ClearBuffer(dataBuffers[dataType][target]);
+			}
+
 			for (int iseg=0; iseg<nSegmentTypes; iseg++)
 			{
 				dataType = segmentTypes[iseg];
@@ -1119,7 +1160,7 @@ void CHPMultiDataFileBufferWriter::FlushBuffer()
 			}
 
             dataType = MarkerABSignalsMultiDataType;
-			if (dataBuffers.find(dataType) != dataBuffers.end() && dataBuffers[dataType][target].size() > 0)
+				if (dataBuffers.find(dataType) != dataBuffers.end() && dataBuffers[dataType][target].size() > 0)
 			{
 				updater.UpdateMultiDataMarkerABSignalsEntryBuffer(dataType,
                     rowIndexes[dataType][target],

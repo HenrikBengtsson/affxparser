@@ -20,7 +20,7 @@
 // 
 // cvs:affy/sdk/file/test-fileio.cpp ---
 // 
-// $Id: test-fileio.cpp,v 1.14 2009/09/25 17:49:00 mspald Exp $
+// $Id: test-fileio.cpp,v 1.14 2009-09-25 17:49:00 mspald Exp $
 // 
 // Commentary:
 // * Run the FileIO.cpp though some tests.

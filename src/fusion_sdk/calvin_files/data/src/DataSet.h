@@ -193,10 +193,11 @@ public:
 	 */
 	int32_t BytesPerRow() { return columnByteOffsets[header.GetColumnCnt()]; }
 
-protected:
+//protected:
 	/*! Destructor. */
 	~DataSet();
 
+protected:
 	/*! Open the DataSet using memory-mapping
 	 *	@return True if the DataSet was successully mapped.
 	 */

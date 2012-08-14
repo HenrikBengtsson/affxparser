@@ -1,0 +1,23 @@
+--- fusion_sdk/util/AffxConv.cpp	2012-08-14 11:50:46.000000000 -0600
++++ affxparser/src/fusion_sdk/util/AffxConv.cpp	2012-08-14 14:01:44.000000000 -0600
+@@ -41,6 +41,11 @@
+ #include <stdio.h>
+ //
+ 
++#ifdef WIN64
++# undef WIN32
++#endif
++
++
+ using namespace std;
+ 
+ /** 
+@@ -111,7 +116,7 @@
+ std::string getInt(int i, bool bCommas)
+ {       
+ 	char szValue[64];
+-#ifdef WIN32
++#ifdef WIN32 && !defined(__MINGW32__)
+ 	sprintf_s(szValue, 64, "%d", i);
+ #else
+ 	sprintf(szValue, "%d", i);

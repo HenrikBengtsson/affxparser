@@ -23,13 +23,15 @@
 //
 #include "file/TsvFile/TsvJoin.h"
 //
+#include "util/Fs.h"
 #include "util/Guid.h"
 #include "util/Util.h"
 //
 #include <algorithm>
-
+//
 using namespace std;
 using namespace affx;
+
 
 void define_tsvjoin_options(PgOptions* opts)
 {
@@ -60,15 +62,13 @@ void define_tsvjoin_options(PgOptions* opts)
  *  @param argc Number of command line arguments.
  *  @param argv Command line arguments.
  *  @param version Version string.
- *  @param cvsId CVS id string.
  *
  *  Errors: throw exception to display help messages, if too few input files.
 */
 tsvJoin::tsvJoin (int argc,
                   const char* argv[],
-                  const std::string& version,
-                  const std::string& cvsId)
-  : m_Version (version), m_CvsId (cvsId),
+                  const std::string& version)
+  : m_Version (version),
   m_CommentLine ("############################################################\n")
 {
 
@@ -83,16 +83,14 @@ tsvJoin::tsvJoin (int argc,
   if (m_Opts->getBool("help") || argc == 1)
   {
     m_Opts->usage();
-    string msg = "version:\n";
-    msg += "   " + version + "\n";
-    msg += "   " + cvsId;
+    string msg = "version: " + version + "\n";
     cout << msg;
     exit(0);
   }
   // Optionally display version.
   if (m_Opts->getBool("version"))
   {
-    string msg = "version: " + version + "   " + cvsId;
+    string msg = "version: " + version + "\n";
     cout << msg;
     exit(0);
   }
@@ -122,7 +120,7 @@ tsvJoin::tsvJoin (int argc,
     Err::errAbort (msg);
   }
   else
-    Util::mustOpenToWrite (m_Out, m_Outfile);
+    Fs::mustOpenToWrite(m_Out, m_Outfile);
 
   // Save prepend status.
   m_Prepend = m_Opts->getBool("prepend-filename");
@@ -169,7 +167,7 @@ void tsvJoin::run (void)
 */
 void tsvJoin::beginOutput (void)
 {
-  Verbose::out (1, "MODULE: " + m_Version + " " + m_CvsId);
+  Verbose::out (1, "MODULE: " + m_Version);
   Verbose::out (1, "CMD: " + m_CommandLine);
   m_ExecGuid = affxutil::Guid::GenerateNewGuid();
   Verbose::out (1, "exec_guid " + m_ExecGuid);
@@ -289,7 +287,7 @@ void tsvJoin::beginOutputHeader (void)
   const string guid = affxutil::Guid::GenerateNewGuid();
   m_Out << "#%guid=" << guid << "\n";
   m_Out << "#%exec_guid=" << m_ExecGuid << "\n";
-  m_Out << "#%exec_version=" << m_Version << " " << m_CvsId << "\n";
+  m_Out << "#%exec_version=" << m_Version << "\n";
   m_Out << "#%create_date=" << Util::getTimeStamp() << "\n";
   m_Out << "#%cmd=" << m_CommandLine << "\n";
 }
@@ -430,4 +428,28 @@ void tsvJoin::writeMatches (void)
       m_Out << "\n";
     } // end if (foundMatch)
   } // end while (m_StreamTsv.nextLevel (0) == TSV_OK)
+}
+
+/** Destructor.
+ */
+tsvJoin::~tsvJoin()
+{
+  clear();
+}
+
+/** Clear data.
+ */
+void tsvJoin::clear()
+{
+  delete m_Opts;
+  for (unsigned int i = 0; i < m_IndexTsvs.size(); ++i)
+    {
+      m_IndexTsvs[i]->close();
+      delete m_IndexTsvs[i];
+    }
+}
+
+void tsvJoin::headerLine (const unsigned int i)
+{
+  m_Out << "#%file" << i << "_";
 }

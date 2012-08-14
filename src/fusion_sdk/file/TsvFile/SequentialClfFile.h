@@ -42,9 +42,7 @@ public:
   /**
    * Constructor.
    */
-  SequentialClfFile (void)
-    : m_Rows (0), m_Cols (0)
-  {}
+  SequentialClfFile (void);
 
   /**
    * Check whether a clf file is sequential.
@@ -52,20 +50,7 @@ public:
    * @param clfTsv Clf file tsv object.
    * @return bool Returns true if the file is sequential, else false.
    */
-  bool isSequential (affx::TsvFile& clfTsv)
-  {
-    std::string rowsValue, colsValue, sequentialValue;
-    clfTsv.headersFindNext ("rows", rowsValue);
-    clfTsv.headersFindNext ("cols", colsValue);
-    clfTsv.headersFindNext ("sequential", sequentialValue);
-    // Require rows, cols, and a sequential value of 1.
-    if (rowsValue.empty() || colsValue.empty() || sequentialValue != "1")
-      return false;
-    // Save rows, cols.
-    m_Rows = Convert::toInt (rowsValue);
-    m_Cols = Convert::toInt (colsValue);
-    return true;
-  }
+  bool isSequential (affx::TsvFile& clfTsv);
 
   /**
    * Calculate the coordinates of a probe, given its id.
@@ -74,14 +59,7 @@ public:
    * @param x Calculated x value.
    * @param y Calculated y value.
    */
-  void getProbeCoordinates (const int probeId, int& x, int& y)
-  {
-    // Probe id is one based, x and y are zero based.
-    const int id = probeId - 1;
-    x = id % m_Rows;
-    assert (m_Cols > 0);
-    y = id / m_Cols;
-  }
+  void getProbeCoordinates (const int probeId, int& x, int& y);
 
 private:
   /// Number of rows.

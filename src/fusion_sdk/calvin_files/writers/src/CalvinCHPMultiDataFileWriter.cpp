@@ -134,9 +134,22 @@ void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::MarkerABSi
 {
 	writer->SeekFromBeginPos(entryPos[currentDataType]);
 	dataSetWriter->Write(p.index);
+	WriteMetrics(p.metrics);	
+	entryPos[currentDataType] = writer->GetFilePos();
+}
+
+void CHPMultiDataFileWriter::WriteEntry(const affymetrix_calvin_data::CytoGenotypeCallData & p)
+{
+	writer->SeekFromBeginPos(entryPos[currentDataType]);
+	dataSetWriter->Write(p.index);
+	dataSetWriter->Write(p.call);
+	dataSetWriter->Write(p.confidence);
+	dataSetWriter->Write(p.forcedCall);
 	dataSetWriter->Write(p.aSignal);
 	dataSetWriter->Write(p.bSignal);
-	dataSetWriter->Write(p.scar);
+	dataSetWriter->Write(p.signalStrength);
+	dataSetWriter->Write(p.contrast);
+	WriteMetrics(p.metrics);	
 	entryPos[currentDataType] = writer->GetFilePos();
 }
 

@@ -23,6 +23,8 @@
 
 #include "calvin_files/exception/src/ExceptionBase.h"
 //
+#include <sstream>
+//
 
 using namespace affymetrix_calvin_exceptions;
 using namespace affymetrix_calvin_utilities;
@@ -223,4 +225,47 @@ const std::wstring CalvinException::ToString()
 	fullMsg = L"Not implemented yet.";
 	
 	return fullMsg; 
+}
+
+
+/*! Format source file, line and time stamp.
+ *
+ * @return Returns a string combining source file, line number and time stamp.
+ */
+std::wstring CalvinException::SystemInfo()
+{ 
+  std::wstring systemInfo;
+
+  // TIME STAMP
+  if ( !timeStamp.empty() ) {
+    systemInfo = timeStamp;
+  }
+  
+  // FILE NAME
+  if ( !fileName.empty() ) {
+    std::wstring wfileName( fileName.length(), L' ' );
+    std::copy(fileName.begin(), fileName.end(), wfileName.begin());
+    if( systemInfo.empty() ) {
+      systemInfo = wfileName;
+    }
+    else {
+      systemInfo = systemInfo + L":" + wfileName;
+    }
+  }
+  // LINE NUMBER
+  if ( lineNumber ) {
+    std::wostringstream line;
+    line << lineNumber;
+    if( systemInfo.empty() ) {
+      systemInfo = line.str();
+    }
+    else {
+      systemInfo = systemInfo + L":" + line.str();
+    }
+  }
+  if ( !systemInfo.empty() ) {
+    systemInfo = systemInfo + L":";
+  }
+
+  return systemInfo;
 }

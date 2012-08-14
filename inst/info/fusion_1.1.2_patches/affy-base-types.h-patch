@@ -1,0 +1,13 @@
+--- /Users/khansen/Work/packages/affxparser/src/fusion_sdk/portability/affy-base-types.h	2010-02-07 11:31:11.000000000 -0500
++++ affy-base-types.h	2010-02-06 01:56:21.000000000 -0500
+@@ -60,6 +60,10 @@
+ #define Min(a,b) std::min(a,b)
+ #endif           // _MSC_VER
+ 
++#ifdef WIN64
++#include <stdint.h>
++#endif
++
+ /* "WIN32" should always be defined by MS C++  */
+ /* It shouldnt be defined on any other platform */
+ #ifndef WIN32

@@ -20,6 +20,7 @@
 #include "calvin_files/utils/src/Calvin.h"
 //
 #include "util/AffxMultiDimensionalArray.h"
+#include "util/Fs.h"
 #include "util/Util.h"
 //
 #include <typeinfo>
@@ -240,77 +241,15 @@ void Calvin::loadHeader(affymetrix_calvin_io::GenericDataHeader& Header, CalvinH
 	}
 }
 
-void Calvin::dump(const AffxString& strFileName, int iPrecision)
-{
-	Verbose::out(1, "Writing file: " + strFileName);
-	AffxFile file;
-	if (file.open(strFileName, AffxFile::SAVE))
-	{
-		dumpHeader(getCalvinHeader(), iPrecision, file);
-		for (int iParentIndex = 0; (iParentIndex < getParentCalvinHeaders().getCount()); iParentIndex++)
-		{
-			dumpHeader(*getParentCalvinHeaders().getAt(iParentIndex), iPrecision, file);
-		}
-		for (int iGroupIndex = 0; (iGroupIndex < getCalvinDataGroups().getCount()); iGroupIndex++)
-		{
-			CalvinDataGroup* pGroup = getCalvinDataGroups().getAt(iGroupIndex);
-			file.writeLine("#%GroupName=" + pGroup->getName());
-			for (int iSetIndex = 0; (iSetIndex < pGroup->getCalvinDataSets().getCount()); iSetIndex++)
-			{
-				CalvinDataSet* pSet = pGroup->getCalvinDataSets().getAt(iSetIndex);
-				file.writeLine("#%SetName=" + pSet->getName());
-				file.writeLine("#%Columns=" + ::getInt(pSet->getColumnHeaders().getCount()));
-				file.writeLine("#%Rows=" + ::getInt(pSet->getCalvinValues().getCount()));
-				for (int iColIndex = 0; (iColIndex < pSet->getColumnHeaders().getCount()); iColIndex++)
-				{
-					if (iColIndex != 0) {file.write("\t");}
-					file.write(pSet->getColumnHeaders().getAt(iColIndex)->c_str());
-				}
-				file.writeLine("");
-				for (int iRowIndex = 0; (iRowIndex < pSet->getCalvinValues().getCount()); iRowIndex++)
-				{
-					for (int iColIndex = 0; (iColIndex < pSet->getCalvinValues().getAt(iRowIndex)->getCount()); iColIndex++)
-					{
-						CalvinValue* p = pSet->getCalvinValues().getAt(iRowIndex)->getAt(iColIndex);
-						if (iColIndex != 0) {file.write("\t");}
-						if (p->getParameterType() == CalvinValue::FloatType)
-						{
-							file.write(::getDouble(::getDouble(p->getValue()), iPrecision).c_str());
-						}
-						else
-						{
-							file.write(p->getValue().c_str());
-						}
-					}
-					file.writeLine("");
-				}
-			}
-		}
-		file.close();
-	}
-}
-
-void Calvin::dumpHeader(CalvinHeader& header, int iPrecision, AffxFile& file)
-{
-	for (int iIndex = 0; (iIndex < header.getCount()); iIndex++)
-	{
-		CalvinParameter* p = header.getAt(iIndex);
-		if (p->getParameterType() == CalvinValue::FloatType)
-		{
-			file.writeLine("#%" + p->getName() + "=" + ::getDouble(::getDouble(p->getValue()), iPrecision));
-		}
-		else
-		{
-			file.writeLine("#%" + p->getName() + "=" + p->getValue());
-		}
-	}
-}
 
 bool Calvin::equivalent(Calvin& that, std::set<std::string>& setIgnore, std::map<std::string, float>& mapEpsilon, float fEpsilon, bool bCheckHeader, float fFraction)
 {
 	if (bCheckHeader)
 	{
-		if (!equivalentHeader("File ", getCalvinHeader(), that.getCalvinHeader(), setIgnore, mapEpsilon, fEpsilon, fFraction)) {return false;}
+		if (!equivalentHeader("File ", getCalvinHeader(), that.getCalvinHeader(), setIgnore, mapEpsilon, fEpsilon, fFraction)) 
+		{
+			return false;
+		}
 		if (getParentCalvinHeaders().getCount() != that.getParentCalvinHeaders().getCount())
 		{
 			Verbose::out(1, "Files do not have the same number of Parent Headers.");
@@ -318,7 +257,10 @@ bool Calvin::equivalent(Calvin& that, std::set<std::string>& setIgnore, std::map
 		}
 		for (int iParentIndex = 0; (iParentIndex < getParentCalvinHeaders().getCount()); iParentIndex++)
 		{
-			if (!equivalentHeader("Parent " + ::getInt(iParentIndex + 1) + " ", *this->getParentCalvinHeaders().getAt(iParentIndex), *that.getParentCalvinHeaders().getAt(iParentIndex), setIgnore, mapEpsilon, fEpsilon, fFraction)) {return false;}
+			if (!equivalentHeader("Parent " + ::getInt(iParentIndex + 1) + " ", *this->getParentCalvinHeaders().getAt(iParentIndex), *that.getParentCalvinHeaders().getAt(iParentIndex), setIgnore, mapEpsilon, fEpsilon, fFraction)) 
+			{
+				return false;
+			}
 		}
 	}
 	if (this->getCalvinDataGroups().getCount() != that.getCalvinDataGroups().getCount())
@@ -387,8 +329,10 @@ bool Calvin::equivalent(Calvin& that, std::set<std::string>& setIgnore, std::map
 					{
 						float fThis = (float)::getDouble(pThis->getValue());
 						float fThat = (float)::getDouble(pThat->getValue());
-						float fEpsilon2 = fFraction*max( fabs(fThis), fabs(fThat) );
-						if (fabs(fThis - fThat) > max(fEpsilon,fEpsilon2) )
+						// allowed absolute difference from fractional tolerance (zero by default)
+						float fEpsilon2 = fFraction*Max( fabs(fThis), fabs(fThat) );
+						// absolute difference is acceptable if it satisfies either (least restrictive) tolerance
+						if (fabs(fThis - fThat) > Max(fEpsilon,fEpsilon2) )
 						{
 							Verbose::out(1, "Value is out of spec. for Data Set Column " + pThisGroup->getName() + "." + pThisSet->getName() + "." + *pThisSet->getColumnHeaders().getAt(iColIndex) + "\tDifference = " + ::getDouble(fabs(fThis - fThat), 10));
 							return false;
@@ -423,7 +367,10 @@ bool Calvin::equivalentHeader(const AffxString& strPrompt, CalvinHeader& headerT
 		if (iSearchIndex != -1)
 		{
 			CalvinParameter* pThat = headerThat.getAt(iSearchIndex);
-			if (!equivalentParameter(strPrompt, *pThis, *pThat, setIgnore, mapEpsilon, fEpsilon, fFraction)) {return false;}
+			if (!equivalentParameter(strPrompt, *pThis, *pThat, setIgnore, mapEpsilon, fEpsilon, fFraction)) 
+			{
+				return false;
+			}
 		}
 		else
 		{
@@ -454,8 +401,10 @@ bool Calvin::equivalentParameter(const AffxString& strPrompt, CalvinParameter& T
 		{
 			float fThis = (float)::getDouble(This.getValue());
 			float fThat = (float)::getDouble(That.getValue());
-			float fEpsilon2 = fFraction*max( fabs(fThis), fabs(fThat) );
-			if (fabs(fThis - fThat) > max(fEps,fEpsilon2))
+			// allowed absolute difference from fractional tolerance (zero by default)
+			float fEpsilon2 = fFraction*Max( fabs(fThis), fabs(fThat) );
+			// absolute difference is acceptable if it satisfies either (least restrictive) tolerance
+			if (fabs(fThis - fThat) > Max(fEps,fEpsilon2))
 			{
 				Verbose::out(1, strPrompt + "Header Parameter Value is out of spec. for " + This.getName() + "\tDifference = " + ::getDouble(fabs(fThis - fThat), 10) + "\tEpsilon = " + ::getDouble(fEps, 10));
 				return false;
@@ -468,9 +417,46 @@ bool Calvin::equivalentParameter(const AffxString& strPrompt, CalvinParameter& T
 		}
 	}
 	return true;
+
 }
 
-bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFileName2, std::set<std::string>& setIgnore, std::map<std::string, float>& mapEpsilon, float fEpsilon, double dCorrelationCutoff, bool bCheckHeader, int iMessageLimit, float fFraction)
+
+//  We have two functions named equivalent with different signatures.  Extra functionality of setSetIgnore was added.
+//  The signatures are maintained for backwards compatibility. 
+bool Calvin::equivalent(	const AffxString& strFileName1, 
+                                const AffxString& strFileName2, 
+                                std::set<std::string>& setIgnore, 
+                                std::map<std::string, float>& mapEpsilon, 
+                                float fEpsilon, 
+                                double dCorrelationCutoff, 
+                                bool bCheckHeader, 
+                                int iMessageLimit, 
+                                float fFraction)
+{
+        std::set<std::string> setSetIgnore;
+ 
+        return equivalent(	strFileName1, 
+                        strFileName2, 
+                        setIgnore, 
+                        setSetIgnore, 
+                        mapEpsilon, 
+                        fEpsilon, 
+                        dCorrelationCutoff, 
+                        bCheckHeader, 
+                        iMessageLimit, 
+                        fFraction);
+}
+
+bool Calvin::equivalent(	const AffxString& strFileName1, 
+                                const AffxString& strFileName2, 
+                                std::set<std::string>& setIgnore, 
+                                std::set<std::string>& setSetIgnore, 
+                                std::map<std::string, float>& mapEpsilon, 
+                                float fEpsilon, 
+                                double dCorrelationCutoff, 
+                                bool bCheckHeader, 
+                                int iMessageLimit, 
+                                float fFraction)
 {
 	Verbose::out(1, "Comparing " + strFileName1 + " and " + strFileName2);
 	bool bSuccessful = true;
@@ -503,13 +489,15 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 	affymetrix_calvin_io::DataSet* pDataSet2 = NULL;
 	try
 	{
-		reader1.SetFilename(Util::convertPathName(strFileName1));
+		reader1.SetFilename(Fs::convertToUncPath(strFileName1));
 		reader1.Open(genericData1);		
-		bFileOpen1 = true;
+		bFileOpen1 = true;  // remember status for file exception catch block
+		//TODO file exception try/catch block for file1 should move here per Harley
 		
-		reader2.SetFilename(Util::convertPathName(strFileName2));
+		reader2.SetFilename(Fs::convertToUncPath(strFileName2));
 		reader2.Open(genericData2);		
-		bFileOpen2 = true;
+		bFileOpen2 = true;  // remember status for file exception catch block
+		//TODO file exception try/catch block for file2 should move here per Harley
 
 		if (bCheckHeader)
 		{			
@@ -529,18 +517,20 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 			}
 			int iParentCount1 = genericData1.Header().GetGenericDataHdr()->GetParentCnt();
 			int iParentCount2 = genericData2.Header().GetGenericDataHdr()->GetParentCnt();
+			int iParentCount = Min(iParentCount1, iParentCount2);
 			if (iParentCount1 != iParentCount2)
 			{
 				Verbose::out(1, "Files do not have the same number of Parent Headers.");
 				return false;
+				 
 			}
-			for (int iParentIndex = 0; (iParentIndex < iParentCount1); iParentIndex++)
+			for (int iParentIndex = 0; (iParentIndex < iParentCount); iParentIndex++)
 			{
 				affymetrix_calvin_io::GenericDataHeader Header1 = genericData1.Header().GetGenericDataHdr()->GetParent(iParentIndex);
 				affymetrix_calvin_io::GenericDataHeader Header2 = genericData2.Header().GetGenericDataHdr()->GetParent(iParentIndex);
 				if (!equivalentHeader("Parent " + ::getInt(iParentIndex + 1) + " ", Header1, Header2, setIgnore, mapEpsilon, fEpsilon, fFraction)) 
 				{
-					return false;
+					bSuccessful = false;
 				}
 			}
 		}
@@ -550,28 +540,32 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 		WStringVector vDataGroupNames2;
 		genericData1.DataGroupNames(vDataGroupNames1);
 		genericData2.DataGroupNames(vDataGroupNames2);
+		unsigned int uiDataGroupCount = Min(vDataGroupNames1.size(), vDataGroupNames2.size());
 		if (vDataGroupNames1.size() != vDataGroupNames2.size())
 		{
 			Verbose::out(1, "Files do not have the same number of Data Groups. Gold = " + ::getInt(vDataGroupNames1.size()) + ", generated = " + ::getInt(vDataGroupNames2.size()));
-			return false;
+			bSuccessful = false;
 		}
-		for (unsigned int uiDataGroupIndex = 0; (uiDataGroupIndex < vDataGroupNames1.size()); uiDataGroupIndex++)
+		for (unsigned int uiDataGroupIndex = 0; (uiDataGroupIndex < uiDataGroupCount); uiDataGroupIndex++)
 		{
 			if (vDataGroupNames1[uiDataGroupIndex] != vDataGroupNames2[uiDataGroupIndex])
 			{
 				Verbose::out(1, "File Data Group name mismatch: " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + " != " + StringUtils::ConvertWCSToMBS(vDataGroupNames2[uiDataGroupIndex]));
-				return false;
+				bSuccessful = false;
+				continue;
 			}
 			WStringVector vDataSetNames1;
 			WStringVector vDataSetNames2;
 			genericData1.DataSetNames(uiDataGroupIndex, vDataSetNames1);
 			genericData2.DataSetNames(uiDataGroupIndex, vDataSetNames2);
+			unsigned int uiDataSetCount = Min(vDataSetNames1.size(), vDataSetNames2.size());
 			if (vDataSetNames1.size() != vDataSetNames2.size())
 			{
 				Verbose::out(1, "Data Group " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + " does not have the same number of Data Sets.");
-				return false;
+				bSuccessful = false;
+				continue;
 			}
-			for (unsigned int uiDataSetIndex = 0; (uiDataSetIndex < vDataSetNames1.size()); uiDataSetIndex++)
+			for (unsigned int uiDataSetIndex = 0; (uiDataSetIndex < uiDataSetCount); uiDataSetIndex++)
 			{
 				//Verbose::out(1, "Data Set " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]));
 				pDataSet1 = genericData1.DataSet(uiDataGroupIndex, uiDataSetIndex);
@@ -583,21 +577,34 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 					Verbose::out(1, "File Data Set name mismatch: " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) + " != " + StringUtils::ConvertWCSToMBS(vDataGroupNames2[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames2[uiDataSetIndex]));
 					pDataSet1->Delete();
 					pDataSet2->Delete();
-					return false;
+					bSuccessful = false;
+					continue;
 				}
+
+//MG
+
+                                AffxString strSetName = StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) ;
+                                if (setSetIgnore.find(strSetName) != setSetIgnore.end()) 
+                                {
+                                        Verbose::out(1, "Not doing a comparison of the DataSet" + strSetName);
+                                        continue;
+                                }
+                                
 				if (pDataSet1->Cols() != pDataSet2->Cols())
 				{
 					Verbose::out(1, "Data Set " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) + " does not have the same number of Columns. Gold = " + ::getInt(pDataSet1->Cols()) + ", Generated = " + ::getInt(pDataSet2->Cols()));
 					pDataSet1->Delete();
 					pDataSet2->Delete();
-					return false;
+					bSuccessful = false;
+					continue;
 				}
 				if (pDataSet1->Rows() != pDataSet2->Rows())
 				{
 					Verbose::out(1, "Data Set " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) + " does not have the same number of Rows. Gold = " + ::getInt(pDataSet1->Rows()) + ", Generated = " + ::getInt(pDataSet2->Rows()));
 					pDataSet1->Delete();
 					pDataSet2->Delete();
-					return false;
+					bSuccessful = false;
+					continue;
 				}
 				AffxMultiDimensionalArray<bool> vSkip(pDataSet1->Cols());
 				AffxMultiDimensionalArray<float> vEpsilon(pDataSet1->Cols());
@@ -605,10 +612,11 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 				{
 					if (pDataSet1->Header().GetColumnInfo(uiColIndex).GetName() != pDataSet2->Header().GetColumnInfo(uiColIndex).GetName())
 					{
-						Verbose::out(1, "File Data Set column name mismatch: " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) + "." + StringUtils::ConvertWCSToMBS(pDataSet1->Header().GetColumnInfo(uiColIndex).GetName()) + " != " + StringUtils::ConvertWCSToMBS(vDataGroupNames2[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames2[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(pDataSet2->Header().GetColumnInfo(uiColIndex).GetName()));
-						pDataSet1->Delete();
-						pDataSet2->Delete();
-						return false;
+						Verbose::out(1, "File Data Set column name mismatch: " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) + "." + StringUtils::ConvertWCSToMBS(pDataSet1->Header().GetColumnInfo(uiColIndex).GetName()) + " != " + StringUtils::ConvertWCSToMBS(vDataGroupNames2[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames2[uiDataSetIndex]) + "." + StringUtils::ConvertWCSToMBS(pDataSet2->Header().GetColumnInfo(uiColIndex).GetName()));
+//						pDataSet1->Delete();
+//						pDataSet2->Delete();
+						bSuccessful = false;
+						continue;
 					}
 					else
 					{	
@@ -632,9 +640,10 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 						if (pDataSet1->Header().GetColumnInfo(uiColIndex).GetColumnType() != pDataSet2->Header().GetColumnInfo(uiColIndex).GetColumnType())
 						{
 							Verbose::out(1, "Value Type mismatch for Data Set Column " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) + "." + StringUtils::ConvertWCSToMBS(pDataSet1->Header().GetColumnInfo(uiColIndex).GetName()) + ", Gold = " + ::getInt(pDataSet1->Header().GetColumnInfo(uiColIndex).GetColumnType()) + ", Generated = " + ::getInt(pDataSet2->Header().GetColumnInfo(uiColIndex).GetColumnType()));
-							pDataSet1->Delete();
-							pDataSet2->Delete();
-							return false;
+//							pDataSet1->Delete();
+//							pDataSet2->Delete();
+							bSuccessful = false;
+							break;
 						}
 						if (vSkip.get(uiColIndex)) {continue;}
 						bool bEquals = false;
@@ -655,8 +664,11 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 							pDataSet2->GetData((int)uiRowIndex, (int)uiColIndex, n2);
 							f1 = (float)n1;
 							f2 = (float)n2;
-							mx.set(uiRowIndex, 0, f1);
-							mx.set(uiRowIndex, 1, f2);
+							if ((Util::isFinite(f1)) && (Util::isFinite(f2)))
+							{
+								mx.set(uiRowIndex, 0, f1);
+								mx.set(uiRowIndex, 1, f2);
+							}
 							if ((f1 != f1) && (f2 != f2)) {bEquals = true;} // Both = NaN
 							else {bEquals = (fabs(f1 - f2) <= vEpsilon.get(uiColIndex));}
 							break;
@@ -665,8 +677,11 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 							pDataSet2->GetData((int)uiRowIndex, (int)uiColIndex, un2);
 							f1 = (float)un1;
 							f2 = (float)un2;
-							mx.set(uiRowIndex, 0, f1);
-							mx.set(uiRowIndex, 1, f2);
+							if ((Util::isFinite(f1)) && (Util::isFinite(f2)))
+							{
+								mx.set(uiRowIndex, 0, f1);
+								mx.set(uiRowIndex, 1, f2);
+							}
 							if ((f1 != f1) && (f2 != f2)) {bEquals = true;} // Both = NaN
 							else {bEquals = (fabs(f1 - f2) <= vEpsilon.get(uiColIndex));}
 							break;
@@ -675,8 +690,11 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 							pDataSet2->GetData((int)uiRowIndex, (int)uiColIndex, i2);
 							f1 = (float)i1;
 							f2 = (float)i2;
-							mx.set(uiRowIndex, 0, f1);
-							mx.set(uiRowIndex, 1, f2);
+							if ((Util::isFinite(f1)) && (Util::isFinite(f2)))
+							{
+								mx.set(uiRowIndex, 0, f1);
+								mx.set(uiRowIndex, 1, f2);
+							}
 							if ((f1 != f1) && (f2 != f2)) {bEquals = true;} // Both = NaN
 							else {bEquals = (fabs(f1 - f2) <= vEpsilon.get(uiColIndex));}
 							break;
@@ -685,19 +703,25 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 							pDataSet2->GetData((int)uiRowIndex, (int)uiColIndex, ui2);
 							f1 = (float)ui1;
 							f2 = (float)ui2;
-							mx.set(uiRowIndex, 0, f1);
-							mx.set(uiRowIndex, 1, f2);
+							if ((Util::isFinite(f1)) && (Util::isFinite(f2)))
+							{
+								mx.set(uiRowIndex, 0, f1);
+								mx.set(uiRowIndex, 1, f2);
+							}
 							if ((f1 != f1) && (f2 != f2)) {bEquals = true;} // Both = NaN
 							else {bEquals = (fabs(f1 - f2) <= vEpsilon.get(uiColIndex));}
 							break;
 						case CalvinValue::FloatType:
 							pDataSet1->GetData((int)uiRowIndex, (int)uiColIndex, f1);
 							pDataSet2->GetData((int)uiRowIndex, (int)uiColIndex, f2);							
-							fEpsilon2 = fFraction*max( fabs(f1), fabs(f2) );
-							mx.set(uiRowIndex, 0, f1);
-							mx.set(uiRowIndex, 1, f2);
+							fEpsilon2 = fFraction*Max( fabs(f1), fabs(f2) );
+							if ((Util::isFinite(f1)) && (Util::isFinite(f2)))
+							{
+								mx.set(uiRowIndex, 0, f1);
+								mx.set(uiRowIndex, 1, f2);
+							}
 							if ((f1 != f1) && (f2 != f2)) {bEquals = true;} // Both = NaN
-							else {bEquals = (fabs(f1 - f2) <= max(vEpsilon.get(uiColIndex),fEpsilon2));}
+							else {bEquals = (fabs(f1 - f2) <= Max(vEpsilon.get(uiColIndex),fEpsilon2));}
 							break;
 						case 7:
 							pDataSet1->GetData((int)uiRowIndex, (int)uiColIndex, str1);
@@ -744,7 +768,7 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 						if ((dCorrelation < dCorrelationCutoff) || (dCorrelationCutoff == 1))
 						{
 							bSuccessful = false;
-							Verbose::out(1, "Value is out of spec. for Data Set Column " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) + "." + StringUtils::ConvertWCSToMBS(pDataSet1->Header().GetColumnInfo(uiColIndex).GetName()) +  " MaxDifference at row " + ::getUnsignedInt(vMaxDifferenceRow.get(uiColIndex)) + "\tMaxDifference = " + ::getDouble(vMaxDifference.get(uiColIndex), 10) + "\tNumberFailures = " + ::getInt(iFailureCount) + "\tEpsilon = " + ::getDouble(vEpsilon.get(uiColIndex), 10) + "\tCorrelation = " + ::getDouble(dCorrelation, 10));
+							Verbose::out(1, "Value is out of spec. for Data Set Column " + StringUtils::ConvertWCSToMBS(vDataGroupNames1[uiDataGroupIndex]) + "." + StringUtils::ConvertWCSToMBS(vDataSetNames1[uiDataSetIndex]) + "." + StringUtils::ConvertWCSToMBS(pDataSet1->Header().GetColumnInfo(uiColIndex).GetName()) +  " MaxDifference at row " + ::getUnsignedInt(vMaxDifferenceRow.get(uiColIndex)) + "\tMaxDifference = " + ::getDouble(vMaxDifference.get(uiColIndex), 10) + "\tNumberFailures = " + ::getInt(iFailureCount) + "\tEpsilon = " + ::getDouble(vEpsilon.get(uiColIndex), 10) + "\tCorrelation = " + ::getDouble(dCorrelation, 10) + "\tNormDifference = " + ::getDouble(mx.normDifference(), 10));
 						}
 					}
 				}
@@ -770,26 +794,26 @@ bool Calvin::equivalent(const AffxString& strFileName1, const AffxString& strFil
 				  "Message is: " + ToStr(e.what()));
 	}
 	catch(affymetrix_calvin_exceptions::FileNotFoundException &fnfe) {
-//		std::string strType = typeid(fnfe).name();
+		// rsatin fix for AFFY00023387: check file existence with message if not found
 		bSuccessful = false;
 		if( !bFileOpen1 )
-			Verbose::out(1, "File not found: " + strFileName1);
+			Verbose::out(1, "File not found: '" + strFileName1 + "'");
 		else
-			Verbose::out(1, "File not found: " + strFileName2);
+			Verbose::out(1, "File not found: '" + strFileName2 + "'");
 	}
 	catch(affymetrix_calvin_exceptions::UnableToOpenFileException &utoe) {
-//		std::string strType = typeid(utoe).name();
+		// rsatin fix for AFFY00023387: check file existence with message if not found
 		bSuccessful = false;
 		if( !bFileOpen1 )
-			Verbose::out(1, "Unable to open file: " + strFileName1);
+			Verbose::out(1, "Unable to open file: '" + strFileName1 + "'");
 		else
-			Verbose::out(1, "Unable to open file: " + strFileName2);
+			Verbose::out(1, "Unable to open file: '" + strFileName2 + "'");
 	}
 	catch(affymetrix_calvin_exceptions::CalvinException &ce) {
 		std::string strType = typeid(ce).name();
 		bSuccessful = false;
-		Verbose::out(1, "affymetrix_calvin_exceptions::CalvinException caught. \
-		 		  Affymetrix GeneChip Command Console library has thrown an exception of type " + strType + \
+		Verbose::out(1, "affymetrix_calvin_exceptions::CalvinException caught. " \
+		 		  " Affymetrix GeneChip Command Console library has thrown an exception of type " + strType + \
 				  " Message is: " + affymetrix_calvin_utilities::StringUtils::ConvertWCSToMBS(ce.Description()));
 	}
 	catch(const std::exception &e) {
@@ -819,15 +843,15 @@ bool Calvin::equivalentHeader(const AffxString& strPrompt, affymetrix_calvin_io:
 	CalvinParameter paramCalvin2;
 	paramCalvin1.set("FileIdentifier", CalvinValue::AsciiType, Header1.GetFileId());
 	paramCalvin2.set("FileIdentifier", CalvinValue::AsciiType, Header2.GetFileId());
-	equivalentParameter(strPrompt, paramCalvin1, paramCalvin2, setIgnore, mapEpsilon, fEpsilon, fFraction);
+	if (!equivalentParameter(strPrompt, paramCalvin1, paramCalvin2, setIgnore, mapEpsilon, fEpsilon, fFraction)) {bEquivalent = false;}
 
 	paramCalvin1.set("FileTypeIdentifier", CalvinValue::AsciiType, Header1.GetFileTypeId());
 	paramCalvin2.set("FileTypeIdentifier", CalvinValue::AsciiType, Header2.GetFileTypeId());
-	equivalentParameter(strPrompt, paramCalvin1, paramCalvin2, setIgnore, mapEpsilon, fEpsilon, fFraction);
+	if (!equivalentParameter(strPrompt, paramCalvin1, paramCalvin2, setIgnore, mapEpsilon, fEpsilon, fFraction)) {bEquivalent = false;}
 
 	paramCalvin1.set("FileLocale", CalvinValue::TextType, StringUtils::ConvertWCSToMBS(Header1.GetLocale()));
 	paramCalvin2.set("FileLocale", CalvinValue::TextType, StringUtils::ConvertWCSToMBS(Header2.GetLocale()));
-	equivalentParameter(strPrompt, paramCalvin1, paramCalvin2, setIgnore, mapEpsilon, fEpsilon, fFraction);
+	if (!equivalentParameter(strPrompt, paramCalvin1, paramCalvin2, setIgnore, mapEpsilon, fEpsilon, fFraction)) {bEquivalent = false;}
 
 	// Header Parameters
 	int iParamCount1 = Header1.GetNameValParamCnt();
@@ -842,9 +866,11 @@ bool Calvin::equivalentHeader(const AffxString& strPrompt, affymetrix_calvin_io:
 	for (int iParamIndex = 0; (iParamIndex < iParamCount1); iParamIndex++)
 	{
 		param1 = Header1.GetNameValParam(iParamIndex);
+		//rsatin fix for AFFY00023387: ignore present/absent differences for fields in ignore list
 		AffxString strParam1Name = StringUtils::ConvertWCSToMBS(param1.GetName());
-		if (setIgnore.find(strParam1Name) != setIgnore.end())      //rsatin
-			continue;                                              //rsatin
+		if (setIgnore.find(strParam1Name) != setIgnore.end()) {      
+			continue;
+		}
 		bool bFound = false;
 		for (int iParamIndex2 = 0; (iParamIndex2 < iParamCount2); iParamIndex2++)
 		{

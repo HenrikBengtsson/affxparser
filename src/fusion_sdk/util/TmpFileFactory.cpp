@@ -2,29 +2,33 @@
 //
 // Copyright (C) 2009 Affymetrix, Inc.
 //
-// This program is free software; you can redistribute it and/or modify 
-// it under the terms of the GNU General Public License (version 2) as 
-// published by the Free Software Foundation.
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License 
+// (version 2.1) as published by the Free Software Foundation.
 // 
-// This program is distributed in the hope that it will be useful, 
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
-// General Public License for more details.
+// This library is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+// or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+// for more details.
 // 
-// You should have received a copy of the GNU General Public License 
-// along with this program;if not, write to the 
-// 
-// Free Software Foundation, Inc., 
-// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library; if not, write to the Free Software Foundation, Inc.,
+// 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
 //
 ////////////////////////////////////////////////////////////////
 
 /// @file TmpFileFactory.h
 /// @brief for usage examples, look at "util/test-tmpfilefactory.cpp"
 
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 //
 #include "util/TmpFileFactory.h"
 //
+#include "portability/affy-system-api.h"
+#include "util/Fs.h"
 #include "util/Util.h"
 //
 #include <cstdlib>
@@ -32,17 +36,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-//
-
-#ifdef _MSC_VER
-#pragma warning(disable: 4996) // ignore deprecated functions warning
-#define snprintf _snprintf
-#include <process.h>
-#define getpid _getpid
-#define gethostid() 0
-#else
-#include <unistd.h>
-#endif
 
 //////////
 
@@ -151,20 +144,20 @@ void
 TmpFileFactory::cleanUp()
 {
   std::string path;
-  bool rv;
 
-  for (int i=0;i<m_tmpfilenames.size();i++) {
+  for (size_t i=0;i<m_tmpfilenames.size();i++) {
     path=m_tmpfilenames[i];
     if (m_opt_verbose>0) {
       /// @todo: replace with "Log"
       std::cout << "TmpFileFactory::cleanUp(): rm '"+path+"'"<<std::endl;
     }
     if (m_opt_debug<1) {
-      rv=Util::fileRemove(path,false); // dont throw an error
+      Fs::rm(path);
     }
   }
-  // remove the dirs in reverse order as the low number dirs might contain high numbered dirs.
 
+  // remove the dirs in reverse order as the early dirs
+  // might contain the later (higher indexed) dirs.
   for (int i=(int)m_tmpdirnames.size()-1;0<=i;i--) {
     path=m_tmpdirnames[i];
     if (m_opt_verbose>0) {
@@ -172,7 +165,7 @@ TmpFileFactory::cleanUp()
       std::cout << "TmpFileFactory::cleanUp(): rmdir '"+path+"'"<<std::endl;
     } 
     if (m_opt_debug<1) {
-      rv=Util::dirRemove(m_tmpdirnames[i],false);
+      Fs::rmdir(path);
     }
   }
 }
@@ -201,9 +194,9 @@ TmpFileFactory::genFilename_basic(const std::string& prefix,const std::string& s
   std::string tmpfilename;
 
   while (1) {
-    tmpfilename=m_tmpdir+PATH_SEPARATOR+prefix+genUniqueString()+suffix;
-    // Does this file exist?
-    if (!Util::fileReadable(tmpfilename)) {
+    tmpfilename=Fs::join(m_tmpdir,prefix+genUniqueString()+suffix);
+        // Does this file exist?
+    if (Fs::fileExists(tmpfilename)==false) {
       if (m_opt_verbose>=1) {
         std::cout<< "TmpFileFactory::genFilename()=='"+tmpfilename+"'\n";
       }
@@ -218,7 +211,7 @@ TmpFileFactory::genFilename_basic(const std::string& prefix,const std::string& s
 std::string
 TmpFileFactory::genFilename(const std::string& prefix,const std::string& suffix)
 {
-  std::string filename=genFilename_basic(m_prefix,m_suffix);
+  std::string filename=genFilename_basic(prefix, suffix);
   // we will want to remove it later.
   rememberToRemove(filename);
   return filename;
@@ -247,9 +240,11 @@ TmpFileFactory::genDirname()
   // no suffix
   std::string dirname=genFilename_basic(m_prefix,"");
   //
-  Util::makeDir(dirname);
+  if ( !Fs::dirExists(dirname) ) {
+    Fs::mkdirPath(dirname);
+  }
   //
-  if (!Util::directoryWritable(dirname)) {
+  if (Fs::isWriteableDir(dirname)!=APT_OK) {
     Err::errAbort("TmpFileFactory::genDirname(): cant write to '"+dirname+"'");
   }
   rememberToRemoveDir(dirname);

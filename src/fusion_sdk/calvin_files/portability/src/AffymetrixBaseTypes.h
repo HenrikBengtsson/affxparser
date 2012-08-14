@@ -24,14 +24,12 @@
 /*! \file AffymetrixBaseTypes.h This file provides type definitions for atom types.
  */ 
 
-#include "R_affx_constants.h"
-
 #ifdef WIN64
 #include <stdint.h>
 #endif
 
 /* Define the type for the Windows platform. */
-#ifdef WIN32
+#ifdef _MSC_VER
 
 #ifndef __MINGW32__
 

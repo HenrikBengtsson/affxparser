@@ -20,81 +20,17 @@
 /// @file   tsv-util.cpp
 /// @brief  collection of utilities for working with tsv-format files.
 
-/**
-\page tsv-util MANUAL: tsv-tuil (NON-OFFICIAL-RELEASE)
-
-<a name="options">
-\section manualOptions Options:
-
-<!-- Do not edit this verbatim section.
-     It will be replaced automatically w/ the results
-     of running this program with the -h option
-     --->
-\verbatim
-Utility functions for tsv files.
-
-
-
-options:
-   -h, --help                           This message. [default 'false'] 
-   -v, --verbose verbose level [default '0'] 
-     --headers INFILE = Display the headers of the CSV/TSV
-                          file. [default 'false'] 
-     --linecount INFILE = count the lines of data in the
-                          file. [default 'false'] 
-     --to-csv INFILE OUTFILE = Covert the file to CVS
-                          format. [default 'false'] 
-     --to-tsv INFILE OUTFILE = Convert the file to TSV
-                          format. [default 'false'] 
-     --paste OUTFILE FILELIST = Paste the files of
-                          filelist into outfile. [default ''] 
-     --seg-lines Segment size [default '0'] 
-     --key-col COLUMN_NAME = Column name which must be
-                          present and equal in all inputs files, if
-                          set. [default ''] 
-     --max-paste-fh CNT = Max number of files to paste in one
-                          pass. [default '900'] 
-     --benchmark Number of doubles to write for benchmarking
-                          output. [default '0'] 
-     --output Output file for some operations. [default
-                          ''] 
-     --diff Compare headers and data of two tsv
-                          formatted files. There are a number of
-                          options to control printing of the diff.
-                          [default 'false'] 
-     --diff-headers BOOL = Compare the headers of the files.
-                          [default 'true'] 
-     --diff-data BOOL = Compare the data in the files.
-                          [default 'true'] 
-     --diff-print-linenums BOOL = Print line numbers from where the
-                          lines are from (file1:file2). [default
-                          'true'] 
-     --diff-print-same BOOL = Print lines which are the same.
-                          (otherwise only changed lines.) [default
-                          'false'] 
-     --diff-print-max NUM = Max number of lines to print. (-1=>
-                          all) [default '-1'] 
-     --diff-print-format [1 or 2] = Select the format of the
-                          displayed diffs, one or two lines. [default
-                          '1'] 
-     --diff-max-diff NUM = Numerical differences smaller than
-                          than this are ignored. [default '0.00001'] 
-     --diff-residuals FILENAME = File to output residuals to.
-                          (file1-file2) [default ''] 
-     --print-duplicate-headerkeys Print the duplicate headers. [default '0'] 
-\endverbatim
-
-*/
 
 //
 #include "file/TsvFile/TsvFile.h"
 #include "file/TsvFile/TsvFileDiff.h"
-//
 #include "util/Convert.h"
 #include "util/Err.h"
+#include "util/Fs.h"
 #include "util/PgOptions.h"
 #include "util/Util.h"
 //
+#include <cstdio>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -123,6 +59,7 @@ tsv_util_linecount(const std::string& fileName)
   printf("%-40s: ",fileName.c_str());
   if (rv!=affx::TSV_OK) {
     printf("ERR=%d\n",rv);
+    delete tsv;
     return;
   }
 
@@ -134,7 +71,9 @@ tsv_util_linecount(const std::string& fileName)
     //printf("%s\n",str.c_str());
   }
   printf("datalines=%d\n",data_lines);
+
   tsv->close();
+  delete tsv;
 }
 
 //////////
@@ -200,31 +139,31 @@ tsv_util_print_duplicate_headerkeys(const std::string& fileName)
 void
 tsv_util_copy(const std::string& f_fileName,const std::string& t_fileName,int fmt)
 {
-  affx::TsvFile* f_tsv=new affx::TsvFile();
-  affx::TsvFile* t_tsv=new affx::TsvFile();
+  affx::TsvFile f_tsv;
+  affx::TsvFile t_tsv;
 
   //
-  f_tsv->open(f_fileName);
+  f_tsv.open(f_fileName);
   //
-  t_tsv->copyFormat(*f_tsv); // better name?
-  t_tsv->addHeadersFrom(*f_tsv,affx::TSV_ADD_ALL);
+  t_tsv.copyFormat(f_tsv); // better name?
+  t_tsv.addHeadersFrom(f_tsv,affx::TSV_ADD_ALL);
 
   //
   if (fmt==1) {
-    t_tsv->writeCsv(t_fileName);
+    t_tsv.writeCsv(t_fileName);
   } else if (fmt==2) {
-    t_tsv->writeTsv(t_fileName);
+    t_tsv.writeTsv(t_fileName);
   } else {
     assert(0);
   }
 
-  while (f_tsv->nextLine()==affx::TSV_OK) {
-    t_tsv->copyLevel(*f_tsv,f_tsv->lineLevel());
-    t_tsv->writeLevel(f_tsv->lineLevel());
+  while (f_tsv.nextLine()==affx::TSV_OK) {
+    t_tsv.copyLevel(f_tsv,f_tsv.lineLevel());
+    t_tsv.writeLevel(f_tsv.lineLevel());
   }
 
-  t_tsv->close();
-  f_tsv->close();
+  t_tsv.close();
+  f_tsv.close();
 }
 
 //////////
@@ -492,7 +431,7 @@ tsv_util_paste(const std::string& out_fileName,
     // get rid of the old tmp file.
     if (pass0_out_name!="") {
       //printf("rm %s\n",pass0_out_name.c_str());
-      Util::fileRemove(pass0_out_name);
+      Fs::rm(pass0_out_name);
     }
     // the current is now the old.
     pass_cnt++;
@@ -510,7 +449,7 @@ tsv_util_paste(const std::string& out_fileName,
                        seg_max_lines, // do segment if needed.
                        key_col_name,verbose);
   // and get rid of it.
-  Util::fileRemove(pass0_out_name);
+  Fs::rm(pass0_out_name);
 }
 
 //////////
@@ -554,6 +493,7 @@ tsv_util_benchmark(int benchmark_cnt,const std::string& filename)
   }
   //
   tsv->close();
+  delete tsv;
 }
 
 //////////

@@ -102,8 +102,8 @@ static bool operator==(const XMLCh* const &c1, wstring c2)
  */
 SAXTemplateHandlers::SAXTemplateHandlers(TemplateData *data, bool headerOnly) :
 	templateData(data),
-	currentElement(TEMPLATE_FILE),
-	readHeaderOnly(headerOnly)
+	readHeaderOnly(headerOnly),
+	currentElement(TEMPLATE_FILE)
 {
 }
 
