@@ -7,7 +7,7 @@
 fusion=~/Work/packages/affy/sdk
 affxparser_base=~/Work/packages/affxparser
 affxparser_fusion=${affxparser_base}/src/fusion_sdk
-affxparser_patchdir=${affxparser_base}/inst/info
+affxparser_patchdir_1.1.0=${affxparser_base}/inst/info/fusion_1.1.0_patches
 
 compare :
 	diff -rq ${fusion} ${affxparser_fusion} | grep Only | grep -v svn | cat
@@ -53,9 +53,9 @@ cleanfusion :
 	${fusion}/file/lib-file-apt.vcproj \
 	${fusion}/style.css \
 
-patch:
-#	patch -N ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir}/CDFFileData.cpp-patch
-	patch -N ${affxparser_fusion}/portability/affy-base-types.h ${affxparser_patchdir}/affy-base-types.h-patch
-	patch -N ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir}/AffxConv.cpp-patch
-	patch -N ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir}/AffxByteArray.cpp-patch
-	patch -N ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir}/AffymetrixBaseTypes.h-patch
+patch_1.1.0:
+#	patch -N ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir_1.1.0}/CDFFileData.cpp-patch
+	patch -N ${affxparser_fusion}/portability/affy-base-types.h ${affxparser_patchdir_1.1.0}/affy-base-types.h-patch
+	patch -N ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir_1.1.0}/AffxConv.cpp-patch
+	patch -N ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir_1.1.0}/AffxByteArray.cpp-patch
+	patch -N ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir_1.1.0}/AffymetrixBaseTypes.h-patch
