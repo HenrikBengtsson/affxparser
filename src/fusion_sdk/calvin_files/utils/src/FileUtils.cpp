@@ -107,7 +107,9 @@ std::string _getFullPathWindowsLocal(const std::string &in) {
     if(strLen > BUFFSIZE - 1) {
       std::string se = "Cannot handle string longer than " + FUToStr(BUFFSIZE) + ": '" +
                 in + "' is " + FUToStr(strLen);
-		throw new std::exception(se.c_str());
+      // PATCH: std::exception(const char*) does not have to exist according
+      //        to standards.  Using subclass runtime_error instead. /HB
+		throw new std::runtime_error(se.c_str());
     }
     mbstowcs(wbuffer,inPtr, strLen + 1);
 
@@ -125,7 +127,9 @@ std::string _getFullPathWindowsLocal(const std::string &in) {
 
     // If we will overflow our buffer, then abort.
     if(retval > BUFFSIZE-1) {
-		throw new std::exception("Unexpected failure. Converted more characters than expected");
+      // PATCH: std::exception(const char*) does not have to exist according
+      //        to standards.  Using subclass runtime_error instead. /HB
+		throw new std::runtime_error("Unexpected failure. Converted more characters than expected");
     }
 
     // Convert the absolute path to asci char from wide char
