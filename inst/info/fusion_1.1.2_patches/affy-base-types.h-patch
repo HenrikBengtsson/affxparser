@@ -1,6 +1,15 @@
---- /Users/khansen/Work/packages/affxparser/src/fusion_sdk/portability/affy-base-types.h	2010-02-07 11:31:11.000000000 -0500
-+++ affy-base-types.h	2010-02-06 01:56:21.000000000 -0500
-@@ -60,6 +60,10 @@
+--- fusion_sdk_1.1.2/portability/affy-base-types.h	2011-05-16 09:27:32.000000000 -0400
++++ affy-base-types.h	2012-08-30 00:25:59.000000000 -0400
+@@ -48,6 +48,8 @@
+ /*! \file affy-base-types.h This file defines types for consistency across platforms.
+  */
+ 
++#include "R_affx_constants.h"
++
+ /*! Microsoft Visual Studio C++ doesn't implement std::min() and std::max()
+   due to possible conflict with min() and max() defined in windows.h. */
+ #ifdef _MSC_VER   // vc++ version
+@@ -60,6 +62,10 @@
  #define Min(a,b) std::min(a,b)
  #endif           // _MSC_VER
  
