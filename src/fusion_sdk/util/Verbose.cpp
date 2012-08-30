@@ -54,7 +54,12 @@ void em_out(const std::string& msg)
 	if (em_out_fstream==NULL) {
 		em_out_fstream=new std::fstream();
 		std::string fname="EM-OUT-"+ToStr((int)getpid())+"-"+ToStr((int)rand())+".log";
-#ifdef _MSC_VER
+// PATCH: open() may not exist for wstrings, but does for strings.
+//   To avoid compilation errors in Windows, we simply skip the
+//   StringUtils::ConvertMBSToWCS() call. Hopefully ok.  If not,
+//   this "emergency debugging output" function shouldn't be called
+//   anyways. /HB 2012-08-29
+#ifdef _MSC_VER_HIDE //HB
 		std::wstring wfname=StringUtils::ConvertMBSToWCS(fname);
 		em_out_fstream->open(wfname.c_str(),ios::out);
 #else

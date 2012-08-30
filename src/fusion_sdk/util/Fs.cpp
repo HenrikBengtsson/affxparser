@@ -1408,7 +1408,14 @@ std::string Fs::MSC_VER_GetLastErrorString( const std::string & whence )
 void Fs::aptOpen( std::fstream & fs, const std::string & filename, std::ios_base::openmode iomode) {
 
 #ifdef _WIN32
-  std::wstring wtemp =  Fs::UncW(filename) ;
+  // PATCH: Apparently std::basic_ofstream<char>::open(const wchar_t*,
+  //   std::ios_base::openmode&) may not be defined.  The problem is
+  //   the type of argument #1; it is defined for 'const char*' but
+  //   not 'const wchar_t*'.  So, instead of calling Fs::UncW(filename)
+  //   we call Fs::Unc(filename), which return char*.  I'm not 100%
+  //   sure what the catch is, but it may be that some filenames that
+  //   require UTF-16 will not work. /HB 2012-08-29
+  std::string wtemp =  Fs::Unc(filename) ;
   fs.open(wtemp.c_str(), iomode);
 #else
   fs.open(filename.c_str(), iomode);
@@ -1418,7 +1425,14 @@ void Fs::aptOpen( std::fstream & fs, const std::string & filename, std::ios_base
 void Fs::aptOpen( std::ofstream & ofs, const std::string & filename, std::ios_base::openmode iomode) {
 
 #ifdef _WIN32
-  std::wstring wtemp = Fs::UncW(filename);
+  // PATCH: Apparently std::basic_ofstream<char>::open(const wchar_t*,
+  //   std::ios_base::openmode&) may not be defined.  The problem is
+  //   the type of argument #1; it is defined for 'const char*' but
+  //   not 'const wchar_t*'.  So, instead of calling Fs::UncW(filename)
+  //   we call Fs::Unc(filename), which return char*.  I'm not 100%
+  //   sure what the catch is, but it may be that some filenames that
+  //   require UTF-16 will not work. /HB 2012-08-29
+  std::string wtemp = Fs::Unc(filename);
   ofs.open(wtemp.c_str(), iomode);
 #else
   ofs.open(filename.c_str(), iomode);
@@ -1428,7 +1442,14 @@ void Fs::aptOpen( std::ofstream & ofs, const std::string & filename, std::ios_ba
 void Fs::aptOpen( std::ifstream & ifs, const std::string & filename, std::ios_base::openmode iomode) {
 
 #ifdef _WIN32
-  std::wstring wtemp = Fs::UncW(filename);
+  // PATCH: Apparently std::basic_ofstream<char>::open(const wchar_t*,
+  //   std::ios_base::openmode&) may not be defined.  The problem is
+  //   the type of argument #1; it is defined for 'const char*' but
+  //   not 'const wchar_t*'.  So, instead of calling Fs::UncW(filename)
+  //   we call Fs::Unc(filename), which return char*.  I'm not 100%
+  //   sure what the catch is, but it may be that some filenames that
+  //   require UTF-16 will not work. /HB 2012-08-29
+  std::string wtemp = Fs::Unc(filename);
   ifs.open(wtemp.c_str(), iomode);
 #else
   ifs.open(filename.c_str(), iomode);
