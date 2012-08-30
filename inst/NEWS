@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.29.10 [2012-08-29]
+o Updated some internal files used solely for maintainance.
+
+
 Version: 1.29.9 [2012-08-29]
 o BUG FIX: The move to Fusion SDK 1.1.2 caused the package to
   not compile on Windows.
