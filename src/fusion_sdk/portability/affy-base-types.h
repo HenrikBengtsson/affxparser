@@ -48,6 +48,8 @@
 /*! \file affy-base-types.h This file defines types for consistency across platforms.
  */
 
+#include "R_affx_constants.h"
+
 /*! Microsoft Visual Studio C++ doesn't implement std::min() and std::max()
   due to possible conflict with min() and max() defined in windows.h. */
 #ifdef _MSC_VER   // vc++ version
