@@ -64,7 +64,6 @@ cleanfusion :
 
 
 patch_1.1.0:
-#	patch -N ${affxparser_fusion}/file/CDFFileData.cpp ${affxparser_patchdir_1.1.0}/CDFFileData.cpp-patch
 	patch -N ${affxparser_fusion}/portability/affy-base-types.h ${affxparser_patchdir_1.1.0}/affy-base-types.h-patch
 	patch -N ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir_1.1.0}/AffxConv.cpp-patch
 	patch -N ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir_1.1.0}/AffxByteArray.cpp-patch
@@ -77,5 +76,6 @@ patch_1.1.2:
 	patch -N ${affxparser_fusion}/util/AffxByteArray.cpp ${affxparser_patchdir_1.1.2}/AffxByteArray.cpp-patch
 	patch -N ${affxparser_fusion}/calvin_files/portability/src/AffymetrixBaseTypes.h ${affxparser_patchdir_1.1.2}/AffymetrixBaseTypes.h-patch
 	patch -N ${affxparser_fusion}/calvin_files/utils/src/FileUtils.cpp ${affxparser_patchdir_1.1.2}/FileUtils.cpp-patch
-
+	patch -N ${affxparser_fusion}/util/Fs.cpp ${affxparser_patchdir_1.1.2}/Fs.cpp-patch
+	patch -N ${affxparser_fusion}/util/Verbose.cpp ${affxparser_patchdir_1.1.2}/Verbose.cpp-patch
 
