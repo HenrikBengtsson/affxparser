@@ -16,6 +16,7 @@
 #  \item{path}{A @character string specifying the root output directory,
 #     which in turn will contain chip-type subdirectories.
 #     All directories will be created, if missing.}
+#  \item{aliases}{A named @character string with chip type aliases.}
 #  \item{...}{Not used.}
 # }
 #
@@ -36,7 +37,7 @@
 # @keyword programming
 # @keyword internal
 #**/####################################################################### 
-arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)$"), path="celFiles/", ...) {
+arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)$"), path="celFiles/", aliases=NULL, ...) {
   require("R.utils") || throw("Package not loaded: R.utils");
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,6 +46,11 @@ arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)
   # Argument 'path':
   path <- Arguments$getCharacter(path);
 
+  # Argument 'path':
+  if (!is.null(aliases)) {
+    aliases <- Arguments$getCharacters(aliases, useNames=TRUE);
+    stopifnot(!is.null(names(aliases)));
+  }
 
   naValue <- as.character(NA);
   pathnamesD <- rep(naValue, length=length(pathnames));
@@ -60,10 +66,20 @@ arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)
 
     hdr <- readCelHeader(pathname);
     chipType <- hdr$chiptype;
+
+    # Rename according to alias?
+    if (!is.null(aliases)) {
+      alias <- aliases[chipType];
+      if (!is.na(alias)) {
+        chipType <- alias;
+      }
+    }
+
     chipTypes[ii] <- chipType;
 
+    filename <- basename(pathname);
     pathD <- filePath(path, chipType);
-    pathnameD <- Arguments$getWritablePathname(pathname, path=pathD);
+    pathnameD <- Arguments$getWritablePathname(filename, path=pathD);
 
     res <- file.rename(from=pathname, to=pathnameD);
     if (res) {
@@ -79,6 +95,11 @@ arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)
 
 ############################################################################
 # HISTORY: 
+# 2012-09-01
+# o Added argument 'aliases' to arrangeCelFilesByChipType(), e.g.
+#   arrangeCelFilesByChipType(..., aliases=c("Focus"="HG-Focus")).
+# o BUG FIX: arrangeCelFilesByChipType(pathnames) assumed 'pathnames'
+#   were files in the current directory.
 # 2012-06-19
 # o Created.
 ############################################################################
