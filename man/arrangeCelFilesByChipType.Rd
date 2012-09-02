@@ -18,13 +18,14 @@
  will be moved to subdirectory \code{celFiles/HG\_U95Av2/}.
 }
 
-\usage{arrangeCelFilesByChipType(pathnames=list.files(pattern = "[.](cel|CEL)$"), path="celFiles/", ...)}
+\usage{arrangeCelFilesByChipType(pathnames=list.files(pattern = "[.](cel|CEL)$"), path="celFiles/", aliases=NULL, ...)}
 
 \arguments{
  \item{pathnames}{A \code{\link[base]{character}} \code{\link[base]{vector}} of CEL pathnames to be moved.}
  \item{path}{A \code{\link[base]{character}} string specifying the root output directory,
     which in turn will contain chip-type subdirectories.
     All directories will be created, if missing.}
+ \item{aliases}{A named \code{\link[base]{character}} string with chip type aliases.}
  \item{...}{Not used.}
 }
 

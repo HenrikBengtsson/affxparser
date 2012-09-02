@@ -1,6 +1,13 @@
 Package: affxparser
 ===================
 
+Version: 1.29.11 [2012-09-01]
+o Added argument 'aliases' to arrangeCelFilesByChipType(), e.g.
+  arrangeCelFilesByChipType(..., aliases=c("Focus"="HG-Focus")).
+o BUG FIX: arrangeCelFilesByChipType(pathnames) assumed 'pathnames'
+  were files in the current directory.
+
+
 Version: 1.29.10 [2012-08-29]
 o Updated some internal files used solely for maintainance.
 
