@@ -24,7 +24,7 @@
    \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which
      units to be read.  If \code{\link[base]{NULL}}, all units are read.}
    \item{stratifyBy}{Argument passed to low-level method
-     \code{\link[affxparser]{readCdfUnits}}.}
+     \code{\link[affxparser]{readCdfCellIndices}}.}
    \item{cdf}{A \code{\link[base]{character}} filename of a CDF file, or a CDF \code{\link[base]{list}}
      structure.  If \code{\link[base]{NULL}}, the CDF file is searched for by
      \code{\link{findCdf}}() first starting from the current directory and

@@ -15,7 +15,7 @@
 #   \item{units}{An @integer @vector of unit indices specifying which
 #     units to be read.  If @NULL, all units are read.}
 #   \item{stratifyBy}{Argument passed to low-level method 
-#     @see "affxparser::readCdfUnits".}
+#     @see "affxparser::readCdfCellIndices".}
 #   \item{cdf}{A @character filename of a CDF file, or a CDF @list
 #     structure.  If @NULL, the CDF file is searched for by
 #     @see "findCdf" first starting from the current directory and
