@@ -144,6 +144,8 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
       cdfType <- "indices";
       extractFields <- (length(fields) > 1);
     } else if (all(c("x", "y") %in% fields)) {
+      # The CDF is needed in order to know the (x,y) dimensions of the
+      # chip so that one can calculate (x,y) -> cell index.
       cdfType <- "x";
       searchForCdf <- TRUE;
     } else {
