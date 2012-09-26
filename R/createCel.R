@@ -18,6 +18,12 @@
 #     is thrown, otherwise the file is created.}
 #   \item{nsubgrids}{The number of subgrids.}
 #   \item{...}{Not used.}
+#   \item{cdf}{(optional) The pathname of a CDF file for the CEL file
+#     to be created.  If given, the CEL header (argument \code{header})
+#     is validated against the CDF header, otherwise not.
+#     If @TRUE, a CDF file is located automatically based using
+#     \code{findCdf(header$chiptype)}.
+#   }
 #   \item{verbose}{An @integer specifying how much verbose details are
 #     outputted.}
 # }
@@ -46,7 +52,7 @@
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
-createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbose=FALSE) {
+createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., cdf=NULL, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,7 +83,22 @@ createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbo
     stop("Argument 'nsubgrids' is negative: ", nsubgrids);
   }
 
+  # Argument 'cdf':
+  if (is.character(cdf)) {
+    if (!file.exists(cdf)) {
+      stop("Cannot compare to CDF file. File not found: ", cdf);
+    }
+  } else if (is.logical(cdf)) {
+  } else if (!is.null(cdf)) {
+    stop("Invalid type of argument 'cdf': ", mode(cdf));
+  }
 
+
+
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Infer CEL version
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   version <- .getCelHeaderVersion(header);
   if (version == "1") {
     if (verbose)
@@ -95,15 +116,30 @@ createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbo
     stop("Failed create binary (XDA) CEL v4 file. Header object has a different version: ", header$version);
   }
 
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Check CEL header against CDF
+  # Validate/assign CEL header field 'total'
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ncells <- header$cols*header$rows;
-  cdfFile <- findCdf(header$chiptype);
-  if (is.null(cdfFile)) {
-    warning("Skipping validation of CEL header against CDF header. Could not find a CDF file for this chip type: ", header$chiptype);
+  if (!is.null(header$total)) {
+    stopifnot(header$total == ncells);
   } else {
-    cdfHeader <- readCdfHeader(cdfFile);
+    header$total <- ncells;
+  }
+
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Check CEL header against CDF?
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  if (isTRUE(cdf)) {
+    # This might take a long time
+    cdf <- findCdf(header$chiptype);
+    if (is.null(cdf)) {
+      warning("Skipping validation of CEL header against CDF header. Could not find a CDF file for this chip type: ", header$chiptype);
+    }
+  }
+  if (is.character(cdf)) {
+    cdfHeader <- readCdfHeader(cdf);
     cdfTotal <- cdfHeader$ncols * cdfHeader$nrows;
     if (ncells != cdfTotal) {
       warning("The number of cells in the CEL file does not match that of the CDF file: ", ncells, " != ", cdfTotal);
@@ -172,6 +208,11 @@ createCel <- function(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbo
 
 ############################################################################
 # HISTORY:
+# 2012-09-26
+# o Added argument 'cdf=NULL' to createCel(). Note, the previous
+#   implementation corresponded to cdf=TRUE.
+# o ROBUSTNESS: Now createCel() validates/sets CEL header field 'total'
+#   based on 'cols' and 'rows'.
 # 2007-08-16
 # o Updated createCel() so it coerces the CEL header to version 4.
 # 2006-09-07
