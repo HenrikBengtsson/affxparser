@@ -12,7 +12,7 @@
 
  \title{Creates an empty CEL file}
 
- \usage{createCel(filename, header, nsubgrids=0, overwrite=FALSE, ..., verbose=FALSE)}
+ \usage{createCel(filename, header, nsubgrids=0, overwrite=FALSE, ..., cdf=NULL, verbose=FALSE)}
 
  \description{
    Creates an empty CEL file.
@@ -27,6 +27,12 @@
      is thrown, otherwise the file is created.}
    \item{nsubgrids}{The number of subgrids.}
    \item{...}{Not used.}
+   \item{cdf}{(optional) The pathname of a CDF file for the CEL file
+     to be created.  If given, the CEL header (argument \code{header})
+     is validated against the CDF header, otherwise not.
+     If \code{\link[base:logical]{TRUE}}, a CDF file is located automatically based using
+     \code{findCdf(header$chiptype)}.
+   }
    \item{verbose}{An \code{\link[base]{integer}} specifying how much verbose details are
      outputted.}
  }

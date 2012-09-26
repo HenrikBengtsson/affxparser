@@ -1,6 +1,17 @@
 Package: affxparser
 ===================
 
+Version: 1.29.13 [2012-09-26]
+o Added argument 'cdf=FALSE' to createCel(). Note, the previous
+  implementation corresponded to cdf=TRUE.
+o ROBUSTNESS: Now createCel() validates/sets CEL header field
+  'total' based on 'cols' and 'rows'.
+o ROBUSTNESS: Added a system test for validating that the package
+  can write and read a CEL.  The test is spawning of another 
+  R process so that the test is robust against core dumps.
+o Bumped up package dependencies.
+
+
 Version: 1.29.12 [2012-09-12]
 o DOCUMENTATION: Updated one Rd link.
 
