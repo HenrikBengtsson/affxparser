@@ -43,13 +43,50 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  different <- function(fmtstr, ..., value1=NULL, value2=NULL) {
+  differentUnit <- function(value1, value2, units) {
+    n <- length(units);
+
+    # Done?
+    if (n == 0) return(NULL);
+
+    # Cannot narrow down?
+    if (length(value1) != n) return(NULL);
+    if (length(value2) != n) return(NULL);
+
+    # Compare
+    if (n == 1) {
+      res <- all.equal(value1, value2);
+      # Different?
+      if (!identical(res, TRUE)) {
+        return(units);
+      } else {
+        return(NULL);
+      }
+    }
+
+    half <- floor(n/2);
+    head <- 1:half;
+    tail <- (half+1):n;
+
+    # Among first half?
+    unit <- differentUnit(value1[head], value2[head], units=units[head]);
+    if (!is.null(unit)) return(unit);
+
+    # Among second half?
+    unit <- differentUnit(value1[tail], value2[tail], units=units[tail]);
+    if (!is.null(unit)) return(unit);
+
+    NULL;
+  } # differentUnit()
+
+  different <- function(fmtstr, ..., units=NULL, value1=NULL, value2=NULL) {
     res <- FALSE;
     attr(res, "reason") <- sprintf(fmtstr, ...);
+    attr(res, "units") <- units;
     attr(res, "value1") <- value1;
     attr(res, "value2") <- value2;
     res;
-  }
+  } # different()
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   # Validate arguments
@@ -103,8 +140,19 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
     v1 <- readCdfQc(pathname, units=uu);
     v2 <- readCdfQc(other, units=uu);
     res <- all.equal(v1, v2);
-    if (!identical(res, TRUE))
-      return(different("QC units: ", value1=v1, value2=v2));
+    if (!identical(res, TRUE)) {
+      badUnit <- differentUnit(value1=v1, value2=v2, units=uu);
+      if (!is.null(badUnit)) {
+        msg <- sprintf("Detected (at least one) QC unit that differ: %d", badUnit);
+        units <- badUnit;
+        idx <- match(badUnit, uu);
+        v1 <- v1[idx];
+        v2 <- v2[idx];
+      } else {
+        msg <- sprintf("Detected (at least one) QC unit that differ amount units %d to %d", min(uu), max(uu));
+      }
+      return(different(msg, units=units, value1=v1, value2=v2));
+    }
     rm(v1,v2,uu,head);
   }
   if (verbose >= 1)
@@ -132,8 +180,19 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
     v1 <- readCdf(pathname, units=uu);
     v2 <- readCdf(other, units=uu);
     res <- all.equal(v1, v2);
-    if (!identical(res, TRUE))
-      return(different("Units: ", value1=v1, value2=v2));
+    if (!identical(res, TRUE)) {
+      badUnit <- differentUnit(value1=v1, value2=v2, units=uu);
+      if (!is.null(badUnit)) {
+        msg <- sprintf("Detected (at least one) unit that differ: %d", badUnit);
+        units <- badUnit;
+        idx <- match(badUnit, uu);
+        v1 <- v1[idx];
+        v2 <- v2[idx];
+      } else {
+        msg <- sprintf("Detected (at least one) unit that differ amount units %d to %d", min(uu), max(uu));
+      }
+      return(different(msg, units=units, value1=v1, value2=v2));
+    }
     count <- count + length(uu);
     if (quick)
       break;
@@ -153,6 +212,10 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
 
 ############################################################################
 # HISTORY:
+# 2012-10-18
+# o Now compareCdfs() gives a more precise 'reason' attribute when there
+#   is a difference in (regular or QC) units.  It narrows down the first
+#   unit that differs and reports it unit number.
 # 2006-09-10
 # o Added argument 'quick' to check only a subset of the units.
 # 2006-09-09
