@@ -2,11 +2,7 @@ Package: affxparser
 ===================
 
 Version: 1.31.2 [2013-01-07]
-o BUG FIX: writeCdf() did not encode unit types as decoded by
-  readCdf().  Unit type 'unknown' was incorrectly encoded such
-  that readCdf() would decode it as 'copynumber'.  Also, unit 
-  types 'genotypingcontrol' and 'expressioncontrol' where not
-  encoded at all.
+o Same updates as in release v1.30.2.
 
 
 Version: 1.31.1 [2012-10-18]
@@ -17,6 +13,14 @@ o Now compareCdfs() gives a more precise 'reason' attribute when there
 
 Version: 1.31.0 [2012-10-01]
 o The version number was bumped for the Bioconductor devel version.
+
+
+Version: 1.30.2 [2013-01-07]
+o BUG FIX: writeCdf() did not encode unit types as decoded by
+  readCdf().  Unit type 'unknown' was incorrectly encoded such
+  that readCdf() would decode it as 'copynumber'.  Also, unit 
+  types 'genotypingcontrol' and 'expressioncontrol' where not
+  encoded at all.
 
 
 Version: 1.30.0 [2012-10-01]
