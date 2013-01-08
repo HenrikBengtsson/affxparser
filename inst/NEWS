@@ -1,6 +1,14 @@
 Package: affxparser
 ===================
 
+Version: 1.31.2 [2013-01-07]
+o BUG FIX: writeCdf() did not encode unit types as decoded by
+  readCdf().  Unit type 'unknown' was incorrectly encoded such
+  that readCdf() would decode it as 'copynumber'.  Also, unit 
+  types 'genotypingcontrol' and 'expressioncontrol' where not
+  encoded at all.
+
+
 Version: 1.31.1 [2012-10-18]
 o Now compareCdfs() gives a more precise 'reason' attribute when there
   is a difference in (regular or QC) units.  It narrows down the first

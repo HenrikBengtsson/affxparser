@@ -155,7 +155,7 @@ t <- system.time({
       cat("Comparing CDFs...\n");
     res <- compareCdfs(filename, outFilename, verbose=verbose);
     if (!res) {
-      stop("An inconsistency between source and destination CDF was detected. Reason:", attr(res, "reason"));
+      stop("An inconsistency between source and destination CDF was detected. Reason: ", attr(res, "reason"));
     }
     if (verbose)
       cat("Comparing CDFs...done\n");
