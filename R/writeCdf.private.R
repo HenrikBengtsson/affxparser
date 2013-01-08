@@ -170,30 +170,17 @@
 
 .writeCdfUnit <- function(unit, con, unitname=NULL) {
     ## 3. Write the unit
-##    unitTypes <- c(expression=1, genotyping=2, tag=3,
-##                                             resequencing=4, unknown=5);
-##
-##    unitType <- unitTypes[unit$unittype];
     unitDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
     unitDirection <- unitDirections[unit$unitdirection];
-
-##    unitType <- switch(unit$unittype,
-##                       expression = 1,
-##                       genotyping = 2,
-##                       tag = 3,
-##                       resequencing = 4,
-##                       unknown = 5)
-
-    # In some version of the Fusion SDK documentation, the unit type 
-    # with value 5 (five) was labelled "unknown".  For backward 
-    # compatibility we recognize input value "unknown" as well.
     unitType <- switch(unit$unittype,
+                       unknown = 0,
                        expression = 1,
                        genotyping = 2,
                        resequencing = 3,
                        tag = 4,
                        copynumber = 5,
-                       unknown = 5)
+                       genotypingcontrol = 6,
+                       expressioncontrol = 7)
 
     unitDirection <- switch(unit$unitdirection,
                             nodirection = 0,
@@ -314,6 +301,11 @@
 
 ############################################################################
 # HISTORY:
+# 2013-01-07 /HB
+# o GENERALIZATION: .writeCdfUnit() now also encodes unit types
+#   'genotypingcontrol' and 'expressioncontrol'.
+# o BUG FIX: .writeCdfUnit() incorrectly encoded the 'unknown' unit type
+#   as 5 and not 0.
 # 2008-08-09 /HB
 # o BUG FIX: .writeCdfUnit() did output unit type 'resequencing' and 'tag'
 #   as 4 and 3, and not 3 and 4, respectively.
