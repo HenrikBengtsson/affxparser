@@ -1,6 +1,11 @@
 Package: affxparser
 ===================
 
+Version: 1.31.3 [2013-03-18]
+o CLEANUP: Internal isPackageLoaded() of findFiles() no longer uses
+  defunct manglePackageName() function.
+
+
 Version: 1.31.2 [2013-01-07]
 o Same updates as in release v1.30.2.
 
