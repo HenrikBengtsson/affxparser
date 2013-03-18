@@ -60,17 +60,17 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
   } # splitPaths()
 
 
-  # Checks if a package is loaded or not (should be in the 'base' package)
+  # Checks if a package is loaded or not (cut'n'paste from R.utils)
   isPackageLoaded <- function(package, version=NULL, ...) {
     s <- search();
     if (is.null(version)) {
       s <- sub("_[0-9.-]*", "", s);
     } else {
-      package <- manglePackageName(package, version);
+      package <- paste(package, version, sep="_");
     }
     pattern <- sprintf("package:%s", package);
-    (pattern %in% s);
-  } # isPackageLoaded()
+   (pattern %in% s);
+  }
 
   
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -225,6 +225,8 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
 
 ############################################################################
 # HISTORY:
+# 2013-03-18 [HB]
+# o Internal isPackageLoaded() no longer uses defunct manglePackageName().
 # 2008-02-21 [HB]
 # o Added an internal generic isPackageLoaded() function.
 # 2008-02-20 [KH]
