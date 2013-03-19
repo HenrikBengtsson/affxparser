@@ -1,7 +1,7 @@
 set.seed(1)
 
-# Simulate a read map for a chip with 2.6 million cells
-nbrOfCells <- 2600000
+# Simulate a read map for a chip with 1.2 million cells
+nbrOfCells <- 1200000
 readMap <- sample(nbrOfCells)
 
 # Get the corresponding write map

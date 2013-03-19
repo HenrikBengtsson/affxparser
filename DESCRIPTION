@@ -1,8 +1,8 @@
 Package: affxparser
-Version: 1.31.3
+Version: 1.31.4
 Depends: R (>= 2.6.0)
 Suggests: R.utils (>= 1.19.5), AffymetrixDataTestFiles
-Date: 2013-03-18
+Date: 2013-03-19
 Title: Affymetrix File Parsing SDK
 Author: Henrik Bengtsson, James Bullard, Robert Gentleman, Kasper Daniel Hansen, Martin Morgan
 Maintainer: Kasper Daniel Hansen <khansen@jhsph.edu>
