@@ -73,7 +73,7 @@ rm(nbrOfCells, idx, readMap, writeMap, writeMap2)
 
 }
 
- \author{Henrik Bengtsson, James Bullard, Robert Gentleman, Kasper Daniel Hansen, Martin Morgan}
+ \author{Henrik Bengtsson}
 
  \seealso{
    To generate an optimized write map for a CDF file, see
