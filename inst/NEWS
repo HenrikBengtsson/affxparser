@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.31.4 [2013-03-19]
+o Made example(invertMap) a bit faster so 'R CMD check' won't complain.
+
+
 Version: 1.31.3 [2013-03-18]
 o CLEANUP: Internal isPackageLoaded() of findFiles() no longer uses
   defunct manglePackageName() function.

@@ -12,7 +12,9 @@
 
  \title{Inverts a read or a write map}
 
- \usage{invertMap(map, ...)}
+ \usage{
+invertMap(map, ...)
+}
 
  \description{
    Inverts a read or a write map.
@@ -39,8 +41,8 @@
  \examples{
 set.seed(1)
 
-# Simulate a read map for a chip with 2.6 million cells
-nbrOfCells <- 2600000
+# Simulate a read map for a chip with 1.2 million cells
+nbrOfCells <- 1200000
 readMap <- sample(nbrOfCells)
 
 # Get the corresponding write map
@@ -71,7 +73,7 @@ rm(nbrOfCells, idx, readMap, writeMap, writeMap2)
 
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson, James Bullard, Robert Gentleman, Kasper Daniel Hansen, Martin Morgan}
 
  \seealso{
    To generate an optimized write map for a CDF file, see
