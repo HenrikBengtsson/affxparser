@@ -16,7 +16,9 @@
  Applies a function to a list of fields of each group in a CDF structure.
 }
 
-\usage{applyCdfGroupFields(cdf, fcn, ...)}
+\usage{
+applyCdfGroupFields(cdf, fcn, ...)
+}
 
 \arguments{
  \item{cdf}{A CDF \code{\link[base]{list}} structure.}
@@ -29,7 +31,7 @@
  Returns an updated CDF \code{\link[base]{list}} structure.
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 \seealso{
   \code{\link{applyCdfGroups}}().

@@ -25,7 +25,7 @@
 #  @see "applyCdfGroupFields".
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword programming
 # @keyword internal

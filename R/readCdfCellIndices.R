@@ -64,7 +64,7 @@
 #   @see "2. Cell coordinates and cell indices".
 # }
 # 
-# @author
+# @author "HB"
 # 
 #  \seealso{
 #    @see "readCdfUnits".

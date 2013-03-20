@@ -16,7 +16,9 @@
  Creates a valid CEL header from a CDF header.
 }
 
-\usage{cdfHeaderToCelHeader(cdfHeader, sampleName="noname", date=Sys.time(), ..., version="4")}
+\usage{
+cdfHeaderToCelHeader(cdfHeader, sampleName="noname", date=Sys.time(), ..., version="4")
+}
 
 \arguments{
  \item{cdfHeader}{A CDF \code{\link[base]{list}} structure.}
@@ -31,7 +33,7 @@
  Returns a CDF \code{\link[base]{list}} structure.
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 

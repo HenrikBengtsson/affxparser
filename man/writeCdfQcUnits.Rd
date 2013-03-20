@@ -12,7 +12,9 @@
 
  \title{Writes CDF QC units}
 
- \usage{writeCdfQcUnits(con, cdfQcUnits, verbose=0)}
+ \usage{
+writeCdfQcUnits(con, cdfQcUnits, verbose=0)
+}
 
  \description{
    Writes CDF QC units.
@@ -33,7 +35,7 @@
    Returns nothing.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \seealso{
    This method is called by \code{\link{writeCdf}}().

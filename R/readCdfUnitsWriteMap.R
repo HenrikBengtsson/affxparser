@@ -38,7 +38,7 @@
 #   A @integer @vector which is a \emph{write} map.
 # }
 #
-# @author
+# @author "HB"
 # 
 # \examples{
 #   @include "../incl/readCdfUnitsWriteMap.Rex"

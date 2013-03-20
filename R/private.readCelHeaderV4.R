@@ -24,7 +24,7 @@
 #  to reach the data section.  It does not make use of Fusion SDK.
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword IO
 # @keyword File

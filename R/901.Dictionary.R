@@ -37,6 +37,4 @@
 #   \item{XDA}{A file format, aka as the binary file format.}
 #  }
 # }
-#
-# @author
 #*/#########################################################################  

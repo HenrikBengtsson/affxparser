@@ -19,7 +19,9 @@
  on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
 }
 
-\usage{cdfAddPlasqTypes(groups, ...)}
+\usage{
+cdfAddPlasqTypes(groups, ...)
+}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} structure with groups.
@@ -54,7 +56,7 @@
  Example: (PM,A,c,R) = 8 + 4 + 2 + 0 = 14 (=PMcAR)
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 \references{
  [1] LaFramboise T, Weir BA, Zhao X, Beroukhim R, Li C, Harrington D,

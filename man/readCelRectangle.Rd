@@ -12,7 +12,9 @@
 
  \title{Reads a spatial subset of probe-level data from Affymetrix CEL files}
 
- \usage{readCelRectangle(filename, xrange=c(0, Inf), yrange=c(0, Inf), ..., asMatrix=TRUE)}
+ \usage{
+readCelRectangle(filename, xrange=c(0, Inf), yrange=c(0, Inf), ..., asMatrix=TRUE)
+}
 
  \description{
    Reads a spatial subset of probe-level data from Affymetrix CEL files.
@@ -36,7 +38,7 @@
    are returned as matrices, otherwise not.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \examples{
 ##############################################################

@@ -12,7 +12,9 @@
 
  \title{Creates an empty CEL file}
 
- \usage{createCel(filename, header, nsubgrids=0, overwrite=FALSE, ..., cdf=NULL, verbose=FALSE)}
+ \usage{
+createCel(filename, header, nsubgrids=0, overwrite=FALSE, ..., cdf=NULL, verbose=FALSE)
+}
 
  \description{
    Creates an empty CEL file.
@@ -97,7 +99,7 @@ stopifnot(identical(intensities, value))
 ##############################################################
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
 
 

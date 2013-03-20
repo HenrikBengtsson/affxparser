@@ -19,7 +19,9 @@
  on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
 }
 
-\usage{cdfMergeAlleles(groups, compReverseBases=FALSE, collapse="", ...)}
+\usage{
+cdfMergeAlleles(groups, compReverseBases=FALSE, collapse="", ...)
+}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} structure with groups.}
@@ -45,7 +47,7 @@
  \code{\link{applyCdfGroups}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 \references{
  [1] Affymetrix, \emph{Understanding Genotyping Probe Set Structure}, 2005.

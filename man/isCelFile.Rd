@@ -16,7 +16,9 @@
  Checks if a file is a CEL file or not.
 }
 
-\usage{isCelFile(filename, ...)}
+\usage{
+isCelFile(filename, ...)
+}
 
 \arguments{
  \item{filename}{A filename.}
@@ -34,7 +36,7 @@
  \code{\link{readCel}}(), \code{\link{readCelHeader}}(), \code{\link{readCelUnits}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 

@@ -29,7 +29,7 @@
 #  @see "applyCdfGroups".
 # }
 #
-# @author
+# @author "HB"
 #
 # \references{
 #  [1] Affymetrix, \emph{Understanding Genotyping Probe Set Structure}, 2005.

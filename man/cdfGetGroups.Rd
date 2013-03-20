@@ -18,7 +18,9 @@
  This \code{\link[base]{function}} is designed to be used with \code{\link{applyCdfGroups}}().
 }
 
-\usage{cdfGetGroups(groups, which, ...)}
+\usage{
+cdfGetGroups(groups, which, ...)
+}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} of groups.}
@@ -34,7 +36,7 @@
  \code{\link{applyCdfGroups}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 

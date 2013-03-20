@@ -22,7 +22,7 @@
 #  Returns a CDF @list structure.
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword programming
 # @keyword internal

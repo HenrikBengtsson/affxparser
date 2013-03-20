@@ -45,7 +45,7 @@
 #  Example: (PM,A,c,R) = 8 + 4 + 2 + 0 = 14 (=PMcAR)
 # }
 #
-# @author
+# @author "HB"
 #
 # \references{
 #  [1] LaFramboise T, Weir BA, Zhao X, Beroukhim R, Li C, Harrington D, 

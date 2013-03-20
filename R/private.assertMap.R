@@ -20,7 +20,7 @@
 #   map, otherwise an error is thrown.
 # }
 #
-# @author
+# @author "HB"
 # 
 # @keyword "file"
 # @keyword "IO"
