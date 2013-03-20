@@ -12,7 +12,9 @@
 
  \title{Writes a CDF header}
 
- \usage{writeCdfHeader(con, cdfHeader, unitNames, qcUnitLengths, unitLengths, verbose=0)}
+ \usage{
+writeCdfHeader(con, cdfHeader, unitNames, qcUnitLengths, unitLengths, verbose=0)
+}
 
  \description{
    Writes a CDF header.
@@ -36,7 +38,7 @@
    Returns nothing.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \seealso{
    This method is called by \code{\link{writeCdf}}().

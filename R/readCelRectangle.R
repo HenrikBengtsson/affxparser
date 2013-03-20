@@ -27,7 +27,7 @@
 #   are returned as matrices, otherwise not.
 # }
 #
-# @author
+# @author "HB"
 # 
 # @examples "../incl/readCelRectangle.Rex"
 # 

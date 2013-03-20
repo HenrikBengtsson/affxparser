@@ -52,7 +52,7 @@
 #   file is not specified.
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword file
 # @keyword IO

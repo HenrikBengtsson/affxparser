@@ -29,7 +29,7 @@
 #
 # @examples "../incl/invertMap.Rex"
 #
-# @author
+# @author "HB"
 # 
 # \seealso{
 #   To generate an optimized write map for a CDF file, see 

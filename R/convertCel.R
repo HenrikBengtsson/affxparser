@@ -54,7 +54,7 @@
 #
 # @examples "../incl/convertCel.Rex"
 #
-# @author
+# @author "HB"
 #
 # \seealso{
 #   @see "createCel".

@@ -12,7 +12,9 @@
 
 \title{Compares the contents of two CEL files}
 
-\usage{compareCels(pathname, other, readMap=NULL, otherReadMap=NULL, verbose=0, ...)}
+\usage{
+compareCels(pathname, other, readMap=NULL, otherReadMap=NULL, verbose=0, ...)
+}
 
 \description{
   Compares the contents of two CEL files.
@@ -34,7 +36,7 @@
   \code{value2} contain the two objects/values that differs.
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 \seealso{
   \code{\link{convertCel}}().

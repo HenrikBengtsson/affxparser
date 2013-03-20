@@ -12,7 +12,9 @@
 
  \title{Checks if cells in a CDF file are perfect-match probes or not}
 
- \usage{readCdfIsPm(filename, units=NULL, verbose=0)}
+ \usage{
+readCdfIsPm(filename, units=NULL, verbose=0)
+}
 
  \description{
    Checks if cells in a CDF file are perfect-match probes or not.
@@ -31,7 +33,7 @@
    are unit names and the names of the logical vector are group names.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
 
 

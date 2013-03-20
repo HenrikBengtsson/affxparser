@@ -12,7 +12,9 @@
 
  \title{Updates a CEL file}
 
- \usage{updateCel(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, writeMap=NULL, ..., verbose=0)}
+ \usage{
+updateCel(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, writeMap=NULL, ..., verbose=0)
+}
 
  \description{
    Updates a CEL file.
@@ -149,7 +151,7 @@ rm(files, cel, cel0, idxs, data, ff, fields, rotate270)
 
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
 
 

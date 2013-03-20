@@ -47,7 +47,7 @@
 #
 # @examples "../incl/createCel.Rex"
 #
-# @author
+# @author "HB"
 # 
 # @keyword "file"
 # @keyword "IO"

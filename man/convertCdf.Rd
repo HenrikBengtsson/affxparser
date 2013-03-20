@@ -12,7 +12,9 @@
 
  \title{Converts a CDF into the same CDF but with another format}
 
- \usage{convertCdf(filename, outFilename, version="4", force=FALSE, ..., .validate=TRUE, verbose=FALSE)}
+ \usage{
+convertCdf(filename, outFilename, version="4", force=FALSE, ..., .validate=TRUE, verbose=FALSE)
+}
 
  \description{
    Converts a CDF into the same CDF but with another format.
@@ -80,7 +82,7 @@ convertCdf(cdfFiles$ASCII, outFile, verbose=TRUE)
 
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \seealso{
    See \code{\link{compareCdfs}}() to compare two CDF files.

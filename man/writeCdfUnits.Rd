@@ -12,7 +12,9 @@
 
  \title{Writes CDF units}
 
- \usage{writeCdfUnits(con, cdfUnits, verbose=0)}
+ \usage{
+writeCdfUnits(con, cdfUnits, verbose=0)
+}
 
  \description{
    Writes CDF units.
@@ -34,7 +36,7 @@
    Returns nothing.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \seealso{
    This method is called by \code{\link{writeCdf}}().

@@ -17,7 +17,9 @@
  Applies a function over the groups in a CDF structure.
 }
 
-\usage{applyCdfGroups(cdf, fcn, ...)}
+\usage{
+applyCdfGroups(cdf, fcn, ...)
+}
 
 \arguments{
  \item{cdf}{A CDF \code{\link[base]{list}} structure.}
@@ -142,7 +144,7 @@ stopifnot(identical(cells0, cells))
 
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 \keyword{programming}

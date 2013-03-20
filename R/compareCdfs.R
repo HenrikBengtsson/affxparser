@@ -30,7 +30,7 @@
 #  the size of the CDFs.
 # }
 #
-# @author
+# @author "HB"
 #
 # \seealso{
 #   @see "convertCdf".

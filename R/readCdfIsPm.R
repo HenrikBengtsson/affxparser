@@ -22,7 +22,7 @@
 #   are unit names and the names of the logical vector are group names.
 # }
 #
-# @author
+# @author "HB"
 # 
 # @keyword "file"
 # @keyword "IO"

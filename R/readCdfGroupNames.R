@@ -28,7 +28,7 @@
 #    names for the corrsponding unit.
 #  }
 # 
-#  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+# @author "HB"
 # 
 #  \seealso{
 #    @see "readCdfUnits".

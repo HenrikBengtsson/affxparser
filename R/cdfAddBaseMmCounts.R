@@ -54,7 +54,7 @@
 #  @see "applyCdfGroups".
 # }
 #
-# @author
+# @author "HB"
 #
 # \references{
 #  [1] LaFramboise T, Weir BA, Zhao X, Beroukhim R, Li C, Harrington D, 

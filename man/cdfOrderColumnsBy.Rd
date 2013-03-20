@@ -20,7 +20,9 @@
   on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
  }
 
- \usage{cdfOrderColumnsBy(groups, field, row=1, ...)}
+ \usage{
+cdfOrderColumnsBy(groups, field, row=1, ...)
+}
 
  \arguments{
   \item{groups}{A \code{\link[base]{list}} of groups.}
@@ -39,7 +41,7 @@
   \code{\link{applyCdfGroups}}().
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
 
 

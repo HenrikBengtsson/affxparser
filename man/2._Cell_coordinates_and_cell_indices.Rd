@@ -93,5 +93,5 @@
    use of this internal field.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 \keyword{documentation}

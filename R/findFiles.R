@@ -37,7 +37,7 @@
 #   elsewhere.  For more details, see @see "R.utils::filePath".
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword file
 # @keyword IO
