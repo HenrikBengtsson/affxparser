@@ -47,6 +47,4 @@
   \item{XDA}{A file format, aka as the binary file format.}
  }
 }
-
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
 \keyword{documentation}

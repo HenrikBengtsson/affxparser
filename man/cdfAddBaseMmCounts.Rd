@@ -23,7 +23,9 @@
  as used by [1].
 }
 
-\usage{cdfAddBaseMmCounts(groups, ...)}
+\usage{
+cdfAddBaseMmCounts(groups, ...)
+}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} structure with groups.
@@ -63,7 +65,7 @@
  \code{\link{applyCdfGroups}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 \references{
  [1] LaFramboise T, Weir BA, Zhao X, Beroukhim R, Li C, Harrington D,

@@ -12,7 +12,9 @@
 
  \title{Reads an the header of an Affymetrix Command Console Generic (CCG) file}
 
- \usage{readCcgHeader(pathname, verbose=0, .filter=list(fileHeader = TRUE, dataHeader = TRUE), ...)}
+ \usage{
+readCcgHeader(pathname, verbose=0, .filter=list(fileHeader = TRUE, dataHeader = TRUE), ...)
+}
 
  \description{
    Reads an the header of an Affymetrix Command Console Generic (CCG) file.
@@ -30,7 +32,7 @@
    A named \code{\link[base]{list}} structure consisting of ...
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
   \details{
     Note, the current implementation of this methods does not utilize the

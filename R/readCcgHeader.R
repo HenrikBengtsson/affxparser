@@ -21,7 +21,7 @@
 #   A named @list structure consisting of ...
 # }
 # 
-# @author
+# @author "HB"
 # 
 #  \details{
 #    Note, the current implementation of this methods does not utilize the

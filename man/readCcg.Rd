@@ -12,7 +12,9 @@
 
  \title{Reads an Affymetrix Command Console Generic (CCG) Data file}
 
- \usage{readCcg(pathname, verbose=0, .filter=NULL, ...)}
+ \usage{
+readCcg(pathname, verbose=0, .filter=NULL, ...)
+}
 
  \description{
    Reads an Affymetrix Command Console Generic (CCG) Data file.  The CCG data file format is also known as the
@@ -76,7 +78,7 @@
   }
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
   \seealso{
     \code{\link{readCcgHeader}}().

@@ -18,7 +18,9 @@
  will be moved to subdirectory \code{celFiles/HG\_U95Av2/}.
 }
 
-\usage{arrangeCelFilesByChipType(pathnames=list.files(pattern = "[.](cel|CEL)$"), path="celFiles/", aliases=NULL, ...)}
+\usage{
+arrangeCelFilesByChipType(pathnames=list.files(pattern = "[.](cel|CEL)$"), path="celFiles/", aliases=NULL, ...)
+}
 
 \arguments{
  \item{pathnames}{A \code{\link[base]{character}} \code{\link[base]{vector}} of CEL pathnames to be moved.}
@@ -41,7 +43,7 @@
  cf. \code{\link{readCelHeader}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 

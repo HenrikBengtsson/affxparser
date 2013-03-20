@@ -12,7 +12,9 @@
 
  \title{Converts a CEL into the same CEL but with another format}
 
- \usage{convertCel(filename, outFilename, readMap=NULL, writeMap=NULL, version="4", newChipType=NULL, ..., .validate=FALSE, verbose=FALSE)}
+ \usage{
+convertCel(filename, outFilename, readMap=NULL, writeMap=NULL, version="4", newChipType=NULL, ..., .validate=FALSE, verbose=FALSE)
+}
 
  \description{
    Converts a CEL into the same CEL but with another format.
@@ -86,7 +88,7 @@ convertCel(file, outFile, .validate=TRUE)
 
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \seealso{
    \code{\link{createCel}}().

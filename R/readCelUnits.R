@@ -59,7 +59,7 @@
 #   and @see "readCel".
 # }
 #
-# @author
+# @author "HB"
 # 
 # @examples "../incl/readCelUnits.Rex"
 # 

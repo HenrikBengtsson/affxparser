@@ -12,7 +12,9 @@
 
  \title{Reads (one-based) cell indices of units (probesets) in an Affymetrix CDF file}
 
- \usage{readCdfCellIndices(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), verbose=0)}
+ \usage{
+readCdfCellIndices(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), verbose=0)
+}
 
  \description{
    Reads (one-based) cell indices of units (probesets) in an Affymetrix CDF file.
@@ -73,7 +75,7 @@
    \code{\link{2. Cell coordinates and cell indices}}.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
   \seealso{
     \code{\link{readCdfUnits}}().

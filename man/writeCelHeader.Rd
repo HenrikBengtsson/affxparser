@@ -12,7 +12,9 @@
 
  \title{Writes a CEL header to a connection}
 
- \usage{writeCelHeader(con, header, outputVersion=c("4"), ...)}
+ \usage{
+writeCelHeader(con, header, outputVersion=c("4"), ...)
+}
 
  \description{
    Writes a CEL header to a connection.
@@ -46,7 +48,7 @@
    this DAT header that the chip type is extracted.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
 
 

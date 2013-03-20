@@ -12,7 +12,9 @@
 
  \title{Compares the contents of two CDF files}
 
- \usage{compareCdfs(pathname, other, quick=FALSE, verbose=0, ...)}
+ \usage{
+compareCdfs(pathname, other, quick=FALSE, verbose=0, ...)
+}
 
  \description{
    Compares the contents of two CDF files.
@@ -39,7 +41,7 @@
   the size of the CDFs.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \seealso{
    \code{\link{convertCdf}}().

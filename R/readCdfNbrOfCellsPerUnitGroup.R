@@ -23,7 +23,8 @@
 # }
 #
 # @examples "../incl/readCdfNbrOfCellsPerUnitGroup.Rex"
-# @author
+#
+# @author "HB"
 # 
 # @keyword "file"
 # @keyword "IO"

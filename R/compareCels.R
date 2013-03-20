@@ -25,7 +25,7 @@
 #   \code{value2} contain the two objects/values that differs.
 # }
 #
-# @author
+# @author "HB"
 #
 # \seealso{
 #   @see "convertCel".

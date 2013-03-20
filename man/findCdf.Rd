@@ -16,7 +16,9 @@
  Search for CDF files in multiple directories.
 }
 
-\usage{findCdf(chipType=NULL, paths=NULL, recursive=TRUE, pattern="[.](c|C)(d|D)(f|F)$", ...)}
+\usage{
+findCdf(chipType=NULL, paths=NULL, recursive=TRUE, pattern="[.](c|C)(d|D)(f|F)$", ...)
+}
 
 \arguments{
  \item{chipType}{A \code{\link[base]{character}} string of the chip type to search for.}
@@ -86,7 +88,7 @@ for (cdfFile in cdfFiles) {
   file is not specified.
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 

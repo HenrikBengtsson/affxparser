@@ -27,7 +27,7 @@
 #   @see "isCelFile".
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword programming
 # @keyword file

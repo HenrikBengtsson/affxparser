@@ -12,7 +12,9 @@
 
  \title{Updates a CEL file unit by unit}
 
- \usage{updateCelUnits(filename, cdf=NULL, data, ..., verbose=0)}
+ \usage{
+updateCelUnits(filename, cdf=NULL, data, ..., verbose=0)
+}
 
  \description{
    Updates a CEL file unit by unit.\cr
@@ -119,7 +121,7 @@ for (kk in 1:10) {
 ##############################################################
 }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \seealso{
    Internally, \code{\link{updateCel}}() is used.

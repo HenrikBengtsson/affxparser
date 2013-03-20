@@ -44,7 +44,7 @@
 #
 # @examples "../incl/updateCelUnits.Rex"
 #
-# @author
+# @author "HB"
 # 
 # \seealso{
 #   Internally, @see "updateCel" is used.

@@ -25,7 +25,7 @@
 #  @see "readCelHeader".
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword programming
 # @keyword file

@@ -18,7 +18,9 @@
  This \code{\link[base]{function}} is designed to be used with \code{\link{applyCdfGroupFields}}().
 }
 
-\usage{cdfSetDimension(field, dim, ...)}
+\usage{
+cdfSetDimension(field, dim, ...)
+}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} of groups.}
@@ -34,7 +36,7 @@
  \code{\link{applyCdfGroupFields}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 

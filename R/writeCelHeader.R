@@ -37,7 +37,7 @@
 #   this DAT header that the chip type is extracted.
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword "file"
 # @keyword "IO"

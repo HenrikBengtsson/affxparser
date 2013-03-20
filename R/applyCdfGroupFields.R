@@ -20,7 +20,7 @@
 #  Returns an updated CDF @list structure.
 # }
 #
-# @author
+# @author "HB"
 #
 # \seealso{
 #   @see "applyCdfGroups".

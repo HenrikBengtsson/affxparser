@@ -18,7 +18,9 @@
  The file must be a valid CEL file, if not an exception is thrown.
 }
 
-\usage{copyCel(from, to, overwrite=FALSE, ...)}
+\usage{
+copyCel(from, to, overwrite=FALSE, ...)
+}
 
 \arguments{
  \item{from}{The filename of the CEL file to be copied.}
@@ -36,7 +38,7 @@
   \code{\link{isCelFile}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 

@@ -50,7 +50,7 @@
 #
 # @examples "../incl/convertCdf.Rex"
 #
-# @author
+# @author "HB"
 #
 # \seealso{
 #   See @see "compareCdfs" to compare two CDF files.

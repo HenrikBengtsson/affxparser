@@ -19,7 +19,9 @@
  on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
 }
 
-\usage{cdfAddProbeOffsets(groups, ...)}
+\usage{
+cdfAddProbeOffsets(groups, ...)
+}
 
 \arguments{
  \item{groups}{A \code{\link[base]{list}} structure with groups.
@@ -38,7 +40,7 @@
  \code{\link{applyCdfGroups}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 \references{
  [1] Affymetrix, \emph{Understanding Genotyping Probe Set Structure}, 2005.

@@ -12,7 +12,9 @@
 
  \title{Reads group names for a set of units (probesets) in an Affymetrix CDF file}
 
- \usage{readCdfGroupNames(filename, units=NULL, truncateGroupNames=TRUE, verbose=0)}
+ \usage{
+readCdfGroupNames(filename, units=NULL, truncateGroupNames=TRUE, verbose=0)
+}
 
  \description{
    Reads group names for a set of units (probesets) in an Affymetrix CDF file.
@@ -37,7 +39,7 @@
     names for the corrsponding unit.
   }
 
-  \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
   \seealso{
     \code{\link{readCdfUnits}}().

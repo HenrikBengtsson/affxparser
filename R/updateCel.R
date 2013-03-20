@@ -36,7 +36,7 @@
 #
 # @examples "../incl/updateCel.Rex"
 #
-# @author
+# @author "HB"
 # 
 # @keyword "file"
 # @keyword "IO"

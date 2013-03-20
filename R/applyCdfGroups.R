@@ -53,7 +53,7 @@
 #
 # @examples "../incl/applyCdfGroups.Rex"
 #
-# @author
+# @author "HB"
 #
 # @keyword programming
 #**/#######################################################################

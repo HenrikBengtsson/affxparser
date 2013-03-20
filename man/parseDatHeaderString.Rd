@@ -16,7 +16,9 @@
  Parses a DAT header string.
 }
 
-\usage{parseDatHeaderString(header, timeFormat="\%m/\%d/\%y \%H:\%M:\%S", ...)}
+\usage{
+parseDatHeaderString(header, timeFormat="\%m/\%d/\%y \%H:\%M:\%S", ...)
+}
 
 \arguments{
  \item{header}{A \code{\link[base]{character}} string.}
@@ -34,7 +36,7 @@
  \code{\link{readCelHeader}}().
 }
 
-\author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+\author{Henrik Bengtsson}
 
 
 

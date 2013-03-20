@@ -12,7 +12,9 @@
 
  \title{Gets the number of cells (probes) that each group of each unit in a CDF file}
 
- \usage{readCdfNbrOfCellsPerUnitGroup(filename, units=NULL, verbose=0)}
+ \usage{
+readCdfNbrOfCellsPerUnitGroup(filename, units=NULL, verbose=0)
+}
 
  \description{
    Gets the number of cells (probes) that each group of each unit in a CDF file.
@@ -111,7 +113,8 @@ print(sum(x[["4"]][3,]-x[["4"]][4,] != 0))
 }                                                     # STOP #
 ##############################################################
 }
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+
+ \author{Henrik Bengtsson}
 
 
 

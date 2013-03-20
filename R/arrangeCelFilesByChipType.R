@@ -32,7 +32,7 @@
 #  cf. @see "readCelHeader".
 # }
 #
-# @author
+# @author "HB"
 #
 # @keyword programming
 # @keyword internal

@@ -24,7 +24,7 @@
 #   Returns nothing.
 # }
 #
-# @author
+# @author "HB"
 #
 # \seealso{
 #   This method is called by @see "writeCdf".

@@ -67,7 +67,7 @@
 #  }
 # }
 #
-# @author
+# @author "HB"
 # 
 #  \seealso{
 #    @see "readCcgHeader".

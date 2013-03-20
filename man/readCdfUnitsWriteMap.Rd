@@ -12,7 +12,9 @@
 
  \title{Generates an Affymetrix cell-index write map from a CDF file}
 
- \usage{readCdfUnitsWriteMap(filename, units=NULL, ..., verbose=FALSE)}
+ \usage{
+readCdfUnitsWriteMap(filename, units=NULL, ..., verbose=FALSE)
+}
 
  \description{
    Generates an Affymetrix cell-index write map from a CDF file.
@@ -47,7 +49,7 @@
    A \code{\link[base]{integer}} \code{\link[base]{vector}} which is a \emph{write} map.
  }
 
- \author{Henrik Bengtsson (\url{http://www.braju.com/R/})}
+ \author{Henrik Bengtsson}
 
  \examples{
    ##############################################################
