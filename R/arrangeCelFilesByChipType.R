@@ -5,8 +5,8 @@
 #
 # \description{
 #  @get "title" according to the CEL file headers.
-#  For instance, a HG\_U95Av2 CEL file with pathname "data/foo.CEL"
-#  will be moved to subdirectory \code{celFiles/HG\_U95Av2/}.
+#  For instance, a HG_U95Av2 CEL file with pathname "data/foo.CEL"
+#  will be moved to subdirectory \code{celFiles/HG_U95Av2/}.
 # }
 #
 # @synopsis
@@ -16,7 +16,10 @@
 #  \item{path}{A @character string specifying the root output directory,
 #     which in turn will contain chip-type subdirectories.
 #     All directories will be created, if missing.}
-#  \item{aliases}{A named @character string with chip type aliases.}
+#  \item{aliases}{A named @character string with chip type aliases.
+#     For instance, \code{aliases=c("Focus"="HG-Focus")} will treat
+#     a CEL file with chiptype label 'Focus' (early-access name) as
+#     if it was 'HG-Focus' (offical name).}
 #  \item{...}{Not used.}
 # }
 #
@@ -36,7 +39,7 @@
 #
 # @keyword programming
 # @keyword internal
-#**/####################################################################### 
+#**/#######################################################################
 arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)$"), path="celFiles/", aliases=NULL, ...) {
   require("R.utils") || throw("Package not loaded: R.utils");
 
@@ -94,7 +97,7 @@ arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)
 
 
 ############################################################################
-# HISTORY: 
+# HISTORY:
 # 2012-09-01
 # o Added argument 'aliases' to arrangeCelFilesByChipType(), e.g.
 #   arrangeCelFilesByChipType(..., aliases=c("Focus"="HG-Focus")).
