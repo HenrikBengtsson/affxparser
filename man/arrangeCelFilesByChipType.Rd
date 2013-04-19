@@ -14,8 +14,8 @@
 
 \description{
  Moves CEL files to subdirectories with names corresponding to the chip types according to the CEL file headers.
- For instance, a HG\_U95Av2 CEL file with pathname "data/foo.CEL"
- will be moved to subdirectory \code{celFiles/HG\_U95Av2/}.
+ For instance, a HG_U95Av2 CEL file with pathname "data/foo.CEL"
+ will be moved to subdirectory \code{celFiles/HG_U95Av2/}.
 }
 
 \usage{
@@ -27,7 +27,10 @@ arrangeCelFilesByChipType(pathnames=list.files(pattern = "[.](cel|CEL)$"), path=
  \item{path}{A \code{\link[base]{character}} string specifying the root output directory,
     which in turn will contain chip-type subdirectories.
     All directories will be created, if missing.}
- \item{aliases}{A named \code{\link[base]{character}} string with chip type aliases.}
+ \item{aliases}{A named \code{\link[base]{character}} string with chip type aliases.
+    For instance, \code{aliases=c("Focus"="HG-Focus")} will treat
+    a CEL file with chiptype label 'Focus' (early-access name) as
+    if it was 'HG-Focus' (offical name).}
  \item{...}{Not used.}
 }
 
