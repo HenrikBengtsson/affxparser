@@ -13,7 +13,8 @@
  \title{Reads (one-based) cell indices of units (probesets) in an Affymetrix CDF file}
 
  \usage{
-readCdfCellIndices(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), verbose=0)
+readCdfCellIndices(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"),
+  verbose=0)
 }
 
  \description{

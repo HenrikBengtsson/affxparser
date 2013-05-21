@@ -19,7 +19,8 @@
 }
 
 \usage{
-arrangeCelFilesByChipType(pathnames=list.files(pattern = "[.](cel|CEL)$"), path="celFiles/", aliases=NULL, ...)
+arrangeCelFilesByChipType(pathnames=list.files(pattern = "[.](cel|CEL)$"),
+  path="celFiles/", aliases=NULL, ...)
 }
 
 \arguments{

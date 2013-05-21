@@ -13,7 +13,8 @@
  \title{Reads units (probesets) from an Affymetrix CDF file}
 
  \usage{
-readCdfDataFrame(filename, units=NULL, groups=NULL, cells=NULL, fields=NULL, drop=TRUE, verbose=0)
+readCdfDataFrame(filename, units=NULL, groups=NULL, cells=NULL, fields=NULL, drop=TRUE,
+  verbose=0)
 }
 
  \description{

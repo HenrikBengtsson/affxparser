@@ -13,7 +13,8 @@
  \title{Reads an the header of an Affymetrix Command Console Generic (CCG) file}
 
  \usage{
-readCcgHeader(pathname, verbose=0, .filter=list(fileHeader = TRUE, dataHeader = TRUE), ...)
+readCcgHeader(pathname, verbose=0, .filter=list(fileHeader = TRUE, dataHeader = TRUE),
+  ...)
 }
 
  \description{
