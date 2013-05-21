@@ -13,7 +13,9 @@
  \title{Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files}
 
  \usage{
-readCelUnits(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, readMap=NULL, verbose=FALSE)
+readCelUnits(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"),
+  cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, readMap=NULL,
+  verbose=FALSE)
 }
 
  \description{

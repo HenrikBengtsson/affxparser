@@ -13,7 +13,9 @@
  \title{Reads units (probesets) from an Affymetrix CDF file}
 
  \usage{
-readCdfUnits(filename, units=NULL, readXY=TRUE, readBases=TRUE, readExpos=TRUE, readType=TRUE, readDirection=TRUE, stratifyBy=c("nothing", "pmmm", "pm", "mm"), readIndices=FALSE, verbose=0)
+readCdfUnits(filename, units=NULL, readXY=TRUE, readBases=TRUE, readExpos=TRUE,
+  readType=TRUE, readDirection=TRUE, stratifyBy=c("nothing", "pmmm", "pm", "mm"),
+  readIndices=FALSE, verbose=0)
 }
 
  \description{
