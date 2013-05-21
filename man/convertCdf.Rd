@@ -13,7 +13,8 @@
  \title{Converts a CDF into the same CDF but with another format}
 
  \usage{
-convertCdf(filename, outFilename, version="4", force=FALSE, ..., .validate=TRUE, verbose=FALSE)
+convertCdf(filename, outFilename, version="4", force=FALSE, ..., .validate=TRUE,
+  verbose=FALSE)
 }
 
  \description{

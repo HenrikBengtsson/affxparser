@@ -13,7 +13,8 @@
  \title{Updates a CEL file}
 
  \usage{
-updateCel(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, writeMap=NULL, ..., verbose=0)
+updateCel(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL,
+  writeMap=NULL, ..., verbose=0)
 }
 
  \description{

@@ -1,9 +1,17 @@
 Package: affxparser
 ===================
 
+Version: 1.33.1 [2013-05-20]
+o Same updates as in release v1.32.1.
+
+
 Version: 1.33.0 [2013-04-03]
 o The version number was bumped for the Bioconductor devel version.
 o No updates.
+
+
+Version: 1.32.1 [2013-05-20]
+o CRAN POLICY: Now all Rd \usage{} lines are at most 90 characters long.
 
 
 Version: 1.32.0 [2013-04-03]
