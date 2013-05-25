@@ -3,15 +3,15 @@
 #
 # @title "Updates a CEL file"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #   @get "title".
 # }
-# 
+#
 # \arguments{
 #   \item{filename}{The filename of the CEL file.}
-#   \item{indices}{A @numeric @vector of cell (probe) indices specifying 
+#   \item{indices}{A @numeric @vector of cell (probe) indices specifying
 #     which cells to updated.  If @NULL, all indices are considered.}
 #   \item{intensities}{A @numeric @vector of intensity values to be stored.
 #     Alternatively, it can also be a named @data.frame or @matrix (or @list)
@@ -23,7 +23,7 @@
 #   \item{verbose}{An @integer specifying how much verbose details are
 #     outputted.}
 # }
-# 
+#
 # \value{
 #   Returns (invisibly) the pathname of the file updated.
 # }
@@ -37,14 +37,14 @@
 # @examples "../incl/updateCel.Rex"
 #
 # @author "HB"
-# 
+#
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
 updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixels=NULL, writeMap=NULL, ..., verbose=0) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   if (!file.exists(filename)) {
     stop("Cannot update CEL file. File not found: ", filename);
@@ -140,9 +140,9 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
     return(invisible(filename));
   }
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Reorder data such that it is written in optimal order
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   reorder <- TRUE;
   if (is.null(indices)) {
     # Has write map?
@@ -165,12 +165,12 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
       stdvs <- stdvs[o];
     if (!is.null(pixels))
       pixels <- pixels[o];
-    rm(o);
+    o <- NULL; # Not needed anymore
     if (verbose >= 2)
       cat("done.\n");
   }
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Write data to file
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   version <- header$version;
@@ -184,10 +184,10 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
       cat("Skipping to beginging of data section...");
     h <- .readCelHeaderV4(con);
 
-    # "Cell entries - this consists of an intensity value, standard 
+    # "Cell entries - this consists of an intensity value, standard
     #  deviation value and pixel count for each cell in the array.
-    #  The values are stored by row then column starting with the X=0, 
-    #  Y=0 cell. As an example, the first five entries are for cells 
+    #  The values are stored by row then column starting with the X=0,
+    #  Y=0 cell. As an example, the first five entries are for cells
     #  defined by XY coordinates: (0,0), (1,0), (2,0), (3,0), (4,0).
     #  Type: (float, float, short) = 4 + 4 + 2 = 10 bytes / cell
     #  cellData <- c(readFloat(con), readFloat(con), readShort(con));
@@ -250,7 +250,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
         cat("done.\n");
       # Common to all fields
       raw <- NULL;
-  
+
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       # Update 'intensities'
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -265,11 +265,11 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
         # Updated 'rawAll' accordingly
         idx <- rep(sizeOfCell*indices[subset], each=4) + 1:4;
         rawAll[idx] <- raw;
-        rm(idx);
+        idx <- NULL; # Not needed anymore
         if (verbose >= 1)
           cat("done.\n");
       }
-  
+
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       # Update 'stdvs'
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -281,39 +281,39 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
           raw <- raw(length=4*n);
         raw <- writeBin(con=raw, stdvs[subset], size=4, endian="little");
         stdvs <- stdvs[-subset]; # Not needed anymore
-  
+
         # Updated 'rawAll' accordingly
         idx <- rep(sizeOfCell*indices[subset], each=4) + 5:8;
         rawAll[idx] <- raw;
-        rm(idx);
+        idx <- NULL; # Not needed anymore
         if (verbose >= 1)
           cat("done.\n");
       }
-  
+
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       # Update 'pixels'
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       if (!is.null(pixels)) {
-        rm(raw);
+        raw <- NULL; # Not needed anymore
         if (verbose >= 1)
           cat("Updating 'pixels'...");
         # Write short integers (size=2) to raw vector
         raw <- raw(length=2*n);
         raw <- writeBin(con=raw, pixels[subset], size=2, endian="little");
         pixels <- pixels[-subset]; # Not needed anymore
-  
+
         # Updated 'rawAll' accordingly
         idx <- rep(sizeOfCell*indices[subset], each=2) + 9:10;
         rawAll[idx] <- raw;
-        rm(idx);
+        idx <- NULL; # Not needed anymore
         if (verbose >= 1)
           cat("done.\n");
       }
-      rm(raw);
+      raw <- NULL; # Not needed anymore
 
       # Remove updated indices
       indices <- indices[-subset];
-      rm(subset);
+      subset <- NULL; # Not needed anymore
 
       # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       # Write raw data back to file
@@ -325,7 +325,7 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
       if (verbose >= 1)
         cat("done.\n");
 
-      rm(rawAll);
+      rawAll <- NULL; # Not needed anymore
 
       if (verbose >= 1)
         cat(sprintf("Updating chunk #%d of %d...done\n", count, nbrOfChunks));
@@ -351,14 +351,14 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 #   That made updateCel() do funny things and write to the wrongs parts
 #   of the file etc.
 # 2006-08-18
-# o BUG FIX: The new implementation where data was written to raw vectors 
+# o BUG FIX: The new implementation where data was written to raw vectors
 #   was incorrect.  A lot of extra zeros was written.  The "eastern egg" in
 #   the updated example contains an image from http://tpo.berkeley.edu/.
 # 2006-08-14
-# o BUG FIX: updateCel() would in some cases give "Error: subscript out of 
+# o BUG FIX: updateCel() would in some cases give "Error: subscript out of
 #   bounds" when writing the last chunk.
 # 2006-07-22
-# o Update updateCel() to update data in chunks, because updating the 
+# o Update updateCel() to update data in chunks, because updating the
 #   complete data section is expensive.  For example, a 500K chip has
 #   6553600 cells each of size 10 bytes, i.e. >65Mb or raw memory.  With
 #   copying etc it costs >100-200Mb of memory to update a CEL file if only
@@ -379,8 +379,8 @@ updateCel <- function(filename, indices=NULL, intensities=NULL, stdvs=NULL, pixe
 # o Replace 'data' argument with arguments 'intensities', 'stdvs', and
 #   'pixels'. /HB
 # 2006-06-18
-# o First version can update CEL v4 (binary) cell entries.  Note that this 
-#   code does not make use of the Fusion SDK library.  This may updated in 
+# o First version can update CEL v4 (binary) cell entries.  Note that this
+#   code does not make use of the Fusion SDK library.  This may updated in
 #   the future, but for now we just want something that works.
 # o Created. /HB
-############################################################################  
+############################################################################

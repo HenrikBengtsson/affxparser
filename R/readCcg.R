@@ -1,15 +1,15 @@
 #########################################################################/**
 # @RdocFunction readCcg
-# 
+#
 # @title "Reads an Affymetrix Command Console Generic (CCG) Data file"
-# 
+#
 # @synopsis
-# 
+#
 # \description{
-#   @get "title".  The CCG data file format is also known as the 
+#   @get "title".  The CCG data file format is also known as the
 #   Calvin file format.
 # }
-# 
+#
 # \arguments{
 #   \item{pathname}{The pathname of the CCG file.}
 #   \item{verbose}{An @integer specifying the verbose level. If 0, the
@@ -17,11 +17,11 @@
 #   \item{.filter}{A @list.}
 #   \item{...}{Not used.}
 # }
-# 
+#
 # \value{
 #   A named @list structure consisting of ...
 # }
-# 
+#
 #  \details{
 #    Note, the current implementation of this methods does not utilize the
 #    Affymetrix Fusion SDK library.  Instead, it is implemented in R from the
@@ -36,7 +36,7 @@
 #   \item Generic Data Header (for the file)
 #    \enumerate{
 #     \item Generic Data Header (for the files 1st parent)
-#      \enumerate{ 
+#      \enumerate{
 #       \item Generic Data Header (for the files 1st parents 1st parent)
 #       \item Generic Data Header (for the files 1st parents 2nd parent)
 #       \item ...
@@ -68,12 +68,12 @@
 # }
 #
 # @author "HB"
-# 
+#
 #  \seealso{
 #    @see "readCcgHeader".
 #    @see "readCdfUnits".
 #  }
-# 
+#
 # \references{
 #  [1] Affymetrix Inc, Affymetrix GCOS 1.x compatible file formats,
 #      April, 2006.
@@ -107,7 +107,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   # Allocate return structure
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   ccg <- list();
- 
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read file header
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,7 +135,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   } else {
     ccg$dataGroups <- dataGroups;
   }
- 
+
   ccg;
 } # readCcg()
 
@@ -171,7 +171,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   nextDataGroupStart <- .fileHeader$dataGroupStart;
   dataGroups <- list();
   for (gg in seq(length=.fileHeader$nbrOfDataGroups)) {
-    dataGroupHeader <- .readCcgDataGroupHeader(con, 
+    dataGroupHeader <- .readCcgDataGroupHeader(con,
                                           fileOffset=nextDataGroupStart);
     # Next data group
     nextDataGroupStart <- dataGroupHeader$nextGroupStart;
@@ -194,18 +194,18 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Read data sets
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    offset <- dataGroupHeader$dataSetStart; 
+    offset <- dataGroupHeader$dataSetStart;
     dss <- vector("list", dataGroupHeader$nbrOfDataSets);
     names <- character(dataGroupHeader$nbrOfDataSets);
-    for (kk in seq(along=dss)) { 
-      ds <- .readCcgDataSet(con, fileOffset=offset); 
+    for (kk in seq(along=dss)) {
+      ds <- .readCcgDataSet(con, fileOffset=offset);
 
-      offset <- ds$nextDataSetStart; 
+      offset <- ds$nextDataSetStart;
       dss[[kk]] <- ds;
       names[kk] <- ds$name;
     };
     names(dss) <- names;
-  
+
     dataGroup <- list(
       header = dataGroupHeader,
       dataSets = dss
@@ -260,16 +260,16 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # 
+  #
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (!is.null(fileOffset)) {
     seek(con=con, where=fileOffset, offset="start", rw="read");
   }
 
   # Data Group
-  # This section describes the data group. A data group is a group 
+  # This section describes the data group. A data group is a group
   # of data sets. The file supports one or more data groups in a file.
-  # 
+  #
   # Item 	Description 	Type
   # 1 	File position of the next data group. When this is the last
   #     data group in the file, the value should be 0. 	UINT
@@ -297,7 +297,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 .readCcgDataSet <- function(con, fileOffset=NULL, ...) {
   # Value Types
   # The following table defines the numeric values for the value types.
-  # The value type is used to representing the type of value stored in 
+  # The value type is used to representing the type of value stored in
   # the file.
   #
   # Value 	Type
@@ -310,7 +310,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   # 6 	FLOAT
   # 7 	STRING
   # 8 	WSTRING
-  whats <- c("integer", "integer", "integer", "integer", "integer", 
+  whats <- c("integer", "integer", "integer", "integer", "integer",
             "integer", "double", "character", "character");
   names(whats) <- c("BYTE", "UBYTE", "SHORT", "USHORT", "INT", "UINT", "FLOAT", "STRING", "WSTRING");
   signeds <- c(TRUE, FALSE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE);
@@ -383,7 +383,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
 #    cat(sprintf("Reading n=%d records of type '%s' named '%s'.\n", n, type, name));
 
-    value <- switch(type, 
+    value <- switch(type,
       "text/ascii" = {
         rawToString(raw);
       },
@@ -445,12 +445,12 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 #  This section describes the data for a single data set item
 #  (probe set, sequence, allele, etc.). The file supports one
 #  or more data sets within a data group.
-#  
+#
 #  Item 	Description 	Type
 #  1 	The file position of the first data element in the data set.
 #     This is the first byte after the data set header. 	UINT
 #  2 	The file position of the next data set within the data group.
-#     When this is the last data set in the data group the value 
+#     When this is the last data set in the data group the value
 #     shall be 1 byte past the end of the data set. This way the size
 #     of the data set may be determined. 	UINT
 #  3 	The data set name. 	WSTRING
@@ -459,17 +459,17 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 #  6 	Number of columns in the data set.
 #     Example: For expression arrays, columns may include signal, p-value,
 #     detection call and for genotyping arrays columns may include allele
-#     call, and confidence value. For universal arrays, columns may 
+#     call, and confidence value. For universal arrays, columns may
 #     include probe set intensities and background. 	UINT
 #  7 	An array of column names, column value types and column type sizes
 #     (one per column).
 #     The value type shall be represented by the value from the value type
 #     table. The size shall be the size of the type in bytes. For strings,
 #     this value shall be the size of the string in bytes plus 4 bytes for
-#     the string length written before the string in the file. 	
+#     the string length written before the string in the file.
 #     (WSTRING / BYTE / INT) [ ]
 #  8 	The number of rows in the data set. 	UINT
-#  9 	The data set table, consisting of rows of columns (data values). 
+#  9 	The data set table, consisting of rows of columns (data values).
 #     The specific type and size of each column is described by the data
 #     and size types above. 	ROW [ ]
   dataSet <- list(
@@ -536,7 +536,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 ##      nchars <- readInt(con=value, n=nbrOfRows);
 ##      nchars <- nchars[1];
       nchars <- readInt(con=value, n=1);
-      rm(value);
+      value <- NULL; # Not needed anymore
 
       ccs <- 1:(size-4);
       value <- raw[ccs,];
@@ -554,10 +554,10 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
         } else {
           strs <- paste(strs, valuePP, sep="");
         }
-        rm(valuePP);
+        valuePP <- NULL; # Not needed anymore
       }
       value <- strs;
-      rm(strs);
+      strs <- NULL; # Not needed anymore
     } else {
       ccs <- 1:size;
       value <- raw[ccs,,drop=FALSE];
@@ -611,5 +611,5 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 #   ASCII/ASCII-8 characters.
 # 2006-11-06
 # o Tested on Test3-1-121502.calvin.CEL and Test3-1-121502.calvin.CDF.
-# o Created.  
-############################################################################  
+# o Created.
+############################################################################

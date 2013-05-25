@@ -3,12 +3,12 @@
 #
 # @title "Reads a spatial subset of probe-level data from Affymetrix CEL files"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #   @get "title".
 # }
-# 
+#
 # \arguments{
 #   \item{filename}{The pathname of the CEL file.}
 #   \item{xrange}{A @numeric @vector of length two giving the left
@@ -17,10 +17,10 @@
 #     and bottom coordinates of the cells to be returned.}
 #   \item{...}{Additional arguments passed to @see "readCel".}
 #   \item{asMatrix}{If @TRUE, the CEL data fields are returned as
-#     matrices with element (1,1) corresponding to cell 
+#     matrices with element (1,1) corresponding to cell
 #     (xrange[1],yrange[1]).}
 # }
-# 
+#
 # \value{
 #   A named @list CEL structure similar to what @see "readCel".
 #   In addition, if \code{asMatrix} is @TRUE, the CEL data fields
@@ -28,13 +28,13 @@
 # }
 #
 # @author "HB"
-# 
+#
 # @examples "../incl/readCelRectangle.Rex"
-# 
+#
 # \seealso{
 #   The @see "readCel" method is used internally.
 # }
-# 
+#
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
@@ -55,9 +55,9 @@ readCelRectangle <- function(filename, xrange=c(0,Inf), yrange=c(0,Inf), ..., as
   xx <- xrange[1]:xrange[2];
 
   cells <- matrix(offsets, ncol=length(yy), nrow=length(xx), byrow=TRUE);
-  # Cell indices are one-based in R 
+  # Cell indices are one-based in R
   cells <- cells + xx + 1;
-  rm(xrange, yrange, yy, xx, offsets);
+  xrange <- yrange <- yy <- xx <- offsets <- NULL; # Not needed anymore
 
   # Read CEL data
   cel <- readCel(filename, indices=cells, ...);
@@ -65,7 +65,7 @@ readCelRectangle <- function(filename, xrange=c(0,Inf), yrange=c(0,Inf), ..., as
   # Rearrange each field into a matrix?
   if (asMatrix) {
     nrow <- nrow(cells);
-    rm(cells);
+    cells <- NULL; # Not needed anymore
 
     # Cell-value fields
     fields <- c("x", "y", "intensities", "stdvs", "pixels");
@@ -86,4 +86,4 @@ readCelRectangle <- function(filename, xrange=c(0,Inf), yrange=c(0,Inf), ..., as
 # o Added Rdoc comments.
 # 2006-03-21 (Stockholm, Sveavägen)
 # o Created.
-############################################################################  
+############################################################################

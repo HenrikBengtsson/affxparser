@@ -3,14 +3,14 @@
 #
 # @title "Converts a CEL into the same CEL but with another format"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
-#   @get "title".  
+#   @get "title".
 #   Currently only CEL files in version 4 (binary/XDA) can be written.
 #   However, any input format is recognized.
 # }
-# 
+#
 # \arguments{
 #   \item{filename}{The pathname of the original CEL file.}
 #   \item{outFilename}{The pathname of the destination CEL file.
@@ -23,11 +23,11 @@
 #      An optional string for overriding the chip type (label)
 #      in the CEL file header.}
 #   \item{...}{Not used.}
-#   \item{.validate}{If @TRUE, a consistency test between the generated 
+#   \item{.validate}{If @TRUE, a consistency test between the generated
 #     and the original CEL is performed.}
 #   \item{verbose}{If @TRUE, extra details are written while processing.}
 # }
-# 
+#
 # \value{
 #   Returns (invisibly) @TRUE if a new CEL was generated, otherwise @FALSE.
 # }
@@ -122,7 +122,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   hdr <- cel$header;
   if (!is.null(newChipType)) {
     if (verbose) {
-      cat("Updating the chip type label from '", hdr$chiptype, "' to '", 
+      cat("Updating the chip type label from '", hdr$chiptype, "' to '",
                                               newChipType, "'.\n", sep="");
     }
 
@@ -139,7 +139,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
     # the chip type is always inferred from the v3 header).
     hdr$chiptype <- newChipType;
 
-    rm(pattern, target, header);
+    pattern <- target <- header <- NULL; # Not needed anymore
   }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -152,7 +152,8 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
     # located, but that is all right.
     pathname <- createCel(outFilename, header=hdr, overwrite=FALSE, verbose=verbose2);
   });
-  rm(hdr);
+  hdr <- NULL; # Not needed anymore
+
   if (verbose)
     cat("Creating empty CEL file...done\n");
 
@@ -163,7 +164,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
   if (verbose)
     cat("Updating CEL file...\n");
   updateCel(outFilename, intensities=cel, verbose=verbose2, writeMap=writeMap);
-  rm(cel);
+  cel <- NULL; # Not needed anymore
 
   if (verbose)
     cat("Updating CEL file...done\n");
@@ -177,7 +178,7 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
       otherReadMap <- invertMap(writeMap);
     }
 
-    compareCels(filename, outFilename, readMap=readMap, 
+    compareCels(filename, outFilename, readMap=readMap,
                                 otherReadMap=otherReadMap, verbose=verbose);
     if (verbose)
       cat("Validating CEL file...done\n");
