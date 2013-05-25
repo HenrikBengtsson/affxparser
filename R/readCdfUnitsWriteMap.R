@@ -3,8 +3,8 @@
 #
 # @title "Generates an Affymetrix cell-index write map from a CDF file"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #   @get "title".
 #
@@ -13,52 +13,52 @@
 #   When reading cell elements unit by unit, minimal file re-position is
 #   required resulting in a faster reading.
 #
-#   Note: At the moment does this package not provide methods to 
+#   Note: At the moment does this package not provide methods to
 #   write/reorder CEL files.  In the meanwhile, you have to write
 #   and re-read using your own file format.  That's not too hard using
 #   \code{writeBin()} and @see "base::readBin".
 # }
-# 
+#
 # \arguments{
 #   \item{filename}{The pathname of the CDF file.}
 #   \item{units}{An @integer @vector of unit indices specifying which units
-#     to listed first.  All other units are added in order at the end.  
+#     to listed first.  All other units are added in order at the end.
 #     If @NULL, units are in order.}
 #   \item{...}{Additional arguments passed to @see "readCdfUnits".}
 #   \item{verbose}{Either a @logical, a @numeric, or a @see "R.utils::Verbose"
 #     object specifying how much verbose/debug information is written to
 #     standard output. If a Verbose object, how detailed the information is
 #     is specified by the threshold level of the object. If a numeric, the
-#     value is used to set the threshold of a new Verbose object. If @TRUE, 
+#     value is used to set the threshold of a new Verbose object. If @TRUE,
 #     the threshold is set to -1 (minimal). If @FALSE, no output is written
 #     (and neither is the \pkg{R.utils} package required).}
 # }
-# 
+#
 # \value{
 #   A @integer @vector which is a \emph{write} map.
 # }
 #
 # @author "HB"
-# 
+#
 # \examples{
 #   @include "../incl/readCdfUnitsWriteMap.Rex"
 #
 #   @include "../incl/readCdfUnitsWriteMap.2.Rex"
 # }
-# 
+#
 # \seealso{
 #   To invert maps, see @see "invertMap".
 #   @see "readCel" and @see "readCelUnits".
 # }
-# 
+#
 # @keyword "file"
 # @keyword "IO"
 # @keyword "internal"
 #*/#########################################################################
 readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   # Replace '~':s
   filename <- file.path(dirname(filename), basename(filename));
@@ -88,9 +88,9 @@ readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
   }
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read CDF header and process 'units' further
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   header <- readCdfHeader(filename);
   nbrOfCells <- header$ncols * header$nrows;
   nbrOfUnits <- header$probesets;
@@ -102,18 +102,18 @@ readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
                                                                "]: ", nok);
   }
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read CDF file
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read cell indices unit by unit
   verbose && enter(verbose, "Reading cell indices unit by unit from CDF file");
   indices <- readCdfCellIndices(filename, units=units, ..., verbose=FALSE);
   verbose && exit(verbose);
-  
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Return cell indices according to 'units'
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (!is.null(units)) {
     verbose && enter(verbose, "Reordering by units");
     # Was only a subset of units specified?
@@ -122,30 +122,30 @@ readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
       allUnits <- 1:nbrOfUnits;
       missing <- setdiff(allUnits, units);
       units <- c(units, missing);
-      rm(missing, allUnits);
+      missing <- allUnits <- NULL; # Not needed anymore
       verbose && exit(verbose);
     }
 
     # Now, reorder the units (here 'indices') accordingly.
     indices <- indices[units];
 
-    rm(units);
+    units <- NULL; # Not needed anymore
     verbose && exit(verbose);
   }
 
-  indices <- unlist(indices, use.names=FALSE); 
+  indices <- unlist(indices, use.names=FALSE);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Create index map
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   verbose && enter(verbose, "Adding missing cell indices");
-  # Add non-probeset cells to the end.  
+  # Add non-probeset cells to the end.
   # (Note that readCdfCellIndices() do not read these guys.)
   allIndices <- 1:nbrOfCells;
   missing <- setdiff(allIndices, indices);
   indices <- c(indices, missing);
-  rm(missing);
+  missing <- NULL; # Not needed anymore
   verbose && exit(verbose);
 
   # Returns the write map
@@ -176,4 +176,4 @@ readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
 # 2006-03-04
 # o Removed all gc(). They slow down quite a bit.
 # o Created.
-############################################################################  
+############################################################################

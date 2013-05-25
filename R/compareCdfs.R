@@ -3,25 +3,25 @@
 #
 # @title "Compares the contents of two CDF files"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #   @get "title".
 # }
-# 
+#
 # \arguments{
 #   \item{pathname}{The pathname of the first CDF file.}
 #   \item{other}{The pathname of the seconds CDF file.}
-#   \item{quick}{If @TRUE, only a subset of the units are compared, 
+#   \item{quick}{If @TRUE, only a subset of the units are compared,
 #     otherwise all units are compared.}
 #   \item{verbose}{An @integer. The larger the more details are printed.}
 #   \item{...}{Not used.}
 # }
-# 
+#
 # \value{
 #   Returns @TRUE if the two CDF are equal, otherwise @FALSE.  If @FALSE,
-#   the attribute \code{reason} contains a string explaining what 
-#   difference was detected, and the attributes \code{value1} and 
+#   the attribute \code{reason} contains a string explaining what
+#   difference was detected, and the attributes \code{value1} and
 #   \code{value2} contain the two objects/values that differs.
 # }
 #
@@ -40,9 +40,9 @@
 # @keyword "IO"
 #*/#########################################################################
 compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   differentUnit <- function(value1, value2, units) {
     n <- length(units);
 
@@ -88,9 +88,9 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
     res;
   } # different()
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'pathname':
   # Expand any '~' in the pathname.
   pathname <- file.path(dirname(pathname), basename(pathname));
@@ -113,9 +113,9 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
     cat("  CDF 2: ", other, "\n", sep="");
   }
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Compare headers
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (verbose >= 1)
     cat("  Comparing CDF headers...\n");
   h1 <- readCdfHeader(pathname);
@@ -127,9 +127,9 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
   if (verbose >= 1)
     cat("  Comparing CDF headers...done\n");
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Compare QC units
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (verbose >= 1)
     cat("  Comparing QC units...\n");
   units <- seq(length=h1$nqcunits);
@@ -153,15 +153,15 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
       }
       return(different(msg, units=units, value1=v1, value2=v2));
     }
-    rm(v1,v2,uu,head);
+    v1 <- v2 <- uu <- head <- NULL; # Not needed anymore
   }
   if (verbose >= 1)
     cat("  Comparing QC units...done\n");
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Compare units
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (verbose >= 1) {
     cat("  Comparing units...\n");
     if (quick)
@@ -196,7 +196,7 @@ compareCdfs <- function(pathname, other, quick=FALSE, verbose=0, ...) {
     count <- count + length(uu);
     if (quick)
       break;
-    rm(v1,v2,uu,head);
+    v1 <- v2 <- uu <- head <- NULL; # Not needed anymore
   }
   if (verbose >= 2)
     cat("100%.\n");
