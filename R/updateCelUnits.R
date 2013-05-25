@@ -3,20 +3,20 @@
 #
 # @title "Updates a CEL file unit by unit"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #   @get "title".\cr
 #
 #   \emph{Please note that, contrary to @see "readCelUnits", this method
 #   can only update a single CEL file at the time.}
 # }
-# 
+#
 # \arguments{
 #   \item{filename}{The filename of the CEL file.}
-#   \item{cdf}{A (optional) CDF @list structure either with 
+#   \item{cdf}{A (optional) CDF @list structure either with
 #     field \code{indices} or fields \code{x} and \code{y}.
-#     If @NULL, the unit names (and from there the cell indices) are 
+#     If @NULL, the unit names (and from there the cell indices) are
 #     inferred from the names of the elements in \code{data}.
 #   }
 #   \item{data}{A @list structure in a format similar to what is returned
@@ -26,7 +26,7 @@
 #   \item{verbose}{An @integer specifying how much verbose details are
 #     outputted.}
 # }
-# 
+#
 # \value{
 #   Returns what @see "updateCel" returns.
 # }
@@ -37,15 +37,15 @@
 #   that is, cell indices is expected to be in this structure.  This can
 #   be very useful when one work with a cdf structure that originates
 #   from the underlying CDF file, but has been restructured for instance
-#   through the @see "applyCdfGroups" method, and \code{data} 
-#   correspondingly.  This update method knows how to update such 
+#   through the @see "applyCdfGroups" method, and \code{data}
+#   correspondingly.  This update method knows how to update such
 #   structures too.
 # }
 #
 # @examples "../incl/updateCelUnits.Rex"
 #
 # @author "HB"
-# 
+#
 # \seealso{
 #   Internally, @see "updateCel" is used.
 # }
@@ -85,7 +85,7 @@ updateCelUnits <- function(filename, cdf=NULL, data, ..., verbose=0) {
     unitNames <- readCdfUnitNames(cdfFile); # CRASHES AFTER MULTIPLE CALLS!
     # iv. Map unit names to unit indices
     units <- match(names(data), unitNames);
-    # v. Validate 
+    # v. Validate
     if (any(is.na(units))) {
       stop("Could not identify unit indices. Some unit names in argument 'data' do not exist in the CDF for '", chipType, "'.");
     }
@@ -115,7 +115,7 @@ updateCelUnits <- function(filename, cdf=NULL, data, ..., verbose=0) {
   # For now, assume the 'cdf' contains cell 'indices' only.
   indices <- unlist(cdf, use.names=FALSE);
 
-  ncells <- length(indices);  
+  ncells <- length(indices);
 #  cat(sprintf("Number of cells to be updated: %d\n", ncells));
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,7 +127,7 @@ updateCelUnits <- function(filename, cdf=NULL, data, ..., verbose=0) {
   fields <- names(group);
   # Pull out the fields that can be written to a CEL file
   fields <- intersect(fields, c("intensities", "stdvs", "pixels"));
-  rm(group); # Not needed anymore
+  group <- NULL; # Not needed anymore
 
 #  cat(sprintf("Fields to be updated: %s\n", paste(fields, collapse=", ")));
 
@@ -138,7 +138,7 @@ updateCelUnits <- function(filename, cdf=NULL, data, ..., verbose=0) {
   for (field in fields) {
     tmp <- lapply(data, lapply, .subset2, field);
     values[[field]] <- unlist(tmp, use.names=FALSE);
-    rm(tmp);
+    tmp <- NULL; # Not needed anymore
   }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,7 +151,7 @@ updateCelUnits <- function(filename, cdf=NULL, data, ..., verbose=0) {
 # HISTORY:
 # 2006-08-22
 # o There is some weird memory bug in at least Windows that makes R crash
-#   on multiple (10-20) subsequent calls to readCdfNnn().  Have been 
+#   on multiple (10-20) subsequent calls to readCdfNnn().  Have been
 #   troubleshooting for a more than a day, but I can't find why it is.
 #   Email HB for details.
 # 2006-08-21

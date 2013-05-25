@@ -3,27 +3,27 @@
 #
 # @title "Reads probe-level data ordered as units (probesets) from one or several Affymetrix CEL files"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
-#   @get "title" by using the unit and group definitions in the 
+#   @get "title" by using the unit and group definitions in the
 #   corresponding Affymetrix CDF file.
 # }
-# 
+#
 # \arguments{
 #   \item{filenames}{The filenames of the CEL files.}
 #   \item{units}{An @integer @vector of unit indices specifying which
 #     units to be read.  If @NULL, all units are read.}
-#   \item{stratifyBy}{Argument passed to low-level method 
+#   \item{stratifyBy}{Argument passed to low-level method
 #     @see "affxparser::readCdfCellIndices".}
 #   \item{cdf}{A @character filename of a CDF file, or a CDF @list
 #     structure.  If @NULL, the CDF file is searched for by
 #     @see "findCdf" first starting from the current directory and
 #     then from the directory where the first CEL file is.}
-#   \item{...}{Arguments passed to low-level method 
+#   \item{...}{Arguments passed to low-level method
 #     @see "affxparser::readCel", e.g. \code{readXY} and \code{readStdvs}.}
 #   \item{addDimnames}{If @TRUE, dimension names are added to arrays,
-#     otherwise not.  The size of the returned CEL structure in bytes 
+#     otherwise not.  The size of the returned CEL structure in bytes
 #     increases by 30-40\% with dimension names.}
 #   \item{dropArrayDim}{If @TRUE and only one array is read, the elements of
 #     the group field do \emph{not} have an array dimension.}
@@ -31,24 +31,24 @@
 #     @functions.  If @NULL, no transformation is performed.
 #     Intensities read are passed through the corresponding transform
 #     function before being returned.}
-#   \item{readMap}{A @vector remapping cell indices to file indices.  
+#   \item{readMap}{A @vector remapping cell indices to file indices.
 #     If @NULL, no mapping is used.}
 #   \item{verbose}{Either a @logical, a @numeric, or a @see "R.utils::Verbose"
 #     object specifying how much verbose/debug information is written to
 #     standard output. If a Verbose object, how detailed the information is
 #     is specified by the threshold level of the object. If a numeric, the
-#     value is used to set the threshold of a new Verbose object. If @TRUE, 
+#     value is used to set the threshold of a new Verbose object. If @TRUE,
 #     the threshold is set to -1 (minimal). If @FALSE, no output is written
 #     (and neither is the \pkg{R.utils} package required).
 #   }
 # }
-# 
+#
 # \value{
 #   A named @list with one element for each unit read.  The names
-#   corresponds to the names of the units read.  
+#   corresponds to the names of the units read.
 #   Each unit element is in
-#   turn a @list structure with groups (aka blocks).  
-#   Each group contains requested fields, e.g. \code{intensities}, 
+#   turn a @list structure with groups (aka blocks).
+#   Each group contains requested fields, e.g. \code{intensities},
 #   \code{stdvs}, and \code{pixels}.
 #   If more than one CEL file is read, an extra dimension is added
 #   to each of the fields corresponding, which can be used to subset
@@ -60,14 +60,14 @@
 # }
 #
 # @author "HB"
-# 
+#
 # @examples "../incl/readCelUnits.Rex"
-# 
+#
 # \seealso{
-#   Internally, @see "readCelHeader", @see "readCdfUnits" and 
+#   Internally, @see "readCelHeader", @see "readCdfUnits" and
 #   @see "readCel" are used.
 # }
-# 
+#
 # \references{
 #   [1] Affymetrix Inc, Affymetrix GCOS 1.x compatible file formats,
 #       June 14, 2005.
@@ -76,7 +76,7 @@
 #
 # @keyword "file"
 # @keyword "IO"
-#*/######################################################################### 
+#*/#########################################################################
 readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, readMap=NULL, verbose=FALSE) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
@@ -89,9 +89,9 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   } # qsort()
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filenames':
   filenames <- file.path(dirname(filenames), basename(filenames));
   missing <- filenames[!file.exists(filenames)];
@@ -151,14 +151,14 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
     } else {
       stop("Argument 'cdf' is of unknown format: The groups contains neither the fields 'indices' nor ('x' and 'y').");
     }
-    rm(aUnit, groups, aGroup);
+    aUnit <- groups <- aGroup <- NULL; # Not needed anymore
   } else {
     stop("Argument 'cdf' must be a filename, a CDF list structure or NULL: ", mode(cdf));
   }
 
   # Argument 'readMap':
   if (!is.null(readMap)) {
-    # Cannot check map indices without knowing the array.  Is it worth 
+    # Cannot check map indices without knowing the array.  Is it worth
     # reading such details already here?
   }
 
@@ -175,7 +175,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
     hasTransforms <- FALSE;
   } else if (is.list(transforms)) {
     if (length(transforms) != nbrOfArrays) {
-      stop("Length of argument 'transforms' does not match the number of arrays: ", 
+      stop("Length of argument 'transforms' does not match the number of arrays: ",
                                    length(transforms), " != ", nbrOfArrays);
     }
     for (transform in transforms) {
@@ -266,7 +266,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
       y <- unlist(applyCdfGroups(cdf, cdfGetFields, "y"), use.names=FALSE);
       # Cell indices are one-based in R
       indices <- as.integer(y * ncol + x + 1);
-      rm(x,y);
+      x <- y <- NULL; # Not needed anymore
       verbose && exit(verbose);
     }
   }
@@ -302,7 +302,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   # 3. Read signals of the cells of interest from the CEL file(s)
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  # Comment: We assign elements of CEL list structure to local environment, 
+  # Comment: We assign elements of CEL list structure to local environment,
   # because calling cel[[field]][idxs,] multiple (=nbrOfUnits) times is very
   # slow whereas get(field) is much faster (about 4-6 times actually!)
   # /HB 2006-03-24
@@ -372,11 +372,11 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
       eval(substitute(name[,kk] <- value, list(name=as.name(name))));
     }
 
-    rm(celTmp);
+    celTmp <- NULL; # Not needed anymore
   }
   verbose && exit(verbose);
 
-  rm(indices);
+  indices <- NULL; # Not needed anymore
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -396,7 +396,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
   seqOfArrays <- list(1:nbrOfArrays);
   offset <- 0;
-  
+
   res <- lapply(cdf, FUN=function(u) {
     lapply(.subset2(u, "groups"), FUN=function(g) {
       # Same dimensions of all fields
@@ -496,7 +496,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 #   should only be passed to the latter.
 # 2006-04-01 [HB]
 # o Using readCdfCellIndices() instead of readCdfUnits().  Faster!
-# o Added argument 'reorder'.  If TRUE, all cells are read in order to 
+# o Added argument 'reorder'.  If TRUE, all cells are read in order to
 #   minimize the jumping around in the file.  This speeds things up a lot!
 #   I tried this last week, but for some reason I did not see a difference.
 # 2006-03-29 [HB]
@@ -528,7 +528,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 #   array was read.
 # 2006-02-23 [HB]
 # o The restructuring code is now more generic, e.g. it does not require
-#   the 'stratifyBy' argument and can append multiple arrays of any 
+#   the 'stratifyBy' argument and can append multiple arrays of any
 #   dimensions.
 # o Now the CDF file is search for where the CEL files lives too.
 # 2006-02-22 [HB]
@@ -537,8 +537,8 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 # o Simple redundancy test: The new code and the updated affxparser package
 #   works with the new aroma.affymetrix/rsp/ GUI.
 # o Now argument 'cdf' is checked to contain either 'cells' or 'x' & 'y'
-#   group fields.  If 'x' and 'y', the cell indices are calculated from 
-#   (x,y) and the chip layout obtained from the header of CDF file, which 
+#   group fields.  If 'x' and 'y', the cell indices are calculated from
+#   (x,y) and the chip layout obtained from the header of CDF file, which
 #   has been searched for.
 # 2006-02-21 [HB]
 # o TO DO: Re implement all of this in a C function to speed things up
@@ -551,7 +551,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 # o Improved speed for restructuring cell data about 20-25%.
 # o Now it is possible to read multiple CEL files.
 # o Making use of new 'readCells' in readCdfUnits(), which is much faster.
-# o Replaced argument 'splitPmMm' with 'stratifyBy'.  This speeds up if 
+# o Replaced argument 'splitPmMm' with 'stratifyBy'.  This speeds up if
 #   reading PM (or MM) only.
 # o BUG FIX: 'splitPmMm=TRUE' allocated PMs and MMs incorrectly.  The reason
 #   was that the indices are already in the correct PM/MM order from the
@@ -565,4 +565,4 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 # o Added Rdoc comments.
 # 2006-01-16 [HB]
 # o Created by HB.
-############################################################################  
+############################################################################

@@ -3,12 +3,12 @@
 #
 # @title "Reads units (probesets) from an Affymetrix CDF file"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #  @get "title". Gets all or a subset of units (probesets).
 # }
-# 
+#
 # \arguments{
 #  \item{filename}{The filename of the CDF file.}
 #  \item{units}{An @integer @vector of unit indices
@@ -24,20 +24,20 @@
 #  \item{verbose}{An @integer specifying the verbose level. If 0, the
 #    file is parsed quietly.  The higher numbers, the more details.}
 # }
-# 
+#
 # \value{
 #   An NxK @data.frame or a @vector of length N.
 # }
 #
 # @author "HB"
-# 
+#
 # @examples "../incl/readCdfDataFrame.Rex"
-# 
+#
 # \seealso{
-#   For retrieving the CDF as a @list structure, see 
+#   For retrieving the CDF as a @list structure, see
 #   @see "affxparser::readCdfUnits".
 # }
-# 
+#
 # \references{
 #   [1] Affymetrix Inc, Affymetrix GCOS 1.x compatible file formats,
 #       June 14, 2005.
@@ -47,11 +47,11 @@
 # @keyword "file"
 # @keyword "IO"
 # @keyword "internal"
-#*/######################################################################### 
+#*/#########################################################################
 readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fields=NULL, drop=TRUE, verbose=0) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   filename <- file.path(dirname(filename), basename(filename));
   if (!file.exists(filename))
@@ -83,15 +83,15 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 ##   knownCellFields <- c("cell", "x", "y", "probeSequence", "feat", "qual", "expos", "pos", "cbase", "pbase", "tbase", "atom", "index");
 
   if (is.null(fields)) {
-    knownUnitFields <- c("unit", "unitName", "unitType", 
+    knownUnitFields <- c("unit", "unitName", "unitType",
                          "unitDirection", "unitNbrOfAtoms");
     knownGroupFields <- c("group", "groupName", "groupDirection",
                           "groupNbrOfAtoms");
-    knownCellFields <- c("cell", "x", "y", "pbase", "tbase", 
+    knownCellFields <- c("cell", "x", "y", "pbase", "tbase",
                          "indexPos", "atom", "expos");
     fields <- c(knownUnitFields, knownGroupFields, knownCellFields);
   }
-  
+
   # Argument 'verbose':
   if (length(verbose) != 1)
     stop("Argument 'verbose' must be a single integer.");
@@ -100,12 +100,12 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
     stop("Argument 'verbose' must be an integer: ", verbose);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Prepare the arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   readFields <- c(fields, "cell");  # Need to read one cell field!
   readFields <- unique(readFields);
-  
+
   # Unit fields
   readUnitType <- ("unitType" %in% readFields);
   readUnitDirection <- ("unitDirection" %in% readFields);
@@ -125,20 +125,20 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
   readAtoms <- ("atom" %in% readFields);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Query the CDF
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   cdf <- readCdf(filename, units=units, readXY=readXY, readBases=readBases,
-    readIndexpos=readIndexpos, readAtoms=readAtoms, 
-    readUnitType=readUnitType, readUnitDirection=readUnitDirection, 
+    readIndexpos=readIndexpos, readAtoms=readAtoms,
+    readUnitType=readUnitType, readUnitDirection=readUnitDirection,
     readUnitNumber=readUnitNumber, readUnitAtomNumbers=readUnitAtomNumbers,
-    readGroupAtomNumbers=readGroupAtomNumbers, 
-    readGroupDirection=readGroupDirection, readIndices=readIndices, 
+    readGroupAtomNumbers=readGroupAtomNumbers,
+    readGroupDirection=readGroupDirection, readIndices=readIndices,
     verbose=verbose-1);
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Flatten CDF list structure unit by unit
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(units))
     units <- seq(along=cdf);
   groupIdxs <- groups;
@@ -160,9 +160,9 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 
     # Translate unit names (has to be done here because not unique)
     names <- names(unit);
-    names <- sub("ncells", "unitNbrOfCells", names); 
-    names <- sub("natoms", "unitNbrOfAtoms", names); 
-    names <- sub("unitnumber", "unitNumber", names); 
+    names <- sub("ncells", "unitNbrOfCells", names);
+    names <- sub("natoms", "unitNbrOfAtoms", names);
+    names <- sub("unitnumber", "unitNumber", names);
     names(unit) <- names;
 
     unitData <- list(unit=.subset(units, uu), unitName=unitName);
@@ -200,7 +200,6 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
       if (!is.null(cells)) {
         keep <- (seq(length=nrow(cellData)) %in% cells);
         cellData <- cellData[keep,,drop=FALSE];
-#        rm(keep);
       }
 
       # Expand group fields
@@ -211,7 +210,6 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
       groupData <- as.data.frame(groupData, stringsAsFactors=FALSE);
 
       group <- cbind(groupData, cellData);
-#      rm(groupData, cellData);
 
       groups[[gg]] <- group;
     }
@@ -221,7 +219,6 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
     for (gg in seq(along=groups)) {
       stackedGroups <- rbind(stackedGroups, .subset2(groups, gg));
     }
-#    rm(groups);
 
     nbrOfCells <- nrow(stackedGroups);
     for (key in names(unitData)) {
@@ -230,7 +227,6 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
     unitData <- as.data.frame(unitData, stringsAsFactors=FALSE);
 
     unit <- cbind(unitData, stackedGroups);
-#    rm(unitData, stackedGroups);
 
     cdf[[uu]] <- unit;
   } # for (uu ...)
@@ -240,9 +236,9 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
   }
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Flatten the remaining list structure
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Allocate "data frame" of right size
   unitSizes <- sapply(cdf, FUN=nrow);
   nbrOfCells <- sum(unitSizes);
@@ -269,23 +265,23 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
   names <- names(df);
 
   # Translate unit names
-  names <- sub("unittype", "unitType", names); 
-  names <- sub("unitdirection", "unitDirection", names); 
-  names <- sub("ncellsperatom", "unitNbrOfCellsPerAtom", names); 
+  names <- sub("unittype", "unitType", names);
+  names <- sub("unitdirection", "unitDirection", names);
+  names <- sub("ncellsperatom", "unitNbrOfCellsPerAtom", names);
   # Translate group names
-  names <- sub("groupdirection", "groupDirection", names); 
-  names <- sub("natoms", "groupNbrOfAtoms", names); 
-  names <- sub("ncellsperatom", "groupNbrOfCellsPerAtom", names); 
-  names <- sub("ncells", "groupNbrOfCells", names); 
+  names <- sub("groupdirection", "groupDirection", names);
+  names <- sub("natoms", "groupNbrOfAtoms", names);
+  names <- sub("ncellsperatom", "groupNbrOfCellsPerAtom", names);
+  names <- sub("ncells", "groupNbrOfCells", names);
   # Translate cell names
-  names <- sub("indices", "cell", names); 
-  names <- sub("indexpos", "indexPos", names); 
+  names <- sub("indices", "cell", names);
+  names <- sub("indexpos", "indexPos", names);
   names(df) <- names;
 
   # Extract fields of interest
   unknown <- setdiff(fields, names(df))
   if (length(unknown) > 0) {
-    warning("Some of the fields were not read: ", 
+    warning("Some of the fields were not read: ",
                                    paste(unknown, collapse=", "));
   }
   fields <- intersect(fields, names(df));
@@ -309,9 +305,9 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 
 # TO DO:
 .readCdfDataFrameFinal <- function(filename, units=NULL, groups=NULL, unitFields=NULL, groupFields=NULL, cellFields=NULL, verbose=0) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   filename <- file.path(dirname(filename), basename(filename));
   if (!file.exists(filename))
@@ -339,7 +335,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 
   # Argument 'unitFields':
   knownFields <- c("unit", "unitName", "unitDirection", "nbrOfUnitAtoms", "unitSize", "unitNumber", "unitType", "nbrOfGroups", "mutationType");
-  
+
   # Argument 'groupFields':
   knownFields <- c("group", "groupName", "nbrOfGroupAtoms", "groupSize", "firstAtom", "lastAtom", "groupDirection");
 
@@ -355,10 +351,10 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
     stop("Argument 'verbose' must be an integer: ", verbose);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Call the C function
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-##  df <- .Call("R_affx_get_cdf_dataframe", filename, units, 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+##  df <- .Call("R_affx_get_cdf_dataframe", filename, units,
 ##               unitFields, groupFields, cellFields,
 ##               unitNames, groupNames,
 ##               verbose, PACKAGE="affxparser");
@@ -382,4 +378,4 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 #   then restructures it.  This will be used as a reference for the final
 #   implementation.
 # o Created a stub for readCdfDataFrame().
-############################################################################  
+############################################################################
