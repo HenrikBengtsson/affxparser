@@ -158,23 +158,27 @@
 
 .writeCdfUnit <- function(unit, con, unitname=NULL) {
   ## 3. Write the unit
-  unitDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
-  unitDirection <- unitDirections[unit$unitdirection];
-  unitType <- switch(unit$unittype,
-                     unknown = 0,
-                     expression = 1,
-                     genotyping = 2,
-                     resequencing = 3,
-                     tag = 4,
-                     copynumber = 5,
-                     genotypingcontrol = 6,
-                     expressioncontrol = 7)
+  unitType <- unit$unittype
+  if (!is.numeric(unitType)) {
+    unitType <- switch(unitType,
+                       unknown = 0,
+                       expression = 1,
+                       genotyping = 2,
+                       resequencing = 3,
+                       tag = 4,
+                       copynumber = 5,
+                       genotypingcontrol = 6,
+                       expressioncontrol = 7)
+  }
 
-  unitDirection <- switch(unit$unitdirection,
-                          nodirection = 0,
-                          sense = 1,
-                          antisense = 2,
-                          unknown = 3)
+  unitDirection <- unit$unitdirection
+  if (!is.numeric(unitDirection)) {
+    unitDirection <- switch(unitDirection,
+                            nodirection = 0,
+                            sense = 1,
+                            antisense = 2,
+                            unknown = 3)
+  }
 
   unitInfo <- as.integer(c(unitType, unitDirection,
                            unit$natoms, length(unit$groups),
@@ -244,26 +248,29 @@
 
 .writeCdfQcUnit <- function(qcunit, con) {
   ## 2. Actually write the qcunit
-  type <- switch(qcunit$type,
-                 unknown = 0,
-                 checkerboardNegative = 1,
-                 checkerboardPositive = 2,
-                 hybeNegative = 3,
-                 hybePositive = 4,
-                 textFeaturesNegative = 5,
-                 textFeaturesPositive = 6,
-                 centralNegative = 7,
-                 centralPositive = 8,
-                 geneExpNegative = 9,
-                 geneExpPositive = 10,
-                 cycleFidelityNegative = 11,
-                 cycleFidelityPositive = 12,
-                 centralCrossNegative = 13,
-                 centralCrossPositive = 14,
-                 crossHybeNegative = 15,
-                 crossHybePositive = 16,
-                 SpatialNormNegative = 17,
-                 SpatialNormPositive = 18)
+  type <- qcunit$type;
+  if (!is.numeric(type)) {
+    type <- switch(type,
+                   unknown = 0,
+                   checkerboardNegative = 1,
+                   checkerboardPositive = 2,
+                   hybeNegative = 3,
+                   hybePositive = 4,
+                   textFeaturesNegative = 5,
+                   textFeaturesPositive = 6,
+                   centralNegative = 7,
+                   centralPositive = 8,
+                   geneExpNegative = 9,
+                   geneExpPositive = 10,
+                   cycleFidelityNegative = 11,
+                   cycleFidelityPositive = 12,
+                   centralCrossNegative = 13,
+                   centralCrossPositive = 14,
+                   crossHybeNegative = 15,
+                   crossHybePositive = 16,
+                   SpatialNormNegative = 17,
+                   SpatialNormPositive = 18)
+  }
 
   # Write 2 + 4 bytes
   nbrOfBytes <- 6;
@@ -286,6 +293,12 @@
 
 ############################################################################
 # HISTORY:
+# 2013-06-29
+# o BUG FIX: Since affxparser 1.30.2/1.31.2, .writeCdfUnit() encoded unit
+#   types incorrectly, iff specified as integers.
+# o BUG FIX: Likewise, .writeCdfUnit() has always encoded unit directions
+#   incorrectly, iff specified as integers.  Moreover, .writeCdfQcUnit()
+#   has always encoded unit types incorrectly, iff specified as integers.
 # 2013-05-25 /HB
 # o Removed all gc() in .initializeCdf().
 # 2013-01-07 /HB
