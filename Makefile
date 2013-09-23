@@ -28,7 +28,7 @@ FILES_VIGNETTES := $(wildcard vignettes/*)
 FILES_SRC := $(wildcard src/* src/*/* src/*/*/* src/*/*/*/* src/*/*/*/*/* src/*/*/*/*/*/* src/*/*/*/*/*/*/* src/*/*/*/*/*/*/*/*)
 FILES_TESTS := $(wildcard tests/*.R)
 FILES_NEWS := $(wildcard NEWS inst/NEWS)
-FILES_ROOT := DESCRIPTION NAMESPACE .Rbuildignore
+FILES_ROOT := DESCRIPTION NAMESPACE $(wildcard .Rbuildignore .Rinstignore)
 PKG_FILES := $(FILES_ROOT) $(FILES_NEWS) $(FILES_R) $(FILES_DATA) $(FILES_MAN) $(FILES_INST) $(FILES_VIGNETTES) $(FILES_SRC) $(FILES_TESTS)
 FILES_MAKEFILE := $(wildcard ../../Makefile)
 
@@ -40,12 +40,18 @@ R_HOME := $(shell echo "$(R_HOME)" | tr "\\\\" "/")
 R = R --no-init-file
 R_CMD = $(R) CMD
 R_SCRIPT = Rscript
+R_VERSION_STATUS := $(shell $(R_SCRIPT) -e "status <- tolower(R.version[['status']]); if (regexpr('unstable', status) != -1L) status <- 'devel'; cat(status)")
 R_VERSION := $(shell $(R_SCRIPT) -e "cat(as.character(getRversion()))")
+R_VERSION_FULL := $(R_VERSION)$(R_VERSION_STATUS)
 R_LIBS_USER_X := $(shell $(R_SCRIPT) -e "cat(.libPaths()[1])")
-R_OUTDIR := _R-$(R_VERSION)
+R_OUTDIR := _R-$(R_VERSION_FULL)
+## R_BUILD_OPTS := 
+## R_BUILD_OPTS := $(R_BUILD_OPTS) --no-build-vignettes
 R_CHECK_OUTDIR := $(R_OUTDIR)/$(PKG_NAME).Rcheck
 R_CHECK_OPTS = --as-cran --timings
+R_CRAN_OUTDIR := $(R_OUTDIR)/$(PKG_NAME)_$(PKG_VERSION).CRAN
 
+HAS_ASPELL := $(shell $(R_SCRIPT) -e "cat(!is.na(utils:::aspell_find_program('aspell')))")
 
 all: build install check
 
@@ -60,14 +66,21 @@ debug:
 	@echo PKG_VERSION=\'$(PKG_VERSION)\'
 	@echo PKG_TARBALL=\'$(PKG_TARBALL)\'
 	@echo
+	@echo HAS_ASPELL=\'$(HAS_ASPELL)\'
+	@echo
 	@echo R=\'$(R)\'
 	@echo R_CMD=\'$(R_CMD)\'
 	@echo R_SCRIPT=\'$(R_SCRIPT)\'
 	@echo R_VERSION=\'$(R_VERSION)\'
+	@echo R_VERSION_STATUS=\'$(R_VERSION_STATUS)\'
+	@echo R_VERSION_FULL=\'$(R_VERSION_FULL)\'
 	@echo R_LIBS_USER_X=\'$(R_LIBS_USER_X)\'
 	@echo R_OUTDIR=\'$(R_OUTDIR)\'
 	@echo R_CHECK_OUTDIR=\'$(R_CHECK_OUTDIR)\'
 	@echo R_CHECK_OPTS=\'$(R_CHECK_OPTS)\'
+	@echo R_CRAN_OUTDIR=\'$(R_CRAN_OUTDIR)\'
+	@echo "Default packages:" $(shell $(R) --slave -e "cat(paste(getOption('defaultPackages'), collapse=', '))")
+
 
 debug_full: debug
 	@echo
@@ -88,12 +101,12 @@ debug_full: debug
 
 # Update existing packages
 update:
-	$(R_SCRIPT) -e "update.packages(ask=FALSE)"
+	$(R_SCRIPT) -e "update.packages(ask=FALSE); source('http://bioconductor.org/biocLite.R'); biocLite(ask=FALSE);"
 
 # Install missing dependencies
 deps: DESCRIPTION
 	$(MAKE) update
-	$(R_SCRIPT) -e "x <- unlist(strsplit(read.dcf('DESCRIPTION',fields=c('Depends', 'Imports', 'Suggests')),',')); x <- gsub('([[:space:]]*|[(].*[)])', '', x); x <- unique(setdiff(x, c('R', rownames(installed.packages())))); if (length(x) > 0) { install.packages(x); x <- unique(setdiff(x, c('R', rownames(installed.packages())))); source('http://bioconductor.org/biocLite.R'); biocLite(x); }"
+	$(R_SCRIPT) -e "x <- unlist(strsplit(read.dcf('DESCRIPTION',fields=c('Depends', 'Imports', 'Suggests')),',')); x <- gsub('([[:space:]]*|[(].*[)])', '', x); libs <- .libPaths()[file.access(.libPaths(), mode=2) == 0]; x <- unique(setdiff(x, c('R', rownames(installed.packages(lib.loc=libs))))); if (length(x) > 0) { install.packages(x); x <- unique(setdiff(x, c('R', rownames(installed.packages(lib.loc=libs))))); source('http://bioconductor.org/biocLite.R'); biocLite(x); }"
 
 setup:	update deps
 	$(R_SCRIPT) -e "source('http://aroma-project.org/hbLite.R'); hbLite('R.oo')"
@@ -103,7 +116,7 @@ setup:	update deps
 ../$(R_OUTDIR)/$(PKG_TARBALL): $(PKG_FILES)
 	$(MKDIR) ../$(R_OUTDIR)
 	$(CD) ../$(R_OUTDIR);\
-	$(R_CMD) build ../$(PKG_DIR)
+	$(R_CMD) build $(R_BUILD_OPTS) ../$(PKG_DIR)
 
 build: ../$(R_OUTDIR)/$(PKG_TARBALL)
 
@@ -128,10 +141,11 @@ install_force:
 ../$(R_CHECK_OUTDIR)/.check.complete: ../$(R_OUTDIR)/$(PKG_TARBALL)
 	$(CD) ../$(R_OUTDIR);\
 	$(RM) -r $(PKG_NAME).Rcheck;\
-        export _R_CHECK_CRAN_INCOMING_=0;\
+	export _R_CHECK_CRAN_INCOMING_=1;\
 	export _R_CHECK_DOT_INTERNAL_=1;\
 	export _R_CHECK_USE_CODETOOLS_=1;\
-	export _R_CHECK_CRAN_INCOMING_USE_ASPELL_=1;\
+	export _R_CHECK_CRAN_INCOMING_USE_ASPELL_=$(HAS_ASPELL);\
+	export _R_CHECK_FORCE_SUGGESTS_=0;\
 	export _R_CHECK_FULL_=1;\
 	$(R_CMD) check $(R_CHECK_OPTS) $(PKG_TARBALL);\
 	echo done > $(PKG_NAME).Rcheck/.check.complete
@@ -150,9 +164,9 @@ binary: ../$(R_OUTDIR)/$(PKG_TARBALL)
 	$(R_CMD) INSTALL --build --merge-multiarch $(PKG_TARBALL)
 
 
-# Check the line width of incl/*.(R|Rex) files
+# Check the line width of incl/*.(R|Rex) files [max 100 chars in R devel]
 check_Rex:
-	$(R_SCRIPT) -e "if (!file.exists('incl/')) quit(status=0); setwd('incl/'); fs <- dir(pattern='[.](R|Rex)$$'); ns <- sapply(fs, function(f) max(nchar(readLines(f)))); ns <- ns[ns > 100]; print(ns); if (length(ns) > 0L) quit(status=1)"
+	$(R_SCRIPT) -e "if (!file.exists('incl')) quit(status=0); setwd('incl/'); fs <- dir(pattern='[.](R|Rex)$$'); ns <- sapply(fs, function(f) max(nchar(readLines(f)))); ns <- ns[ns > 100]; print(ns); if (length(ns) > 0L) quit(status=1)"
 
 
 # Build Rd help files from Rdoc comments
@@ -199,15 +213,21 @@ test: ../$(R_OUTDIR)/tests/%.R
 
 
 # Run extensive CRAN submission checks
-../$(R_OUTDIR)/$(PKG_NAME).Rcheck.CRAN/$(PKG_TARBALL): ../$(R_OUTDIR)/$(PKG_TARBALL)
-	$(MKDIR) ../$(R_OUTDIR)/$(PKG_NAME).Rcheck.CRAN
-	$(CP) ../$(R_OUTDIR)/$(PKG_TARBALL) ../$(R_OUTDIR)/$(PKG_NAME).Rcheck.CRAN
+../$(R_CRAN_OUTDIR)/$(PKG_TARBALL): ../$(R_OUTDIR)/$(PKG_TARBALL)
+	$(MKDIR) ../$(R_CRAN_OUTDIR)
+	$(CP) ../$(R_OUTDIR)/$(PKG_TARBALL) ../$(R_CRAN_OUTDIR)
 
-../$(R_OUTDIR)/$(PKG_NAME).Rcheck.CRAN/$(PKG_NAME),EmailToCRAN.txt: ../$(R_OUTDIR)/$(PKG_NAME).Rcheck.CRAN/$(PKG_TARBALL)
-	$(CD) ../$(R_OUTDIR)/$(PKG_NAME).Rcheck.CRAN;\
+../$(R_CRAN_OUTDIR)/$(PKG_NAME),EmailToCRAN.txt: ../$(R_CRAN_OUTDIR)/$(PKG_TARBALL)
+	$(CD) ../$(R_CRAN_OUTDIR);\
 	$(R_SCRIPT) -e "RCmdCheckTools::testPkgsToSubmit()"
 
-submit: ../$(R_OUTDIR)/$(PKG_NAME).Rcheck.CRAN/$(PKG_NAME),EmailToCRAN.txt
+setup_RCmdCheckTools:
+	$(R_SCRIPT) -e "source('http://aroma-project.org/hbLite.R'); hbLite('RCmdCheckTools', devel=TRUE)"
+
+cran: setup_RCmdCheckTools ../$(R_CRAN_OUTDIR)/$(PKG_NAME),EmailToCRAN.txt
+
+# Backward compatibilities
+submit: cran
 
 
 Makefile: $(FILES_MAKEFILE)
