@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version: 1.33.4 [2013-09-23]
+o SPEEDUP/CLEANUP: Package now uses which() instead of whichVector()
+  of 'R.utils'.  Before R (< 2.11.0), which() used to be 10x slower
+  than whichVector(), but now it's 3x faster.
+
+
 Version: 1.33.3 [2013-06-29]
 o Same updates as in release v1.32.3.
 
