@@ -29,12 +29,12 @@
 #
 # @keyword programming
 # @keyword internal
-#**/####################################################################### 
+#**/#######################################################################
 cdfSetDimension <- function(field, dim, ...) {
   n <- length(field);
   ndim <- length(dim);
 
-  naDim <- whichVector(is.na(dim));
+  naDim <- which(is.na(dim));
   if (length(naDim) > 0) {
     if (length(naDim) > 1) {
       stop("Cannot infer dimension. Only one of the dimension can be unknown: ", paste(dim, collapse="x"));
@@ -54,6 +54,10 @@ cdfSetDimension <- function(field, dim, ...) {
 
 ############################################################################
 # HISTORY:
+# 2013-09-23
+# o SPEEDUP/CLEANUP: Package now uses which() instead of whichVector()
+#   of 'R.utils'.  Before R (< 2.11.0), which() used to be 10x slower
+#   than whichVector(), but now it's 3x faster.
 # 2009-05-29
 # o Added Rdoc comments.
 # o Created.
