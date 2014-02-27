@@ -6,41 +6,41 @@
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \name{readCelRectangle}
+\name{readCelRectangle}
 \alias{readCelRectangle}
 
 
- \title{Reads a spatial subset of probe-level data from Affymetrix CEL files}
+\title{Reads a spatial subset of probe-level data from Affymetrix CEL files}
 
- \usage{
+\usage{
 readCelRectangle(filename, xrange=c(0, Inf), yrange=c(0, Inf), ..., asMatrix=TRUE)
 }
 
- \description{
-   Reads a spatial subset of probe-level data from Affymetrix CEL files.
- }
+\description{
+  Reads a spatial subset of probe-level data from Affymetrix CEL files.
+}
 
- \arguments{
-   \item{filename}{The pathname of the CEL file.}
-   \item{xrange}{A \code{\link[base]{numeric}} \code{\link[base]{vector}} of length two giving the left
-     and right coordinates of the cells to be returned.}
-   \item{yrange}{A \code{\link[base]{numeric}} \code{\link[base]{vector}} of length two giving the top
-     and bottom coordinates of the cells to be returned.}
-   \item{...}{Additional arguments passed to \code{\link{readCel}}().}
-   \item{asMatrix}{If \code{\link[base:logical]{TRUE}}, the CEL data fields are returned as
-     matrices with element (1,1) corresponding to cell
-     (xrange[1],yrange[1]).}
- }
+\arguments{
+  \item{filename}{The pathname of the CEL file.}
+  \item{xrange}{A \code{\link[base]{numeric}} \code{\link[base]{vector}} of length two giving the left
+    and right coordinates of the cells to be returned.}
+  \item{yrange}{A \code{\link[base]{numeric}} \code{\link[base]{vector}} of length two giving the top
+    and bottom coordinates of the cells to be returned.}
+  \item{...}{Additional arguments passed to \code{\link{readCel}}().}
+  \item{asMatrix}{If \code{\link[base:logical]{TRUE}}, the CEL data fields are returned as
+    matrices with element (1,1) corresponding to cell
+    (xrange[1],yrange[1]).}
+}
 
- \value{
-   A named \code{\link[base]{list}} CEL structure similar to what \code{\link{readCel}}().
-   In addition, if \code{asMatrix} is \code{\link[base:logical]{TRUE}}, the CEL data fields
-   are returned as matrices, otherwise not.
- }
+\value{
+  A named \code{\link[base]{list}} CEL structure similar to what \code{\link{readCel}}().
+  In addition, if \code{asMatrix} is \code{\link[base:logical]{TRUE}}, the CEL data fields
+  are returned as matrices, otherwise not.
+}
 
- \author{Henrik Bengtsson}
+\author{Henrik Bengtsson}
 
- \examples{
+\examples{
 ##############################################################
 if (require("AffymetrixDataTestFiles")) {            # START #
 ##############################################################
@@ -76,9 +76,9 @@ rm(rotate270, files, file, cel, z, sub)
 
 }
 
- \seealso{
-   The \code{\link{readCel}}() method is used internally.
- }
+\seealso{
+  The \code{\link{readCel}}() method is used internally.
+}
 
 
 

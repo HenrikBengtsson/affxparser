@@ -6,54 +6,54 @@
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \name{updateCelUnits}
+\name{updateCelUnits}
 \alias{updateCelUnits}
 
 
- \title{Updates a CEL file unit by unit}
+\title{Updates a CEL file unit by unit}
 
- \usage{
+\usage{
 updateCelUnits(filename, cdf=NULL, data, ..., verbose=0)
 }
 
- \description{
-   Updates a CEL file unit by unit.\cr
+\description{
+  Updates a CEL file unit by unit.\cr
 
-   \emph{Please note that, contrary to \code{\link{readCelUnits}}(), this method
-   can only update a single CEL file at the time.}
- }
+  \emph{Please note that, contrary to \code{\link{readCelUnits}}(), this method
+  can only update a single CEL file at the time.}
+}
 
- \arguments{
-   \item{filename}{The filename of the CEL file.}
-   \item{cdf}{A (optional) CDF \code{\link[base]{list}} structure either with
-     field \code{indices} or fields \code{x} and \code{y}.
-     If \code{\link[base]{NULL}}, the unit names (and from there the cell indices) are
-     inferred from the names of the elements in \code{data}.
-   }
-   \item{data}{A \code{\link[base]{list}} structure in a format similar to what is returned
-      by \code{\link{readCelUnits}}() for \emph{a single CEL file only}.}
-   \item{...}{Optional arguments passed to \code{\link{readCdfCellIndices}}(),
-      which is called if \code{cdf} is not given.}
-   \item{verbose}{An \code{\link[base]{integer}} specifying how much verbose details are
-     outputted.}
- }
+\arguments{
+  \item{filename}{The filename of the CEL file.}
+  \item{cdf}{A (optional) CDF \code{\link[base]{list}} structure either with
+    field \code{indices} or fields \code{x} and \code{y}.
+    If \code{\link[base]{NULL}}, the unit names (and from there the cell indices) are
+    inferred from the names of the elements in \code{data}.
+  }
+  \item{data}{A \code{\link[base]{list}} structure in a format similar to what is returned
+     by \code{\link{readCelUnits}}() for \emph{a single CEL file only}.}
+  \item{...}{Optional arguments passed to \code{\link{readCdfCellIndices}}(),
+     which is called if \code{cdf} is not given.}
+  \item{verbose}{An \code{\link[base]{integer}} specifying how much verbose details are
+    outputted.}
+}
 
- \value{
-   Returns what \code{\link{updateCel}}() returns.
- }
+\value{
+  Returns what \code{\link{updateCel}}() returns.
+}
 
- \section{Working with re-arranged CDF structures}{
-   Note that if the \code{cdf} structure is specified the CDF file is
-   \emph{not} queried, but all information about cell x and y locations,
-   that is, cell indices is expected to be in this structure.  This can
-   be very useful when one work with a cdf structure that originates
-   from the underlying CDF file, but has been restructured for instance
-   through the \code{\link{applyCdfGroups}}() method, and \code{data}
-   correspondingly.  This update method knows how to update such
-   structures too.
- }
+\section{Working with re-arranged CDF structures}{
+  Note that if the \code{cdf} structure is specified the CDF file is
+  \emph{not} queried, but all information about cell x and y locations,
+  that is, cell indices is expected to be in this structure.  This can
+  be very useful when one work with a cdf structure that originates
+  from the underlying CDF file, but has been restructured for instance
+  through the \code{\link{applyCdfGroups}}() method, and \code{data}
+  correspondingly.  This update method knows how to update such
+  structures too.
+}
 
- \examples{
+\examples{
 ##############################################################
 if (require("AffymetrixDataTestFiles")) {            # START #
 ##############################################################
@@ -121,11 +121,11 @@ for (kk in 1:10) {
 ##############################################################
 }
 
- \author{Henrik Bengtsson}
+\author{Henrik Bengtsson}
 
- \seealso{
-   Internally, \code{\link{updateCel}}() is used.
- }
+\seealso{
+  Internally, \code{\link{updateCel}}() is used.
+}
 
 
 
