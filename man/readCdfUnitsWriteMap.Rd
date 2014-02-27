@@ -6,53 +6,53 @@
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \name{readCdfUnitsWriteMap}
+\name{readCdfUnitsWriteMap}
 \alias{readCdfUnitsWriteMap}
 
 
- \title{Generates an Affymetrix cell-index write map from a CDF file}
+\title{Generates an Affymetrix cell-index write map from a CDF file}
 
- \usage{
+\usage{
 readCdfUnitsWriteMap(filename, units=NULL, ..., verbose=FALSE)
 }
 
- \description{
-   Generates an Affymetrix cell-index write map from a CDF file.
+\description{
+  Generates an Affymetrix cell-index write map from a CDF file.
 
-   The purpose of this method is to provide a re-ordering of cell elements
-   such that cells in units (probesets) can be stored in contigous blocks.
-   When reading cell elements unit by unit, minimal file re-position is
-   required resulting in a faster reading.
+  The purpose of this method is to provide a re-ordering of cell elements
+  such that cells in units (probesets) can be stored in contigous blocks.
+  When reading cell elements unit by unit, minimal file re-position is
+  required resulting in a faster reading.
 
-   Note: At the moment does this package not provide methods to
-   write/reorder CEL files.  In the meanwhile, you have to write
-   and re-read using your own file format.  That's not too hard using
-   \code{writeBin()} and \code{\link[base]{readBin}}().
- }
+  Note: At the moment does this package not provide methods to
+  write/reorder CEL files.  In the meanwhile, you have to write
+  and re-read using your own file format.  That's not too hard using
+  \code{writeBin()} and \code{\link[base]{readBin}}().
+}
 
- \arguments{
-   \item{filename}{The pathname of the CDF file.}
-   \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which units
-     to listed first.  All other units are added in order at the end.
-     If \code{\link[base]{NULL}}, units are in order.}
-   \item{...}{Additional arguments passed to \code{\link{readCdfUnits}}().}
-   \item{verbose}{Either a \code{\link[base]{logical}}, a \code{\link[base]{numeric}}, or a \code{\link[R.utils]{Verbose}}
-     object specifying how much verbose/debug information is written to
-     standard output. If a Verbose object, how detailed the information is
-     is specified by the threshold level of the object. If a numeric, the
-     value is used to set the threshold of a new Verbose object. If \code{\link[base:logical]{TRUE}},
-     the threshold is set to -1 (minimal). If \code{\link[base:logical]{FALSE}}, no output is written
-     (and neither is the \pkg{R.utils} package required).}
- }
+\arguments{
+  \item{filename}{The pathname of the CDF file.}
+  \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which units
+    to listed first.  All other units are added in order at the end.
+    If \code{\link[base]{NULL}}, units are in order.}
+  \item{...}{Additional arguments passed to \code{\link{readCdfUnits}}().}
+  \item{verbose}{Either a \code{\link[base]{logical}}, a \code{\link[base]{numeric}}, or a \code{\link[R.utils]{Verbose}}
+    object specifying how much verbose/debug information is written to
+    standard output. If a Verbose object, how detailed the information is
+    is specified by the threshold level of the object. If a numeric, the
+    value is used to set the threshold of a new Verbose object. If \code{\link[base:logical]{TRUE}},
+    the threshold is set to -1 (minimal). If \code{\link[base:logical]{FALSE}}, no output is written
+    (and neither is the \pkg{R.utils} package required).}
+}
 
- \value{
-   A \code{\link[base]{integer}} \code{\link[base]{vector}} which is a \emph{write} map.
- }
+\value{
+  A \code{\link[base]{integer}} \code{\link[base]{vector}} which is a \emph{write} map.
+}
 
- \author{Henrik Bengtsson}
+\author{Henrik Bengtsson}
 
- \examples{
-   ##############################################################
+\examples{
+  ##############################################################
 if (require("AffymetrixDataTestFiles")) {            # START #
 ##############################################################
 
@@ -93,7 +93,7 @@ rm(cdfFile, readMap, writeMap, moves, smallMoves, largeMoves, main)
 
 
 
-   ##############################################################
+  ##############################################################
 if (require("AffymetrixDataTestFiles")) {            # START #
 ##############################################################
 
@@ -178,12 +178,12 @@ rm(chipType, annoFile, cdfFile, snpInfo, unitNames, units, readMap, writeMap)
 }                                                     # STOP #
 ##############################################################
 
- }
+}
 
- \seealso{
-   To invert maps, see \code{\link{invertMap}}().
-   \code{\link{readCel}}() and \code{\link{readCelUnits}}().
- }
+\seealso{
+  To invert maps, see \code{\link{invertMap}}().
+  \code{\link{readCel}}() and \code{\link{readCelUnits}}().
+}
 
 
 
