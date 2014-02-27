@@ -109,7 +109,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   } else if (is.numeric(units)) {
     units <- as.integer(units);
     # Unit indices are one-based in R
-    if (any(units < 1))
+    if (any(units < 1L))
       stop("Argument 'units' contains non-positive indices.");
   } else {
     stop("Argument 'units' must be numeric or NULL: ", class(units)[1]);
@@ -125,7 +125,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
       stop("File not found: ", cdfFile);
     cdf <- NULL;
   } else if (is.list(cdf)) {
-    aUnit <- cdf[[1]];
+    aUnit <- cdf[[1L]];
     if (!is.list(aUnit))
       stop("Argument 'cdf' is of unknown format: First unit is not a list.");
 
@@ -133,7 +133,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
     if (!is.list(groups))
       stop("Argument 'cdf' is of unknown format: Units Does not contain the list 'groups'.");
 
-    extractGroups <- (length(names(aUnit)) > 1);
+    extractGroups <- (length(names(aUnit)) > 1L);
 
     # Check for group fields 'indices' or 'x' & 'y' in one of the groups.
     aGroup <- groups[[1]];
@@ -142,7 +142,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
     fields <- names(aGroup);
     if ("indices" %in% fields) {
       cdfType <- "indices";
-      extractFields <- (length(fields) > 1);
+      extractFields <- (length(fields) > 1L);
     } else if (all(c("x", "y") %in% fields)) {
       # The CDF is needed in order to know the (x,y) dimensions of the
       # chip so that one can calculate (x,y) -> cell index.
@@ -206,22 +206,22 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
     verbose && enter(verbose, "Searching for CDF file");
 
     verbose && enter(verbose, "Reading chip type from first CEL file");
-    celHeader <- readCelHeader(filenames[1]);
+    celHeader <- readCelHeader(filenames[1L]);
     chipType <- celHeader$chiptype;
     verbose && exit(verbose);
 
     verbose && enter(verbose, "Searching for chip type '", chipType, "'");
     cdfFile <- findCdf(chipType=chipType);
-    if (length(cdfFile) == 0) {
+    if (length(cdfFile) == 0L) {
       # If not found, try also where the first CEL file is
       opwd <- getwd();
       on.exit(setwd(opwd));
-      setwd(dirname(filenames[1]));
+      setwd(dirname(filenames[1L]));
       cdfFile <- findCdf(chipType=chipType);
       setwd(opwd);
     }
     verbose && exit(verbose);
-    if (length(cdfFile) == 0)
+    if (length(cdfFile) == 0L)
       stop("No CDF file for chip type found: ", chipType);
 
     verbose && exit(verbose);
@@ -310,12 +310,23 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   nbrOfCells <- length(indices);
   nbrOfUnits <- length(cdf);
 
+  # Because integer 'nbrOfCells*nbrOfArrays' may overflow to NA, we corce to double
+  # here.  See aroma.affymetrix thread 'Speeding up RmaBackgroundCorrection' on
+  # 2014-02-27 for background/details.
+  # FIXME: Ideally, this function should be rewritten to read signals and group them
+  # into CEL units in chunks. /HB 2014-02-27
+  nbrOfEntries <- as.double(nbrOfCells) * as.double(nbrOfArrays);
+  stopifnot(is.finite(nbrOfEntries));
+
   verbose && enter(verbose, "Reading ", nbrOfUnits, "*", nbrOfCells/nbrOfUnits, "=", nbrOfCells, " cells from ", nbrOfArrays, " CEL files");
 
   # Cell-value elements
   cellValueFields <- c("x", "y", "intensities", "stdvs", "pixels");
   integerFields <- "pixels";
   doubleFields <- setdiff(cellValueFields, integerFields);
+
+  # Local environment where to store the temporary variables
+  env <- environment();
 
   for (kk in seq(length=nbrOfArrays)) {
     filename <- filenames[kk];
@@ -324,7 +335,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
     celTmp <- readCel(filename, indices=indices, readHeader=FALSE, readOutliers=FALSE, readMasked=FALSE, ..., readMap=NULL, verbose=cVerbose, .checkArgs=FALSE);
     verbose && exit(verbose);
 
-    if (kk == 1) {
+    if (kk == 1L) {
       verbose && enter(verbose, "Allocating return structure");
       # Allocate the return list structure
 #      celTmp$header <- NULL;
@@ -337,15 +348,17 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
       # Allocate all field variables
       dim <- c(nbrOfCells, nbrOfArrays);
-      value <- vector("double", nbrOfCells*nbrOfArrays);
+      value <- vector("double", length=nbrOfEntries);
       dim(value) <- dim;
       for (name in doubleFields)
-        assign(name, value);
+        assign(name, value, envir=env, inherits=FALSE);
+      value <- NULL; # Not needed anymore
 
-      value <- vector("integer", nbrOfCells*nbrOfArrays);
+      value <- vector("integer", length=nbrOfEntries);
       dim(value) <- dim;
       for (name in integerFields)
-        assign(name, value);
+        assign(name, value, envir=env, inherits=FALSE);
+      value <- NULL; # Not needed anymore
 
       verbose && exit(verbose);
     }
@@ -370,7 +383,8 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
       }
 
       eval(substitute(name[,kk] <- value, list(name=as.name(name))));
-    }
+      value <- NULL; # Not needed anymore
+    } # for (name ...)
 
     celTmp <- NULL; # Not needed anymore
   }
@@ -384,7 +398,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   verbose && enter(verbose, "Structuring data by units and groups");
 
-  fields <- vector("list", length(cellValueFields));
+  fields <- vector("list", length=length(cellValueFields));
   names(fields) <- cellValueFields;
 
   # Keep a copy for groups with empty fields
@@ -392,19 +406,19 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
   # Add a dimension for the arrays, unless only one array is read
   # and the array dimension is not wanted.
-  addArrayDim <- (nbrOfArrays >= 2 || !dropArrayDim);
+  addArrayDim <- (nbrOfArrays >= 2L || !dropArrayDim);
 
   seqOfArrays <- list(1:nbrOfArrays);
-  offset <- 0;
+  offset <- 0L;
 
   res <- lapply(cdf, FUN=function(u) {
     lapply(.subset2(u, "groups"), FUN=function(g) {
       # Same dimensions of all fields
-      field <- .subset2(g, 1);  # Faster than g[[1]]
+      field <- .subset2(g, 1L);  # Faster than g[[1L]]
       ncells <- length(field);
 
       # Empty unit group?
-      if (ncells == 0)
+      if (ncells == 0L)
         return(emptyFields);
 
       idxs <- offset + 1:ncells;
@@ -427,10 +441,10 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
         }
 
         # Update all fields with dimensions
-        setDim <- (length(dim) > 1);
+        setDim <- (length(dim) > 1L);
         for (name in cellValueFields) {
           # Faster to drop dimensions.
-          values <- get(name)[idxs,,drop=TRUE];
+          values <- get(name, envir=env, inherits=FALSE)[idxs,,drop=TRUE];
           if (setDim) {
             dim(values) <- dim;
             dimnames(values) <- dimnames;
@@ -438,6 +452,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
             names(values) <- dimnames;
           }
           fields[[name]] <- values;
+          values <- NULL; # Not needed anymore
         }
       } else {
        # Add an extra dimension for arrays?
@@ -445,19 +460,20 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
           dim <- c(dim, nbrOfArrays);
 
         # Update all fields with dimensions
-        setDim <- (length(dim) > 1);
+        setDim <- (length(dim) > 1L);
         for (name in cellValueFields) {
           # Faster to drop dimensions.
-          values <- get(name)[idxs,,drop=TRUE];
+          values <- get(name, envir=env, inherits=FALSE)[idxs,,drop=TRUE];
           if (setDim)
             dim(values) <- dim;
           fields[[name]] <- values;
+          values <- NULL; # Not needed anymore
         }
       } # if (addDimnames)
 
       fields;
-    });
-  })
+    }) # lapply(.subset2(u, "groups"), ...);
+  }) # lapply(cdf, ...)
 
   verbose && exit(verbose);
 
@@ -467,6 +483,9 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
 
 ############################################################################
 # HISTORY:
+# 2014-02-27 [HB]
+# o ROBUSTNESS: Using integer constants (e.g. 1L) where applicable.
+# o ROBUSTNESS: Using explicitly named arguments in more places.
 # 2012-05-22 [HB]
 # o CRAN POLICY: readCel() and readCelUnits() are no longer calling
 #   .Internal(qsort(...)).
