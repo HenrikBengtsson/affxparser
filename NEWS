@@ -1,11 +1,24 @@
 Package: affxparser
 ===================
 
-Version: 1.35.2 [2014-2-28]
-o Patches to Fusion SDK based on clang v3.4
+Version: 1.35.3 [2014-02-28]
+o Same updates as in release v1.34.2.
+
+
+Version: 1.35.2 [2014-02-28]
+o Patches to Fusion SDK based on clang v3.4.
+
 
 Version: 1.35.1 [2014-02-27]
 o Same updates as in release v1.34.1.
+
+
+Version: 1.35.0 [2013-10-14]
+o The version number was bumped for the Bioconductor devel version.
+
+
+Version: 1.34.2 [2014-02-28]
+o CLEANUP: Removed unnecessary usage of ':::'.
 
 
 Version: 1.34.1 [2014-02-27]
@@ -16,10 +29,6 @@ o BUG FIX: readCelUnits() could throw 'Error in vector("double", nbrOfCells *
   the limit of nbrOfCells*nbrOfArrays was .Machine$integer.max (=2147483647),
   whereas now it is .Machine$double.xmax (=1.797693e+308).  Thanks to
   Damian Plichta at the Technical University of Denmark for reporting on this.
-
-
-Version: 1.35.0 [2013-10-14]
-o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.34.0 [2012-10-14]
