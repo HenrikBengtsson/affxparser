@@ -1,6 +1,6 @@
-.findCcgParent <- function(dataHeader, dataTypeId, ...) { 
+.findCcgParent <- function(dataHeader, dataTypeId, ...) {
   for (parent in dataHeader$parents) {
-   if (identical(parent$dataTypeId, dataTypeId)) 
+   if (identical(parent$dataTypeId, dataTypeId))
      return(parent);
   }
 
@@ -24,22 +24,22 @@
 # Get the DatHeader from the CCG CEL header
 .getCelDatHeader <- function(header, ...) {
   version <- .getCelHeaderVersion(header);
-  if (version == 1) {    
+  if (version == 1) {
     # Command Console Generic (Calvin) format
     dataHeader <- header$dataHeader;
-    parent <- .findCcgParent(dataHeader, 
+    parent <- .findCcgParent(dataHeader,
                          dataTypeId="affymetrix-calvin-scan-acquisition");
     datHeader <- parent$parameters[["affymetrix-dat-header"]];
   } else if (version == 3) {
-    datHeader <- affxparser:::.unwrapCelHeaderV3String(header)$datHeader;
-    datHeader <- affxparser:::.wrapDatHeader(datHeader);
-  } else if (version == 4) {    
-    datHeader <- affxparser:::.unwrapCelHeaderV4(header)$header$DatHeader;
-    datHeader <- affxparser:::.wrapDatHeader(datHeader);
+    datHeader <- .unwrapCelHeaderV3String(header)$datHeader;
+    datHeader <- .wrapDatHeader(datHeader);
+  } else if (version == 4) {
+    datHeader <- .unwrapCelHeaderV4(header)$header$DatHeader;
+    datHeader <- .wrapDatHeader(datHeader);
   } else {
     stop("Cannot extract DAT header from CEL header.  Unknown CEL header version: ", version);
   }
- 
+
   datHeader;
 } # .getCelDatHeader()
 
@@ -48,7 +48,7 @@
 # Extract a CEL header of v3 from the CCG CEL header
 .getCelHeaderV3 <- function(header, ...) {
   version <- .getCelHeaderVersion(header);
-  if (version == 1) {    
+  if (version == 1) {
     # Command Console Generic (Calvin) format
     dataHeader <- header$dataHeader;
     params <- dataHeader$parameters;
@@ -68,12 +68,12 @@
     for (ff in c("UL", "UR", "LR", "LL")) {
       xkey <- sprintf("Grid%sX", ff);
       ykey <- sprintf("Grid%sY", ff);
-      hdr <- c(hdr, sprintf("GridCorner%s=%d %d\n", ff, 
+      hdr <- c(hdr, sprintf("GridCorner%s=%d %d\n", ff,
                             aParams[[xkey]][1], aParams[[ykey]][1]));
     }
     hdr <- c(hdr, sprintf("Axis-invertX=%d\nAxisInvertY=%d\n", 0, 0));
     hdr <- c(hdr, sprintf("swapXY=%d\n", 0));
-    parent <- .findCcgParent(dataHeader, 
+    parent <- .findCcgParent(dataHeader,
                          dataTypeId="affymetrix-calvin-scan-acquisition");
 
     # Infer DAT header
@@ -101,19 +101,19 @@
     hdr <- c(hdr, sprintf("AlgorithmParameters=%s\n", aParams));
 
     hdr <- paste(hdr, collapse="");
-    
+
     headerV3 <- hdr;
   } else if (version == 3) {
     # Nothing to do.
     headerV3 <- header;
-    datHeader <- affxparser:::.wrapDatHeader(datHeader);
+    datHeader <- .wrapDatHeader(datHeader);
   } else if (version == 4) {
     # To do: Create a v3 header from scratch (for consistency).
     headerV3 <- header$header;
   } else {
     stop("Cannot extract CEL header of v3 from CEL header.  Unknown CEL header version: ", version);
   }
- 
+
   headerV3;
 } # .getCelHeaderV3()
 
@@ -123,7 +123,7 @@
   if (version == 1) {
     # Calvin CEL header?
     if (is.null(header$fileHeader)) {
-      # Re-read the CEL CCG v1 header 
+      # Re-read the CEL CCG v1 header
       headerV4 <- header;
       header <- readCcgHeader(headerV4$filename);
     } else {
@@ -142,7 +142,7 @@
     stop("Cannot extract CEL header of v3 from CEL header.  Unknown CEL header version: ", version);
   }
 
-  headerV4;    
+  headerV4;
 } # .getCelHeaderV4()
 
 
@@ -151,12 +151,12 @@
 # 2012-05-18
 # o Now using stop() instead of throw().
 # 2007-10-12
-# o Now .getCelHeaderV3() tries to infer the DAT header from parent 
-#   parameters 'affymetrix-partial-dat-header' if 'affymetrix-dat-header' 
+# o Now .getCelHeaderV3() tries to infer the DAT header from parent
+#   parameters 'affymetrix-partial-dat-header' if 'affymetrix-dat-header'
 #   is not available.  If neither is found, an informative error is thrown.
 # 2007-08-16
 # o Added .getCelHeaderV4(). Verified to work with CEL v1 & v4 headers.
 # o Added .getCelHeaderV3(). Verified to work with CEL v1, v3 & v4 headers.
 # o Added .getCelDatHeader(). Verified to work with CEL v1 & v4 headers.
 # o Created.
-############################################################################  
+############################################################################
