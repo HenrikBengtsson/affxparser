@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.35.2 [2014-2-28]
+o Patches to Fusion SDK based on clang v3.4
+
 Version: 1.35.1 [2014-02-27]
 o Same updates as in release v1.34.1.
 

@@ -4,14 +4,19 @@
 ##     check for files and directories that ought to be deleted
 ##   then copy
 
-fusion=~/Work/packages/fusion_sdk
+fusion=~/Work/packages/FusionSDK/affy/sdk
 affxparser_base=~/Work/packages/affxparser
 affxparser_fusion=${affxparser_base}/src/fusion_sdk
 affxparser_patchdir_1.1.0=${affxparser_base}/inst/info/fusion_1.1.0_patches
 affxparser_patchdir_1.1.2=${affxparser_base}/inst/info/fusion_1.1.2_patches
 
-compare :
+compare_only :
 	diff -rq ${fusion} ${affxparser_fusion} | grep Only | grep -v svn | cat
+
+compare :
+	diff -rq ${fusion} ${affxparser_fusion}
+
+make_patches
 
 cleanfusion :
 	rm -Rf	 \
@@ -78,4 +83,8 @@ patch_1.1.2:
 	patch -N ${affxparser_fusion}/calvin_files/utils/src/FileUtils.cpp ${affxparser_patchdir_1.1.2}/FileUtils.cpp-patch
 	patch -N ${affxparser_fusion}/util/Fs.cpp ${affxparser_patchdir_1.1.2}/Fs.cpp-patch
 	patch -N ${affxparser_fusion}/util/Verbose.cpp ${affxparser_patchdir_1.1.2}/Verbose.cpp-patch
-
+	patch -N ${affxparser_fusion}/calvin_files/data/src/CHPMultiDataData.cpp ${affxparser_patchdir_1.1.2}/CHPMultiDataData.cpp-patch
+	patch -N ${affxparser_fusion}/file/CELFileData.h ${affxparser_patchdir_1.1.2}/CELFileData.h-patch
+	patch -N ${affxparser_fusion}/file/TsvFile/TsvFile.cpp ${affxparser_patchdir_1.1.2}/TsvFile.cpp-patch
+	patch -N ${affxparser_fusion}/util/AffxConv.cpp ${affxparser_patchdir_1.1.2}/AffxConv.cpp-patch2
+	patch -N ${affxparser_fusion}/util/Util.cpp ${affxparser_patchdir_1.1.2}/Util.cpp-patch

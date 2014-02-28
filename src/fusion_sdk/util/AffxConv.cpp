@@ -116,7 +116,7 @@ std::string getInt(int i, unsigned int iLength)
 std::string getInt(int i, bool bCommas)
 {       
 	char szValue[64];
-#ifdef WIN32 && !defined(__MINGW32__)
+#if defined(WIN32) && !defined(__MINGW32__)
 	sprintf_s(szValue, 64, "%d", i);
 #else
 	sprintf(szValue, "%d", i);

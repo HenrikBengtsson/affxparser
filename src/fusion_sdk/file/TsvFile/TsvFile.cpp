@@ -4912,7 +4912,7 @@ int TsvFile::getLineCountInFile(const std::string& filename, bool abortOnError)
   try {
     count = std::count(std::istreambuf_iterator<char>(fstream), std::istreambuf_iterator<char>(), '\n');
     fstream.seekg(-1, std::ios_base::end);
-    char last = NULL;
+    char last = '\0';
     fstream.get(last);
     if ( last != '\n' ) {
       count++;

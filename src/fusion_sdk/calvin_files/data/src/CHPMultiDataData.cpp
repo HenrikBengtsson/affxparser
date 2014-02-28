@@ -1253,7 +1253,7 @@ DataSetInfo *CHPMultiDataData::OpenMultiDataDataSet(MultiDataType dataType)
 		{
 			startCol = 1;
 		}
-		else if (dataType = CytoGenotypeCallMultiDataType)
+		else if (dataType == CytoGenotypeCallMultiDataType)
 		{
 			startCol = 8;
 		}

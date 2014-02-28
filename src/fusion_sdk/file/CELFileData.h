@@ -117,7 +117,7 @@ typedef struct _CELFileTranscriptomeEntryType
 	///  Number of pixels
   // The STRUCT_ALIGNMENT isnt needed for gcc.
   // and if used it generates a warning.
-	unsigned char Pixels; /* \cond */ /* STRUCT_ALIGNMENT */ /*! \endcond */ ;
+	unsigned char Pixels /* \cond */ /* STRUCT_ALIGNMENT */ /*! \endcond */ ;
 } CELFileTranscriptomeEntryType;
 
 #ifdef _MSC_VER

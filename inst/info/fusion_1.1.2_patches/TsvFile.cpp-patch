@@ -1,0 +1,13 @@
+Index: fusion_sdk/file/TsvFile/TsvFile.cpp
+===================================================================
+--- fusion_sdk/file/TsvFile/TsvFile.cpp	(revision 86813)
++++ fusion_sdk/file/TsvFile/TsvFile.cpp	(working copy)
+@@ -4912,7 +4912,7 @@
+   try {
+     count = std::count(std::istreambuf_iterator<char>(fstream), std::istreambuf_iterator<char>(), '\n');
+     fstream.seekg(-1, std::ios_base::end);
+-    char last = NULL;
++    char last = '\0';
+     fstream.get(last);
+     if ( last != '\n' ) {
+       count++;
