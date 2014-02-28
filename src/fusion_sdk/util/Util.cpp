@@ -832,7 +832,7 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
 
     /* Print a space if we're not going to
        print a newline. */
-    if(wEnd != '\0' &&
+    if(*wEnd != '\0' &&
        nextSize + position < maxWidth &&
        position != 0) {
       out.put(' ');

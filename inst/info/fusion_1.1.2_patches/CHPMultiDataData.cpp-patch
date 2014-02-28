@@ -1,0 +1,13 @@
+Index: fusion_sdk/calvin_files/data/src/CHPMultiDataData.cpp
+===================================================================
+--- fusion_sdk/calvin_files/data/src/CHPMultiDataData.cpp	(revision 86813)
++++ fusion_sdk/calvin_files/data/src/CHPMultiDataData.cpp	(working copy)
+@@ -1253,7 +1253,7 @@
+ 		{
+ 			startCol = 1;
+ 		}
+-		else if (dataType = CytoGenotypeCallMultiDataType)
++		else if (dataType == CytoGenotypeCallMultiDataType)
+ 		{
+ 			startCol = 8;
+ 		}
