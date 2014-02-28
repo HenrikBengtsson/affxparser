@@ -1,0 +1,13 @@
+Index: fusion_sdk/file/CELFileData.h
+===================================================================
+--- fusion_sdk/file/CELFileData.h	(revision 86813)
++++ fusion_sdk/file/CELFileData.h	(working copy)
+@@ -117,7 +117,7 @@
+ 	///  Number of pixels
+   // The STRUCT_ALIGNMENT isnt needed for gcc.
+   // and if used it generates a warning.
+-	unsigned char Pixels; /* \cond */ /* STRUCT_ALIGNMENT */ /*! \endcond */ ;
++	unsigned char Pixels /* \cond */ /* STRUCT_ALIGNMENT */ /*! \endcond */ ;
+ } CELFileTranscriptomeEntryType;
+ 
+ #ifdef _MSC_VER

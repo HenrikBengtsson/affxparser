@@ -1,0 +1,13 @@
+Index: fusion_sdk/util/Util.cpp
+===================================================================
+--- fusion_sdk/util/Util.cpp	(revision 86813)
++++ fusion_sdk/util/Util.cpp	(working copy)
+@@ -832,7 +832,7 @@
+ 
+     /* Print a space if we're not going to
+        print a newline. */
+-    if(wEnd != '\0' &&
++    if(*wEnd != '\0' &&
+        nextSize + position < maxWidth &&
+        position != 0) {
+       out.put(' ');

@@ -1,0 +1,13 @@
+Index: fusion_sdk/util/AffxConv.cpp
+===================================================================
+--- fusion_sdk/util/AffxConv.cpp	(revision 86813)
++++ fusion_sdk/util/AffxConv.cpp	(working copy)
+@@ -116,7 +116,7 @@
+ std::string getInt(int i, bool bCommas)
+ {       
+ 	char szValue[64];
+-#ifdef WIN32 && !defined(__MINGW32__)
++#if defined(WIN32) && !defined(__MINGW32__)
+ 	sprintf_s(szValue, 64, "%d", i);
+ #else
+ 	sprintf(szValue, "%d", i);
