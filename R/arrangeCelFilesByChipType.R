@@ -41,7 +41,10 @@
 # @keyword internal
 #**/#######################################################################
 arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)$"), path="celFiles/", aliases=NULL, ...) {
-  require("R.utils") || throw("Package not loaded: R.utils");
+  # To please R CMD check
+  Arguments <- isFile <- filePath <- NULL;
+  rm(list=c("Arguments", "isFile", "filePath"));
+  require("R.utils") || stop("Package not loaded: R.utils");
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
@@ -98,6 +101,8 @@ arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)
 
 ############################################################################
 # HISTORY:
+# 2014-08-25
+# o Now using stop() instead of throw().
 # 2012-09-01
 # o Added argument 'aliases' to arrangeCelFilesByChipType(), e.g.
 #   arrangeCelFilesByChipType(..., aliases=c("Focus"="HG-Focus")).

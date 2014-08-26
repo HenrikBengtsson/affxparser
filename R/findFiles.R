@@ -44,6 +44,9 @@
 # @keyword internal
 #**/#######################################################################
 findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE, allFiles=TRUE, ...) {
+  # To please R CMD check
+  filePath <- NULL; rm(list="filePath");
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,7 +75,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
    (pattern %in% s);
   }
 
-  
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
