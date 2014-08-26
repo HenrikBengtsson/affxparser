@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.37.1 [2014-08-25]
+o CLEANUP: Removed R CMD check NOTEs that appeared in recent R versions.
+
+
 Version: 1.37.0 [2014-04-11]
 o The version number was bumped for the Bioconductor devel version,
   which is now BioC v2.15 for R (>= 3.1.0).

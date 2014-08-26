@@ -56,6 +56,10 @@
 # @keyword "internal"
 #*/#########################################################################
 readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
+  # To please R CMD check
+  Arguments <- enter <- exit <- NULL;
+  rm(list=c("Arguments", "enter", "exit"));
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

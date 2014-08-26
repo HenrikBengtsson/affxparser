@@ -78,6 +78,10 @@
 # @keyword "IO"
 #*/#########################################################################
 readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), cdf=NULL, ..., addDimnames=FALSE, dropArrayDim=TRUE, transforms=NULL, readMap=NULL, verbose=FALSE) {
+  # To please R CMD check
+  Arguments <- enter <- exit <- NULL;
+  rm(list=c("Arguments", "enter", "exit"));
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
