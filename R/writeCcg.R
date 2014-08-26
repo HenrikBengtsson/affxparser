@@ -31,7 +31,7 @@
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Default version is 1 (one) [1]
   if (is.null(header$version))
-    header$version <- as.integer(1); 
+    header$version <- as.integer(1);
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,11 +64,11 @@
 # dependency so as to traverse across the entire parentage of a file.
 # This information will provide the entire history of how a file came
 # to be.
-# 
-# The first data header section immediately follows the file header 
+#
+# The first data header section immediately follows the file header
 # section.
 #
-# Item Type  Description 
+# Item Type  Description
 # 1    GUID  The data type identifier. This is used to identify the type
 #            of data stored in the file. For example:
 #            * acquisition data (affymetrix-calvin-scan-acquisition)
@@ -81,14 +81,17 @@
 #            Example: When a  user manually aligns the grid in a DAT file
 #            the grid coordinates are updated in the DAT file and the file
 #            is given a new file identifier.
-# 3 DATETIME Date and time of file creation. 	
+# 3 DATETIME Date and time of file creation.
 # 4   LOCALE The locale of the operating system that the file was created on.
-# 5 	   INT The number of name/type/value parameters. 	
+# 5 	   INT The number of name/type/value parameters.
 # 6 	 WVT[] Array of parameters stored as name/value/type triplets.
 #            WVT[]=(WSTRING/VALUE/TYPE)[]
-# 7 	   INT Number of parent file headers. 	
+# 7 	   INT Number of parent file headers.
 # 8 	 GDH[] Array of parent file headers. GDH[]=GenericDataHeader[]
 .writeCcgDataHeader <- function(con, header, ...) {
+  # To please R CMD check
+  charToInt <- NULL; rm(list="charToInt");
+
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Local functions
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,7 +108,7 @@
   }
 
   writeString <- function(con, str, ...) {
-    # A 1 byte character string. A string object is stored as an INT 
+    # A 1 byte character string. A string object is stored as an INT
     # (to store the string length) followed by the CHAR array (to store
     # the string contents).
     str <- as.character(str);
@@ -131,8 +134,8 @@
 
   writeWString <- function(con, str, ...) {
     # A UNICODE string. A string object is stored as an INT (to store the
-    # string length) followed by the WCHAR array (to store the string 
-    # contents).    
+    # string length) followed by the WCHAR array (to store the string
+    # contents).
     str <- as.character(str);
     nchars <- as.integer(nchar(str));
     writeInt(con, value=nchars);
@@ -164,7 +167,7 @@
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Default version is 1 (one) [1]
   if (is.null(header$version))
-    header$version <- as.integer(1); 
+    header$version <- as.integer(1);
 
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -198,8 +201,8 @@
 # 2012-05-18
 # o Now using stop() instead of throw().
 # 2007-08-16
-# o This file only contains a stub, so there is currently no 
+# o This file only contains a stub, so there is currently no
 #    writeCcgHeader() or writeCcg().
 # 2006-11-06
 # o Created.
-############################################################################  
+############################################################################
