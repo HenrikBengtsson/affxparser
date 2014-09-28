@@ -23,10 +23,8 @@ before_install:
 install:
 #  - ./travis-tool.sh github_package testthat
 #  - ./travis-tool.sh github_package assertthat
-#  - ./travis-tool.sh install_r_binary r.methodss3 r.oo r.utils
-#  - ./travis-tool.sh bioc_install aroma.light DNAcopy 
+  - ./travis-tool.sh install_r_binary r.oo r.utils
   - ./travis-tool.sh install_deps
-  - ./travis-tool.sh install_r_binary princurve
 
 branches:
   except:
