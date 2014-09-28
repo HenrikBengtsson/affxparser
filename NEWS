@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.37.2 [2014-09-28]
+o Minor modifications due to the move to GitHub.
+
+
 Version: 1.37.1 [2014-08-25]
 o CLEANUP: Removed R CMD check NOTEs that appeared in recent R versions.
 
