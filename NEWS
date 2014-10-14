@@ -1,6 +1,16 @@
 Package: affxparser
 ===================
 
+Version: 1.39.0 [2014-10-13]
+o The version number was bumped for the Bioconductor devel version,
+  which is now BioC v3.1 for R (>= 3.2.0). 
+
+
+Version: 1.38.0 [2014-10-13]
+o The version number was bumped for the Bioconductor release version,
+  which is now BioC v3.0 for R (>= 3.1.1).
+
+
 Version: 1.37.2 [2014-09-28]
 o Minor modifications due to the move to GitHub.
 
