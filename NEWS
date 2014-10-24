@@ -1,9 +1,17 @@
 Package: affxparser
 ===================
 
+o ROBUSTNESS: Now all read methods gives an informative error message
+  if zero elements are requested, i.e. via zero-length argument 'units'
+  or 'indices' which is not NULL.  Previously this case would access
+  all values just as NULL.
+o ROBUSTNESS: Now readCelRectangle() gives an informative error message
+  if argument 'xrange' or 'yrange' is not of length two.
+
+
 Version: 1.39.0 [2014-10-13]
 o The version number was bumped for the Bioconductor devel version,
-  which is now BioC v3.1 for R (>= 3.2.0). 
+  which is now BioC v3.1 for R (>= 3.2.0).
 
 
 Version: 1.38.0 [2014-10-13]
