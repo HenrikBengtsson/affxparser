@@ -1,10 +1,10 @@
 Package: affxparser
 ===================
 
-o ROBUSTNESS: Now all read methods gives an informative error message
-  if zero elements are requested, i.e. via zero-length argument 'units'
-  or 'indices' which is not NULL.  Previously this case would access
-  all values just as NULL.
+o ROBUSTNESS: Now all methods gives an informative error message if zero 
+  elements are requested, i.e. via zero-length argument 'indices' or
+  'units' that is not NULL.  Previously this case would access all values
+  just like NULL does.
 o ROBUSTNESS: Now readCelRectangle() gives an informative error message
   if argument 'xrange' or 'yrange' is not of length two.
 o BUG FIX: Now readPgf() and readPgfEnv() would give an error if
