@@ -32,7 +32,6 @@ if (require("AffymetrixDataTestFiles")) {
   for (fcn in fcnList) {
     data <- fcn(cdf)
     str(head(data))
-    J <- if (is.null(idxs)) Jall else length(idxs)
     stopifnot(length(data) == Jall)
   } # for (fcn ...)
 

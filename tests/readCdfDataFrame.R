@@ -21,7 +21,6 @@ if (require("AffymetrixDataTestFiles")) {
   # Read full file
   data <- readCdfDataFrame(cdf)
   str(data)
-  J <- if (is.null(idxs)) Jall else length(idxs)
   stopifnot(length(unique(data$unitName)) == Jall)
 
   # Read different subsets of units
