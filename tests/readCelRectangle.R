@@ -11,7 +11,7 @@ if (require("AffymetrixDataTestFiles")) {
   # Search for some available CEL files
   pathR <- system.file(package="AffymetrixDataTestFiles")
   pathD <- file.path(pathR, "rawData", "FusionSDK_HG-Focus", "HG-Focus")
-  cel <- file.path(path, "2.Calvin", "HG-Focus-1-121502.CEL")
+  cel <- file.path(pathD, "2.Calvin", "HG-Focus-1-121502.CEL")
 
   # Read CEL intensities in the upper left corner
   data <- readCelRectangle(cel, xrange=c(0,250), yrange=c(0,250))

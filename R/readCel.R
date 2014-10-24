@@ -1,13 +1,13 @@
-readCel <- function(filename, 
+readCel <- function(filename,
                     indices = NULL,
                     readHeader = TRUE,
-                    readXY = FALSE, 
+                    readXY = FALSE,
                     readIntensities = TRUE,
-                    readStdvs = FALSE, 
+                    readStdvs = FALSE,
                     readPixels = FALSE,
                     readOutliers = TRUE,
-                    readMasked = TRUE, 
-                    readMap = NULL, 
+                    readMasked = TRUE,
+                    readMap = NULL,
                     verbose = 0,
                     .checkArgs = TRUE) {
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,7 +29,7 @@ readCel <- function(filename,
     if (.checkArgs) {
       # Argument 'filename':
       if(length(filename) != 1) {
-        stop("Argument 'filename' should be a single file: ", 
+        stop("Argument 'filename' should be a single file: ",
                                               paste(filename, collapse=", "));
       }
       # Expand '~' pathnames to full pathnames.
@@ -37,7 +37,7 @@ readCel <- function(filename,
       if (!file.exists(filename)) {
         stop("Cannot read CEL file. File not found: ", filename);
       }
-  
+
       # Argument 'indices':
       header <- readCelHeader(filename);
       nbrOfCells <- header$total;
@@ -53,12 +53,12 @@ readCel <- function(filename,
           stop("Argument 'indices' is out of range [1,", nbrOfCells, "].");
         }
       }
-  
+
       # Argument 'readMap':
       if (!is.null(readMap)) {
         readMap <- .assertMap(readMap, nbrOfCells);
       }
-  
+
       # Argument 'verbose':
       if (length(verbose) != 1) {
         stop("Argument 'verbose' must be a single integer.");
@@ -99,6 +99,11 @@ readCel <- function(filename,
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Reading CEL file
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # UNSUPPORTED CASE?
+    if (!is.null(indices) && length(indices) == 0L) {
+      stop("readCel(..., indices=integer(0)) is not supported.")
+    }
+
     cel <- .Call("R_affx_get_cel_file", filename,
                   readHeader,
                   readIntensities, readXY, readXY, readPixels, readStdvs,
@@ -120,7 +125,7 @@ readCel <- function(filename,
         cel[[name]] <- cel[[name]][o];
       }
     }
-    
+
     cel;
 } # readCel()
 
@@ -134,7 +139,7 @@ readCel <- function(filename,
 # 2007-12-01
 # o Removed argument 'reorder' from readCel().
 # 2007-01-04
-# o Now 'readMap' is validate using internal .assertMap(), which also 
+# o Now 'readMap' is validate using internal .assertMap(), which also
 #   coerces it to an integer vector.
 # o BUG FIX: Using read maps for readCel() would give an error saying
 #   the read map is invalid even when it is not.

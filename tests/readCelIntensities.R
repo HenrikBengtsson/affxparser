@@ -19,7 +19,7 @@ if (require("AffymetrixDataTestFiles")) {
 
   # Various sets of indices to be read
   idxsList <- list(
-##  readNothing=integer(0L), # FIX ME
+#  readNothing=integer(0L), # FIX ME
     readAll=NULL,
     readOne=10L,
     readSome=11:20,

@@ -1,7 +1,7 @@
 readCdfUnitNames <- function(filename, units=NULL, verbose=0) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   filename <- file.path(dirname(filename), basename(filename));
   if (!file.exists(filename))
@@ -25,9 +25,14 @@ readCdfUnitNames <- function(filename, units=NULL, verbose=0) {
     stop("Argument 'units' must be an integer: ", verbose);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read the CDF file
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # UNSUPPORTED CASE?
+  if (!is.null(units) && length(units) == 0L) {
+    stop("readCdfUnitNames(..., units=integer(0)) is not supported.")
+  }
+
   res <- .Call("R_affx_get_cdf_unit_names", filename, units, verbose,
         PACKAGE="affxparser");
 
@@ -35,7 +40,7 @@ readCdfUnitNames <- function(filename, units=NULL, verbose=0) {
   if (is.null(res)) {
     stop("Failed to read unit names from CDF file: ", filename);
   }
- 
+
   res;
 } # readCdfUnitNames()
 

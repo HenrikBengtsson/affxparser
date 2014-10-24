@@ -3,12 +3,12 @@
 #
 # @title "Gets the number of cells (probes) that each group of each unit in a CDF file"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #   @get "title".
 # }
-# 
+#
 # \arguments{
 #  \item{filename}{The filename of the CDF file.}
 #  \item{units}{An @integer @vector of unit indices specifying which units
@@ -16,7 +16,7 @@
 #  \item{verbose}{An @integer specifying the verbose level. If 0, the
 #     file is parsed quietly.  The higher numbers, the more details.}
 # }
-# 
+#
 # \value{
 #  A named @list of named @integer vectors.  The name of the list elements
 #  are unit names and the names of the integer vector are group names.
@@ -25,15 +25,15 @@
 # @examples "../incl/readCdfNbrOfCellsPerUnitGroup.Rex"
 #
 # @author "HB"
-# 
+#
 # @keyword "file"
 # @keyword "IO"
 # @keyword "internal"
 #*/#########################################################################
 readCdfNbrOfCellsPerUnitGroup <- function(filename, units=NULL, verbose=0) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   filename <- file.path(dirname(filename), basename(filename));
   if (!file.exists(filename))
@@ -57,9 +57,14 @@ readCdfNbrOfCellsPerUnitGroup <- function(filename, units=NULL, verbose=0) {
     stop("Argument 'verbose' must be an integer: ", verbose);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read the CDF file
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # UNSUPPORTED CASE?
+  if (!is.null(units) && length(units) == 0L) {
+    stop("readCdfNbrOfCellsPerUnitGroup(..., units=integer(0)) is not supported.")
+  }
+
   res <- .Call("R_affx_cdf_nbrOfCellsPerUnitGroup", filename, units, verbose,
                                                      PACKAGE="affxparser");
 
@@ -67,7 +72,7 @@ readCdfNbrOfCellsPerUnitGroup <- function(filename, units=NULL, verbose=0) {
   if (is.null(res)) {
     stop("Failed to read number of cells per unit group from CDF file: ", filename);
   }
- 
+
   res;
 } # readCdfNbrOfCellsPerUnitGroup()
 
