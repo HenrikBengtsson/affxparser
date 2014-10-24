@@ -27,7 +27,8 @@ if (require("AffymetrixDataTestFiles")) {
   for (idxs in idxsList) {
     data <- readCdfDataFrame(cdf, units=idxs)
     str(data)
-    J <- if (is.null(idxs)) Jall else length(idxs)
-    stopifnot(length(unique(data$unitName)) == J)
+    units <- if (is.null(idxs)) seq_len(Jall) else as.integer(idxs)
+    stopifnot(length(unique(data$unitName)) == length(units))
+    stopifnot(identical(sort(unique(data$unit)), units))
   }
 } # if (require("AffymetrixDataTestFiles"))
