@@ -20,6 +20,7 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
 
   # Argument 'indices':
   if (!is.null(indices)) {
+    indices <- as.integer(indices)
     if (!all(sort(indices) == indices)) {
       stop("Argument 'indices' must be sorted.");
     }
