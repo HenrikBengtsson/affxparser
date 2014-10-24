@@ -29,10 +29,6 @@ if (require("AffymetrixDataTestFiles")) {
   )
 
   # Read full file
-  data <- readCdfUnits(cdf)
-  str(head(data))
-  stopifnot(length(data) == Jall)
-
   for (fcn in fcnList) {
     data <- fcn(cdf)
     str(head(data))
