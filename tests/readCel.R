@@ -2,11 +2,11 @@ if (require("AffymetrixDataTestFiles")) {
   library("affxparser")
 
   pathR <- system.file(package="AffymetrixDataTestFiles")
-  path <- file.path(pathR, "rawData", "FusionSDK_Test3", "Test3")
+  pathD <- file.path(pathR, "rawData", "FusionSDK_Test3", "Test3")
 
   # Find all CEL files
-  pathnames <- list.files(path=path, pattern="[.]CEL$",
-                          recursive=TRUE, full.names=TRUE)
+  cels <- list.files(path=pathD, pattern="[.]CEL$",
+                     recursive=TRUE, full.names=TRUE)
 
   # Various sets of indices to be read
   idxsList <- list(
@@ -17,18 +17,18 @@ if (require("AffymetrixDataTestFiles")) {
     readDouble=as.double(11:20)
   )
 
-  for (kk in seq_along(pathnames)) {
-    pathname <- pathnames[kk]
+  for (kk in seq_along(cels)) {
+    cel <- cels[kk]
 
     # Read full file
-    data <- readCel(pathname)
+    data <- readCel(cel)
     str(data)
     Jall <- data$header$total
     stopifnot(length(data$intensities) == Jall)
 
-    # Read different subsets of the file
+    # Read different subsets of cells
     for (idxs in idxsList) {
-      data <- readCel(pathname, indices=idxs)
+      data <- readCel(cel, indices=idxs)
       str(data)
       J <- if (is.null(idxs)) Jall else length(idxs)
       stopifnot(length(data$intensities) == J)
