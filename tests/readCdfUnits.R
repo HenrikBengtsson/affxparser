@@ -18,16 +18,35 @@ if (require("AffymetrixDataTestFiles")) {
     readDouble=as.double(11:20)
   )
 
+  fcnList <- list(
+    readCdf,
+    readCdfUnits,
+    readCdfUnitNames,
+    readCdfNbrOfCellsPerUnitGroup,
+    readCdfGroupNames,
+    readCdfCellIndices,
+    readCdfIsPm
+  )
+
   # Read full file
   data <- readCdfUnits(cdf)
   str(head(data))
   stopifnot(length(data) == Jall)
 
-  # Read different subsets of units
-  for (idxs in idxsList) {
-    data <- readCdfUnits(cdf, units=idxs)
+  for (fcn in fcnList) {
+    data <- fcn(cdf)
     str(head(data))
     J <- if (is.null(idxs)) Jall else length(idxs)
-    stopifnot(length(data) == J)
-  }
+    stopifnot(length(data) == Jall)
+  } # for (fcn ...)
+
+  for (fcn in fcnList) {
+    # Read different subsets of units
+    for (idxs in idxsList) {
+      data <- fcn(cdf, units=idxs)
+      str(head(data))
+      J <- if (is.null(idxs)) Jall else length(idxs)
+      stopifnot(length(data) == J)
+    }
+  } # for (fcn ...)
 } # if (require("AffymetrixDataTestFiles"))
