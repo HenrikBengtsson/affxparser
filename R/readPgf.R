@@ -3,6 +3,11 @@ readPgfHeader <- function(file) {
 }
 
 readPgf <- function(file, indices=NULL) {
+  # UNSUPPORTED CASE?
+  if (!is.null(indices) && length(indices) == 0L) {
+    stop("readPgf(..., indices=integer(0)) is not supported.")
+  }
+
   as.list(readPgfEnv(file, readBody=TRUE, indices=indices));
 }
 
@@ -10,7 +15,7 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
   ## FIXME: this is an exception in more recent TsvFile.cpp
   # Argument 'file':
   if (!file.exists(file)) {
-    stop("Cannot read PGF file. File not found: ", file); 
+    stop("Cannot read PGF file. File not found: ", file);
   }
 
   # Argument 'indices':
@@ -18,6 +23,11 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
     if (!all(sort(indices) == indices)) {
       stop("Argument 'indices' must be sorted.");
     }
+  }
+
+  # UNSUPPORTED CASE?
+  if (!is.null(indices) && length(indices) == 0L) {
+    stop("readPgfEnv(..., indices=integer(0)) is not supported.")
   }
 
   env <- new.env(parent=emptyenv());
