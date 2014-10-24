@@ -7,6 +7,8 @@ o ROBUSTNESS: Now all read methods gives an informative error message
   all values just as NULL.
 o ROBUSTNESS: Now readCelRectangle() gives an informative error message
   if argument 'xrange' or 'yrange' is not of length two.
+o BUG FIX: Now readPgf() and readPgfEnv() would give an error if
+  argument 'indices' was a double vector rather than an integer vector.
 
 
 Version: 1.39.0 [2014-10-13]
