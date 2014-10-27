@@ -1,14 +1,14 @@
 #########################################################################/**
 # @RdocFunction readCdfCellIndices
-# 
+#
 # @title "Reads (one-based) cell indices of units (probesets) in an Affymetrix CDF file"
-# 
+#
 # @synopsis
-# 
+#
 # \description{
 #   @get "title".
 # }
-# 
+#
 # \arguments{
 #   \item{filename}{The filename of the CDF file.}
 #   \item{units}{An @integer @vector of unit indices
@@ -16,20 +16,20 @@
 #   \item{stratifyBy}{A \code{\link[base]{character}} string specifying which and how
 #     elements in group fields are returned.
 #     If \code{"nothing"}, elements are returned as is, i.e. as @vectors.
-#     If \code{"pm"}/\code{"mm"}, only elements corresponding to 
+#     If \code{"pm"}/\code{"mm"}, only elements corresponding to
 #     perfect-match (PM) / mismatch (MM) probes are returned (as @vectors).
 #     If \code{"pmmm"}, elements are returned as a matrix where the
 #     first row holds elements corresponding to PM probes and the second
-#     corresponding to MM probes.  Note that in this case, it is assumed 
+#     corresponding to MM probes.  Note that in this case, it is assumed
 #     that there are equal number of PMs and MMs; if not, an error is
-#     generated.  
-#     Moreover, the PMs and MMs may not even be paired, i.e. there is no 
-#     guarantee that the two elements in a column corresponds to a 
+#     generated.
+#     Moreover, the PMs and MMs may not even be paired, i.e. there is no
+#     guarantee that the two elements in a column corresponds to a
 #     PM-MM pair.}
 #   \item{verbose}{An @integer specifying the verbose level. If 0, the
 #     file is parsed quietly.  The higher numbers, the more details.}
 # }
-# 
+#
 # \value{
 #   A named @list where the names corresponds to the names
 #   of the units read.  Each unit element of the list is in turn a
@@ -44,39 +44,39 @@
 #      |       |   +- "indices"
 #      |       |  group #2
 #      |       |   +- "indices"
-#      |       .  
+#      |       .
 #      |       +- group #K
 #      |           +- "indices"
 #      +- unit #2
 #      .
 #      +- unit #J
 #   }
-#   
+#
 #   This is structure is compatible with what @see "readCdfUnits" returns.
 #
 #   Note that these indices are \emph{one-based}.
 # }
 #
 # \section{Cell indices are one-based}{
-#   Note that in \pkg{affxparser} all \emph{cell indices} are by 
-#   convention \emph{one-based}, which is more convenient to work 
+#   Note that in \pkg{affxparser} all \emph{cell indices} are by
+#   convention \emph{one-based}, which is more convenient to work
 #   with in \R.  For more details on one-based indices, see
 #   @see "2. Cell coordinates and cell indices".
 # }
-# 
+#
 # @author "HB"
-# 
+#
 #  \seealso{
 #    @see "readCdfUnits".
 #  }
-# 
+#
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
 readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pmmm", "pm", "mm"), verbose=0) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   filename <- file.path(dirname(filename), basename(filename));
   if (!file.exists(filename))
@@ -103,9 +103,14 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
   stratifyBy <- match.arg(stratifyBy);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read the CDF file
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # UNSUPPORTED CASE?
+  if (!is.null(units) && length(units) == 0L) {
+    stop("readCdfCellIndices(..., units=integer(0)) is not supported.")
+  }
+
   cdf <- .Call("R_affx_get_cdf_cell_indices", filename, units, verbose,
                                                      PACKAGE="affxparser");
 
@@ -118,9 +123,9 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
     return(cdf);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Stratify by PM, MM, or PM & MM
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   isPm <- readCdfIsPm(filename, units=units);
 
   # Using .subset2() instead of "[["() to avoid dispatching overhead etc.
@@ -155,7 +160,7 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
         dim <- c(2, npm);
 #          value <- group[[1]][pmmm];
         value <- .subset(.subset2(group, 1), pmmm);
-        dim(value) <- dim; 
+        dim(value) <- dim;
         dimnames(value) <- dimnames;
         group[[1]] <- value;
 
@@ -240,4 +245,4 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
 # 2006-04-01
 # o Created, because it is very commonly used and is about 5 times faster
 #   than using readCdfUnits(..., readIndices=TRUE).  /HB
-############################################################################  
+############################################################################

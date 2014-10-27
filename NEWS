@@ -1,9 +1,20 @@
 Package: affxparser
 ===================
 
+Version: 1.39.1 [2014-10-26]
+o ROBUSTNESS: Now all methods gives an informative error message if zero 
+  elements are requested, i.e. via zero-length argument 'indices' or
+  'units' that is not NULL. Previously this case would access all values
+  just like NULL does.
+o ROBUSTNESS: Now readCelRectangle() gives an informative error message
+  if argument 'xrange' or 'yrange' is not of length two.
+o BUG FIX: readPgf() and readPgfEnv() would give an error if argument
+ 'indices' was specifies as a double rather than as an integer vector.
+
+
 Version: 1.39.0 [2014-10-13]
 o The version number was bumped for the Bioconductor devel version,
-  which is now BioC v3.1 for R (>= 3.2.0). 
+  which is now BioC v3.1 for R (>= 3.2.0).
 
 
 Version: 1.38.0 [2014-10-13]

@@ -3,12 +3,12 @@
 #
 # @title "Reads units (probesets) from an Affymetrix CDF file"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #  @get "title". Gets all or a subset of units (probesets).
 # }
-# 
+#
 # \arguments{
 #  \item{filename}{The filename of the CDF file.}
 #  \item{units}{An @integer @vector of unit indices
@@ -23,15 +23,15 @@
 #  \item{stratifyBy}{A @character string specifying which and how
 #    elements in group fields are returned.
 #    If \code{"nothing"}, elements are returned as is, i.e. as @vectors.
-#    If \code{"pm"}/\code{"mm"}, only elements corresponding to 
+#    If \code{"pm"}/\code{"mm"}, only elements corresponding to
 #    perfect-match (PM) / mismatch (MM) probes are returned (as @vectors).
 #    If \code{"pmmm"}, elements are returned as a matrix where the
 #    first row holds elements corresponding to PM probes and the second
-#    corresponding to MM probes.  Note that in this case, it is assumed 
+#    corresponding to MM probes.  Note that in this case, it is assumed
 #    that there are equal number of PMs and MMs; if not, an error is
-#    generated.  
-#    Moreover, the PMs and MMs may not even be paired, i.e. there is no 
-#    guarantee that the two elements in a column corresponds to a 
+#    generated.
+#    Moreover, the PMs and MMs may not even be paired, i.e. there is no
+#    guarantee that the two elements in a column corresponds to a
 #    PM-MM pair.}
 #  \item{readIndices}{If @TRUE, cell indices \emph{calculated} from
 #    the row and column (x,y) coordinates are retrieved, otherwise not.
@@ -39,22 +39,22 @@
 #  \item{verbose}{An @integer specifying the verbose level. If 0, the
 #    file is parsed quietly.  The higher numbers, the more details.}
 # }
-# 
+#
 # \value{
 #  A named @list where the names corresponds to the names
 #  of the units read.  Each element of the list is in turn a
 #  @list structure with three components:
-#  \item{groups}{A @list with one component for each group 
-#   (also called block). The information on each group is a 
-#   @list of up to seven components: \code{x}, \code{y}, 
+#  \item{groups}{A @list with one component for each group
+#   (also called block). The information on each group is a
+#   @list of up to seven components: \code{x}, \code{y},
 #   \code{pbase}, \code{tbase}, \code{expos}, \code{indices},
 #   and \code{direction}.
-#   All fields but the latter have the same number of values as 
+#   All fields but the latter have the same number of values as
 #   there are cells in the group.  The latter field has only
 #   one value indicating the direction for the whole group.
 #  }
 #  \item{type}{An @integer specifying the type of the
-#    unit, where 1 is "expression", 2 is "genotyping", 3 is "CustomSeq", 
+#    unit, where 1 is "expression", 2 is "genotyping", 3 is "CustomSeq",
 #    and 4 "tag".}
 #  \item{direction}{An @integer specifying the direction
 #    of the unit, which defines if the probes are interrogating the sense
@@ -63,12 +63,12 @@
 # }
 #
 # \section{Cell indices are one-based}{
-#   Note that in \pkg{affxparser} all \emph{cell indices} are by 
-#   convention \emph{one-based}, which is more convenient to work 
+#   Note that in \pkg{affxparser} all \emph{cell indices} are by
+#   convention \emph{one-based}, which is more convenient to work
 #   with in \R.  For more details on one-based indices, see
 #   @see "2. Cell coordinates and cell indices".
 # }
-# 
+#
 # \author{
 #  James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
 #  Daniel Hansen, \email{khansen@stat.berkeley.edu}.
@@ -76,13 +76,13 @@
 #  any subset of units and/or subset of parameters, to stratify by PM/MM,
 #  and to return cell indices.d
 # }
-# 
+#
 # @examples "../incl/readCdfUnits.Rex"
-# 
+#
 # \seealso{
 #   @see "readCdfCellIndices".
 # }
-# 
+#
 # \references{
 #   [1] Affymetrix Inc, Affymetrix GCOS 1.x compatible file formats,
 #       June 14, 2005.
@@ -91,11 +91,11 @@
 #
 # @keyword "file"
 # @keyword "IO"
-#*/######################################################################### 
+#*/#########################################################################
 readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, readExpos=TRUE, readType=TRUE, readDirection=TRUE, stratifyBy=c("nothing", "pmmm", "pm", "mm"), readIndices=FALSE, verbose=0) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   filename <- file.path(dirname(filename), basename(filename));
   if (!file.exists(filename))
@@ -142,13 +142,18 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
   readIndices <- as.integer(as.logical(readIndices));
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read the CDF file
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-  cdf <- .Call("R_affx_get_cdf_units", filename, units, 
-                readXY, readBases, readExpos, 
-                readType, readDirection, 
-                readIndices, 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # UNSUPPORTED CASE?
+  if (!is.null(units) && length(units) == 0L) {
+    stop("readCdfUnits(..., units=integer(0)) is not supported.")
+  }
+
+  cdf <- .Call("R_affx_get_cdf_units", filename, units,
+                readXY, readBases, readExpos,
+                readType, readDirection,
+                readIndices,
                 verbose, PACKAGE="affxparser");
 
   # Sanity check
@@ -160,9 +165,9 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
     return(cdf);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Stratify by PM, MM, or PM & MM
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   isPm <- readCdfIsPm(filename, units=units);
 
   # Using .subset2() instead of "[["() to avoid dispatching overhead etc.
@@ -200,7 +205,7 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
           for (kk in 1:ngroup) {
   #          value <- group[[kk]][pmmm];
             value <- .subset(.subset2(group, kk), pmmm);
-            dim(value) <- dim; 
+            dim(value) <- dim;
             dimnames(value) <- dimnames;
             group[[kk]] <- value;
           }
@@ -266,7 +271,7 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
 # o ROBUSTNESS: Added sanity check that the native code did not return NULL.
 # 2011-02-15
 # o DOCUMENTATION: Clarified in help(readCdfUnits) that (x,y) coordinates
-#   are zero-based and the _from (x,y) calculated_ cell indices are 
+#   are zero-based and the _from (x,y) calculated_ cell indices are
 #   one-based, regardless what the indices on file are.
 # 2010-12-12
 # o ROBUSTNESS: Replaces .Internal(matrix(...)) with matrix().
@@ -293,4 +298,4 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
 #   above.  See the R.oo package for details.  Don't remove the *.Rex files!
 # o Created by HB.  The purpose was to make it possible to read subsets
 #   of units and not just all units at once.  /HB
-############################################################################  
+############################################################################

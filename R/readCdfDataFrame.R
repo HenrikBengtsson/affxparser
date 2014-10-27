@@ -128,6 +128,11 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Query the CDF
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # UNSUPPORTED CASE?
+  if (!is.null(units) && length(units) == 0L) {
+    stop("readCdfDataFrame(..., units=integer(0)) is not supported.")
+  }
+
   cdf <- readCdf(filename, units=units, readXY=readXY, readBases=readBases,
     readIndexpos=readIndexpos, readAtoms=readAtoms,
     readUnitType=readUnitType, readUnitDirection=readUnitDirection,
@@ -140,7 +145,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
   # Flatten CDF list structure unit by unit
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(units))
-    units <- seq(along=cdf);
+    units <- seq(along=cdf);  ## FIX ME
   groupIdxs <- groups;
 
   unitNames <- names(cdf);

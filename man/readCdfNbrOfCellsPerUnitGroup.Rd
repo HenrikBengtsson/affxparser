@@ -6,34 +6,34 @@
 % by the Rdoc compiler part of the R.oo package.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
- \name{readCdfNbrOfCellsPerUnitGroup}
+\name{readCdfNbrOfCellsPerUnitGroup}
 \alias{readCdfNbrOfCellsPerUnitGroup}
 
 
- \title{Gets the number of cells (probes) that each group of each unit in a CDF file}
+\title{Gets the number of cells (probes) that each group of each unit in a CDF file}
 
- \usage{
+\usage{
 readCdfNbrOfCellsPerUnitGroup(filename, units=NULL, verbose=0)
 }
 
- \description{
-   Gets the number of cells (probes) that each group of each unit in a CDF file.
- }
+\description{
+  Gets the number of cells (probes) that each group of each unit in a CDF file.
+}
 
- \arguments{
-  \item{filename}{The filename of the CDF file.}
-  \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which units
-     to be read.  If \code{\link[base]{NULL}}, all units are read.}
-  \item{verbose}{An \code{\link[base]{integer}} specifying the verbose level. If 0, the
-     file is parsed quietly.  The higher numbers, the more details.}
- }
+\arguments{
+ \item{filename}{The filename of the CDF file.}
+ \item{units}{An \code{\link[base]{integer}} \code{\link[base]{vector}} of unit indices specifying which units
+    to be read.  If \code{\link[base]{NULL}}, all units are read.}
+ \item{verbose}{An \code{\link[base]{integer}} specifying the verbose level. If 0, the
+    file is parsed quietly.  The higher numbers, the more details.}
+}
 
- \value{
-  A named \code{\link[base]{list}} of named \code{\link[base]{integer}} vectors.  The name of the list elements
-  are unit names and the names of the integer vector are group names.
- }
+\value{
+ A named \code{\link[base]{list}} of named \code{\link[base]{integer}} vectors.  The name of the list elements
+ are unit names and the names of the integer vector are group names.
+}
 
- \examples{
+\examples{
 ##############################################################
 if (require("AffymetrixDataTestFiles")) {            # START #
 ##############################################################
@@ -114,7 +114,7 @@ print(sum(x[["4"]][3,]-x[["4"]][4,] != 0))
 ##############################################################
 }
 
- \author{Henrik Bengtsson}
+\author{Henrik Bengtsson}
 
 
 
