@@ -39,6 +39,15 @@
 # @keyword "IO"
 #*/#########################################################################
 readCelRectangle <- function(filename, xrange=c(0,Inf), yrange=c(0,Inf), ..., asMatrix=TRUE) {
+  # Argument 'xrange' and 'yrange':
+  if (length(xrange) != 2) {
+    stop("Argument 'xrange' is not of length 2: ", length(xrange))
+  }
+
+  if (length(yrange) != 2) {
+    stop("Argument 'yrange' is not of length 2: ", length(yrange))
+  }
+
   # Get the chip layout from the CEL header
   header <- readCelHeader(filename);
   nrow <- header$rows;
@@ -80,6 +89,9 @@ readCelRectangle <- function(filename, xrange=c(0,Inf), yrange=c(0,Inf), ..., as
 
 ############################################################################
 # HISTORY:
+# 2014-10-24
+# ROBUSTNESS: Now readCelRectangle() gives an informative error message
+# if argument 'xrange' or 'yrange' is not of length two.
 # 2006-03-28
 # o Now cell indices are one-based.
 # 2006-03-22

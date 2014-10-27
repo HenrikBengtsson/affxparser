@@ -10,6 +10,12 @@ readCdfQc <- function(filename, units = NULL, verbose = 0){
   returnBackgroundInfo <- TRUE;
   returnType <- TRUE;
   returnQcNumbers <- TRUE;
+
+  # UNSUPPORTED CASE?
+  if (!is.null(units) && length(units) == 0L) {
+    stop("readCdfQc(..., units=integer(0)) is not supported.")
+  }
+
   res <- .Call("R_affx_get_cdf_file_qc",
                 filename, as.integer(units), as.integer(verbose),
                 returnIndices, returnXY, returnLength, returnPMInfo,
@@ -19,7 +25,7 @@ readCdfQc <- function(filename, units = NULL, verbose = 0){
   if (is.null(res)) {
     stop("Failed to read QC units from CDF file: ", filename);
   }
- 
+
   res;
 } # readCdfQc()
 

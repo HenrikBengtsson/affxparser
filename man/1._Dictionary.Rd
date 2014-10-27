@@ -40,6 +40,7 @@
     SNP arrays have either two or four groups per unit, one for each of
     the two allele times possibly repeated for both strands.}
   \item{MM}{Mismatch-match, e.g. MM probe.}
+  \item{PGF}{A file format: probe group file.}
   \item{TPMAP}{A file format storing the relationship between (PM,MM)
     pairs (or PM probes) and positions on a set of sequences.}
   \item{QC}{Quality control, e.g. QC probes and QC probe sets.}

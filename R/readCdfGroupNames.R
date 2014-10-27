@@ -3,15 +3,15 @@
 #
 # @title "Reads group names for a set of units (probesets) in an Affymetrix CDF file"
 #
-# @synopsis 
-# 
+# @synopsis
+#
 # \description{
 #   @get "title".
-# 
+#
 #   This is for instance useful for SNP arrays where the nucleotides used
 #   for the A and B alleles are the same as the group names.
 # }
-# 
+#
 # \arguments{
 #   \item{filename}{The filename of the CDF file.}
 #   \item{units}{An @integer @vector of unit indices specifying which
@@ -21,28 +21,28 @@
 #    \item{verbose}{An @integer specifying the verbose level. If 0, the
 #      file is parsed quietly.  The higher numbers, the more details.}
 # }
-# 
+#
 # \value{
 #    A named @list structure where the names of the elements are the names
 #    of the units read.  Each element is a @character @vector with group
 #    names for the corrsponding unit.
 #  }
-# 
+#
 # @author "HB"
-# 
+#
 #  \seealso{
 #    @see "readCdfUnits".
 #  }
-# 
-# 
-# 
+#
+#
+#
 # @keyword "file"
 # @keyword "IO"
 #*/#########################################################################
 readCdfGroupNames <- function(filename, units=NULL, truncateGroupNames=TRUE, verbose=0) {
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Argument 'filename':
   filename <- file.path(dirname(filename), basename(filename));
   if (!file.exists(filename))
@@ -60,7 +60,7 @@ readCdfGroupNames <- function(filename, units=NULL, truncateGroupNames=TRUE, ver
 
   # Argument 'truncateGroupNames':
   truncateGroupNames <- as.logical(truncateGroupNames);
-  
+
   # Argument 'verbose':
   if (length(verbose) != 1)
     stop("Argument 'verbose' must be a single integer.");
@@ -69,9 +69,14 @@ readCdfGroupNames <- function(filename, units=NULL, truncateGroupNames=TRUE, ver
     stop("Argument 'verbose' must be an integer: ", verbose);
 
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Read the CDF file
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # UNSUPPORTED CASE?
+  if (!is.null(units) && length(units) == 0L) {
+    stop("readCdfGroupNames(..., units=integer(0)) is not supported.")
+  }
+
   res <- .Call("R_affx_cdf_groupNames", filename, units,
         truncateGroupNames, verbose,
         PACKAGE="affxparser");
