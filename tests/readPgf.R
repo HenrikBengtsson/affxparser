@@ -7,6 +7,9 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
   # Read PGF structure
   pgf <- file.path(pathA, "HuGene-1_0-st-v1.r4,10_probesets.pgf")
 
+  # NOTE: Hard-coded
+  Jall <- 10L
+
   # Various sets of indices to be read
   idxsList <- list(
 ##  readNothing=integer(0L), # FIX ME
@@ -19,7 +22,7 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
   data <- readPgf(pgf)
   str(head(data))
   stopifnot(identical(data$header$chip_type, "HuGene-1_0-st-v1"))
-  Jall <- length(data$probesetName)
+  stopifnot(length(data$probesetName) == Jall)
 
   # Read different subsets of units
   for (idxs in idxsList) {
