@@ -15,7 +15,10 @@ if (require("AffymetrixDataTestFiles")) {
     readAll=NULL,
     readOne=10L,
     readSome=11:20,
-    readDouble=as.double(11:20)
+    readDouble=as.double(11:20),
+    outOfRange=-1L,
+    outOfRange=0L,
+    outOfRange=1e9L
   )
 
   # Read full file
@@ -24,11 +27,22 @@ if (require("AffymetrixDataTestFiles")) {
   stopifnot(length(unique(data$unitName)) == Jall)
 
   # Read different subsets of units
-  for (idxs in idxsList) {
-    data <- readCdfDataFrame(cdf, units=idxs)
-    str(data)
-    units <- if (is.null(idxs)) seq_len(Jall) else as.integer(idxs)
-    stopifnot(length(unique(data$unitName)) == length(units))
-    stopifnot(identical(sort(unique(data$unit)), units))
-  }
+  for (ii in seq_along(idxsList)) {
+    name <- names(idxsList)[ii]
+    message(sprintf("Testing readCdfDataFrame() with '%s' indices...", name))
+    idxs <- idxsList[[ii]]
+    str(list(idxs=idxs))
+    if (grepl("outOfRange", name)) {
+      res <- tryCatch(readCdfDataFrame(cdf, units=idxs), error=function(ex) ex)
+      str(res)
+      stopifnot(inherits(res, "error"))
+    } else {
+      data <- readCdfDataFrame(cdf, units=idxs)
+      str(data)
+      units <- if (is.null(idxs)) seq_len(Jall) else as.integer(idxs)
+      stopifnot(length(unique(data$unitName)) == length(units))
+      stopifnot(identical(sort(unique(data$unit)), units))
+    }
+    message(sprintf("Testing readCdfDataFrame() with '%s' indices...done", name))
+  } # for (ii ...)
 } # if (require("AffymetrixDataTestFiles"))
