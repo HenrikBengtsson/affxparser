@@ -166,10 +166,10 @@ extern "C" {
     numQCUnitsInFile  = cdf.GetHeader().GetNumQCProbeSets();
     numCols = cdf.GetHeader().GetCols();
     if(length(unitIndices) != 0){
-        for(int i = 0; i++; i < length(unitIndices)) {
+        for (int i = 0; i < length(unitIndices); i++) {
             if(INTEGER(unitIndices)[i] < 1 || 
                INTEGER(unitIndices)[i] > numQCUnitsInFile)
-                error("Argument 'units' contains an element out of range.");
+	      Rf_error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numQCUnitsInFile, INTEGER(unitIndices)[i]);
         }
         numQCUnits = length(unitIndices);
         readEveryUnit = false;
@@ -291,7 +291,7 @@ extern "C" {
           if(i_returnBackgroundInfo)
               PROTECT(r_backgroundinfo = NEW_LOGICAL(nqccells));
 
-          for(int icell = 0; icell < nqccells; icell++) {
+          for (int icell = 0; icell < nqccells; icell++) {
               qcunit.GetProbeInformation(icell, qcprobe);
               if(i_returnXY) {
                   INTEGER(r_xvals)[icell] = qcprobe.GetX();
@@ -616,10 +616,10 @@ extern "C" {
     numUnitsInFile  = cdf.GetHeader().GetNumProbeSets();
     numCols = cdf.GetHeader().GetCols();
     if(length(unitIndices) != 0){
-        for(int i = 0; i++; i < length(unitIndices)) {
+        for (int i = 0; i < length(unitIndices); i++) {
             if(INTEGER(unitIndices)[i] < 1 || 
                INTEGER(unitIndices)[i] > numUnitsInFile)
-                error("Argument 'units' contains an element out of range.");
+                Rf_error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numUnitsInFile, INTEGER(unitIndices)[i]);
         }
         numUnits = length(unitIndices);
         readEveryUnit = false;
@@ -1780,6 +1780,13 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2014-10-28
+ * o BUG FIX: Argument 'unitIndices' to R_affx_get_cdf_file_qc()  and
+     R_affx_get_cdf_file() could contain elements out of range [1,J].
+     If zero or a negative unit was queried a core dump could occur.  If
+     a too large unit was queried, random garbage was read.  The intended
+     argument check was never performed due to a typo swapping 'condition'
+     and 'increase' in a for (initialization; condition; increase) loop.
  * 2008-08-09
  * o Now unit type 5 is reported as 'copynumber' and no longer as 'unknown'.
  * 2007-01-05

@@ -1,8 +1,17 @@
 Package: affxparser
 ===================
 
+Version: 1.39.2 [2014-10-28]
+o BUG FIX: The range test of argument 'units' to readCdf() and readCdfQc()
+  was never performed due to a typo, meaning it was possible to request
+  units out of range.  Depending on system this could result in either
+  a core dump or random garbage read for the out of range units.
+o ROBUSTNESS: Added package system tests for out of range 'units' and
+  'indices' arguments for most read functions.
+
+
 Version: 1.39.1 [2014-10-26]
-o ROBUSTNESS: Now all methods gives an informative error message if zero 
+o ROBUSTNESS: Now all methods gives an informative error message if zero
   elements are requested, i.e. via zero-length argument 'indices' or
   'units' that is not NULL. Previously this case would access all values
   just like NULL does.

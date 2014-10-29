@@ -13,9 +13,12 @@ if (require("AffymetrixDataTestFiles")) {
   idxsList <- list(
 ##  readNothing=integer(0L), # FIX ME
     readAll=NULL,
-    readOne=10L,
-    readSome=11:20,
-    readDouble=as.double(11:20)
+    readOne=5L,
+    readSome=5:10,
+    readDouble=as.double(5:10),
+    outOfRange=-1L,
+    outOfRange=0L,
+    outOfRange=1e9L
   )
 
   # Read full file
@@ -24,10 +27,21 @@ if (require("AffymetrixDataTestFiles")) {
   stopifnot(length(data) == Jall)
 
   # Read different subsets of units
-  for (idxs in idxsList) {
-    data <- readCdfQc(cdf, units=idxs)
-    str(head(data))
-    J <- if (is.null(idxs)) Jall else length(idxs)
-    stopifnot(length(data) == J)
-  }
+  for (ii in seq_along(idxsList)) {
+    name <- names(idxsList)[ii]
+    message(sprintf("Testing readCdfQc() with '%s' indices...", name))
+    idxs <- idxsList[[ii]]
+    str(list(idxs=idxs))
+    if (grepl("outOfRange", name)) {
+      res <- tryCatch(readCdfQc(cdf, units=idxs), error=function(ex) ex)
+      str(res)
+      stopifnot(inherits(res, "error"))
+    } else {
+      data <- readCdfQc(cdf, units=idxs)
+      str(head(data))
+      J <- if (is.null(idxs)) Jall else length(idxs)
+      stopifnot(length(data) == J)
+    }
+    message(sprintf("Testing readCdfQc() with '%s' indices...done", name))
+  } # for (ii ...)
 } # if (require("AffymetrixDataTestFiles"))

@@ -20,7 +20,10 @@ if (require("AffymetrixDataTestFiles")) {
     readAll=NULL,
     readOne=10L,
     readSome=11:20,
-    readDouble=as.double(11:20)
+    readDouble=as.double(11:20),
+    outOfRange=-1L,
+    outOfRange=0L,
+    outOfRange=1e9L
   )
 
   # Read full file
@@ -29,10 +32,21 @@ if (require("AffymetrixDataTestFiles")) {
   stopifnot(length(data) == Jall)
 
   # Read different subsets of units
-  for (idxs in idxsList) {
-    data <- readCelUnits(cels, units=idxs, cdf=cdf)
-    str(head(data))
-    J <- if (is.null(idxs)) Jall else length(idxs)
-    stopifnot(length(data) == J)
-  }
+  for (ii in seq_along(idxsList)) {
+    name <- names(idxsList)[ii]
+    message(sprintf("Testing readCelUnits() with '%s' indices...", name))
+    idxs <- idxsList[[ii]]
+    str(list(idxs=idxs))
+    if (grepl("outOfRange", name)) {
+      res <- tryCatch(readCelUnits(cels, units=idxs, cdf=cdf), error=function(ex) ex)
+      str(res)
+      stopifnot(inherits(res, "error"))
+    } else {
+      data <- readCelUnits(cels, units=idxs, cdf=cdf)
+      str(head(data))
+      J <- if (is.null(idxs)) Jall else length(idxs)
+      stopifnot(length(data) == J)
+    }
+    message(sprintf("Testing readCelUnits() with '%s' indices...done", name))
+  } # for (ii ...)
 } # if (require("AffymetrixDataTestFiles"))
