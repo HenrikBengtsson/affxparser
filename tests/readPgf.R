@@ -16,7 +16,10 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
     readAll=NULL,
     readOne=5L,
     readSome=1:5,
-    readDouble=as.double(1:5) # FIX ME
+    readDouble=as.double(1:5),
+    outOfRange=-1L,
+    outOfRange=0L
+#    outOfRange=1e9L # FIX ME
   )
 
   data <- readPgf(pgf)
@@ -25,11 +28,22 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
   stopifnot(length(data$probesetName) == Jall)
 
   # Read different subsets of units
-  for (idxs in idxsList) {
-    data <- readPgf(pgf, indices=idxs)
-    str(head(data))
-    stopifnot(identical(data$header$chip_type, "HuGene-1_0-st-v1"))
-    J <- if (is.null(idxs)) Jall else length(idxs)
-    stopifnot(length(data$probesetName) == J)
-  }
+  for (ii in seq_along(idxsList)) {
+    name <- names(idxsList)[ii]
+    message(sprintf("Testing readPgf() with '%s' indices...", name))
+    idxs <- idxsList[[ii]]
+    str(list(idxs=idxs))
+    if (grepl("outOfRange", name)) {
+      res <- tryCatch(readPgf(pgf, indices=idxs), error=function(ex) ex)
+      str(res)
+      stopifnot(inherits(res, "error"))
+    } else {
+      data <- readPgf(pgf, indices=idxs)
+      str(head(data))
+      stopifnot(identical(data$header$chip_type, "HuGene-1_0-st-v1"))
+      J <- if (is.null(idxs)) Jall else length(idxs)
+      stopifnot(length(data$probesetName) == J)
+    }
+    message(sprintf("Testing readPgf() with '%s' indices...done", name))
+  } # for (ii ...)
 } # if (require("AffymetrixDataTestFiles"))
