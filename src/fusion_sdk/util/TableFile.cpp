@@ -162,7 +162,9 @@ bool TableFile::open(const std::string& fileName, const std::vector<std::string>
       unsigned int colIx = 0;
       if(m_UseRowNames)
         colIx = 1;
-      for(colIx = colIx; colIx < words.size(); colIx++) {
+      // WAS for (colIx = colIx; ...) BUT that gives a compile
+      // warning of an unused/unnecessary expression.
+      for(; colIx < words.size(); colIx++) {
         m_ColNames.push_back(ToStr(colIx));
       }
     }
