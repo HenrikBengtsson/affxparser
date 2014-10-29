@@ -385,7 +385,9 @@ DataSetHeader* GenericData::FindDataSetHeader(DataGroupHeader* dch, u_int32_t da
 	DataSetHeader* dph = 0;
 	if (dch != 0)
 	{
-		if (dataSetIdx >= 0 && (int32_t)dataSetIdx < dch->GetDataSetCnt())
+                // WAS if (dataSetIdx >= 0 && ...) BUT 'dataSetIdx >= 0'
+                // is always true because 'dataSetIdx' is unsigned.
+		if ((int32_t)dataSetIdx < dch->GetDataSetCnt())
 		{
 			dph = &dch->GetDataSet(dataSetIdx);
 		}
