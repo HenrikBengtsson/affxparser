@@ -106,7 +106,9 @@ void CDFProbeSetInformation::SetDataGroup(DataGroup& dg)
 
 void CDFProbeSetInformation::GetGroupInformation(u_int32_t groupIdx, CDFProbeGroupInformation& info)
 {
-	if (groupIdx < 0 || groupIdx >= groupCnt)
+        // WAS if (groupIdx < 0 || ...) BUT 'groupIdx < 0'
+        // is always false because 'groupIdx' is unsigned.
+	if (groupIdx >= groupCnt)
 		return;
 
 	DataSet* ds = dataGroup->DataSet(groupIdx);
