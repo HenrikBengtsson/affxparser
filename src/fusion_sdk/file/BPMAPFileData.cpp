@@ -367,11 +367,11 @@ bool CBPMAPFileData::ReadDataSection()
 	}
 
 
-	// Read more sequence data
-	const int probeBufSize=64;
 // WAS always declared regardless of _USE_MEM_MAPPING_, leading to
 // a compile warning on unused variables 'probeIn' and 'probeOut'.
 #ifndef _USE_MEM_MAPPING_
+	// Read more sequence data
+	const int probeBufSize=64;
 	unsigned char probeIn[PROBE_STORAGE_BUFFER_LENGTH]="";
 	char probeOut[probeBufSize]="";
 #endif
