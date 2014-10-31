@@ -785,7 +785,9 @@ void Util::printStringWidth(std::ostream &out,const std::string& str,
         fflush(stdout);
         position = prefix;
       }
-      *wStart++;
+      // WAS '*wStart++' but that is unnecessary and gives compile
+      // warning on "expression result unused".
+      wStart++;
     }
 
     if(*wStart == '\0')
