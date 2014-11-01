@@ -147,7 +147,6 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
     }
     maxIndex = nProbesets;
     pgf->rewind();
-    Rprintf("maxIndex=%d\n", maxIndex);
 
     // (c) Setup/validate 'indices'
     if (readAll) {
