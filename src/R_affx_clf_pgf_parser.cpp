@@ -93,13 +93,13 @@ R_affx_get_body(ClfFile* clf, SEXP rho)
 void
 R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
 {
-    int nProbesets = 0, nAtoms = 0, nProbes = 0, i = 0;
-    int prevIndex, currIndex = 0, nextIndex=0, maxIndex;
+    int nProbesets, nAtoms, nProbes;
+    int i, prevIndex, currIndex, nextIndex=0, maxIndex;
     bool readAll = (indices == R_NilValue);
     int *pindices; // Argument 'indices'
 
 
-    // (a) Find maximum index to allow for early stopping
+    // (a) Find maximum index requested to allow for early stopping
     if (readAll) {
         maxIndex = R_LEN_T_MAX;
     } else {
@@ -120,40 +120,52 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
     }
 
 
-    // (b) Count the (maximum) number of (probesets, atoms, probes)
-    while (pgf->next_probeset() == TSV_OK) {
+    // (b) Count the number of (probesets, atoms, probes) needed
+    nProbesets = 0, nAtoms = 0, nProbes = 0;
+    if (!readAll) currIndex = pindices[0];
+    i = 0;
+    while (nProbesets < maxIndex && pgf->next_probeset() == TSV_OK) {
         ++nProbesets;
+
+        if (!readAll) {
+          // Don't read this probeset?
+	  if (nProbesets < currIndex) continue;
+
+          // Next index
+          currIndex = pindices[++i];
+	}
+
         while (pgf->next_atom() == TSV_OK) {
             ++nAtoms;
             while (pgf->next_probe() == TSV_OK) {
                 ++nProbes;
             }
         }
+
         // No need to continue?
         if (nProbesets >= maxIndex) break;
     }
-    if (readAll) maxIndex = nProbesets;
+    maxIndex = nProbesets;
     pgf->rewind();
     Rprintf("maxIndex=%d\n", maxIndex);
 
-
-    // (c) Allocate or validate 'indices'?
+    // (c) Setup/validate 'indices'
     if (readAll) {
-      // indices <- 1:maxIndex
-      PROTECT(indices = allocVector(INTSXP, maxIndex));
-      pindices = INTEGER(indices);
-      for (i=0; i < length(indices); i++) {
-          pindices[i] == i+1;
-      }
+        // indices <- 1:maxIndex
+        PROTECT(indices = allocVector(INTSXP, maxIndex));
+        pindices = INTEGER(indices);
+        for (i=0; i < length(indices); i++) {
+            pindices[i] = i+1; 
+        }
     } else {
-      for (i=0; i < length(indices); i++) {
-        currIndex = pindices[i];
-        if (currIndex <= 0) {
-          Rf_error("Argument 'indices' contains a non-positive element: %d", currIndex);
-	} else if (currIndex > maxIndex) {
-          Rf_error("Argument 'indices' contains an element out of range [1,%d]: %d", maxIndex, currIndex);
-	}
-      }
+        for (i=0; i < length(indices); i++) {
+            currIndex = pindices[i];
+            if (currIndex <= 0) {
+                Rf_error("Argument 'indices' contains a non-positive element: %d", currIndex);
+            } else if (currIndex > maxIndex) {
+                Rf_error("Argument 'indices' contains an element out of range [1,%d]: %d", maxIndex, currIndex);
+            }
+        }
     }
     
 
@@ -166,10 +178,10 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
         *probe_interrogation_position;
     
     // probeset
-    probeset_id = new_int_elt("probesetId", nProbesets, rho);
-    probeset_type = new_char_elt("probesetType", nProbesets, rho);
-    probeset_name = new_char_elt("probesetName", nProbesets, rho);
-    probeset_start_atom = new_int_elt("probesetStartAtom", nProbesets, rho);
+    probeset_id = new_int_elt("probesetId", length(indices), rho);
+    probeset_type = new_char_elt("probesetType", length(indices), rho);
+    probeset_name = new_char_elt("probesetName", length(indices), rho);
+    probeset_start_atom = new_int_elt("probesetStartAtom", length(indices), rho);
     // atom
     atom_id = new_int_elt("atomId", nAtoms, rho);
     // FIXME: where's atom_type? in docs but not .h or .cpp

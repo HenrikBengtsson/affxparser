@@ -46,4 +46,46 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
     }
     message(sprintf("Testing readPgf() with '%s' indices...done", name))
   } # for (ii ...)
+
+
+  # Validate correctness of subsets
+  subsetPgf <- function(data, indices=NULL, ...) {
+    if (is.null(indices)) return(data)
+
+    # Atoms
+    offsets <- data$probesetStartAtom
+    natoms <- diff(c(offsets, length(data0$atomStartProbe)+1L))
+    offsets <- offsets[indices]
+    natoms <- natoms[indices]
+    # Identify atoms to keep
+    keep <- logical(length(data$atomStartProbe))
+    for (kk in seq_along(offsets)) {
+      keep[seq(from=offsets[kk], by=1L, length=natoms[kk])] <- TRUE;
+    }
+
+    for (ff in c("probeSequence", "probeId", "probeGcCount", "atomExonPosition", "atomId", "probeInterrogationPosition", "probeLength", "probeType")) {
+      data[[ff]] <- data[[ff]][keep]
+    }
+
+    data$atomStartProbe <- seq_len(sum(natoms))
+    data$probesetStartAtom <- c(1L, cumsum(natoms))[length(indices)]
+
+    # Probesets
+    for (ff in c("probesetName", "probesetId", "probesetType")) {
+      data[[ff]] <- data[[ff]][indices]
+    }
+
+    data
+  } # subsetPgf()
+
+  data0 <- readPgf(pgf)
+  Jall <- length(data0$probesetId)
+## TODO
+##   for (kk in 1:10) {
+##     n <- sample(Jall, size=1L)
+##     idxs <- sort(sample(1:Jall, size=n, replace=FALSE))
+##     data <- readPgf(pgf, indices=idxs)
+##     dataS <- subsetPgf(data0, indices=idxs)
+##     stopifnot(all.equal(data, dataS))
+##   }
 } # if (require("AffymetrixDataTestFiles"))
