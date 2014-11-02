@@ -98,7 +98,7 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
 
     if (indices != R_NilValue){
         if(INTEGER(indices)[nProbesets] == 0){
-          break;
+          return;
         }
         readLimit = length(indices);
     }
