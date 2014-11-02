@@ -105,7 +105,7 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
 
     while (pgf->next_probeset() == TSV_OK) {
         if(readLimit != 0){
-            if(INTEGER(indices)[nProbesets] != i++){
+            if((INTEGER(indices)[nProbesets] - 1) != i++){
                 continue;
             }
         }
@@ -153,7 +153,7 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
     nProbesets = nAtoms = nProbes = i = 0;
     while(pgf->next_probeset() == TSV_OK) {
         if(readLimit != 0){
-            if(INTEGER(indices)[nProbesets] != i++){
+            if((INTEGER(indices)[nProbesets] - 1) != i++){
                 continue;
             }
         }
