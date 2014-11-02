@@ -94,21 +94,35 @@ void
 R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
 {
     // Count
-    int nProbesets = 0, nAtoms = 0, nProbes = 0, i = 0;
-
-    while (pgf->next_probeset() == TSV_OK) {
-        if (nProbesets >= length(indices)) {
-            break;
+    int nProbesets = 0, nAtoms = 0, nProbes = 0, readLimit = 0, i = 0;
+    // if we have NULL = read all
+    // if we have 0 = dont read data
+    if (indices != R_NilValue){
+        if(INTEGER(indices)[nProbesets] == 0){
+          return;
         }
-        
-        if (indices == R_NilValue || (INTEGER(indices)[nProbesets] - 1) == i++) {
-            ++nProbesets;
-            while (pgf->next_atom() == TSV_OK) {
-                ++nAtoms;
-                while (pgf->next_probe() == TSV_OK) {
-                    ++nProbes;
-                }
+        // if we have indices = read the indices, but you can stop on readlimit
+        readLimit = length(indices);
+    }
+
+    // count the features
+    while (pgf->next_probeset() == TSV_OK) {
+        // count only the selected ones
+        if(readLimit != 0){
+            if((INTEGER(indices)[nProbesets] - 1) != i++){
+                continue;
             }
+        }
+        ++nProbesets;
+        while (pgf->next_atom() == TSV_OK) {
+            ++nAtoms;
+            while (pgf->next_probe() == TSV_OK) {
+                ++nProbes;
+            }
+        }
+        // no need to count further
+        if(nProbesets == readLimit){
+            break;
         }
     }
     pgf->rewind();
@@ -143,38 +157,43 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
     
     nProbesets = nAtoms = nProbes = i = 0;
     while(pgf->next_probeset() == TSV_OK) {
-        if (nProbesets >= length(indices)) {
-            break;
-        }
-
-        if (indices == R_NilValue || (INTEGER(indices)[nProbesets] - 1) == i++) {
-            probeset_id[nProbesets] = pgf->probeset_id;
-            SET_STRING_ELT(probeset_type, nProbesets, 
-                           mkChar(pgf->probeset_type.c_str()));
-            SET_STRING_ELT(probeset_name, nProbesets, 
-                           mkChar(pgf->probeset_name.c_str()));
-            probeset_start_atom[nProbesets] = 1 + nAtoms;
-            ++nProbesets;
-            while (pgf->next_atom() == TSV_OK) {
-                atom_id[nAtoms] = pgf->atom_id;
-                // FIXME: where's atom_type? in docs but not header
-                atom_exon_position[nAtoms] = pgf->exon_position;
-                atom_start_probe[nAtoms] = 1 + nProbes;
-                ++nAtoms;
-                while (pgf->next_probe() == TSV_OK) {
-                    probe_id[nProbes] = pgf->probe_id;
-                    SET_STRING_ELT(probe_type, nProbes, 
-                                   mkChar(pgf->probe_type.c_str()));
-                    probe_gc_count[nProbes] = pgf->gc_count;
-                    probe_length[nProbes] = pgf->probe_length;
-                    probe_interrogation_position[nProbes] = 
-                        pgf->interrogation_position;
-                    SET_STRING_ELT(probe_sequence, nProbes,
-                                   mkChar(pgf->probe_sequence.c_str()));
-                    ++nProbes;
-                }
+        // if we dont want all
+        if(readLimit != 0){
+            // select the right one
+            if((INTEGER(indices)[nProbesets] - 1) != i++){
+                continue;
             }
         }
+        probeset_id[nProbesets] = pgf->probeset_id;
+        SET_STRING_ELT(probeset_type, nProbesets, 
+                       mkChar(pgf->probeset_type.c_str()));
+        SET_STRING_ELT(probeset_name, nProbesets, 
+                       mkChar(pgf->probeset_name.c_str()));
+        probeset_start_atom[nProbesets] = 1 + nAtoms;
+        ++nProbesets;
+        while (pgf->next_atom() == TSV_OK) {
+          atom_id[nAtoms] = pgf->atom_id;
+          // FIXME: where's atom_type? in docs but not header
+          atom_exon_position[nAtoms] = pgf->exon_position;
+          atom_start_probe[nAtoms] = 1 + nProbes;
+          ++nAtoms;
+          while (pgf->next_probe() == TSV_OK) {
+              probe_id[nProbes] = pgf->probe_id;
+              SET_STRING_ELT(probe_type, nProbes, 
+                             mkChar(pgf->probe_type.c_str()));
+              probe_gc_count[nProbes] = pgf->gc_count;
+              probe_length[nProbes] = pgf->probe_length;
+              probe_interrogation_position[nProbes] = 
+                  pgf->interrogation_position;
+              SET_STRING_ELT(probe_sequence, nProbes,
+                             mkChar(pgf->probe_sequence.c_str()));
+              ++nProbes;
+          }
+      }
+      // no need to get more
+      if(nProbesets == readLimit){
+          break;
+      }
     }
 }
 
