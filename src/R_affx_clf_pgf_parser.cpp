@@ -97,7 +97,10 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
     int nProbesets = 0, nAtoms = 0, nProbes = 0, readLimit = 0, i = 0;
 
     if (indices != R_NilValue){
-        readLimit = LENGTH(indices);
+        if(INTEGER(indices)[nProbesets] == 0){
+          break;
+        }
+        readLimit = length(indices);
     }
 
     while (pgf->next_probeset() == TSV_OK) {
