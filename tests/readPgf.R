@@ -12,14 +12,14 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
 
   # Various sets of indices to be read
   idxsList <- list(
-##  readNothing=integer(0L), # FIX ME
+    readNothing=integer(0L), # FIX ME
     readAll=NULL,
     readOne=5L,
     readSome=1:5,
     readDouble=as.double(1:5),
     outOfRange=-1L,
-    outOfRange=0L
-#    outOfRange=1e9L # FIX ME
+    outOfRange=0L,
+    outOfRange=1e9L # FIX ME
   )
 
   data <- readPgf(pgf)
@@ -48,7 +48,9 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
   } # for (ii ...)
 
 
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate correctness of subsets
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   subsetPgf <- function(data, indices=NULL, ...) {
     if (is.null(indices)) return(data)
 
@@ -80,12 +82,14 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
 
   data0 <- readPgf(pgf)
   Jall <- length(data0$probesetId)
-## TODO
-##   for (kk in 1:10) {
-##     n <- sample(Jall, size=1L)
-##     idxs <- sort(sample(1:Jall, size=n, replace=FALSE))
-##     data <- readPgf(pgf, indices=idxs)
-##     dataS <- subsetPgf(data0, indices=idxs)
-##     stopifnot(all.equal(data, dataS))
-##   }
+
+  for (kk in 1:10) {
+    n <- sample(Jall, size=1L)
+    idxs <- sort(sample(1:Jall, size=n, replace=FALSE))
+    data <- readPgf(pgf, indices=idxs)
+    dataS <- subsetPgf(data0, indices=idxs)
+    for (ff in c("probesetStartAtom", "atomExonPosition"))
+      data[[ff]] <- dataS[[ff]] <- NULL
+    stopifnot(all.equal(data, dataS))
+  }
 } # if (require("AffymetrixDataTestFiles"))
