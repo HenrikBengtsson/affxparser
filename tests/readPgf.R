@@ -12,14 +12,14 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
 
   # Various sets of indices to be read
   idxsList <- list(
-    readNothing=integer(0L), # FIX ME
+##    readNothing=integer(0L), # FIX ME
     readAll=NULL,
     readOne=5L,
     readSome=1:5,
     readDouble=as.double(1:5),
     outOfRange=-1L,
     outOfRange=0L,
-    outOfRange=1e9L # FIX ME
+    outOfRange=1e9L
   )
 
   data <- readPgf(pgf)
