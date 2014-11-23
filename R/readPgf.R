@@ -3,6 +3,14 @@ readPgfHeader <- function(file) {
 }
 
 readPgf <- function(file, indices=NULL) {
+  # UNSUPPORTED CASE
+  ## FIXME: When we have confirmed that no dependencies assumes
+  ##        !is.null(indices) && length(indices) == ) to read
+  ##        all probesets, then we can remove this. /HB 2014-11-22
+  if (!is.null(indices) && length(indices) == 0L) {
+    stop("readPgf(..., indices=integer(0)) is not supported.")
+  }
+
   as.list(readPgfEnv(file, readBody=TRUE, indices=indices));
 }
 
@@ -22,6 +30,14 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
     if (!all(sort(indices) == indices)) {
       stop("Argument 'indices' must be sorted.");
     }
+  }
+
+  # UNSUPPORTED CASE
+  ## FIXME: When we have confirmed that no dependencies assumes
+  ##        !is.null(indices) && length(indices) == ) to read
+  ##        all probesets, then we can remove this. /HB 2014-11-22
+  if (!is.null(indices) && length(indices) == 0L) {
+    stop("readPgf(..., indices=integer(0)) is not supported.")
   }
 
   env <- new.env(parent=emptyenv());
