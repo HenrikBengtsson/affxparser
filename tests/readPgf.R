@@ -12,14 +12,14 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
 
   # Various sets of indices to be read
   idxsList <- list(
-##  readNothing=integer(0L), # FIX ME
+    readNothing=integer(0L), # FIX ME
     readAll=NULL,
     readOne=5L,
     readSome=1:5,
     readDouble=as.double(1:5),
     outOfRange=-1L,
-    outOfRange=0L
-#    outOfRange=1e9L # FIX ME
+    outOfRange=0L,
+    outOfRange=1e9L # FIX ME
   )
 
   data <- readPgf(pgf)
@@ -46,4 +46,50 @@ if (require("AffymetrixDataTestFiles") && packageVersion("AffymetrixDataTestFile
     }
     message(sprintf("Testing readPgf() with '%s' indices...done", name))
   } # for (ii ...)
+
+
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  # Validate correctness of subsets
+  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  subsetPgf <- function(data, indices=NULL, ...) {
+    if (is.null(indices)) return(data)
+
+    # Atoms
+    offsets <- data$probesetStartAtom
+    natoms <- diff(c(offsets, length(data0$atomStartProbe)+1L))
+    offsets <- offsets[indices]
+    natoms <- natoms[indices]
+    # Identify atoms to keep
+    keep <- logical(length(data$atomStartProbe))
+    for (kk in seq_along(offsets)) {
+      keep[seq(from=offsets[kk], by=1L, length=natoms[kk])] <- TRUE;
+    }
+
+    for (ff in c("probeSequence", "probeId", "probeGcCount", "atomExonPosition", "atomId", "probeInterrogationPosition", "probeLength", "probeType")) {
+      data[[ff]] <- data[[ff]][keep]
+    }
+
+    data$atomStartProbe <- seq_len(sum(natoms))
+    data$probesetStartAtom <- c(1L, cumsum(natoms))[length(indices)]
+
+    # Probesets
+    for (ff in c("probesetName", "probesetId", "probesetType")) {
+      data[[ff]] <- data[[ff]][indices]
+    }
+
+    data
+  } # subsetPgf()
+
+  data0 <- readPgf(pgf)
+  Jall <- length(data0$probesetId)
+
+  for (kk in 1:10) {
+    n <- sample(Jall, size=1L)
+    idxs <- sort(sample(1:Jall, size=n, replace=FALSE))
+    data <- readPgf(pgf, indices=idxs)
+    dataS <- subsetPgf(data0, indices=idxs)
+    for (ff in c("probesetStartAtom", "atomExonPosition"))
+      data[[ff]] <- dataS[[ff]] <- NULL
+    stopifnot(all.equal(data, dataS))
+  }
 } # if (require("AffymetrixDataTestFiles"))

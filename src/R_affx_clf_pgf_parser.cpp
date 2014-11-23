@@ -93,27 +93,82 @@ R_affx_get_body(ClfFile* clf, SEXP rho)
 void
 R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
 {
-    // Count
-    int nProbesets = 0, nAtoms = 0, nProbes = 0, i = 0;
+    int nProbesets, nAtoms, nProbes;
+    int i, prevIndex, currIndex, nextIndex=0, maxIndex;
+    bool readAll = (indices == R_NilValue);
+    int *pindices; // Argument 'indices'
 
-    while (pgf->next_probeset() == TSV_OK) {
-        if (nProbesets >= length(indices)) {
-            break;
+
+    // (a) Find maximum index requested to allow for early stopping
+    if (readAll) {
+        maxIndex = R_LEN_T_MAX;
+    } else {
+        pindices = INTEGER(indices);
+        prevIndex = 0;
+        maxIndex = 0;
+        for (i=0; i < length(indices); i++) {
+	    currIndex = pindices[i];
+            if (currIndex == prevIndex) {
+	        Rf_error("Argument 'indices' must not contain duplicated entries: %d", currIndex);
+            } else if (currIndex < prevIndex) {
+	        Rf_error("Argument 'indices' must be sorted.");
+	    } else if (currIndex > maxIndex) {
+                maxIndex = currIndex;
+	    }
+            prevIndex = currIndex;
+	}
+    }
+
+
+    // (b) Count the number of (probesets, atoms, probes) needed
+    nProbesets = 0, nAtoms = 0, nProbes = 0;
+    if (!readAll) currIndex = pindices[0];
+    i = 0;
+    while (nProbesets < maxIndex && pgf->next_probeset() == TSV_OK) {
+        ++nProbesets;
+
+        if (!readAll) {
+          // Don't read this probeset?
+	  if (nProbesets < currIndex) continue;
+
+          // Next index
+          currIndex = pindices[++i];
+	}
+
+        while (pgf->next_atom() == TSV_OK) {
+            ++nAtoms;
+            while (pgf->next_probe() == TSV_OK) {
+                ++nProbes;
+            }
         }
-        
-        if (indices == R_NilValue || (INTEGER(indices)[nProbesets] - 1) == i++) {
-            ++nProbesets;
-            while (pgf->next_atom() == TSV_OK) {
-                ++nAtoms;
-                while (pgf->next_probe() == TSV_OK) {
-                    ++nProbes;
-                }
+
+        // No need to continue?
+        if (nProbesets >= maxIndex) break;
+    }
+    maxIndex = nProbesets;
+    pgf->rewind();
+
+    // (c) Setup/validate 'indices'
+    if (readAll) {
+        // indices <- 1:maxIndex
+        PROTECT(indices = allocVector(INTSXP, maxIndex));
+        pindices = INTEGER(indices);
+        for (i=0; i < length(indices); i++) {
+            pindices[i] = i+1; 
+        }
+    } else {
+        for (i=0; i < length(indices); i++) {
+            currIndex = pindices[i];
+            if (currIndex <= 0) {
+                Rf_error("Argument 'indices' contains a non-positive element: %d", currIndex);
+            } else if (currIndex > maxIndex) {
+                Rf_error("Argument 'indices' contains an element out of range [1,%d]: %d", maxIndex, currIndex);
             }
         }
     }
-    pgf->rewind();
     
-    // Read
+
+    // (d) Allocate (probesets, atoms, probes)
     SEXP probeset_type, probeset_name, // atom_type, 
         probe_type, probe_sequence;
     int *probeset_id, *probeset_start_atom, 
@@ -122,10 +177,10 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
         *probe_interrogation_position;
     
     // probeset
-    probeset_id = new_int_elt("probesetId", nProbesets, rho);
-    probeset_type = new_char_elt("probesetType", nProbesets, rho);
-    probeset_name = new_char_elt("probesetName", nProbesets, rho);
-    probeset_start_atom = new_int_elt("probesetStartAtom", nProbesets, rho);
+    probeset_id = new_int_elt("probesetId", length(indices), rho);
+    probeset_type = new_char_elt("probesetType", length(indices), rho);
+    probeset_name = new_char_elt("probesetName", length(indices), rho);
+    probeset_start_atom = new_int_elt("probesetStartAtom", length(indices), rho);
     // atom
     atom_id = new_int_elt("atomId", nAtoms, rho);
     // FIXME: where's atom_type? in docs but not .h or .cpp
@@ -140,42 +195,55 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
     probe_interrogation_position = 
         new_int_elt("probeInterrogationPosition", nProbes, rho);
     probe_sequence = new_char_elt("probeSequence", nProbes, rho);
-    
-    nProbesets = nAtoms = nProbes = i = 0;
-    while(pgf->next_probeset() == TSV_OK) {
-        if (nProbesets >= length(indices)) {
-            break;
-        }
 
-        if (indices == R_NilValue || (INTEGER(indices)[nProbesets] - 1) == i++) {
-            probeset_id[nProbesets] = pgf->probeset_id;
-            SET_STRING_ELT(probeset_type, nProbesets, 
-                           mkChar(pgf->probeset_type.c_str()));
-            SET_STRING_ELT(probeset_name, nProbesets, 
-                           mkChar(pgf->probeset_name.c_str()));
-            probeset_start_atom[nProbesets] = 1 + nAtoms;
-            ++nProbesets;
-            while (pgf->next_atom() == TSV_OK) {
-                atom_id[nAtoms] = pgf->atom_id;
-                // FIXME: where's atom_type? in docs but not header
-                atom_exon_position[nAtoms] = pgf->exon_position;
-                atom_start_probe[nAtoms] = 1 + nProbes;
-                ++nAtoms;
-                while (pgf->next_probe() == TSV_OK) {
-                    probe_id[nProbes] = pgf->probe_id;
-                    SET_STRING_ELT(probe_type, nProbes, 
-                                   mkChar(pgf->probe_type.c_str()));
-                    probe_gc_count[nProbes] = pgf->gc_count;
-                    probe_length[nProbes] = pgf->probe_length;
-                    probe_interrogation_position[nProbes] = 
-                        pgf->interrogation_position;
-                    SET_STRING_ELT(probe_sequence, nProbes,
-                                   mkChar(pgf->probe_sequence.c_str()));
-                    ++nProbes;
-                }
-            }
+
+    // (e) Read (probesets, atoms, probes)
+    nProbesets = 0;
+    nAtoms = nProbes = 0;
+    for (i=0; i < length(indices); i++) {
+        // Next index to read
+        nextIndex = pindices[i];
+  
+        // Skip to probeset of interest.
+        while (nProbesets < nextIndex && pgf->next_probeset() == TSV_OK) {
+          ++nProbesets;
         }
-    }
+  
+        // Sanity check
+        if (nProbesets < nextIndex) {
+          Rf_error("INTERNAL ERROR: Expected %d more probesets to skip in PGF file, but reached end of file.", nextIndex-nProbesets);
+        }
+  
+        // Read probeset
+        probeset_id[i] = pgf->probeset_id;
+        SET_STRING_ELT(probeset_type, i, mkChar(pgf->probeset_type.c_str()));
+        SET_STRING_ELT(probeset_name, i, mkChar(pgf->probeset_name.c_str()));
+        probeset_start_atom[i] = 1 + nAtoms;
+  
+        while (pgf->next_atom() == TSV_OK) {
+            atom_id[nAtoms] = pgf->atom_id;
+            // FIXME: where's atom_type? in docs but not header
+            atom_exon_position[nAtoms] = pgf->exon_position;
+            atom_start_probe[nAtoms] = 1 + nProbes;
+            ++nAtoms;
+
+            while (pgf->next_probe() == TSV_OK) {
+                probe_id[nProbes] = pgf->probe_id;
+                SET_STRING_ELT(probe_type, nProbes, 
+                               mkChar(pgf->probe_type.c_str()));
+                probe_gc_count[nProbes] = pgf->gc_count;
+                probe_length[nProbes] = pgf->probe_length;
+                probe_interrogation_position[nProbes] = 
+                    pgf->interrogation_position;
+                SET_STRING_ELT(probe_sequence, nProbes,
+                               mkChar(pgf->probe_sequence.c_str()));
+                ++nProbes;
+            } // while (pgf->next_probe() == TSV_OK)
+        } // while (pgf->next_atom() == TSV_OK)
+
+    } // for (i=0; ...)
+
+    if (readAll) UNPROTECT(1); // Temporarily allocated 'indices'.
 }
 
 extern "C" {
