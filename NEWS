@@ -1,6 +1,13 @@
 Package: affxparser
 ===================
 
+Version: 1.39.3 [2014-11-26]
+o BUG FIX: readPgf() and readPgfEnv() failed to read all units (probesets)
+  on some systems.  Extensive package tests have been added to test this
+  and other cases.  Thanks to Grischa Toedt at EMBL Germany for reporting
+  on, troubleshooting, and helping out with patches for this bug.
+
+
 Version: 1.39.2 [2014-10-28]
 o BUG FIX: The range test of argument 'units' to readCdf() and readCdfQc()
   was never performed due to a typo, meaning it was possible to request
