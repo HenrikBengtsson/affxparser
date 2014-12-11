@@ -233,7 +233,7 @@ extern "C" {
         } else {
             /* and some error checking of the argument */
             for(int i = 0; i < nSequenceIndices; i++){
-	      if((INTEGER(seqindices)[i] < 0) | (INTEGER(seqindices)[i] > nSequences))
+	      if((INTEGER(seqindices)[i] < 0) || (INTEGER(seqindices)[i] > nSequences))
                     error("seqIndices out of range");
             }
             nSequences = nSequenceIndices;
@@ -345,7 +345,7 @@ extern "C" {
         } else {
             /* and some error checking of the argument */
             for(int i = 0; i < nSequenceIndices; i++){
-	      if((INTEGER(seqindices)[i] < 0) | (INTEGER(seqindices)[i] > nSequences))
+	      if((INTEGER(seqindices)[i] < 0) || (INTEGER(seqindices)[i] > nSequences))
                     error("seqIndices out of range");
             }
             nSequences = nSequenceIndices;
@@ -464,7 +464,7 @@ extern "C" {
                         INTEGER(pmx)[j] = seqHit.PMX;
                         INTEGER(pmy)[j] = seqHit.PMY;
                         }
-                        if (i_readMMXY & !onlyPM) {
+                        if (i_readMMXY && !onlyPM) {
                         INTEGER(mmx)[j] = seqHit.MMX;
                         INTEGER(mmy)[j] = seqHit.MMY;
                         }
