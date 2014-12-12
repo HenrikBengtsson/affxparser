@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.39.x [2014-12-11]
+o CLEANUP: Internal cleanup of native code.
+
+
 Version: 1.39.3 [2014-11-26]
 o BUG FIX: readPgf() and readPgfEnv() failed to read all units (probesets)
   on some systems.  Extensive package tests have been added to test this
