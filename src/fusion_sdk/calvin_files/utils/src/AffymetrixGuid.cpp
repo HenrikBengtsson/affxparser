@@ -72,7 +72,7 @@ AffymetrixGuid::AffymetrixGuid()
 	// initialize Winsock library
 	WSADATA wsaData;
 	WORD wVersionRequested = MAKEWORD(1, 1);
-	int nResult = WSAStartup(wVersionRequested, &wsaData);
+	WSAStartup(wVersionRequested, &wsaData);
 #endif
 	InitializeRandomNumberGenerator();
 }

@@ -25,7 +25,7 @@ extern "C" {
     FusionCDFData cdf;
     FusionCDFFileHeader header;
     SEXP names, dim, pmmm, pairs;
-    int nRows = 0, nCols = 0;
+    int nRows = 0;
     const char* cdfFileName = CHAR(STRING_ELT(fname, 0));
     int i_verboseFlag = INTEGER(verbose)[0];
     string str;
@@ -50,7 +50,6 @@ extern "C" {
     PROTECT(names = NEW_CHARACTER(nsets));
 
     nRows = header.GetRows();
-    nCols = header.GetCols();
 
     for (int iset = 0; iset < nsets; iset++) {
       str = cdf.GetProbeSetName(iset);
