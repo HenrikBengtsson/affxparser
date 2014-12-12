@@ -1181,7 +1181,6 @@ AffxByteArray AffxByteArray::getWord(int iWordIndex, AffxByteArray& ba)
 
 AffxByteArray AffxByteArray::nextColumn(AffxByteArray& ba)
 {
-	bool bSuccessful = false;
 	int iLength = 0;
 	ba.setSize(255);
 	int iStart = m_iOffset;
@@ -1196,7 +1195,7 @@ AffxByteArray AffxByteArray::nextColumn(AffxByteArray& ba)
 	    }
 	    iLength = iIndex - iStart;
 	    m_iOffset += (iLength + 1);
-	    bSuccessful = nextColumn(iStart, iIndex, iLength, ba);
+	    nextColumn(iStart, iIndex, iLength, ba);
    	}
 
    	ba.m_iFieldOffset = 0;
@@ -1223,7 +1222,6 @@ bool AffxByteArray::nextColumn(int iStart, int iIndex, int iLength, AffxByteArra
 
 AffxByteArray AffxByteArray::nextField(AffxByteArray& ba)
 {
-	bool bSuccessful = false;
 	int iLength = 0;
 	ba.setSize(255);
 	int iStart = m_iFieldOffset;
@@ -1238,7 +1236,7 @@ AffxByteArray AffxByteArray::nextField(AffxByteArray& ba)
 	    }
 	    iLength = iIndex - iStart;
 	    m_iFieldOffset += (iLength + 1);
-	    bSuccessful = nextField(iStart, iIndex, iLength, ba);
+	    nextField(iStart, iIndex, iLength, ba);
    	}
 
     return ba;

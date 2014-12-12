@@ -644,11 +644,9 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
 SEXP R_affx_ReadTilingDataSeqHeader(TilingSequenceData seq)
 {
   SEXP header, hnames;
-  int numParams;
   char* cstr;
   
   //read in the header/params
-  numParams = seq.parameters.size();
   PROTECT(header = NEW_LIST(4));
   PROTECT(hnames = NEW_CHARACTER(4));
   SET_NAMED_ELT(header, 0, mkString(cstr = wcs_to_cstr(seq.name)), hnames, "name");
