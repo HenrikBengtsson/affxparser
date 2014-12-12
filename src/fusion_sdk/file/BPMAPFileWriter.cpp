@@ -204,13 +204,13 @@ int acgt_to_int(char c, unsigned int *i) {
 ** n_b is the available number of bytes (so we can check if there is enough space)
 */
 int dna_to_byte(const std::string& sequence, char *packedSequence) {
-  unsigned short i,j,k,n_bytes;
+  unsigned short i,j,k;
   unsigned int base;
   
   int n_d = (int)sequence.length();
 
   /* Number of bytes required - we pack 4 bases per byte */
-  n_bytes = (unsigned short) ceil(n_d/(float)4);
+  /* n_bytes = (unsigned short) ceil(n_d/(float)4); */
 
   for(i=0,j=0; i<PROBE_STORAGE_BUFFER_LENGTH; i++) {
     for(k=0; (k<4 && j<n_d); k++, j++) {

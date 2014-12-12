@@ -1099,14 +1099,13 @@ AptErr_t Fs::mkdirPath(const std::string& path,
       return APT_OK;
   }
 
-  AptErr_t tmp_err;
   std::string tmp_path;
   std::string tmp_drive_path;
   for (size_t i=0;i<parts.size();i++) {
     tmp_path=join(tmp_path,parts[i]);
     tmp_drive_path=drive+tmp_path;
     if (!dirExists(tmp_drive_path)) {
-      tmp_err=mkdir(tmp_drive_path,false);
+      mkdir(tmp_drive_path,false);
       if (!dirExists(tmp_drive_path)) {
         return setErr(APT_ERR,"mkdirPath failed."+FS_QUOTE_PATH(tmp_drive_path),abortOnErr);
       }
