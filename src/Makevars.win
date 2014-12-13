@@ -1,6 +1,6 @@
 PKG_LIBS+=-lws2_32
 
-MYCXXFLAGS=-Wno-unknown-pragmas
+MYCXXFLAGS=-Wno-sign-compare -Wno-unknown-pragmas
 
 %.o: %.cpp
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@ 
