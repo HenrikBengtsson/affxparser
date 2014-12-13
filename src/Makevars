@@ -1,4 +1,4 @@
-MYCXXFLAGS=-Wno-sign-compare -O0
+MYCXXFLAGS=-Wno-unused-private-field -Wno-sign-compare -O0
 
 %.o: %.cpp
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
