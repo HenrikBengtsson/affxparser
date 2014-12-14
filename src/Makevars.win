@@ -1,6 +1,7 @@
 PKG_LIBS+=-lws2_32
 
-MYCXXFLAGS=-Wno-unused-private-field -Wno-sign-compare -Wno-unknown-pragmas
+## -Wno-unused-private-field gives notes/errors with some compiler
+MYCXXFLAGS=-Wno-sign-compare -Wno-unknown-pragmas
 
 %.o: %.cpp
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@ 
