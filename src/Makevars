@@ -1,4 +1,5 @@
-MYCXXFLAGS=-Wno-unused-private-field -Wno-sign-compare -O0
+## -Wno-unused-private-field gives notes/errors with some compiler
+MYCXXFLAGS=-Wno-sign-compare -O0
 
 %.o: %.cpp
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
