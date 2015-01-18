@@ -1,8 +1,8 @@
 Package: affxparser
-Version: 1.39.3-3
+Version: 1.39.3-4
 Depends: R (>= 2.6.0)
 Suggests: R.oo (>= 1.18.0), R.utils (>= 1.34.0), AffymetrixDataTestFiles
-Date: 2014-12-14
+Date: 2015-01-18
 Title: Affymetrix File Parsing SDK
 Authors@R: c(
   person("Henrik", "Bengtsson", role=c("aut")),
@@ -16,6 +16,6 @@ Description: Package for parsing Affymetrix files (CDF, CEL, CHP, BPMAP, BAR).  
 Note: Fusion SDK v1.1.2
 License: LGPL (>= 2)
 LazyLoad: yes
-URL: https://github.com/HenrikBengtsson/affxparser/
-BugReports: https://github.com/HenrikBengtsson/affxparser/issues 
+URL: https://github.com/HenrikBengtsson/affxparser
+BugReports: https://github.com/HenrikBengtsson/affxparser/issues
 biocViews: Infrastructure, DataImport
