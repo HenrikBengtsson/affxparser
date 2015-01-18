@@ -41,10 +41,11 @@
 # @keyword internal
 #**/#######################################################################
 arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)$"), path="celFiles/", aliases=NULL, ...) {
-  # To please R CMD check
-  Arguments <- isFile <- filePath <- NULL;
-  rm(list=c("Arguments", "isFile", "filePath"));
-  require("R.utils") || stop("Package not loaded: R.utils");
+  requireNamespace("R.utils") || stop("Package not loaded: R.utils");
+  Arguments <- R.utils::Arguments
+  isFile <- R.utils::isFile
+  filePath <- R.utils::filePath
+
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Validate arguments
@@ -58,9 +59,8 @@ arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)
     stopifnot(!is.null(names(aliases)));
   }
 
-  naValue <- as.character(NA);
-  pathnamesD <- rep(naValue, length=length(pathnames));
-  chipTypes <- rep(naValue, length=length(pathnames));
+  pathnamesD <- rep(NA_character_, length=length(pathnames));
+  chipTypes <- rep(NA_character_, length=length(pathnames));
 
   for (ii in seq(along=pathnames)) {
     pathname <- pathnames[ii];
@@ -101,6 +101,8 @@ arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)
 
 ############################################################################
 # HISTORY:
+# 2015-01-06
+# o Now using requireNamespace() instead of require().
 # 2014-08-25
 # o Now using stop() instead of throw().
 # 2012-09-01
