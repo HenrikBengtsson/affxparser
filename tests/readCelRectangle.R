@@ -16,6 +16,8 @@ if (require("AffymetrixDataTestFiles")) {
   # Read CEL intensities in the upper left corner
   range <- c(0,250)
   data <- readCelRectangle(cel, xrange=range, yrange=range)
+
+  # Displaying image
   z <- rotate270(data$intensities)
   sub <- sprintf("Chip type: %s", data$header$chiptype)
   image(z, col=gray.colors(256), axes=FALSE, main=basename(cel), sub=sub)
