@@ -87,7 +87,10 @@ readCdfUnitsWriteMap <- function(filename, units=NULL, ..., verbose=FALSE) {
 
   # Argument 'verbose':
   if (!identical(verbose, FALSE)) {
-    require(R.utils) || stop("Package not available: R.utils");
+    requireNamespace("R.utils") || stop("Package not loaded: R.utils");
+    Arguments <- R.utils::Arguments
+    enter <- R.utils::enter
+    exit <- R.utils::exit
     verbose <- Arguments$getVerbose(verbose);
   }
 
