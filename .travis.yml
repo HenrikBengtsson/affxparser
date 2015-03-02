@@ -27,7 +27,7 @@ env:
 
   # R versions r-builder should test on (ignored by r-travis)
   matrix:
-    - RVERSION=3.0.3
+#    - RVERSION=3.0.3
     - RVERSION=3.1.2
     - RVERSION=devel _R_CHECK_FULL_=TRUE
 
@@ -47,6 +47,7 @@ install:
 
 
 
+ - $RENV install_bioc AffymetrixDataTestFiles
  - $RENV install_r R.oo R.utils
 
 script:
