@@ -28,7 +28,7 @@ install:
 
 build_script:
 
-
+ - travis-tool.sh install_bioc AffymetrixDataTestFiles
 
  - travis-tool.sh install_r R.oo R.utils
 

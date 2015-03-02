@@ -43,7 +43,14 @@ bioc <- local({
     if (is.null(pkgs)) {
       repos <- "http://www.bioconductor.org/packages/devel/bioc/"
       data <- available.packages(contriburl=contrib.url(repos, "source"))
-      pkgs <<- rownames(data)
+      pkgsA <- rownames(data)
+      repos <- "http://www.bioconductor.org/packages/devel/data/annotation/"
+      data <- available.packages(contriburl=contrib.url(repos, "source"))
+      pkgsB <- rownames(data)
+      repos <- "http://www.bioconductor.org/packages/devel/data/experiment/"
+      data <- available.packages(contriburl=contrib.url(repos, "source"))
+      pkgsC <- rownames(data)
+      pkgs <<- c(pkgsA, pkgsB, pkgsC)
     }
     pkgs
   }
