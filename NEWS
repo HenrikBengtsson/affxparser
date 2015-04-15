@@ -10,6 +10,7 @@ o BUG FIX: convertCel() on a CCG/v1 CEL file could give "Error in
   (Germany) for reporting on this.
 o CLEANUP: Package no longer gives readBin() warnings on 
   "'signed = FALSE' is only valid for integers of sizes 1 and 2".
+o CLEANUP: Removed 'SystemRequirements: GNU make'.
 
 
 Version: 1.39.4 [2015-01-18]
