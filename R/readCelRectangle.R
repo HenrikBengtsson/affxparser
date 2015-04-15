@@ -96,6 +96,6 @@ readCelRectangle <- function(filename, xrange=c(0,Inf), yrange=c(0,Inf), ..., as
 # o Now cell indices are one-based.
 # 2006-03-22
 # o Added Rdoc comments.
-# 2006-03-21 (Stockholm, Sveavägen)
+# 2006-03-21 (Stockholm, Sveavagen)
 # o Created.
 ############################################################################
