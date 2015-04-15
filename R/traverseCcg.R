@@ -59,8 +59,8 @@
     names(aParams) <- gsub(pattern, "", names(aParams));
 
     hdr <- NULL;
-    rows <- params[["affymetrix-cel-rows"]][1];
-    cols <- params[["affymetrix-cel-cols"]][1];
+    rows <- as.integer(params[["affymetrix-cel-rows"]][1]);
+    cols <- as.integer(params[["affymetrix-cel-cols"]][1]);
     hdr <- c(hdr, sprintf("Cols=%d\nRows=%d\n", cols, rows));
     hdr <- c(hdr, sprintf("TotalX=%d\nTotalY=%d\n", cols, rows));
     hdr <- c(hdr, sprintf("OffsetX=0\nOffsetY=0\n", 0, 0));
@@ -68,8 +68,9 @@
     for (ff in c("UL", "UR", "LR", "LL")) {
       xkey <- sprintf("Grid%sX", ff);
       ykey <- sprintf("Grid%sY", ff);
-      hdr <- c(hdr, sprintf("GridCorner%s=%d %d\n", ff,
-                            aParams[[xkey]][1], aParams[[ykey]][1]));
+      x <- as.integer(aParams[[xkey]][1])
+      y <- as.integer(aParams[[ykey]][1])
+      hdr <- c(hdr, sprintf("GridCorner%s=%d %d\n", ff, x, y));
     }
     hdr <- c(hdr, sprintf("Axis-invertX=%d\nAxisInvertY=%d\n", 0, 0));
     hdr <- c(hdr, sprintf("swapXY=%d\n", 0));
@@ -148,6 +149,9 @@
 
 ############################################################################
 # HISTORY:
+# 2015-04-15
+# o BUG FIX: .getCelHeaderV4() on a CCG/v1 header could give "Error in
+#   sprintf("GridCorner%s=%d %d\n" ... invalid format '%d' ...)".
 # 2012-05-18
 # o Now using stop() instead of throw().
 # 2007-10-12

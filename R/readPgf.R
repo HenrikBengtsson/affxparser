@@ -15,6 +15,23 @@ readPgf <- function(file, indices=NULL) {
 }
 
 readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
+  ## Local functions
+  coercePgfHeader <- function(res, ...) {
+    header <- res$header
+    if (!is.list(header)) return(res)
+    ## Optional fields to coerce to integers
+    fields <- c("num-cols", "num-rows", "probesets", "datalines")
+    fields <- intersect(fields, names(header)) # optional!
+    for (field in fields) {
+      value <- header[[field]]
+      value <- as.integer(value)
+      header[[field]] <- value
+    }
+    res$header <- header
+    res
+  } # coercePgfHeader()
+
+
   ## FIXME: this is an exception in more recent TsvFile.cpp
   # Argument 'file':
   if (!file.exists(file)) {
@@ -40,13 +57,30 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
     stop("readPgf(..., indices=integer(0)) is not supported.")
   }
 
-  env <- new.env(parent=emptyenv());
-  res <- .Call("R_affx_get_pgf_file", file, readBody, env, indices,
-               PACKAGE="affxparser");
-
-  # Sanity check
-  if (is.null(res)) {
-    stop("Failed to read PGF file: ", file);
+  ## Read all of PGF file?
+  if (is.null(indices)) {
+    env <- new.env(parent=emptyenv());
+    res <- .Call("R_affx_get_pgf_file", file, readBody, env, NULL,
+                 PACKAGE="affxparser");
+    if (is.null(res)) stop("Failed to read PGF file: ", file)
+    res <- coercePgfHeader(res)
+  } else {
+    ## Read file header
+    env <- new.env(parent=emptyenv())
+    res <- .Call("R_affx_get_pgf_file", file, FALSE, env, NULL,
+                 PACKAGE="affxparser")
+    if (is.null(res)) stop("Failed to read PGF file: ", file)
+    res <- coercePgfHeader(res)
+    # Validate indices?
+    nbrOfUnits <- res$header$probesets
+    if (is.numeric(nbrOfUnits)) {
+      if (any(indices > nbrOfUnits)) {
+        stop(sprintf("Argument 'indices' is out of range [1,%d]", nbrOfUnits))
+      }
+    }
+    res <- .Call("R_affx_get_pgf_file", file, readBody, env, indices,
+                 PACKAGE="affxparser")
+    res <- coercePgfHeader(res)
   }
 
   res;
@@ -68,6 +102,9 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
 
 ############################################################################
 # HISTORY:
+# 2015-04-15 [HB]
+# o ROBUSTNESS: Now readPgfEnv()/readPgf() validated 'indices', iff possible.
+# o Now readPgfEnv()/readPgf() coerces some header fields to integers.
 # 2012-06-14 [HB]
 # o readPgfEnv(..., indices=NULL) no longer gives a warning.
 # o Moved all CLF functions to readClf.R.
