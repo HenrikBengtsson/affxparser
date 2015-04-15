@@ -1,6 +1,15 @@
 Package: affxparser
 ===================
 
+Version: 1.39.5 [2015-04-15]
+o BUG FIX: convertCel() on a CCG/v1 CEL file could give "Error in
+  sprintf("GridCorner%s=%d %d\n" ... invalid format '%d' ...)".
+  Added package test for convertCel(), but in this particular case
+  it would not have cought it because it only happened for chip types
+  of particular dimensions.  Thanks to Malte Bismarck at UK Halle
+  (Germany) for reporting on this.
+
+
 Version: 1.39.4 [2015-01-18]
 o ROBUSTNESS: 'GNU make' is a SystemRequirements (for now).
 o ROBUSTNESS: Did not seem to be needed, but package is now a good citizen
