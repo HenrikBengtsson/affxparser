@@ -2,6 +2,10 @@ Package: affxparser
 ===================
 
 Version: 1.39.5 [2015-04-15]
+o ROBUSTNESS: Now readPgfEnv()/readPgf() validated 'indices', iff possible.
+o Now readPgfEnv()/readPgf() coerces some header fields to integers,
+  iff they exists, specifically 'num-cols', 'num-rows', 'probesets',
+  and 'datalines'.
 o BUG FIX: convertCel() on a CCG/v1 CEL file could give "Error in
   sprintf("GridCorner%s=%d %d\n" ... invalid format '%d' ...)".
   Added package test for convertCel(), but in this particular case
