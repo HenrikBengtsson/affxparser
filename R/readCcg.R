@@ -239,7 +239,12 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   }
 
   readUInt <- function(con, n=1, ...) {
-    # For 4-byte integers 'signed' can not be FALSE for readBin()
+    # NOTE: Ideally we would use signed=FALSE here, but there is no
+    # integer data type in R that can hold 4-byte unsigned integers.
+    # Because of this limitation, readBin() will give a warning that
+    # signed=FALSE only works for size=1 or 2.
+    # WORKAROUND: Use signed=TRUE and assume there are no values
+    # greater that .Machine$integer.max == 2^31-1. /HB 2015-04-15
     readBin(con, what=integer(), size=4, signed=TRUE, endian="big", n=n);
   }
 
@@ -337,7 +342,12 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   }
 
   readUInt <- function(con, n=1, ...) {
-    # For 4-byte integers 'signed' can not be FALSE for readBin()
+    # NOTE: Ideally we would use signed=FALSE here, but there is no
+    # integer data type in R that can hold 4-byte unsigned integers.
+    # Because of this limitation, readBin() will give a warning that
+    # signed=FALSE only works for size=1 or 2.
+    # WORKAROUND: Use signed=TRUE and assume there are no values
+    # greater that .Machine$integer.max == 2^31-1. /HB 2015-04-15
     readBin(con, what=integer(), size=4, signed=TRUE, endian="big", n=n);
   }
 
@@ -416,7 +426,12 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
       },
 
       "text/x-calvin-unsigned-integer-32" = {
-        # For 4-byte integers 'signed' can not be FALSE for readBin()
+        # NOTE: Ideally we would use signed=FALSE here, but there is no
+        # integer data type in R that can hold 4-byte unsigned integers.
+        # Because of this limitation, readBin() will give a warning that
+        # signed=FALSE only works for size=1 or 2.
+        # WORKAROUND: Use signed=TRUE and assume there are no values
+        # greater that .Machine$integer.max == 2^31-1. /HB 2015-04-15
         readBin(raw, what=integer(0), endian="big", size=4, signed=TRUE, n=n);
       },
 

@@ -1,14 +1,14 @@
 #########################################################################/**
 # @RdocFunction readCcgHeader
-# 
+#
 # @title "Reads an the header of an Affymetrix Command Console Generic (CCG) file"
-# 
+#
 # @synopsis
-# 
+#
 # \description{
-#   @get "title".  
+#   @get "title".
 # }
-# 
+#
 # \arguments{
 #   \item{pathname}{The pathname of the CCG file.}
 #   \item{verbose}{An @integer specifying the verbose level. If 0, the
@@ -16,13 +16,13 @@
 #   \item{.filter}{A @list.}
 #   \item{...}{Not used.}
 # }
-# 
+#
 # \value{
 #   A named @list structure consisting of ...
 # }
-# 
+#
 # @author "HB"
-# 
+#
 #  \details{
 #    Note, the current implementation of this methods does not utilize the
 #    Affymetrix Fusion SDK library.  Instead, it is implemented in R from the
@@ -32,7 +32,7 @@
 #  \seealso{
 #    @see "readCcg".
 #  }
-# 
+#
 # \references{
 #  [1] Affymetrix Inc, Affymetrix GCOS 1.x compatible file formats,
 #      April, 2006.
@@ -90,16 +90,16 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
 
 
 # File Header
-# The file header section is the first section of the file. This 
+# The file header section is the first section of the file. This
 # section is used to identify the type of file (i.e. Command Console
 # data file), its version number (for the file format) and the number
 # of data groups stored within the file. Information about the contents
 # of the file such as the data type identifier, the parameters used to
-# create the file and its parentage is stored within the generic data 
+# create the file and its parentage is stored within the generic data
 # header section.
-# 
+#
 # Item 	Description 	Type
-# 1 Magic number. A value to identify that this is a Command Console 
+# 1 Magic number. A value to identify that this is a Command Console
 #    data file. The value will be fixed to 59. 	[UBYTE]
 # 2 The version number of the file. This is the version of the file
 #    format. It is currently fixed to 1. [UBYTE]
@@ -122,8 +122,13 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   }
 
   readUInt <- function(con, n=1, ...) {
-    # For 4-byte integers 'signed' can not be FALSE for readBin()
-    readBin(con, what=integer(), size=4, signed=FALSE, endian="big", n=n);
+    # NOTE: Ideally we would use signed=FALSE here, but there is no
+    # integer data type in R that can hold 4-byte unsigned integers.
+    # Because of this limitation, readBin() will give a warning that
+    # signed=FALSE only works for size=1 or 2.
+    # WORKAROUND: Use signed=TRUE and assume there are no values
+    # greater that .Machine$integer.max == 2^31-1. /HB 2015-04-15
+    readBin(con, what=integer(), size=4, signed=TRUE, endian="big", n=n);
   }
 
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -194,8 +199,13 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   }
 
   readUInt <- function(con, n=1, ...) {
-    # For 4-byte integers 'signed' can not be FALSE for readBin()
-    readBin(con, what=integer(), size=4, signed=FALSE, endian="big", n=n);
+    # NOTE: Ideally we would use signed=FALSE here, but there is no
+    # integer data type in R that can hold 4-byte unsigned integers.
+    # Because of this limitation, readBin() will give a warning that
+    # signed=FALSE only works for size=1 or 2.
+    # WORKAROUND: Use signed=TRUE and assume there are no values
+    # greater that .Machine$integer.max == 2^31-1. /HB 2015-04-15
+    readBin(con, what=integer(), size=4, signed=TRUE, endian="big", n=n);
   }
 
   readString <- function(con, ...) {
@@ -236,7 +246,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
     # * text/x-calvin-float
     # * text/plain
     n <- length(raw);
-    value <- switch(type, 
+    value <- switch(type,
       "text/ascii" = {
         rawToString(raw);
       },
@@ -269,8 +279,13 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
       },
 
       "text/x-calvin-unsigned-integer-32" = {
-        # For 4-byte integers 'signed' can not be FALSE for readBin()
-        readBin(raw, what=integer(0), endian="big", size=4, signed=FALSE, n=n/4);
+        # NOTE: Ideally we would use signed=FALSE here, but there is no
+        # integer data type in R that can hold 4-byte unsigned integers.
+        # Because of this limitation, readBin() will give a warning that
+        # signed=FALSE only works for size=1 or 2.
+        # WORKAROUND: Use signed=TRUE and assume there are no values
+        # greater that .Machine$integer.max == 2^31-1. /HB 2015-04-15
+        readBin(raw, what=integer(0), endian="big", size=4, signed=TRUE, n=n/4);
       },
 
       "text/x-calvin-float" = {
@@ -331,7 +346,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
     parents[[kk]] <- .readCcgDataHeader(con);
   }
   hdr$parents <- parents;
-  
+
   hdr;
 } # .readCcgDataHeader()
 
@@ -356,5 +371,5 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
 #   ASCII/ASCII-8 characters.
 # 2006-11-06
 # o Tested on Test3-1-121502.calvin.CEL and Test3-1-121502.calvin.CDF.
-# o Created.  
-############################################################################  
+# o Created.
+############################################################################
