@@ -49,6 +49,20 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
     stop("Failed to read PGF file: ", file);
   }
 
+  ## Coerce some header fields
+  header <- res$header
+  if (is.list(header)) {
+    ## Optional fields to coerce to integers
+    fields <- c("num-cols", "num-rows", "probesets", "datalines")
+    fields <- intersect(fields, names(header)) # optional!
+    for (field in fields) {
+      value <- header[[field]]
+      value <- as.integer(value)
+      header[[field]] <- value
+    }
+    res$header <- header
+  }
+  
   res;
 } # readPgfEnv()
 
@@ -68,6 +82,8 @@ readPgfEnv <- function(file, readBody=TRUE, indices=NULL) {
 
 ############################################################################
 # HISTORY:
+# 2015-04-15 [HB]
+# o Now readPgfEnv()/readPgf() coerces some header fields to integers.
 # 2012-06-14 [HB]
 # o readPgfEnv(..., indices=NULL) no longer gives a warning.
 # o Moved all CLF functions to readClf.R.
