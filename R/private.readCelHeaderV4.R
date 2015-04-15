@@ -20,7 +20,7 @@
 # \details{
 #  When the header is read, the file pointer is at the beginning
 #  of the data section.  See also @see "base::seek".
-#  This is an internal function that is used mainly to skip the CEL header 
+#  This is an internal function that is used mainly to skip the CEL header
 #  to reach the data section.  It does not make use of Fusion SDK.
 # }
 #
@@ -44,7 +44,12 @@
   }
 
   readDWord <- function(con, ...) {
-    # For 4-byte integers 'signed' can not be FALSE for readBin()
+    # NOTE: Ideally we would use signed=FALSE here, but there is no
+    # integer data type in R that can hold 4-byte unsigned integers.
+    # Because of this limitation, readBin() will give a warning that
+    # signed=FALSE only works for size=1 or 2.
+    # WORKAROUND: Use signed=TRUE and assume there are no values
+    # greater that .Machine$integer.max == 2^31-1. /HB 2015-04-15
     readBin(con, what="integer", size=4, n=1, signed=TRUE, endian="little");
   }
 
@@ -84,4 +89,4 @@
 #   reading 4-byte integers in .readCelHeaderV4().
 # 2006-06-18
 # o Created.  Used by updateCel() to skip header to reach data section.
-############################################################################  
+############################################################################

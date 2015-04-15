@@ -22,7 +22,7 @@
 # }
 #
 # \details{
-#   Note that an error is \emph{not} generated for missing fields.  
+#   Note that an error is \emph{not} generated for missing fields.
 #   Instead the field is returned with value @NA.  The reason for this
 #   is that it is much faster.
 # }
@@ -42,6 +42,6 @@ cdfGetFields <- function(groups, fields, ...) {
 
 ############################################################################
 # HISTORY:
-# 2006-03-21 (Stockholm, Sveavägen)
+# 2006-03-21 (Stockholm, Sveavagen)
 # o Created.
-############################################################################  
+############################################################################
