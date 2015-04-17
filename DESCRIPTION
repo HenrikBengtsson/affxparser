@@ -1,5 +1,5 @@
 Package: affxparser
-Version: 1.40.0
+Version: 1.41.0
 Depends: R (>= 2.6.0)
 Suggests: R.oo (>= 1.19.0), R.utils (>= 2.0.0), AffymetrixDataTestFiles
 SystemRequirements: GNU make
