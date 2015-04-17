@@ -3,7 +3,7 @@ Version: 1.40.0
 Depends: R (>= 2.6.0)
 Suggests: R.oo (>= 1.19.0), R.utils (>= 2.0.0), AffymetrixDataTestFiles
 SystemRequirements: GNU make
-Date: 2015-04-15
+Date: 2015-04-16
 Title: Affymetrix File Parsing SDK
 Authors@R: c(
   person("Henrik", "Bengtsson", role=c("aut")),
