@@ -1,6 +1,16 @@
 Package: affxparser
 ===================
 
+Version: 1.41.0 [2015-04-16]
+o The version number was bumped for the Bioconductor devel version,
+  which is now BioC v3.2 for R (>= 3.3.0).
+
+
+Version: 1.40.0 [2015-04-16]
+o The version number was bumped for the Bioconductor release version,
+  which is now BioC v3.1 for R (>= 3.2.0).
+  
+
 Version: 1.39.5 [2015-04-15]
 o ROBUSTNESS: Now readPgfEnv()/readPgf() validated 'indices', iff possible.
 o Now readPgfEnv()/readPgf() coerces some header fields to integers,
