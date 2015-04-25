@@ -559,7 +559,7 @@ R_affx_GetCHPEntries(FusionCHPQuantificationDetectionData *qData)
   SET_STRING_ELT(nms, 3, mkChar("ID"));
   SET_NAMES(result, nms);
 
-  UNPROTECT(5);
+  UNPROTECT(6);
   return result;
 }
 
@@ -765,7 +765,7 @@ R_affx_ReadCHP(FusionCHPQuantificationData *chp, bool isBrief)
   lstIdx = R_affx_AddCHPEntries(chp, lst, nms, lstIdx, isBrief);
 
   SET_NAMES(lst, nms);
-  UNPROTECT(2);
+  UNPROTECT(3);
   return(lst);
 }
 
