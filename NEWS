@@ -1,6 +1,14 @@
 Package: affxparser
 ===================
 
+Version: 1.41.1 [2015-04-25]
+o MEMORY ERRORS: Native functions R_affx_GetCHPEntries() and
+  R_affx_ReadCHP() had unbalanced PROTECT()/UNPROTECT().  Also, 
+  native R_affx_GetCHPGenotypingResults() had two non-PROTECT():ed
+  usages of mkString().  Thanks to Tomas Kalibera at Northeastern
+  University for reporting on this.
+
+
 Version: 1.41.0 [2015-04-16]
 o The version number was bumped for the Bioconductor devel version,
   which is now BioC v3.2 for R (>= 3.3.0).
