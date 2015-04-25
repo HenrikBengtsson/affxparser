@@ -336,7 +336,7 @@ R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
     PROTECT(ras1 = NEW_NUMERIC(qNbr));
     PROTECT(ras2 = NEW_NUMERIC(qNbr));
     nprotect+=2;
-    Rf_PrintValue(mkString("dudey"));
+    Rprintf("dudey");
   }
   else if(chp->GetHeader().GetAlgName() == L"DynamicModel") {
     bDynamicModel = true;
@@ -345,7 +345,7 @@ R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
     PROTECT(bb = NEW_NUMERIC(qNbr));
     PROTECT(nocall = NEW_NUMERIC(qNbr));
     nprotect+=4;
-    Rf_PrintValue(mkString("howdy"));
+    Rprintf("howdy");
   }
 
 
