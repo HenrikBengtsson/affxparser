@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.41.0-9000 [2015-04-25]
+Version: 1.41.1 [2015-04-25]
 o MEMORY ERRORS: Native functions R_affx_GetCHPEntries() and
   R_affx_ReadCHP() had unbalanced PROTECT()/UNPROTECT().  Also, 
   native R_affx_GetCHPGenotypingResults() had two non-PROTECT():ed
