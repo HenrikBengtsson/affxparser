@@ -40,7 +40,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     header = cdf.GetHeader();
@@ -159,7 +158,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     numQCUnitsInFile  = cdf.GetHeader().GetNumQCProbeSets();
@@ -452,7 +450,6 @@ extern "C" {
    
     if (cdf.ReadHeader() == false) {
       error("Failed to read the CDF file header for: %s\n", cdfFileName);
-      return R_NilValue;
     }
 
     SEXP
@@ -609,7 +606,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.\n");
-      return R_NilValue;
     }
 
     numUnitsInFile  = cdf.GetHeader().GetNumProbeSets();
@@ -1081,7 +1077,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1340,7 +1335,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1716,7 +1710,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     FusionCDFFileHeader header = cdf.GetHeader();
