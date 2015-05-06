@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.41.1-9000 [2015-05-05]
+Version: 1.41.2 [2015-05-05]
 o BUG FIX/ROBUSTNESS: readCelHeader() and readCel() would core dump
   R/affxparser if trying to read multi-channel CEL files (Issue #16).
   Now an error is generated instead.  Multi-channel CEL files (e.g.
