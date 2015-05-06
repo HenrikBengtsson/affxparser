@@ -45,8 +45,10 @@ before_install:
 
 install:
 
- - $RENV install_bioc AffymetrixDataTestFiles
 
+
+
+ - $RENV install_bioc AffymetrixDataTestFiles
  - $RENV install_r R.oo R.utils
 
 script:
