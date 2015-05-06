@@ -174,17 +174,24 @@ extern "C" {
   SEXP R_affx_get_cel_file_header(SEXP fname) 
   {
     FusionCELData cel;
+    SEXP header = R_NilValue;
 
     const char* celFileName = CHAR(STRING_ELT(fname,0));
     cel.SetFileName(celFileName);
     // if (cel.ReadHeader() == false) {
     if (cel.Exists() == false) {
-      error("Unable to read file: %s\n", celFileName);
-      return R_NilValue;
+      error("Cannot read CEL file header. File not found: %s\n", celFileName);
     }
     cel.Read();
 
-    return R_affx_extract_cel_file_meta(cel);
+    try {
+      PROTECT(header = R_affx_extract_cel_file_meta(cel));
+      UNPROTECT(1);
+    } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+      error("[affxparser Fusion SDK exception] Failed to parse header of CEL file: %s\n", celFileName);
+    }
+    
+    return header;
   }
 
 
@@ -245,9 +252,11 @@ extern "C" {
        seems to read everything. Ex(celFileName, FusionCELData::CEL_ALL)
     **/
     cel.SetFileName(celFileName);
+    if (cel.Exists() == false) {
+      error("Cannot read CEL file. File not found: %s\n", celFileName);
+    }
     if (cel.Read(true) == false) {
-      error("Unable to read file: %s\n", celFileName);
-      return R_NilValue;
+      error("Cannot read CEL file: %s\n", celFileName);
     }
 
     if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -259,9 +268,16 @@ extern "C" {
      * Get cell indices to be read
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     bool readAll = true;
-    int maxNbrOfCells = cel.GetNumCells();
+    int maxNbrOfCells;
     int nbrOfCells = length(indices);
 
+    try {
+      maxNbrOfCells = cel.GetNumCells();
+    } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+      UNPROTECT(protectCount);
+      error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+    }
+    
     if (nbrOfCells == 0) {
       nbrOfCells = maxNbrOfCells;
     } else {
@@ -286,8 +302,12 @@ extern "C" {
      * Read header (optional)
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     if (i_readHeader != 0) {
-      PROTECT(header = R_affx_extract_cel_file_meta(cel));
-      protectCount++;
+      try {
+        PROTECT(header = R_affx_extract_cel_file_meta(cel));
+        protectCount++;
+      } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+        error("[affxparser Fusion SDK exception] Failed to parse header of CEL file: %s\n", celFileName);
+      }
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -324,7 +344,12 @@ extern "C" {
 
     /* Read outlier features (optional) */
     if (i_readOutliers != 0) {
-      nbrOfOutliers = cel.GetNumOutliers();
+      try {
+        nbrOfOutliers = cel.GetNumOutliers();
+      } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+        UNPROTECT(protectCount);
+        error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+      }
       if (i_verboseFlag >= R_AFFX_VERBOSE)
         Rprintf("Number of outliers to be read: %d\n", nbrOfOutliers);
 
@@ -334,7 +359,12 @@ extern "C" {
 
     /* Read masked features (optional) */
     if (i_readMasked != 0) {
-      nbrOfMasked = cel.GetNumMasked();
+      try {
+        nbrOfMasked = cel.GetNumMasked();
+      } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+        UNPROTECT(protectCount);
+        error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+      }
       if (i_verboseFlag >= R_AFFX_VERBOSE)
         Rprintf("Number of masked to be read: %d\n", nbrOfMasked);
 
@@ -372,36 +402,48 @@ extern "C" {
         index = INTEGER(indices)[icel] - 1;
       }
 
-      if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
-        Rprintf("index: %d, x: %d, y: %d, intensity: %f, stdv: %f, pixels: %d\n", index, cel.IndexToX(index), cel.IndexToY(index), cel.GetIntensity(index), cel.GetStdv(index), cel.GetPixels(index));
-      }
+      try {
+        if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
+          Rprintf("index: %d, x: %d, y: %d, intensity: %f, stdv: %f, pixels: %d\n", index, cel.IndexToX(index), cel.IndexToY(index), cel.GetIntensity(index), cel.GetStdv(index), cel.GetPixels(index));
+        }
 
-      /* Read X and Y (optional) */
-      if (i_readX != 0) {
-        INTEGER(xvals)[icel] = cel.IndexToX(index);
-      }
-      if (i_readY != 0) {
-        INTEGER(yvals)[icel] = cel.IndexToY(index);
-      }
-
-      if (i_readIntensities != 0) {
-        REAL(intensities)[icel] = cel.GetIntensity(index);
-      }
-
-      /* Read standard deviations (optional) */
-      if (i_readStdvs != 0) {
-        REAL(stdvs)[icel] = cel.GetStdv(index);
-      }
-
-      /* Read number of pixels (optional) */
-      if (i_readPixels != 0) {
-        INTEGER(pixels)[icel] = cel.GetPixels(index);
+        /* Read X and Y (optional) */
+        if (i_readX != 0) {
+          INTEGER(xvals)[icel] = cel.IndexToX(index);
+        }
+        if (i_readY != 0) {
+          INTEGER(yvals)[icel] = cel.IndexToY(index);
+        }
+  
+        if (i_readIntensities != 0) {
+          REAL(intensities)[icel] = cel.GetIntensity(index);
+        }
+  
+        /* Read standard deviations (optional) */
+        if (i_readStdvs != 0) {
+          REAL(stdvs)[icel] = cel.GetStdv(index);
+        }
+  
+        /* Read number of pixels (optional) */
+        if (i_readPixels != 0) {
+          INTEGER(pixels)[icel] = cel.GetPixels(index);
+        }
+      } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+        UNPROTECT(protectCount);
+        error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
       }
 
 
       /* Read outlier features (optional) */
       if (i_readOutliers != 0) {
-        if (cel.IsOutlier(index)) {
+	bool isOutlier;
+	try {
+          isOutlier = cel.IsOutlier(index);
+        } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+          UNPROTECT(protectCount);
+          error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+        }
+        if (isOutlier) {
           if (outliersCount >= nbrOfOutliers)
             error("Internal error: Too many cells flagged as outliers.");
           /* Cell indices are one-based in R */
@@ -411,7 +453,14 @@ extern "C" {
 
       /* Read masked features (optional) */
       if (i_readMasked != 0) {
-        if (cel.IsMasked(index)) {
+	bool isMasked;
+	try {
+          isMasked = cel.IsMasked(index);
+        } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+          UNPROTECT(protectCount);
+          error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+        }
+        if (isMasked) {
           if (maskedCount >= nbrOfMasked)
             error("Internal error: Too many cells flagged as masked.");
           /* Cell indices are one-based in R */
@@ -419,7 +468,7 @@ extern "C" {
         }
       }
     } /* for (int icel ...) */
-
+    
 
     /** resize here if we only read part of the cel then we only want the outliers
         which correspond to that part. **/
@@ -509,6 +558,8 @@ extern "C" {
 
 /***************************************************************************
  * HISTORY:
+ * 2015-05-05
+ * o ROBUSTNESS: Now using try-catch to pass exceptions to R.
  * 2006-09-15
  * o BUG FIX: Forgot to allocate space for NULL terminator in 'd' in call
  *   wcstombs(d,s,n), alternatively making sure d[last] == '\0'.  I added

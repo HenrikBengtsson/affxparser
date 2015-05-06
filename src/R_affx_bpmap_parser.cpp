@@ -34,7 +34,6 @@ extern "C" {
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.ReadHeader() == false) {
             error("Unable to read file: %s\n", bpmapFileName);
-            return R_NilValue;
         }
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -211,12 +210,10 @@ extern "C" {
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.Exists() == false) {
             error("File does not exist: %s\n", bpmapFileName);
-            return R_NilValue;
         }
         if (bpmap.Read() == false) {
             error("Unable to read file: %s, is it a BPMAP file?\n", 
                     bpmapFileName);
-            return R_NilValue;
         }
         if (i_verboseFlag >= R_AFFX_VERBOSE) {
             Rprintf("sucessfully read: %s\n", bpmapFileName);
@@ -322,12 +319,10 @@ extern "C" {
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.Exists() == false) {
             error("File does not exist: %s\n", bpmapFileName);
-            return R_NilValue;
         }
         if (bpmap.Read() == false) {
             error("Unable to read file: %s, is it a BPMAP file?\n", 
                     bpmapFileName);
-            return R_NilValue;
         }
         if (i_verboseFlag >= R_AFFX_VERBOSE) {
             Rprintf("sucessfully read: %s\n", bpmapFileName);
@@ -585,7 +580,6 @@ extern "C" {
 
         if(bpmap.TpmapExists() ==  false){
             error("tpmap file %s does not exist.\n", tpmapFileName);
-            return R_NilValue;
         }
         bpmap.SetTpmapFileName(tpmapFileName);
         if(i_verboseFlag >= R_AFFX_VERBOSE){
@@ -593,7 +587,6 @@ extern "C" {
         }
         if(bpmap.ReadTpmap() == false){
             error("Tpmap file %s cannot be read\n", tpmapFileName);
-            return R_NilValue;
         }
         if(i_verboseFlag >= R_AFFX_VERBOSE){
             Rprintf("Writing bpmap file %s\n", bpmapFileName);
@@ -601,7 +594,6 @@ extern "C" {
         bpmap.SetFileName(bpmapFileName);
         if(bpmap.WriteBpmap() == false){
             error("Bpmap file %s could not be written\n", bpmapFileName);
-            return R_NilValue;
         }
         return R_NilValue;
     } /** end R_affx_write_bpmap_file **/
