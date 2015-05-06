@@ -1,6 +1,18 @@
 Package: affxparser
 ===================
 
+Version: 1.41.1-9000 [2015-05-05]
+o BUG FIX/ROBUSTNESS: readCelHeader() and readCel() would core dump
+  R/affxparser if trying to read multi-channel CEL files (e.g. Axiom).
+  Now an error is generated instead.  Multi-channel CEL files are
+  not supported by affxparser. Thanks to Kevin McLoughlin (Lawrence
+  Livermore National Laboratory, USA) for reporting on this.
+o BUG FIX/ROBUSTNESS: readCelHeader() on corrupt CEL files could
+  core dump R/affparser.  Now an error is generated instead.
+  Thanks to Benilton Carvalho (Universidade Estadual de Campinas,
+  Sao Paulo, Brazil) for reporting on this.
+
+
 Version: 1.41.1 [2015-04-25]
 o MEMORY ERRORS: Native functions R_affx_GetCHPEntries() and
   R_affx_ReadCHP() had unbalanced PROTECT()/UNPROTECT().  Also, 

@@ -174,6 +174,7 @@ extern "C" {
   SEXP R_affx_get_cel_file_header(SEXP fname) 
   {
     FusionCELData cel;
+    SEXP header = R_NilValue;
 
     const char* celFileName = CHAR(STRING_ELT(fname,0));
     cel.SetFileName(celFileName);
@@ -184,7 +185,14 @@ extern "C" {
     }
     cel.Read();
 
-    return R_affx_extract_cel_file_meta(cel);
+    try {
+      PROTECT(header = R_affx_extract_cel_file_meta(cel));
+      UNPROTECT(1);
+    } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+      error("Failed to parse header of CEL file: %s\n", celFileName);
+    }
+    
+    return header;
   }
 
 
@@ -286,8 +294,12 @@ extern "C" {
      * Read header (optional)
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     if (i_readHeader != 0) {
-      PROTECT(header = R_affx_extract_cel_file_meta(cel));
-      protectCount++;
+      try {
+        PROTECT(header = R_affx_extract_cel_file_meta(cel));
+        protectCount++;
+      } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
+        error("Failed to parse header of CEL file: %s\n", celFileName);
+      }
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
