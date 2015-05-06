@@ -379,3 +379,8 @@ README.md: .make/README.md.rsp
 
 .travis.yml: .make/.travis.yml.rsp
 	$(R_SCRIPT) -e "R.rsp::rfile('$<', postprocess=FALSE)"
+
+appveyor.yml: .make/appveyor.yml.rsp
+	$(R_SCRIPT) -e "R.rsp::rfile('$<', postprocess=FALSE)"
+
+config: README.md .travis.yml appveyor.yml

@@ -40,7 +40,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     header = cdf.GetHeader();
@@ -159,7 +158,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     numQCUnitsInFile  = cdf.GetHeader().GetNumQCProbeSets();
@@ -168,7 +166,7 @@ extern "C" {
         for (int i = 0; i < length(unitIndices); i++) {
             if(INTEGER(unitIndices)[i] < 1 || 
                INTEGER(unitIndices)[i] > numQCUnitsInFile)
-	      Rf_error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numQCUnitsInFile, INTEGER(unitIndices)[i]);
+	      error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numQCUnitsInFile, INTEGER(unitIndices)[i]);
         }
         numQCUnits = length(unitIndices);
         readEveryUnit = false;
@@ -452,7 +450,6 @@ extern "C" {
    
     if (cdf.ReadHeader() == false) {
       error("Failed to read the CDF file header for: %s\n", cdfFileName);
-      return R_NilValue;
     }
 
     SEXP
@@ -609,7 +606,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.\n");
-      return R_NilValue;
     }
 
     numUnitsInFile  = cdf.GetHeader().GetNumProbeSets();
@@ -618,7 +614,7 @@ extern "C" {
         for (int i = 0; i < length(unitIndices); i++) {
             if(INTEGER(unitIndices)[i] < 1 || 
                INTEGER(unitIndices)[i] > numUnitsInFile)
-                Rf_error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numUnitsInFile, INTEGER(unitIndices)[i]);
+                error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numUnitsInFile, INTEGER(unitIndices)[i]);
         }
         numUnits = length(unitIndices);
         readEveryUnit = false;
@@ -1081,7 +1077,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1340,7 +1335,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1716,7 +1710,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
     FusionCDFFileHeader header = cdf.GetHeader();
