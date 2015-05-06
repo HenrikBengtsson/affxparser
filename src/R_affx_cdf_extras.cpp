@@ -48,7 +48,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
 
@@ -190,7 +189,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
 
@@ -365,7 +363,6 @@ extern "C" {
 
     if (cdf.Read() == false) {
       error("Failed to read the CDF file.");
-      return R_NilValue;
     }
 
 

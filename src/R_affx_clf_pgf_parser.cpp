@@ -109,9 +109,9 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
         for (i=0; i < length(indices); i++) {
 	    currIndex = pindices[i];
             if (currIndex == prevIndex) {
-	        Rf_error("Argument 'indices' must not contain duplicated entries: %d", currIndex);
+	        error("Argument 'indices' must not contain duplicated entries: %d", currIndex);
             } else if (currIndex < prevIndex) {
-	        Rf_error("Argument 'indices' must be sorted.");
+	        error("Argument 'indices' must be sorted.");
 	    } else if (currIndex > maxIndex) {
                 maxIndex = currIndex;
 	    }
@@ -160,9 +160,9 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
         for (i=0; i < length(indices); i++) {
             currIndex = pindices[i];
             if (currIndex <= 0) {
-                Rf_error("Argument 'indices' contains a non-positive element: %d", currIndex);
+                error("Argument 'indices' contains a non-positive element: %d", currIndex);
             } else if (currIndex > maxIndex) {
-                Rf_error("Argument 'indices' contains an element out of range [1,%d]: %d", maxIndex, currIndex);
+                error("Argument 'indices' contains an element out of range [1,%d]: %d", maxIndex, currIndex);
             }
         }
     }
@@ -211,7 +211,7 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
   
         // Sanity check
         if (nProbesets < nextIndex) {
-          Rf_error("INTERNAL ERROR: Expected %d more probesets to skip in PGF file, but reached end of file.", nextIndex-nProbesets);
+          error("INTERNAL ERROR: Expected %d more probesets to skip in PGF file, but reached end of file.", nextIndex-nProbesets);
         }
   
         // Read probeset
@@ -252,13 +252,13 @@ extern "C" {
   R_affx_get_clf_file(SEXP fname, SEXP readBody, SEXP rho)
   {
     if (IS_CHARACTER(fname) == FALSE || LENGTH(fname) != 1)
-      Rf_error("argument '%s' should be '%s'", "fname",
+      error("argument '%s' should be '%s'", "fname",
                "character(1)");
     if (IS_LOGICAL(readBody) == FALSE || LENGTH(readBody) !=1)
-      Rf_error("argument '%s' should be '%s'", "readBody",
+      error("argument '%s' should be '%s'", "readBody",
                "logical(1)");
     if (TYPEOF(rho) != ENVSXP)
-      Rf_error("argument '%' should be '%s'", "rho", "environment");
+      error("argument '%' should be '%s'", "rho", "environment");
     
     const char *clfFileName = CHAR(STRING_ELT(fname, 0));
 
@@ -270,7 +270,7 @@ extern "C" {
       Err::pushHandler(err);
       if (clf->open(string(clfFileName)) != TSV_OK) {
         delete clf;
-        Rf_error("could not open clf file '%s'", clfFileName);
+        error("could not open clf file '%s'", clfFileName);
       }
       // header
       SEXP tmp;
@@ -285,7 +285,7 @@ extern "C" {
       delete Err::popHandler();
       clf->close();
       delete clf;
-      Rf_error("%s", ex.what());
+      error("%s", ex.what());
     }
 
     clf->close();
@@ -297,13 +297,13 @@ extern "C" {
   R_affx_get_pgf_file(SEXP fname, SEXP readBody, SEXP rho, SEXP indices)
   {
     if (IS_CHARACTER(fname) == FALSE || LENGTH(fname) != 1)
-      Rf_error("argument '%s' should be '%s'", "fname",
+      error("argument '%s' should be '%s'", "fname",
                "character(1)");
     if (IS_LOGICAL(readBody) == FALSE || LENGTH(readBody) != 1)
-      Rf_error("argument '%s' should be '%s'", "readBody",
+      error("argument '%s' should be '%s'", "readBody",
                "logical(1)");
     if (TYPEOF(rho) != ENVSXP)
-      Rf_error("argument '%' should be '%s'", "rho", "environments");
+      error("argument '%' should be '%s'", "rho", "environments");
 
     const char *pgfFileName = CHAR(STRING_ELT(fname, 0));
 
@@ -313,7 +313,7 @@ extern "C" {
       Err::pushHandler(err);
       if (pgf->open(string(pgfFileName)) != TSV_OK) {
         delete pgf;
-        Rf_error("could not open pgf file '%s'", pgfFileName);
+        error("could not open pgf file '%s'", pgfFileName);
       }
       SEXP tmp;
       PROTECT(tmp = R_affx_read_tsv_header(pgf->m_tsv));
@@ -328,7 +328,7 @@ extern "C" {
       delete Err::popHandler();	// errors now are fatal
       pgf->close();
       delete pgf;
-      Rf_error("%s", ex.what());
+      error("%s", ex.what());
     }
 
     delete pgf;

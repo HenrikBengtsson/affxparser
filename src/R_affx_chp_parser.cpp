@@ -141,7 +141,7 @@ R_affx_GetList(ParameterNameValueTypeList params)
       case ParameterNameValueType::UInt8Type:
       case ParameterNameValueType::UInt16Type:
       case ParameterNameValueType::UInt32Type:
-	Rf_warning("reading 'unsigned int' parameter '%s' as NA", 
+	warning("reading 'unsigned int' parameter '%s' as NA", 
 		   pName);
 	PROTECT(pVal = ScalarInteger(R_NaInt));
 	break;
@@ -156,7 +156,7 @@ R_affx_GetList(ParameterNameValueTypeList params)
 	PROTECT(pVal = mkString(param->GetValueAscii().c_str()));
 	break;
       default:
-	Rf_warning("unhandled type for parameter '%s'", CHAR(pName));
+	warning("unhandled type for parameter '%s'", CHAR(pName));
 	PROTECT(pVal = ScalarString(R_NaString));
       }
     SET_NAMED_ELT(pLst, pIdx, pVal, pNms, CHAR(STRING_ELT(pName,0)));
@@ -627,7 +627,7 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
 	break;
       case FusionUnknown:
       default:
-	Rf_warning("unhandled quantification entry index '%d'", 
+	warning("unhandled quantification entry index '%d'", 
 		   header.GetAssayType());
 	PROTECT(quantEntries = NEW_NUMERIC(0));
       }
@@ -885,11 +885,11 @@ extern "C" {
   R_affx_get_chp_file(SEXP fname, SEXP withQuantifications)
   {
     if (IS_CHARACTER(fname) == FALSE || LENGTH(fname) != 1)
-      Rf_error("argument '%s' should be '%s'", "fname",
+      error("argument '%s' should be '%s'", "fname",
 	       "character(1)");
     if (IS_LOGICAL(withQuantifications) == FALSE || 
 	LENGTH(withQuantifications) != 1)
-      Rf_error("argument '%s' should be '%s'", 
+      error("argument '%s' should be '%s'", 
 	       "withQuantifications", "logical(1)");
 
     const char *chpFileName = CHAR(STRING_ELT(fname, 0));
@@ -901,7 +901,7 @@ extern "C" {
 
     FusionCHPData *chp = FusionCHPDataReg::Read(chpFileName);
     if (chp == NULL)
-      Rf_error("could not read '%s'", chpFileName);
+      error("could not read '%s'", chpFileName);
   
     if (processed == false) {
       FusionCHPLegacyData *lChp = FusionCHPLegacyData::FromBase(chp);
@@ -956,7 +956,7 @@ extern "C" {
     }
 
     if (processed==false) {
-      Rf_warning("unable to read CHP file '%s'", chpFileName);
+      warning("unable to read CHP file '%s'", chpFileName);
       delete chp;
     }
 
