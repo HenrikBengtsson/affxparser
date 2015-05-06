@@ -166,7 +166,7 @@ extern "C" {
         for (int i = 0; i < length(unitIndices); i++) {
             if(INTEGER(unitIndices)[i] < 1 || 
                INTEGER(unitIndices)[i] > numQCUnitsInFile)
-	      Rf_error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numQCUnitsInFile, INTEGER(unitIndices)[i]);
+	      error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numQCUnitsInFile, INTEGER(unitIndices)[i]);
         }
         numQCUnits = length(unitIndices);
         readEveryUnit = false;
@@ -614,7 +614,7 @@ extern "C" {
         for (int i = 0; i < length(unitIndices); i++) {
             if(INTEGER(unitIndices)[i] < 1 || 
                INTEGER(unitIndices)[i] > numUnitsInFile)
-                Rf_error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numUnitsInFile, INTEGER(unitIndices)[i]);
+                error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numUnitsInFile, INTEGER(unitIndices)[i]);
         }
         numUnits = length(unitIndices);
         readEveryUnit = false;
