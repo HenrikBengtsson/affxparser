@@ -66,7 +66,7 @@ repos_status <- function() {
     sprintf("[status](http://cran.r-project.org/web/checks/check_results_%s.html)", pkg())
   } else if (bioc()) {
     biocURL <- function(type) {
-      sprintf('%s: <a href="http://master.bioconductor.org/checkResults/%s/bioc-LATEST/%s"><img border="0" src="http://bioconductor.org/shields/build/%s/bioc/%s.svg" alt="Build status"></a>', type, type, pkg(), type, pkg())
+      sprintf('<a href="http://master.bioconductor.org/checkResults/%s/bioc-LATEST/%s"><img border="0" src="http://bioconductor.org/shields/build/%s/bioc/%s.svg" alt="Build status"></a> (%s)', type, pkg(), type, pkg(), type)
 	}
     paste(biocURL(c("release", "devel")), collapse="</br>")
   } else {
