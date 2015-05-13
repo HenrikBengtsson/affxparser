@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.41.3 [2015-05-13]
+o AVAILABILITY: Removed requirement for 'GNU make'.
+
+
 Version: 1.41.2 [2015-05-05]
 o BUG FIX/ROBUSTNESS: readCelHeader() and readCel() would core dump
   R/affxparser if trying to read multi-channel CEL files (Issue #16).
