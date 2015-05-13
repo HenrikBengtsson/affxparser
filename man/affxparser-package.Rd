@@ -20,11 +20,6 @@
   convenient list structure.
 }
 
-\section{Requirements}{
-  This package requires only a standard \R installation, that is,
-  it works independently of other CRAN and Bioconductor packages.
-}
-
 \section{To get started}{
   To get started, see:
   \enumerate{
@@ -119,15 +114,13 @@ Some of the functions in this package search for CDF files automatically by scan
   In the \code{info} subdirectory of the package installation,
   information regarding changes to the Fusion SDK is stored, e.g.
   \preformatted{
-    pathname <- system.file("info/README", package="affxparser"))
+    pathname <- system.file("info", "changes2fusion.txt", package="affxparser")
     file.show(pathname)
   }
 }  
   
 \author{
- Henrik Bengtsson, \email{hb@stat.berkeley.edu},
- James Bullard, \email{bullard@stat.berkeley.edu} and 
- Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}.
+  Henrik Bengtsson [aut], James Bullard [aut], Robert Gentleman [ctb], Kasper Daniel Hansen [aut, cre], Martin Morgan [ctb]
 }
 
 \section{Acknowledgments}{
