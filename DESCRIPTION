@@ -1,5 +1,5 @@
 Package: affxparser
-Version: 1.41.3
+Version: 1.41.4
 Depends:
   R (>= 2.6.0)
 Suggests:
@@ -12,7 +12,7 @@ Authors@R: c(
   person("Henrik", "Bengtsson", role=c("aut")),
   person("James", "Bullard", role=c("aut")),
   person("Robert", "Gentleman", role=c("ctb")),
-  person("Kasper Daniel", "Hansen", role=c("aut", "cre"), email="khansen@jhsph.edu"),
+  person("Kasper Daniel", "Hansen", role=c("aut", "cre"), email="kasperdanielhansen@gmail.com"),
   person("Martin", "Morgan", role=c("ctb")))
 Author: Henrik Bengtsson [aut], James Bullard [aut], Robert Gentleman [ctb], Kasper Daniel Hansen [aut, cre], Martin Morgan [ctb]
 Maintainer: Kasper Daniel Hansen <khansen@jhsph.edu>
