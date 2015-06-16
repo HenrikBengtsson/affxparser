@@ -1,5 +1,5 @@
 Package: affxparser
-Version: 1.41.4
+Version: 1.41.5
 Depends:
   R (>= 2.6.0)
 Suggests:
@@ -15,7 +15,7 @@ Authors@R: c(
   person("Kasper Daniel", "Hansen", role=c("aut", "cre"), email="kasperdanielhansen@gmail.com"),
   person("Martin", "Morgan", role=c("ctb")))
 Author: Henrik Bengtsson [aut], James Bullard [aut], Robert Gentleman [ctb], Kasper Daniel Hansen [aut, cre], Martin Morgan [ctb]
-Maintainer: Kasper Daniel Hansen <khansen@jhsph.edu>
+Maintainer: Kasper Daniel Hansen <kasperdanielhansen@gmail.com>
 Description: Package for parsing Affymetrix files (CDF, CEL, CHP, BPMAP, BAR).  It provides methods for fast and memory efficient parsing of Affymetrix files using the Affymetrix' Fusion SDK.  Both ASCII- and binary-based files are supported.  Currently, there are methods for reading chip definition file (CDF) and a cell intensity file (CEL).  These files can be read either in full or in part.  For example, probe signals from a few probesets can be extracted very quickly from a set of CEL files into a convenient list structure.
 Note: Fusion SDK v1.1.2
 License: LGPL (>= 2)
