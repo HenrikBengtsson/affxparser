@@ -6,7 +6,7 @@ Suggests:
   R.oo (>= 1.19.0),
   R.utils (>= 2.0.2),
   AffymetrixDataTestFiles
-Date: 2015-05-13
+Date: 2015-06-17
 Title: Affymetrix File Parsing SDK
 Authors@R: c(
   person("Henrik", "Bengtsson", role=c("aut")),
