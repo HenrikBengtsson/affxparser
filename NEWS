@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.41.5-9000 [2015-07-29]
+o Updated the BiocViews field of DESCRIPTION.
+
+
 Version: 1.41.5 [2015-06-17]
 o New maintainer address (in all fields).
 
