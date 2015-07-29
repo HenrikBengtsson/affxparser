@@ -1,12 +1,12 @@
 Package: affxparser
-Version: 1.41.5
+Version: 1.41.6
 Depends:
   R (>= 2.6.0)
 Suggests:
   R.oo (>= 1.19.0),
-  R.utils (>= 2.0.2),
+  R.utils (>= 2.1.0),
   AffymetrixDataTestFiles
-Date: 2015-05-13
+Date: 2015-07-29
 Title: Affymetrix File Parsing SDK
 Authors@R: c(
   person("Henrik", "Bengtsson", role=c("aut")),
@@ -22,4 +22,4 @@ License: LGPL (>= 2)
 LazyLoad: yes
 URL: https://github.com/HenrikBengtsson/affxparser
 BugReports: https://github.com/HenrikBengtsson/affxparser/issues
-biocViews: Infrastructure, DataImport
+biocViews: Infrastructure, DataImport, Microarray, ProprietaryPlatforms, OneChannel
