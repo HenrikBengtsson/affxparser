@@ -126,14 +126,15 @@ convertCel <- function(filename, outFilename, readMap=NULL, writeMap=NULL, versi
                                               newChipType, "'.\n", sep="");
     }
 
-    # Updating v3 header
-    header <- hdr$header;
-    pattern <- sprintf("%s.1sq", hdr$chiptype);
-    target <- sprintf("%s.1sq", newChipType);
-    header <- gsub(pattern, target, header, fixed=TRUE);
-
-    # Updating CEL header
-    hdr$header <- header;
+    # Updating v3 headers
+    for (field in c("header", "datheader")) {
+      header <- hdr[[field]]
+      if (is.null(header)) next
+      pattern <- sprintf("%s.1sq", hdr$chiptype)
+      target <- sprintf("%s.1sq", newChipType)
+      header <- gsub(pattern, target, header, fixed=TRUE)
+      hdr[[field]] <- header
+    }
 
     # Updating chip type field (this is actually read only, because
     # the chip type is always inferred from the v3 header).

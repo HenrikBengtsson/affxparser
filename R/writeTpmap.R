@@ -32,7 +32,7 @@ writeTpmap <- function(filename, bpmaplist, verbose = 0){
     out <- file(filename, open = "w")
     on.exit(close(out))
 
-    for(i in 1:length(bpmaplist)) {
+    for(i in seq_along(bpmaplist)) {
         if(verbose)
             cat(paste("Writing sequence", names(bpmaplist)[i], "\n"))
         writeSequence(bpmaplist[[i]])
