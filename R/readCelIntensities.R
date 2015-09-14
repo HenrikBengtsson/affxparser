@@ -51,9 +51,9 @@ readCelIntensities <- function(filenames, indices = NULL, ..., verbose = 0){
 
     # Allocating return matrix
     if(is.null(indices)) {
-      intensities <- matrix(NA, nrow = nrows * ncols, ncol = nfiles)
+      intensities <- matrix(NA_real_, nrow = nrows * ncols, ncol = nfiles)
     } else {
-      intensities <- matrix(NA, nrow = length(indices), ncol = nfiles)
+      intensities <- matrix(NA_real_, nrow = length(indices), ncol = nfiles)
     }
     colnames(intensities) <- filenames
 
