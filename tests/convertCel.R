@@ -10,7 +10,7 @@ if (require("AffymetrixDataTestFiles")) {
   filename <- list.files(path=path, pattern="[.]CEL$")[1]
   pathname <- file.path(path, filename)
   filename4 <- gsub(".CEL", ",v4.CEL", filename)
-  pathname4 <- convertCel(pathname, filename4)
+  pathname4 <- convertCel(pathname, filename4, verbose=TRUE, .validate=TRUE)
   print(pathname4)
 
   ## File #1b: Test3 with updated chip type
@@ -26,7 +26,7 @@ if (require("AffymetrixDataTestFiles")) {
   filename <- list.files(path=path, pattern="[.]CEL$")[1]
   pathname <- file.path(path, filename)
   filename4 <- gsub(".CEL", ",v4.CEL", filename)
-  pathname4 <- convertCel(pathname, filename4)
+  pathname4 <- convertCel(pathname, filename4, verbose=TRUE, .validate=TRUE)
   print(pathname4)
 
   ## File #2b: FusionSDK_HG-U133A with new chip type
@@ -42,7 +42,7 @@ if (require("AffymetrixDataTestFiles")) {
   filename <- list.files(path=path, pattern="[.]CEL$")[1]
   pathname <- file.path(path, filename)
   filename4 <- gsub(".CEL", ",v4.CEL", filename)
-  pathname4 <- convertCel(pathname, filename4)
+  pathname4 <- convertCel(pathname, filename4, verbose=TRUE, .validate=TRUE)
   print(pathname4)
 
   ## File #3b: FusionSDK_Focus
