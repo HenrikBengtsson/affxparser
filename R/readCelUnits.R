@@ -415,7 +415,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   # and the array dimension is not wanted.
   addArrayDim <- (nbrOfArrays >= 2L || !dropArrayDim);
 
-  seqOfArrays <- list(1:nbrOfArrays);
+  seqOfArrays <- list(seq_len(nbrOfArrays));
   offset <- 0L;
 
   res <- lapply(cdf, FUN=function(u) {
