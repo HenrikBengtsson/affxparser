@@ -61,7 +61,7 @@ readCelIntensities <- function(filenames, indices = NULL, ..., verbose = 0){
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Reading intensities from all CEL files
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    for (i in 1:nfiles) {
+    for (i in seq_len(nfiles)) {
       if(verbose > 0)
         cat(" ... reading", filenames[i], "\n");
 
