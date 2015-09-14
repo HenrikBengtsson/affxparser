@@ -5,5 +5,5 @@
 .benchmark
 .check
 .test
-.o
-.dll
+**/*.o
+**/*.dll
