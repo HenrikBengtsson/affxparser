@@ -1,7 +1,7 @@
 Package: affxparser
 ===================
 
-Version: 1.41.6-9000 [2015-09-14]
+Version: 1.41.7 [2015-09-14]
 o ROBUSTNESS: Explicitly importing core R functions. 
 
 
