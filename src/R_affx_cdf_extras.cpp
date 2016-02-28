@@ -5,13 +5,12 @@
 using namespace std;
 using namespace affymetrix_fusion_io;
 
-extern "C" {
-  #include <R.h>
-  #include <Rdefines.h>  
-  
-  #include <wchar.h>
-  #include <wctype.h>
+#include <R.h>
+#include <Rdefines.h>  
+#include <wchar.h>
+#include <wctype.h>
 
+extern "C" {
   /************************************************************************
    *
    * R_affx_cdf_nbrOfCellsPerUnitGroup()
