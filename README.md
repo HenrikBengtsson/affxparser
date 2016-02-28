@@ -9,6 +9,16 @@ source('http://bioconductor.org/biocLite.R')
 biocLite('affxparser')
 ```
 
+### Pre-release version
+
+To install the pre-release version that is available in branch `develop`, use:
+```r
+source('http://callr.org/install#HenrikBengtsson/affxparser@develop')
+```
+This will install the package from source.  Because of this and because this package also compiles native code, Windows users need to have [Rtools](https://cran.r-project.org/bin/windows/Rtools/) installed and OS X users need to have [Xcode](https://developer.apple.com/xcode/) installed.
+
+
+
 
 ## Software status
 
