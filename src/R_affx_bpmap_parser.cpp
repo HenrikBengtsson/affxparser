@@ -8,12 +8,12 @@ using namespace std;
 /* ToDo: Implement partial reading */
 /* Need to take care of mmx, mmy, when we have a pmonly */
 
-extern "C" {
-    #include <R.h>
-    #include <Rdefines.h>
-    #include <wchar.h>
-    #include <wctype.h>
+#include <R.h>
+#include <Rdefines.h>
+#include <wchar.h>
+#include <wctype.h>
     
+extern "C" {
     /**************************************************************
      *
      * R_affx_get_bpmap_file()
