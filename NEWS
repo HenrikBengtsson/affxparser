@@ -1,6 +1,10 @@
 Package: affxparser
 ===================
 
+Version: 1.43.1 [2016-02-26]
+o Fixed a bug related to including <R.h> and extern C, reported by Brian Ripley.
+
+
 Version: 1.43.0 [2015-10-23]
 o The version number was bumped for the Bioconductor devel version,
   which is now BioC v3.3 for R (>= 3.3.0).
