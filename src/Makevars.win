@@ -1,8 +1,5 @@
 PKG_LIBS = -lws2_32
 
-## For R (< 3.0.0): Backward compatibility with R (>= 3.0.0)
-COMPILED_BY ?= gcc-4.6.3
-
 ## -Wno-unused-private-field gives notes/errors with some compiler
 MYCXXFLAGS = -Wno-sign-compare -Wno-unknown-pragmas
 
