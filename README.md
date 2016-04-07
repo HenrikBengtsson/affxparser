@@ -9,7 +9,6 @@ source('http://bioconductor.org/biocLite.R')
 biocLite('affxparser')
 ```
 
-
 ## Software status
 
 | Resource:     | Bioconductor        | Travis CI     | Appveyor         |
