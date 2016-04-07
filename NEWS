@@ -1,6 +1,9 @@
 Package: affxparser
 ===================
 
+Version: 1.43.2
+o Version bump for Bioconductor
+
 Version: 1.43.1-9000 [2016-04-05]
 o WINDOWS: Package now compiles with both the old gcc-4.6.3 toolchain
   as well as the new gcc-4.9.3 toolchain - introduced in R (>= 3.3.0).
