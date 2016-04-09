@@ -51,9 +51,8 @@ before_install:
     fi
 
 install:
- - $RENV install_deps
-
-
+  - $RENV install_bioc AffymetrixDataTestFiles
+  - $RENV install_r R.oo R.utils
 
 script:
   - $RENV run_build
