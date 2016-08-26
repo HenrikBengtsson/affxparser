@@ -42,7 +42,7 @@ matrix:
 bioc_packages:
   - BiocInstaller
   - AffymetrixDataTestFiles
-  - affx
+  - affy
   
 notifications:
   email:
