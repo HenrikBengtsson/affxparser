@@ -11,29 +11,29 @@ language: r
 sudo: false
 cache: packages
 warnings_are_errors: false
-
-os:
-  - linux
-  - osx
-
-r:
-  - oldrel
-  - release
-  - devel
+r_check_args: --as-cran
 
 matrix:
   include:
     - os: linux
+      r: oldrel
+    - os: linux
       r: release
-      r_check_args: --use-valgrind
-  exclude:
-    - os: osx
+      after_success:
+      - Rscript -e 'covr::codecov(quiet=FALSE)'
+    - os: linux
       r: devel
-
-addons:
-  apt:
-    packages:
-    - valgrind
+    - os: linux
+      r: release
+      r_check_args: --as-cran --use-valgrind
+      addons:
+        apt:
+          packages:
+          - valgrind
+    - os: osx
+      r: oldrel
+    - os: osx
+      r: release
     
 bioc_packages:
   - BiocInstaller
@@ -41,11 +41,7 @@ bioc_packages:
 r_github_packages:
   - jimhester/covr
 
-after_success:
-  - Rscript -e 'covr::codecov(quiet=FALSE)'
-
 notifications:
   email:
     on_success: change
     on_failure: change
-
