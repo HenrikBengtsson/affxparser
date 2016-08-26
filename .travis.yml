@@ -22,11 +22,13 @@ r:
   - devel
 
 matrix:
+  include:
+    - os: linux
+    - r: release
+    - r_check_args: --use-valgrind
   exclude:
     - os: osx
       r: devel
-
-r_check_args: --use-valgrind
 
 bioc_packages:
   - BiocInstaller
