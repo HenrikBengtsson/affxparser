@@ -26,7 +26,7 @@ matrix:
     - os: osx
       r: devel
 
-r_check_args: --valgrind
+r_check_args: --use-valgrind
 
 bioc_packages:
   - BiocInstaller
