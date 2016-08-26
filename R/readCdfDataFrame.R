@@ -145,11 +145,11 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
   # Flatten CDF list structure unit by unit
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   if (is.null(units))
-    units <- seq(along=cdf);  ## FIX ME
+    units <- seq_along(cdf);  ## FIX ME
   groupIdxs <- groups;
 
   unitNames <- names(cdf);
-  for (uu in seq(along=cdf)) {
+  for (uu in seq_along(cdf)) {
     unit <- .subset2(cdf, uu);
     unitName <- .subset(unitNames, uu);
 
@@ -175,16 +175,16 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 
     # Extract groups of interest?
     if (is.null(groupIdxs)) {
-      ggs <- seq(along=groups);
+      ggs <- seq_along(groups);
     } else {
-      keep <- which(seq(along=groups) %in% groupIdxs);
+      keep <- which(seq_along(groups) %in% groupIdxs);
       groups <- .subset(groups, keep);
       ggs <- groupIdxs;
     }
 
     # Flatten (group, cell) data
     groupNames <- names(groups);
-    for (gg in seq(along=ggs)) {
+    for (gg in seq_along(ggs)) {
       group <- .subset2(groups, gg);
       groupName <- .subset(groupNames, gg);
 
@@ -203,7 +203,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 
       # Extract cells of interest?
       if (!is.null(cells)) {
-        keep <- (seq(length=nrow(cellData)) %in% cells);
+        keep <- (seq_len(nrow(cellData)) %in% cells);
         cellData <- cellData[keep,,drop=FALSE];
       }
 
@@ -221,7 +221,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 
     # Stack (rbind) groups
     stackedGroups <- NULL;
-    for (gg in seq(along=groups)) {
+    for (gg in seq_along(groups)) {
       stackedGroups <- rbind(stackedGroups, .subset2(groups, gg));
     }
 
@@ -256,7 +256,7 @@ readCdfDataFrame <- function(filename, units=NULL, groups=NULL, cells=NULL, fiel
 
   # Copy values from the CDF list structure
   offset <- 0;
-  for (uu in seq(along=cdf)) {
+  for (uu in seq_along(cdf)) {
     data <- .subset2(cdf, uu);
     nrow <- nrow(data);
     idxs <- offset + 1:nrow;

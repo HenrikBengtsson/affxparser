@@ -55,7 +55,7 @@ cdfMergeToQuartets <- function(groups, ...) {
     newGroup <- vector("list", nbrOfFields);
 
     # Join the fields of allele A and allele B.
-    for (ff in seq(length=nbrOfFields)) {
+    for (ff in seq_len(nbrOfFields)) {
       fieldA <- groupA[[ff]];
       fieldB <- groupB[[ff]];
 

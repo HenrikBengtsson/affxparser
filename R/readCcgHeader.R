@@ -328,7 +328,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   nbrOfParams <- readInt(con);
   params <- vector("list", nbrOfParams);
   names <- character(nbrOfParams);
-  for (kk in seq(length=nbrOfParams)) {
+  for (kk in seq_len(nbrOfParams)) {
     wvt <- readWVT(con);
     names[kk] <- wvt$name;
     value <- wvt$value;
@@ -342,7 +342,7 @@ readCcgHeader <- function(pathname, verbose=0, .filter=list(fileHeader=TRUE, dat
   # Reading parent headers
   nbrOfParents <- readInt(con);
   parents <- vector("list", nbrOfParents);
-  for (kk in seq(length=nbrOfParents)) {
+  for (kk in seq_len(nbrOfParents)) {
     parents[[kk]] <- .readCcgDataHeader(con);
   }
   hdr$parents <- parents;

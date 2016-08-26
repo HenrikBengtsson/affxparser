@@ -64,7 +64,7 @@ cdfMergeAlleles <- function(groups, compReverseBases=FALSE, collapse="", ...) {
     newGroup <- vector("list", nbrOfFields);
 
     # Join the fields of allele A and allele B.
-    for (ff in seq(length=nbrOfFields)) {
+    for (ff in seq_len(nbrOfFields)) {
       fieldA <- .subset2(groupA, ff);
       fieldB <- .subset2(groupB, ff);
 

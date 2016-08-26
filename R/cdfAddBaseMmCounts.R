@@ -69,7 +69,7 @@
 # @keyword internal
 #**/#######################################################################
 cdfAddBaseMmCounts <- function(groups, ...) {
-  for (gg in seq(along=groups)) {
+  for (gg in seq_along(groups)) {
     group <- groups[[gg]];
 
     # Find PM probes
