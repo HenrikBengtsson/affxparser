@@ -30,6 +30,7 @@ matrix:
         apt:
           packages:
           - valgrind
+      env: NB="w/ valgrind" ## Just a label
     - os: osx
       r: oldrel
     - os: osx
