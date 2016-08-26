@@ -30,6 +30,11 @@ matrix:
     - os: osx
       r: devel
 
+addons:
+  apt:
+    packages:
+    - valgrind
+    
 bioc_packages:
   - BiocInstaller
   
