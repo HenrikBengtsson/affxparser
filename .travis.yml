@@ -40,7 +40,7 @@ matrix:
       r: release
     
 bioc_packages:
-  - BiocInstaller
+  - BiocInstaller AffymetrixDataTestFiles
 
 notifications:
   email:
