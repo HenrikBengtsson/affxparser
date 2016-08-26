@@ -24,8 +24,8 @@ r:
 matrix:
   include:
     - os: linux
-    - r: release
-    - r_check_args: --use-valgrind
+      r: release
+      r_check_args: --use-valgrind
   exclude:
     - os: osx
       r: devel
