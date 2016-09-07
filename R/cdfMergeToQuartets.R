@@ -73,7 +73,7 @@ cdfMergeToQuartets <- function(groups, ...) {
       } else {
         # Otherwise, just append the values.  Maybe we should
         # do something smarter here?!? /HB 2006-03-07
-        fieldA <- append(fieldA, fieldB);
+        fieldA <- c(fieldA, fieldB);
       }
       newGroup[[ff]] <- fieldA;
     }
