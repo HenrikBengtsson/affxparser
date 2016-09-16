@@ -198,7 +198,7 @@
   ## Writing each group in turn
   # Number of bytes: (18+64)*nbrOfGroups + 14*totalNbrOfCells bytes
   groupDirections <- c(nodirection=0, sense=1, antisense=2, unknown=3);
-  for(igroup in seq(along.with = unit$groups)) {
+  for(igroup in seq_along(unit$groups)) {
     group <- unit$groups[[igroup]]
     groupDirection <- groupDirections[group$groupdirection];
     groupDirection <- switch(group$groupdirection,
@@ -229,7 +229,7 @@
                     ncol = 4)
 
     # Number of bytes: 14*nbrOfCells bytes
-    for(icell in seq(along.with = group$x)) {
+    for(icell in seq_along(group$x)) {
       # Number of bytes: 1*4+2*2+1*4+1*2=14 bytes
       writeBin(cells[icell, 1],
                con = con, size = 4, endian = "little")
@@ -284,7 +284,7 @@
   cells <- matrix(as.integer(c(qcunit$x, qcunit$y, qcunit$length,
                                qcunit$pm, qcunit$background)),
                   ncol = 5)
-  for(icell in seq(along.with = qcunit$x)) {
+  for(icell in seq_along(qcunit$x)) {
     writeBin(cells[icell, 1:2], con = con, size = 2, endian = "little")
     writeBin(cells[icell, 3:5], con = con, size = 1, endian = "little")
   }

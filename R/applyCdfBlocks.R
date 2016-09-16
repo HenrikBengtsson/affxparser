@@ -25,7 +25,7 @@ applyCdfBlocks <- function(cdf, fcn, ..., .key="blocks") {
   if (is.na(ff))
     stop("There is no such element in CDF structure: ", .key);
 
-  for (uu in seq(along=cdf)) {
+  for (uu in seq_along(cdf)) {
     unit <- .subset2(cdf, uu);
     unit[[ff]] <- fcn(.subset2(unit, ff), ...);
     cdf[[uu]] <- unit;

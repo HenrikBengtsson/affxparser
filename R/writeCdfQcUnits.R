@@ -43,7 +43,7 @@ writeCdfQcUnits <- function(con, cdfQcUnits, verbose=0) {
   }
 
   nbrOfQCUnits <- length(cdfQcUnits);
-  for(kk in seq(length=nbrOfQCUnits)) {
+  for(kk in seq_len(nbrOfQCUnits)) {
     if(verbose >= 2) {
       if (kk %% 1000 == 0)
         cat(nbrOfQCUnits-kk, ", ", sep="");

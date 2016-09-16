@@ -73,7 +73,7 @@ cdfAddPlasqTypes <- function(groups, ...) {
     groups[[2*kk]] <- groupB;
   }
 
-  for (gg in seq(along=groups)) {
+  for (gg in seq_along(groups)) {
     group <- groups[[gg]];
 
     # PM or MM?

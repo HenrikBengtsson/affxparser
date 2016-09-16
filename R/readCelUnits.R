@@ -335,7 +335,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
   # Local environment where to store the temporary variables
   env <- environment();
 
-  for (kk in seq(length=nbrOfArrays)) {
+  for (kk in seq_len(nbrOfArrays)) {
     filename <- filenames[kk];
 
     verbose && enter(verbose, "Reading CEL data for array #", kk);
@@ -439,7 +439,7 @@ readCelUnits <- function(filenames, units=NULL, stratifyBy=c("nothing", "pmmm", 
       if (addDimnames) {
         dimnames <- dimnames(field);
         if (is.null(dimnames))
-          dimnames <- list(seq(length=dim));
+          dimnames <- list(seq_len(dim));
 
         # Add an extra dimension for arrays?
         if (addArrayDim) {

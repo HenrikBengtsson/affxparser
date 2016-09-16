@@ -46,7 +46,7 @@ writeCdfUnits <- function(con, cdfUnits, verbose=0) {
   }
 
   unitNames <- names(cdfUnits);
-  for(kk in seq(length=nbrOfUnits)) {
+  for(kk in seq_len(nbrOfUnits)) {
     if(verbose >= 2) {
       if (kk %% 1000 == 0)
         cat(nbrOfUnits-kk, ", ", sep="");

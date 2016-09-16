@@ -170,7 +170,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   currFilter <- .filter;
   nextDataGroupStart <- .fileHeader$dataGroupStart;
   dataGroups <- list();
-  for (gg in seq(length=.fileHeader$nbrOfDataGroups)) {
+  for (gg in seq_len(.fileHeader$nbrOfDataGroups)) {
     dataGroupHeader <- .readCcgDataGroupHeader(con,
                                           fileOffset=nextDataGroupStart);
     # Next data group
@@ -197,7 +197,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
     offset <- dataGroupHeader$dataSetStart;
     dss <- vector("list", dataGroupHeader$nbrOfDataSets);
     names <- character(dataGroupHeader$nbrOfDataSets);
-    for (kk in seq(along=dss)) {
+    for (kk in seq_along(dss)) {
       ds <- .readCcgDataSet(con, fileOffset=offset);
 
       offset <- ds$nextDataSetStart;
@@ -496,7 +496,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   nbrOfParams <- readInt(con);
   params <- vector("list", nbrOfParams);
   names <- character(nbrOfParams);
-  for (kk in seq(length=nbrOfParams)) {
+  for (kk in seq_len(nbrOfParams)) {
     wvt <- readWVT(con);
     names[kk] <- wvt$name;
     value <- wvt$value;
@@ -512,7 +512,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
   names <- character(nbrOfColumns);
   colWhats <- vector("list", nbrOfColumns);
   bytesPerRow <- 0;
-  for (cc in seq(length=nbrOfColumns)) {
+  for (cc in seq_len(nbrOfColumns)) {
     wbi <- readWBI(con);
     names[cc] <- wbi$name;
     what <- whats[wbi$type+1];
@@ -538,7 +538,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
   table <- vector("list", nbrOfColumns);
   colsOffset <- 0;
-  for (cc in seq(length=nbrOfColumns)) {
+  for (cc in seq_len(nbrOfColumns)) {
     what <- colWhats[[cc]];
     signed <- attr(what, "signed");
     size <- attr(what, "size");
@@ -561,7 +561,7 @@ readCcg <- function(pathname, verbose=0, .filter=NULL, ...) {
 
       # Build strings using vectorization (not apply()!)
       strs <- NULL;
-      for (pp in seq(length=nrow(value))) {
+      for (pp in seq_len(nrow(value))) {
         valuePP <- value[1,,drop=FALSE];
         value <- value[-1,,drop=FALSE];
         if (pp == 1) {

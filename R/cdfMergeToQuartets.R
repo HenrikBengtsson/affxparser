@@ -55,7 +55,7 @@ cdfMergeToQuartets <- function(groups, ...) {
     newGroup <- vector("list", nbrOfFields);
 
     # Join the fields of allele A and allele B.
-    for (ff in seq(length=nbrOfFields)) {
+    for (ff in seq_len(nbrOfFields)) {
       fieldA <- groupA[[ff]];
       fieldB <- groupB[[ff]];
 
@@ -73,7 +73,7 @@ cdfMergeToQuartets <- function(groups, ...) {
       } else {
         # Otherwise, just append the values.  Maybe we should
         # do something smarter here?!? /HB 2006-03-07
-        fieldA <- append(fieldA, fieldB);
+        fieldA <- c(fieldA, fieldB);
       }
       newGroup[[ff]] <- fieldA;
     }
