@@ -4,9 +4,9 @@ Depends:
   R (>= 2.14.0)
 Suggests:
   R.oo (>= 1.20.0),
-  R.utils (>= 2.3.0),
+  R.utils (>= 2.4.0),
   AffymetrixDataTestFiles
-Date: 2016-08-25
+Date: 2016-09-16
 Title: Affymetrix File Parsing SDK
 Authors@R: c(
   person("Henrik", "Bengtsson", role=c("aut")),
