@@ -74,7 +74,7 @@ applyCdfGroups <- function(cdf, fcn, ...) {
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   # Iterate over all unit group sets.
   # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  for (uu in seq(along=cdf)) {
+  for (uu in seq_along(cdf)) {
     unit <- .subset2(cdf, uu);
     unit$groups <- fcn(.subset2(unit, "groups"), ...);
     cdf[[uu]] <- unit;

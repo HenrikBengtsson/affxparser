@@ -105,7 +105,7 @@ findFiles <- function(pattern=NULL, paths=NULL, recursive=FALSE, firstOnly=TRUE,
   paths <- unique(paths);
 
   # Don't search non-existing paths
-  for (kk in seq(along=paths)) {
+  for (kk in seq_along(paths)) {
     path <- paths[kk];
     # Example any '~':s
     path <- file.path(dirname(path), basename(path));

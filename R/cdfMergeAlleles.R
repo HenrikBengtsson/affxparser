@@ -64,7 +64,7 @@ cdfMergeAlleles <- function(groups, compReverseBases=FALSE, collapse="", ...) {
     newGroup <- vector("list", nbrOfFields);
 
     # Join the fields of allele A and allele B.
-    for (ff in seq(length=nbrOfFields)) {
+    for (ff in seq_len(nbrOfFields)) {
       fieldA <- .subset2(groupA, ff);
       fieldB <- .subset2(groupB, ff);
 
@@ -82,7 +82,7 @@ cdfMergeAlleles <- function(groups, compReverseBases=FALSE, collapse="", ...) {
       } else {
         # Otherwise, just append the values.  Maybe we should
         # do something smarter here?!? /HB 2006-03-07
-        fieldA <- append(fieldA, fieldB);
+        fieldA <- c(fieldA, fieldB);
       }
       newGroup[[ff]] <- fieldA;
     } # for (ff ...);

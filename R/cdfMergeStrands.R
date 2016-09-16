@@ -71,12 +71,12 @@ cdfMergeStrands <- function(groups, ...) {
           fieldsNext <- .subset2(groupNext, ff);
           ndim <- length(dim(fields));
           if (ndim <= 1) {
-            fields <- append(fields, fieldsNext);
+            fields <- c(fields, fieldsNext);
           } else if (ndim == 2) {
             fields <- cbind(fields, fieldsNext);
           } else {
             # This should never occur for a normal CDF structure.
-            fields <- append(fields, fieldsNext);
+            fields <- c(fields, fieldsNext);
           }
           group[[ff]] <- fields;
         }

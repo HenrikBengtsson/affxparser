@@ -132,7 +132,7 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
   if (stratifyBy == "pmmm") {
     dimnames <- list(c("pm", "mm"), NULL);
 
-    for (uu in seq(along=cdf)) {
+    for (uu in seq_along(cdf)) {
 #      groups <- cdf[[uu]]$groups;
       groups <- .subset2(.subset2(cdf, uu), "groups");
       ngroups <- length(groups);
@@ -170,7 +170,7 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
       cdf[[uu]]$groups <- groups;
     } # for (uu ...)
   } else if (stratifyBy == "pm") {
-    for (uu in seq(along=cdf)) {
+    for (uu in seq_along(cdf)) {
 #      groups <- cdf[[uu]]$groups;
       groups <- .subset2(.subset2(cdf, uu), "groups");
       ngroups <- length(groups);
@@ -194,7 +194,7 @@ readCdfCellIndices <- function(filename, units=NULL, stratifyBy=c("nothing", "pm
       cdf[[uu]]$groups <- groups;
     } # for (uu ...)
   } else if (stratifyBy == "mm") {
-    for (uu in seq(along=cdf)) {
+    for (uu in seq_along(cdf)) {
 #      groups <- cdf[[uu]]$groups;
       groups <- .subset2(.subset2(cdf, uu), "groups");
       ngroups <- length(groups);

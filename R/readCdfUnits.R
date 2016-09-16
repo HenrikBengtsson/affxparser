@@ -174,7 +174,7 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
   if (stratifyBy == "pmmm") {
     dimnames <- list(c("pm", "mm"), NULL);
 
-    for (uu in seq(along=cdf)) {
+    for (uu in seq_along(cdf)) {
 #      groups <- cdf[[uu]]$groups;
       groups <- .subset2(.subset2(cdf, uu), "groups");
       ngroups <- length(groups);
@@ -217,7 +217,7 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
       cdf[[uu]]$groups <- groups;
     } # for (uu ...)
   } else if (stratifyBy == "pm") {
-    for (uu in seq(along=cdf)) {
+    for (uu in seq_along(cdf)) {
       groups <- cdf[[uu]]$groups;
       ngroups <- length(groups);
       if (ngroups == 0)
@@ -239,7 +239,7 @@ readCdfUnits <- function(filename, units=NULL, readXY=TRUE, readBases=TRUE, read
       cdf[[uu]]$groups <- groups;
     } # for (uu ...)
   } else if (stratifyBy == "mm") {
-    for (uu in seq(along=cdf)) {
+    for (uu in seq_along(cdf)) {
       groups <- cdf[[uu]]$groups;
       ngroups <- length(groups);
       if (ngroups == 0)

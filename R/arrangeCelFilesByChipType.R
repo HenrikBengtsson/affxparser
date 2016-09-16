@@ -62,7 +62,7 @@ arrangeCelFilesByChipType <- function(pathnames=list.files(pattern="[.](cel|CEL)
   pathnamesD <- rep(NA_character_, times=length(pathnames));
   chipTypes <- rep(NA_character_, times=length(pathnames));
 
-  for (ii in seq(along=pathnames)) {
+  for (ii in seq_along(pathnames)) {
     pathname <- pathnames[ii];
 
     # Skip non-existing files
