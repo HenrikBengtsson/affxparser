@@ -1,1005 +1,1630 @@
 Package: affxparser
 ===================
 
+Version: 1.47.0-9000 [2016-10-18]
+
+ o ...
+
+
+Version: 1.47.0 [2016-10-18]
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version, which
+   is now BioC 3.5 for R (>= 3.4.0).
+
+
+Version: 1.46.0 [2016-10-18]
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version, which
+   is now BioC 3.4 for R (>= 3.3.1).
+
+
 Version: 1.45.1 [2016-09-16]
-o CLEANUP: Dropped obsolete src/R_affx_test.*cmdline.cpp files.
-o CLEANUP: Using c(x,y) instead of append(x,y) internally.
+
+CODE REFACTORING:
+
+ o Using c(x,y) instead of append(x,y) internally.
+
+ o CLEANUP: Dropped obsolete src/R_affx_test.*cmdline.cpp files.
 
 
 Version: 1.45.0 [2015-05-03]
-o The version number was bumped for the Bioconductor devel version,
-  which is now BioC v3.4 for R (>= 3.3.0).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version, which
+   is now BioC 3.4 for R (>= 3.3.0).
 
 
 Version: 1.44.0 [2015-05-03]
-o The version number was bumped for the Bioconductor release version,
-  which is now BioC v3.3 for R (>= 3.3.0).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version, which
+   is now BioC 3.3 for R (>= 3.3.0).
 
 
 Version: 1.43.2 [2016-04-05]
-o Version bump for Bioconductor.
+
+NOTES:
+
+ o Version bump for Bioconductor.
 
 
 Version: 1.43.1-9000 [2016-04-05]
-o WINDOWS: Package now compiles with both the old gcc-4.6.3 toolchain
-  as well as the new gcc-4.9.3 toolchain - introduced in R (>= 3.3.0).
-  Thanks to Jim Hester and Dan Tenenbaum for help with this.
+
+NEW FEATURES:
+
+ o WINDOWS: Package now compiles with both the old gcc-4.6.3 toolchain as well
+   as the new gcc-4.9.3 toolchain - introduced in R (>= 3.3.0).  Thanks to
+   Jim Hester and Dan Tenenbaum for help with this.
 
 
 Version: 1.43.1 [2016-02-28]
-o Fixed a bug related to including <R.h> and extern C, reported by Brian Ripley.
-o The DLL is now unloaded when the package is unloaded.
+
+NEW FEATURES:
+
+ o The DLL is now unloaded when the package is unloaded.
+
+BUG FIXES:
+
+ o Fixed a bug related to including <R.h> and extern C, reported by
+   Brian Ripley.
 
 
 Version: 1.43.0 [2015-10-23]
-o The version number was bumped for the Bioconductor devel version,
-  which is now BioC v3.3 for R (>= 3.3.0).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version, which
+   is now BioC 3.3 for R (>= 3.3.0).
 
 
 Version: 1.42.0 [2015-10-13]
-o The version number was bumped for the Bioconductor release version,
-  which is now BioC v3.2 for R (>= 3.2.2).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version, which
+   is now BioC 3.2 for R (>= 3.2.2).
 
 
 Version: 1.41.7 [2015-09-14]
-o ROBUSTNESS: Explicitly importing core R functions. 
+
+CODE REFACTORING:
+
+ o ROBUSTNESS: Explicitly importing core R functions. 
 
 
 Version: 1.41.6 [2015-07-29]
-o Updated the BiocViews field of DESCRIPTION.
+
+NOTES:
+
+ o Updated the BiocViews field of DESCRIPTION.
 
 
 Version: 1.41.5 [2015-06-17]
-o New maintainer address (in all fields).
+
+NOTES:
+
+ o New maintainer address (in all fields).
 
 
 Version: 1.41.4 [2015-05-26]
-o New maintainer address.
+
+NOTES:
+
+ o New maintainer address.
 
 
 Version: 1.41.3 [2015-05-13]
-o AVAILABILITY: Removed requirement for 'GNU make'.
+
+SIGNIFICANT CHANGES:
+
+ o AVAILABILITY: Removed requirement for 'GNU make'.
 
 
 Version: 1.41.2 [2015-05-05]
-o BUG FIX/ROBUSTNESS: readCelHeader() and readCel() would core dump
-  R/affxparser if trying to read multi-channel CEL files (Issue #16).
-  Now an error is generated instead.  Multi-channel CEL files (e.g.
-  Axiom) are not supported by affxparser. Thanks to Kevin McLoughlin
-  (Lawrence Livermore National Laboratory, USA) for reporting on this.
-o BUG FIX/ROBUSTNESS: readCelHeader() and readCel() on corrupt CEL
-  files could core dump R/affparser (Issues #13 & #15).  Now an error
-  is generated instead.  Thanks to Benilton Carvalho (Universidade
-  Estadual de Campinas, Sao Paulo, Brazil) and Malte Bismarck
-  (Martin Luther University of Halle-Wittenberg) for reports.
+
+BUG FIXES:
+
+ o readCelHeader() and readCel() would core dump R/affxparser if trying to
+   read multi-channel CEL files (Issue #16). Now an error is generated instead.
+   Multi-channel CEL files (e.g. Axiom) are not supported by affxparser.
+   Thanks to Kevin McLoughlin (Lawrence Livermore National Laboratory, USA)
+   for reporting on this.
+
+ o readCelHeader() and readCel() on corrupt CEL files could core dump
+   R/affparser (Issues #13 & #15).  Now an error is generated instead. Thanks
+   to Benilton Carvalho (Universidade Estadual de Campinas, Sao Paulo, Brazil)
+   and Malte Bismarck (Martin Luther University of Halle-Wittenberg) for
+   reports.
 
 
 Version: 1.41.1 [2015-04-25]
-o MEMORY ERRORS: Native functions R_affx_GetCHPEntries() and
-  R_affx_ReadCHP() had unbalanced PROTECT()/UNPROTECT().  Also, 
-  native R_affx_GetCHPGenotypingResults() had two non-PROTECT():ed
-  usages of mkString().  Thanks to Tomas Kalibera at Northeastern
-  University for reporting on this.
+
+BUG FIXES:
+
+ o Native functions R_affx_GetCHPEntries() and R_affx_ReadCHP() had unbalanced
+   PROTECT()/UNPROTECT().  Also, native R_affx_GetCHPGenotypingResults() had
+   two non-PROTECT():ed usages of mkString().  Thanks to Tomas Kalibera at
+   Northeastern University for reporting on this.
 
 
 Version: 1.41.0 [2015-04-16]
-o The version number was bumped for the Bioconductor devel version,
-  which is now BioC v3.2 for R (>= 3.3.0).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version, which
+   is now BioC 3.2 for R (>= 3.3.0).
 
 
 Version: 1.40.0 [2015-04-16]
-o The version number was bumped for the Bioconductor release version,
-  which is now BioC v3.1 for R (>= 3.2.0).
-  
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version, which
+   is now BioC 3.1 for R (>= 3.2.0).
+   
 
 Version: 1.39.5 [2015-04-15]
-o ROBUSTNESS: Now readPgfEnv()/readPgf() validated 'indices', iff possible.
-o Now readPgfEnv()/readPgf() coerces some header fields to integers,
-  iff they exists, specifically 'num-cols', 'num-rows', 'probesets',
-  and 'datalines'.
-o BUG FIX: convertCel() on a CCG/v1 CEL file could give "Error in
-  sprintf("GridCorner%s=%d %d\n" ... invalid format '%d' ...)".
-  Added package test for convertCel(), but in this particular case
-  it would not have cought it because it only happened for chip types
-  of particular dimensions.  Thanks to Malte Bismarck at UK Halle
-  (Germany) for reporting on this.
-o CLEANUP: Package no longer gives readBin() warnings on 
-  "'signed = FALSE' is only valid for integers of sizes 1 and 2".
-o CLEANUP: Removed 'SystemRequirements: GNU make'.
+
+SIGNIFICANT CHANGES:
+
+ o Removed 'SystemRequirements: GNU make'.
+
+NEW FEATURES:
+
+ o ROBUSTNESS: Now readPgfEnv()/readPgf() validated 'indices', iff possible.
+
+ o Now readPgfEnv()/readPgf() coerces some header fields to integers, iff they
+   exists, specifically 'num-cols', 'num-rows', 'probesets', and 'datalines'.
+
+ o CLEANUP: Package no longer gives readBin() warnings on "'signed = FALSE' is
+   only valid for integers of sizes 1 and 2".
+
+BUG FIXES:
+
+ o convertCel() on a CCG/v1 CEL file could give "Error in sprintf(
+   "GridCorner%s=%d %d\n" ... invalid format '%d' ...)".  Added package test
+   for convertCel(), but in this particular case it would not have cought it
+   because it only happened for chip types of particular dimensions.  Thanks
+   to Malte Bismarck at UK Halle (Germany) for reporting on this.
 
 
 Version: 1.39.4 [2015-01-18]
-o ROBUSTNESS: 'GNU make' is a SystemRequirements (for now).
-o ROBUSTNESS: Did not seem to be needed, but package is now a good citizen
-  and do library.dynlib.unload() when unloaded.
-o CLEANUP: Now using requireNamespace() instead of require().
-o CLEANUP: Internal cleanup of native code.
+
+SIGNIFICANT CHANGES:
+
+ o ROBUSTNESS: 'GNU make' is a SystemRequirements (for now).
+
+CODE REFACTORING:
+
+ o ROBUSTNESS: Did not seem to be needed, but package is now a good citizen
+   and do library.dynlib.unload() when unloaded.
+
+ o Now using requireNamespace() instead of require().
+
+ o Internal cleanup of native code.
 
 
 Version: 1.39.3 [2014-11-26]
-o BUG FIX: readPgf() and readPgfEnv() failed to read all units (probesets)
-  on some systems.  Extensive package tests have been added to test this
-  and other cases.  Thanks to Grischa Toedt at EMBL Germany for reporting
-  on, troubleshooting, and helping out with patches for this bug.
+
+BUG FIXES:
+
+ o readPgf() and readPgfEnv() failed to read all units (probesets) on some
+   systems.  Extensive package tests have been added to test this and other
+   cases.  Thanks to Grischa Toedt at EMBL Germany for reporting on,
+   troubleshooting, and helping out with patches for this bug.
 
 
 Version: 1.39.2 [2014-10-28]
-o BUG FIX: The range test of argument 'units' to readCdf() and readCdfQc()
-  was never performed due to a typo, meaning it was possible to request
-  units out of range.  Depending on system this could result in either
-  a core dump or random garbage read for the out of range units.
-o ROBUSTNESS: Added package system tests for out of range 'units' and
-  'indices' arguments for most read functions.
+
+BUG FIXES:
+
+ o The range test of argument 'units' to readCdf() and readCdfQc() was never
+   performed due to a typo, meaning it was possible to request units out of
+   range.  Depending on system this could result in either a core dump or
+   random garbage read for the out of range units.
+
+SOFTWARE QUALITY:
+
+ o ROBUSTNESS: Added package system tests for out of range 'units' and
+   'indices' arguments for most read functions.
 
 
 Version: 1.39.1 [2014-10-26]
-o ROBUSTNESS: Now all methods gives an informative error message if zero
-  elements are requested, i.e. via zero-length argument 'indices' or
-  'units' that is not NULL. Previously this case would access all values
-  just like NULL does.
-o ROBUSTNESS: Now readCelRectangle() gives an informative error message
-  if argument 'xrange' or 'yrange' is not of length two.
-o BUG FIX: readPgf() and readPgfEnv() would give an error if argument
- 'indices' was specifies as a double rather than as an integer vector.
+
+NEW FEATURES:
+
+ o ROBUSTNESS: Now all methods gives an informative error message if zero
+   elements are requested, i.e. via zero-length argument 'indices' or 'units'
+   that is not NULL. Previously this case would access all values just like
+   NULL does.
+
+ o ROBUSTNESS: Now readCelRectangle() gives an informative error message if
+   argument 'xrange' or 'yrange' is not of length two.
+
+BUG FIXES:
+
+ o readPgf() and readPgfEnv() would give an error if argument 'indices' was
+   specifies as a double rather than as an integer vector.
 
 
 Version: 1.39.0 [2014-10-13]
-o The version number was bumped for the Bioconductor devel version,
-  which is now BioC v3.1 for R (>= 3.2.0).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version, which
+   is now BioC 3.1 for R (>= 3.2.0).
 
 
 Version: 1.38.0 [2014-10-13]
-o The version number was bumped for the Bioconductor release version,
-  which is now BioC v3.0 for R (>= 3.1.1).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version, which
+   is now BioC 3.0 for R (>= 3.1.1).
 
 
 Version: 1.37.2 [2014-09-28]
-o Minor modifications due to the move to GitHub.
+
+NOTES:
+
+ o Minor modifications due to the move to GitHub.
 
 
 Version: 1.37.1 [2014-08-25]
-o CLEANUP: Removed R CMD check NOTEs that appeared in recent R versions.
+
+SOFTWARE QUALITITY:
+
+ o Removed R CMD check NOTEs that appeared in recent R versions.
 
 
 Version: 1.37.0 [2014-04-11]
-o The version number was bumped for the Bioconductor devel version,
-  which is now BioC v2.15 for R (>= 3.1.0).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version, which
+   is now BioC 2.15 for R (>= 3.1.0).
 
 
 Version: 1.36.0 [2014-04-11]
-o The version number was bumped for the Bioconductor release version,
-  which is now BioC v2.14 for R (>= 3.1.0).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version, which
+   is now BioC 2.14 for R (>= 3.1.0).
 
 
 Version: 1.35.3 [2014-02-28]
-o Same updates as in release v1.34.2.
+
+NOTES:
+
+ o Same updates as in release v1.34.2.
 
 
 Version: 1.35.2 [2014-02-28]
-o Patches to Fusion SDK based on clang v3.4.
+
+SOFTWARE QUALITY:
+
+ o Patches to Fusion SDK based on clang v3.4.
 
 
 Version: 1.35.1 [2014-02-27]
-o Same updates as in release v1.34.1.
+
+NOTES:
+
+ o Same updates as in release v1.34.1.
 
 
 Version: 1.35.0 [2013-10-14]
-o The version number was bumped for the Bioconductor devel version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.34.2 [2014-02-28]
-o CLEANUP: Removed unnecessary usage of ':::'.
+
+CODE REFACTORING:
+
+ o CLEANUP: Removed unnecessary usage of ':::'.
 
 
 Version: 1.34.1 [2014-02-27]
-o BUG FIX: readCelUnits() could throw 'Error in vector("double", nbrOfCells *
-  nbrOfArrays) : vector size cannot be NA.  In addition: Warning message:
-  In nbrOfCells * nbrOfArrays : NAs produced by integer overflow' when reading
-  from a large number of arrays and/or a large number of units.  Previously
-  the limit of nbrOfCells*nbrOfArrays was .Machine$integer.max (=2147483647),
-  whereas now it is .Machine$double.xmax (=1.797693e+308).  Thanks to
-  Damian Plichta at the Technical University of Denmark for reporting on this.
+
+BUG FIXES:
+
+ o readCelUnits() could throw 'Error in vector("double", nbrOfCells *
+   nbrOfArrays) : vector size cannot be NA.  In addition: Warning message: In
+   nbrOfCells * nbrOfArrays : NAs produced by integer overflow' when reading
+   from a large number of arrays and/or a large number of units.  Previously
+   the limit of nbrOfCells*nbrOfArrays was .Machine$integer.max (=2147483647),
+   whereas now it is .Machine$double.xmax (=1.797693e+308).  Thanks to
+   Damian Plichta at the Technical University of Denmark for reporting on this.
 
 
 Version: 1.34.0 [2012-10-14]
-o The version number was bumped for the Bioconductor release version,
-  which is now BioC v2.13 for R (>= 3.0.0).
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version, which
+   is now BioC 2.13 for R (>= 3.0.0).
 
 
 Version: 1.33.4 [2013-09-23]
-o SPEEDUP/CLEANUP: Package now uses which() instead of whichVector()
-  of 'R.utils'.  Before R (< 2.11.0), which() used to be 10x slower
-  than whichVector(), but now it's 3x faster.
+
+PERFORMANCE:
+
+ o Package now uses which() instead of whichVector() of 'R.utils'.  Before
+   R (< 2.11.0), which() used to be 10x slower than whichVector(), but now
+   it's 3x faster.
 
 
 Version: 1.33.3 [2013-06-29]
-o Same updates as in release v1.32.3.
+
+NOTES:
+
+ o Same updates as in release v1.32.3.
 
 
 Version: 1.33.2 [2013-05-25]
-o Same updates as in release v1.32.2.
+
+NOTES:
+
+ o Same updates as in release v1.32.2.
 
 
 Version: 1.33.1 [2013-05-20]
-o Same updates as in release v1.32.1.
+
+NOTES:
+
+ o Same updates as in release v1.32.1.
 
 
 Version: 1.33.0 [2013-04-03]
-o The version number was bumped for the Bioconductor devel version.
-o No updates.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.32.3 [2013-06-29]
-o BUG FIX: Since affxparser v1.30.2/1.31.2 (r72352; 2013-01-08),
-  writeCdf() would incorrectly encode the unit types, iff the input
-  'cdf' argument specified them as integers, e.g. as done by
-  writeCdf() for AffyGenePDInfo in aroma.affymetrix.  More
-  specifically, the unit type index would be off by one, e.g. an
-  'expression' unit (1) would be encoded as an 'unknown' unit (0)
-  and so on.  On the other  hand, if they were specified by their
-  unit-type names (e.g. 'expression') the encoding should still be
-  correct, e.g. if input is constructed from readCdf() of affxparser.
-  Thanks to Guido Hooiveld at Wageningen UR (The Netherlands) for
-  reporting on this.
-o BUG FIX: Similarily, writeCdf() has "always", at least affxparser
-  v1.7.4 since (r21888; 2007-01-09), encoded unit directions and
-  QC unit types incorrectly, iff they were specified as integers.
+
+BUG FIXES:
+
+ o Since affxparser 1.30.2/1.31.2 (r72352; 2013-01-08), writeCdf() would
+   incorrectly encode the unit types, iff the input 'cdf' argument specified
+   them as integers, e.g. as done by writeCdf() for AffyGenePDInfo in
+   aroma.affymetrix.  More specifically, the unit type index would be off by
+   one, e.g. an 'expression' unit (1) would be encoded as an 'unknown' unit (0)
+   and so on.  On the other  hand, if they were specified by their unit-type
+   names (e.g. 'expression') the encoding should still be correct, e.g. if
+   input is constructed from readCdf() of affxparser.  Thanks to Guido Hooiveld
+   at Wageningen UR (The Netherlands) for reporting on this.
+
+ o Similarily, writeCdf() has "always", at least affxparser 1.7.4 since
+   (r21888; 2007-01-09), encoded unit directions and QC unit types incorrectly,
+   iff they were specified as integers.
 
 
 Version: 1.32.2 [2013-05-25]
-o SPEEDUP: Removed all remaining gc() calls.
-o SPEEDUP: Replaced all rm() calls with NULL assignments.
+
+PEFORMANCE:
+
+ o Removed all remaining gc() calls.
+
+ o Replaced all rm() calls with NULL assignments.
 
 
 Version: 1.32.1 [2013-05-20]
-o CRAN POLICY: Now all Rd \usage{} lines are at most 90 characters long.
+
+CODE REFACTORING:
+
+ o CRAN POLICY: Now all Rd \usage{} lines are at most 90 characters long.
 
 
 Version: 1.32.0 [2013-04-03]
-o The version number was bumped for the Bioconductor release version.
-o No updates.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version.
 
 
 Version: 1.31.4 [2013-03-19]
-o Made example(invertMap) a bit faster so 'R CMD check' won't complain.
+
+CODE REFACTORING:
+
+ o Made example(invertMap) a bit faster so 'R CMD check' won't complain.
 
 
 Version: 1.31.3 [2013-03-18]
-o CLEANUP: Internal isPackageLoaded() of findFiles() no longer uses
-  defunct manglePackageName() function.
+
+CODE REFACTORING:
+
+ o Internal isPackageLoaded() of findFiles() no longer uses defunct
+   manglePackageName() function.
 
 
 Version: 1.31.2 [2013-01-07]
-o Same updates as in release v1.30.2.
+
+NOTES:
+
+ o Same updates as in release v1.30.2.
 
 
 Version: 1.31.1 [2012-10-18]
-o Now compareCdfs() gives a more precise 'reason' attribute when there
-  is a difference in (regular or QC) units.  It narrows down the first
-  unit that differs and reports it unit number.
+
+NEW FEATURES:
+
+ o Now compareCdfs() gives a more precise 'reason' attribute when there is a
+   difference in (regular or QC) units.  It narrows down the first unit that
+   differs and reports it unit number.
 
 
 Version: 1.31.0 [2012-10-01]
-o The version number was bumped for the Bioconductor devel version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.30.2 [2013-01-07]
-o BUG FIX: writeCdf() did not encode unit types as decoded by
-  readCdf().  Unit type 'unknown' was incorrectly encoded such
-  that readCdf() would decode it as 'copynumber'.  Also, unit
-  types 'genotypingcontrol' and 'expressioncontrol' where not
-  encoded at all.
+
+BUG FIXES:
+
+ o writeCdf() did not encode unit types as decoded by readCdf().  Unit type
+   'unknown' was incorrectly encoded such that readCdf() would decode it as
+   'copynumber'.  Also, unit types 'genotypingcontrol' and 'expressioncontrol'
+   where not encoded at all.
 
 
 Version: 1.30.0 [2012-10-01]
-o The version number was bumped for the Bioconductor release version.
-o No updates.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor release version.
 
 
 Version: 1.29.13 [2012-09-26]
-o Added argument 'cdf=FALSE' to createCel(). Note, the previous
-  implementation corresponded to cdf=TRUE.
-o ROBUSTNESS: Now createCel() validates/sets CEL header field
-  'total' based on 'cols' and 'rows'.
-o ROBUSTNESS: Added a system test for validating that the package
-  can write and read a CEL.  The test is spawning of another
-  R process so that the test is robust against core dumps.
-o Bumped up package dependencies.
+
+NEW FEATURES:
+
+ o Added argument 'cdf=FALSE' to createCel(). Note, the previous implementation
+   corresponded to cdf=TRUE.
+
+SOFTWARE QUALITY:
+
+ o ROBUSTNESS: Now createCel() validates/sets CEL header field 'total' based on
+   'cols' and 'rows'.
+
+ o ROBUSTNESS: Added a system test for validating that the package can write
+   and read a CEL.  The test is spawning of another R process so that the test
+   is robust against core dumps.
 
 
 Version: 1.29.12 [2012-09-12]
-o DOCUMENTATION: Updated one Rd link.
+
+DOCUMENTATION:
+
+ o Updated one Rd link.
 
 
 Version: 1.29.11 [2012-09-01]
-o Added argument 'aliases' to arrangeCelFilesByChipType(), e.g.
-  arrangeCelFilesByChipType(..., aliases=c("Focus"="HG-Focus")).
-o BUG FIX: arrangeCelFilesByChipType(pathnames) assumed 'pathnames'
-  were files in the current directory.
+
+NEW FEATURES:
+
+ o Added argument 'aliases' to arrangeCelFilesByChipType(), e.g.
+   arrangeCelFilesByChipType(..., aliases=c("Focus"="HG-Focus")).
+
+BUG FIXES:
+
+ o arrangeCelFilesByChipType(pathnames) assumed 'pathnames' were files in
+   the current directory.
 
 
 Version: 1.29.10 [2012-08-29]
-o Updated some internal files used solely for maintainance.
+
+CODE REFACTORING:
+
+ o Updated some internal files used solely for maintainance.
 
 
 Version: 1.29.9 [2012-08-29]
-o BUG FIX: The move to Fusion SDK 1.1.2 caused the package to
-  not compile on Windows.
+
+BUG FIXES:
+
+ o The move to Fusion SDK 1.1.2 caused the package to not compile on Windows.
 
 
 Version: 1.29.8 [2012-08-14]
-o Upgraded to Fusion SDK 1.1.2.
+
+SIGNIFICANT CHANGES:
+
+ o Upgraded to Fusion SDK 1.1.2.
 
 
 Version: 1.29.7 [2012-08-14]
-o Rearranged patchdir.
+
+CODE REFACTORING:
+
+ o Rearranged patchdir.
 
 
 Version: 1.29.6 [2012-06-26]
-o Same updates as in v1.28.1.
+
+ o Same updates as in v1.28.1.
 
 
 Version: 1.29.5 [2012-06-19]
-o Added arrangeCelFilesByChipType() for moving CEL files to
-  subdirectories named according to their chip types, which
-  can be useful when for instance downloading GEO data sets.
+
+NEW FEATURES:
+
+ o Added arrangeCelFilesByChipType() for moving CEL files to subdirectories
+   named according to their chip types, which can be useful when for instance
+   downloading GEO data sets.
 
 
 Version: 1.29.4 [2012-06-14]
-o readPgfEnv(..., indices=NULL) no longer gives a warning.
-o Updated the error messages for the CLF and PGF parsers.
+
+NEW FEATURES:
+
+ o readPgfEnv(..., indices=NULL) no longer gives a warning.
+
+ o Updated the error messages for the CLF and PGF parsers.
 
 
 Version: 1.29.3 [2012-05-22]
-o Now system test tests/testWriteAndReadEmptyCdf.R generates an
-  error that is detected and reported by R CMD check.
+
+SOFTWARE QUALITY:
+
+ o Now system test tests/testWriteAndReadEmptyCdf.R generates an error that is
+   detected and reported by R CMD check.
 
 
 Version: 1.29.2 [2012-05-22]
-o GENERALIZATION: Now system tests that launch another R process no
-  longer assumes R is on the OS's search path.
-o ROBUSTNESS/CRAN POLICY: readCel() and readCelUnits() are no longer
-  calling .Internal(qsort(...)).
+
+SOFTWARE QUALITY:
+
+ o GENERALIZATION: Now system tests that launch another R process no longer
+   assumes R is on the OS's search path.
+
+CODE REFACTORING:
+
+ o ROBUSTNESS/CRAN POLICY: readCel() and readCelUnits() are no longer calling
+   .Internal(qsort(...)).
 
 
 Version: 1.29.1 [2012-05-18]
-o Replaced several throw() with stop(), because the former assumes
-  that R.methodsS3 is loaded, which it may not be.
-o ROBUSTNESS: Added a system test for validating that the package
-  can write and read a CDF.  The test is spawning of another
-  R process so that the test is robust against core dumps.
+
+BUG FIXES:
+
+ o Replaced several throw() with stop(), because the former assumes that
+   R.methodsS3 is loaded, which it may not be.
+
+SOFTWARE QUALITY:
+
+ o ROBUSTNESS: Added a system test for validating that the package can write
+   and read a CDF.  The test is spawning of another R process so that the test
+   is robust against core dumps.
 
 
 Version: 1.29.0 [2012-03-30]
-o The version number was bumped for the Bioconductor devel version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.28.1 [2012-06-26]
-o COMPATIBILITY: Now package compile also with gcc/g++ 4.7.
-  Thanks Dan Tenenbaum at the Bioconductor Core Team),
-  Fred Hutchinson Cancer Research Center, USA for this.
+
+ o COMPATIBILITY: Now package compile also with gcc/g++ 4.7. Thanks Dan
+   Tenenbaum (Bioconductor Core Team), Fred Hutchinson Cancer Research Center,
+   USA for this.
 
 
 Version: 1.28.0 [2012-03-30]
-o The version number was bumped for the Bioconductor 2.10 release version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor 2.10 release version.
 
 
 Version: 1.27.5 [2012-03-19]
-o ROBUSTNESS: Now the native code throws R errors, instead
-  of printing an error message to stdout/stderr and then
-  returning null, that is translated to errors at the R level.
+
+SOFTWARE QUALITY:
+
+ o ROBUSTNESS: Now the native code throws R errors, instead of printing an
+   error message to stdout/stderr and then returning null, that is translated
+   to errors at the R level.
 
 
 Version: 1.27.4 [2012-03-05]
-o BUG FIX: affxparser would not build on Windows with the new
-  Rtools toolchain (Rtools 2.15.0.1915-1919).
+
+BUG FIXES:
+
+ o affxparser would not build on Windows with the new Rtools toolchain
+   (Rtools 2.15.0.1915-1919).
 
 
 Version: 1.27.3 [2011-11-18]
-o ROBUSTNESS: Added sanity checks asserting that the internal
-  readers did indeed read something and not just returned NULL.
-  It should be very unlikely that this occurs, but there is
-  still a small risk that after asserting that a file exists,
-  but before the internal Fusion SDK parsers access the file,
-  the file has been removed.
+
+SOFTWARE QUALITY:
+
+ o ROBUSTNESS: Added sanity checks asserting that the internal readers did
+   indeed read something and not just returned NULL.  It should be very
+   unlikely that this occurs, but there is still a small risk that after
+   asserting that a file exists, but before the internal Fusion SDK parsers
+   access the file, the file has been removed.
 
 
 Version: 1.27.1 [2011-11-01]
-o Same updates as in v1.26.1.
+
+NOTES:
+
+ o Same updates as in v1.26.1.
 
 
 Version: 1.27.0 [2011-10-31]
-o The version number was bumped for the Bioconductor devel version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.26.4 [2012-03-06]
-o BUG FIX: affxparser would not build on Windows with the new
-  Rtools toolchain (Rtools 2.15.0.1915-1919), which is for
-  R (> 2.14.1), i.e. also for R v2.14.2 (but not v2.14.1).
-  This is the same bug fix that was first done in v1.27.4.
+
+BUG FIXES:
+
+ o affxparser would not build on Windows with the new Rtools toolchain
+   (Rtools 2.15.0.1915-1919), which is for R (> 2.14.1), i.e. also for
+   R 2.14.2 (but not 2.14.1). This is the same bug fix that was first
+   done in v1.27.4.
 
 
 Version: 1.26.2 [2011-11-16]
-o The version number was bumped by Bioconductor to trigger a build.
+
+NOTES:
+
+ o The version number was bumped by Bioconductor to trigger a build.
 
 
 Version: 1.26.1 [2011-11-01]
-o FIX: Fixed warning on "In readBin(con, what = "integer", size = 4,
-  n = 1, signed = FALSE, 'signed = FALSE' is only valid for integers
-  of sizes 1 and 2" that some read methods would generated.
+
+BUG FIXES:
+
+ o FIX: Fixed warning on "In readBin(con, what = "integer", size = 4, n = 1, 
+   signed = FALSE, 'signed = FALSE' is only valid for integers of sizes 1 
+   and 2" that some read methods would generated.
 
 
 Version: 1.26.0 [2011-10-31]
-o The version number was bumped for the Bioconductor 2.9 release version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor 2.9 release version.
 
 
 Version: 1.25.1 [2011-09-27]
-o Maintainer email was updated.
+
+NOTES:
+
+ o Maintainer email was updated.
 
 
 Version: 1.25.0 [2011-04-13]
-o The version number was bumped for the Bioconductor devel version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.24.0 [2011-04-13]
-o The version number was bumped for the Bioconductor 2.8 release version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor 2.8 release version.
 
 
 Version: 1.23.3 [2011-02-22]
-o DOCUMENTATION: Added a section on what it means by setting
-  a new (different) chip type for the output in convertCel().
-o ROBUSTNESS/BUG FIX: The internal .unwrapDatHeaderString(), used
-  by convertCel() among others, would throw "Internal error:
-  Failed to extract 'pixelRange' and 'sampleName' from DAT header.
-  They became identical: ..." in case the DAT header of the CEL file
-  did not contain all fields.  The function has now been updated to
-  be more forgiving and robust so that missing values are returned
-  for such fields instead.
+
+DOCUMENTATION:
+
+ o DOCUMENTATION: Added a section on what it means by setting a new (different)
+   chip type for the output in convertCel().
+
+BUG FIXES:
+
+ o The internal .unwrapDatHeaderString(), used by convertCel() among others,
+   would throw "Internal error: Failed to extract 'pixelRange' and 'sampleName'
+   from DAT header. They became identical: ..." in case the DAT header of the
+   CEL file did not contain all fields.  The function has now been updated to
+   be more forgiving and robust so that missing values are returned for such
+   fields instead.
 
 
 Version: 1.23.2 [2011-02-15]
-o DOCUMENTATION: Added a clarification to the help page on
-  'Cell coordinates and cell indices' that the convention
-  in affxparser is to use one-based cell indices, because they
-  are more convenient to use in R.  In order to clearly
-  distinguish these from the redudant zero-based index values
-  that also exist in CDF file, an additional section was added
-  on that topic.  Moreover, help pages for methods querying CDF
-  files are now referring to the above page, where applicable.
-  Thanks to William Mounts (Pfizer) and Todd Allen for pointing
-  out these ambiguities in the documentation.
+
+DOCUMENTATION:
+
+ o Added a clarification to the help page on 'Cell coordinates and cell
+   indices' that the convention in affxparser is to use one-based cell indices,
+   because they are more convenient to use in R.  In order to clearly
+   distinguish these from the redudant zero-based index values that also exist
+   in CDF file, an additional section was added on that topic.  Moreover, help
+   pages for methods querying CDF files are now referring to the above page,
+   where applicable.  Thanks to William Mounts (Pfizer) and Todd Allen for
+   pointing out these ambiguities in the documentation.
 
 
 Version: 1.23.1 [2010-12-16]
-o ROBUSTNESS: Now matrix(...) is used instead of .Interal(matrix(...)).
+
+CODE REFACTORING:
+
+ o ROBUSTNESS: Now matrix(...) is used instead of .Interal(matrix(...)).
 
 
 Version: 1.23.0 [2010-10-17]
-o The version number was bumped for the Bioconductor devel version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.22.0 [2010-10-17]
-o The version number was bumped for the Bioconductor 2.7 release version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor 2.7 release version.
 
 
 Version: 1.21.1 [2010-10-05]
-o Now readCdfDataFrame() also returns the cell field 'expos'.
+
+NEW FEATURES:
+
+ o Now readCdfDataFrame() also returns the cell field 'expos'.
 
 
 Version: 1.21.0 [2010-04-22]
-o The version number was bumped for the Bioconductor devel version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor devel version.
 
 
 Version: 1.20.0 [2010-04-22]
-o The version number was bumped for the Bioconductor 2.6 release version.
+
+NOTES:
+
+ o The version number was bumped for the Bioconductor 2.6 release version.
 
 
 Version: 1.19.6 [2010-02-11]
-o More fixes.
+
+BUG FIXES:
+
+ o More fixes.
 
 
 Version: 1.19.5 [2010-02-09]
-o More fixes.
+
+BUG FIXES:
+
+ o More fixes.
 
 
 Version: 1.19.4 [2010-02-06]
-o More fixes.
+
+BUG FIXES:
+
+ o More fixes.
 
 
 Version: 1.19.3 [2010-02-06]
-o A couple of patches to Fusion SDK courtesy of Brian Ripley;
-  they are needed for Windows (64).
+
+BUG FIXES:
+
+ o A couple of patches to Fusion SDK courtesy of Brian Ripley; they are needed
+   for Windows (64).
 
 
 Version: 1.19.2 [2010-02-02]
-o A fix to the Windows build.
+
+BUG FIXES:
+
+ o A fix to the Windows build.
 
 
 Version: 1.19.1 [2010-01-29]
-o Updated Fusion SDK to 1.1.0.
+
+SIGNIFICANT CHANGES:
+
+ o Updated Fusion SDK to 1.1.0.
 
 
 Version: 1.19.0 [2009-10-27]
-o Devel version bumped because of the new Bioconductor release.
+
+NOTES:
+
+ o Devel version bumped because of the new Bioconductor release.
 
 
 Version: 1.18.0 [2009-10-27]
-o Release version bumped because of the new Bioconductor 2.5 release.
+
+NOTES:
+
+ o Release version bumped because of the new Bioconductor 2.5 release.
 
 
 Version: 1.17.5 [2009-09-22]
-o Fixed broken link in an Rd file.
+
+DOCUMENTATION:
+
+ o Fixed broken link in an Rd file.
 
 
 Version: 1.17.4 [2009-09-21]
-o Added parseDatHeaderString(), which in combination with
-  readCelHeader() can be used to infer the timestamp in the
-  header of a CEL file.
+
+NEW FEATURES:
+
+ o Added parseDatHeaderString(), which in combination with readCelHeader() can
+   be used to infer the timestamp in the header of a CEL file.
 
 
 Version: 1.17.3 [2009-05-29]
-o Added applyCdfGroupFields() and cdfSetDimension().
+
+NEW FEATURES:
+
+ o Added applyCdfGroupFields() and cdfSetDimension().
 
 
 Version: 1.17.2 [2009-02-20]
-o BUG FIX: readChp() would crash (segmentation fault) for (at least)
-  some CHP files for GenomeWideSNP_5 generated by Affymetrix Power Tools.
-o BUG FIX: Updated compareCels() to work with new readCelHeader().
+
+BUG FIXES:
+
+ o readChp() would crash (segmentation fault) for (at least) some CHP files
+   for GenomeWideSNP_5 generated by Affymetrix Power Tools.
+
+ o Updated compareCels() to work with new readCelHeader().
 
 
 Version: 1.17.1 [2009-05-09]
-o Now readCelHeader() also reads DAT headers from Calvin CEL files.
+
+NEW FEATURES:
+
+ o Now readCelHeader() also reads DAT headers from Calvin CEL files.
 
 
 Version: 1.17.0 [2009-04-20]
-o Devel version bumped because of the new Bioconductor release.
+
+NOTES:
+
+ o Devel version bumped because of the new Bioconductor release.
 
 
 Version: 1.16.0 [2009-04-20]
-o Release version bumped because of the new Bioconductor 2.4 release.
+
+NOTES:
+
+ o Release version bumped because of the new Bioconductor 2.4 release.
 
 
 Version: 1.15.6 [2009-02-20]
-o Added optional argument 'newChipType' to convertCel() for overriding
-  the default chip type.  Useful for updating the formal chip type
-  of old CEL files.
-o Removed all gc() calls in convertCel().
+
+NEW FEATURES:
+
+ o Added optional argument 'newChipType' to convertCel() for overriding the
+   default chip type.  Useful for updating the formal chip type of old CEL
+   files.
+
+CODE REFACTORING:
+
+ o Removed all gc() calls in convertCel().
 
 
 Version: 1.15.5 [2009-02-14]
-o Fixed a bug related to SET_VECTOR_ELT/SET_ELEMENR used on strings.
-  Affected readChp.
-o Fixed a bug related to naming of the list structures (we assigned
-  a list instead of a character as the name. Affected readCdfUnits and
-  readCdfCellIndices.
-o Updated Fusion from 1.11 to 1.12.
-o Fixed a bug in the example for readCdfUnitsWriteMap: the package
-  AffymetrixDataTestFiles was misspelled, so the tests were never run.
+
+ o Updated Fusion from 1.11 to 1.12.
+
+BUG FIXES:
+
+ o Fixed a bug related to SET_VECTOR_ELT/SET_ELEMENR used on strings, which
+   adffected readChp().
+
+ o Fixed a bug related to naming of the list structures (we assigned a list
+   instead of a character as the name. Affected readCdfUnits() and
+   readCdfCellIndices().
+
+ o Fixed a bug in the example for readCdfUnitsWriteMap(): the package
+   AffymetrixDataTestFiles was misspelled, so the tests were never run.
 
 
 Version: 1.15.4 [2009-02-10]
-o readCcg() and readCcgHeader() no longer give warnings
-  on 'truncating string with embedded nul' in rawToChar().
-  These warnings made no difference, but were annoying.
+
+BUG FIXES:
+
+ o readCcg() and readCcgHeader() no longer give warnings on 'truncating string
+   with embedded nul' in rawToChar().  These warnings made no difference, but
+   were annoying.
 
 
 Version: 1.15.3 [2009-01-22]
-o Fixed a minor Rd problem.
+
+DOCUMENTATION:
+
+ o Fixed a minor Rd problem.
 
 
 Version: 1.15.2 [2008-12-30]
-o Same bug fix as in release version v1.14.2.
+
+NOTES:
+
+ o Same bug fix as in release version v1.14.2.
 
 
 Version: 1.15.1 [2008-12-04]
-o Same bug fix as in release version v1.14.1.
+
+NOTES:
+
+ o Same bug fix as in release version v1.14.1.
 
 
 Version: 1.15.0 [2008-10-21]
-o Devel version bumped because of the new Bioconductor release.
+
+NOTES:
+
+ o Devel version bumped because of the new Bioconductor release.
 
 
 Version: 1.14.2 [2008-12-30]
-o BUG FIX: readChp() would not read all data.  Thanks
-  Gabor Csardi for reporting this and providing a patch.
+
+BUG FIXES:
+
+ o readChp() would not read all data.  Thanks Gabor Csardi for reporting this
+   and providing a patch.
 
 
 Version: 1.14.1 [2008-12-04]
-o BUG FIX: When the CDF file is on a Windows network, that is,
-  has a pathname starting with '//' or '\\', then the 'chiptype'
-  reported by readCdfHeader() contains a path component as well.
-  This seems to be due to a bug in Fusion SDK.
+
+BUG FIXES:
+
+ o When the CDF file is on a Windows network, that is, has a pathname starting
+   with '//' or '\\', then the 'chiptype' reported by readCdfHeader() contains
+   a path component as well.  This seems to be due to a bug in Fusion SDK.
 
 
 Version: 1.14.0 [2008-10-21]
-o Release version bumped because of the new Bioconductor 2.3 release.
+
+NOTES:
+
+ o Release version bumped because of the new Bioconductor 2.3 release.
 
 
 Version: 1.13.8 [2008-08-28]
-o Fix of include statements in Fusion, details are described in
-inst/info/changes2fusion.txt. This fixes an issue with GCC 4.3
+
+ o Fix of include statements in Fusion, details are described in
+   inst/info/changes2fusion.txt. This fixes an issue with GCC 4.3.
 
 
 Version: 1.13.7 [2008-08-23]
-o SPEED UP: readCcg() is substantially faster after removing
-  all gc() calls.
+
+PERFORMANCE:
+
+ o readCcg() is substantially faster after removing all gc() calls.
 
 
 Version: 1.13.6 [2008-08-21]
-o Updated Fusion SDK from 1.0.10b (Jan 2008) to 1.0.11 (July 2008).
+
+SIGNIFICANT CHANGES:
+
+ o Updated Fusion SDK from 1.0.10b (Jan 2008) to 1.0.11 (July 2008).
 
 
 Version: 1.13.x [2008-08-14]
-o Fixed typos and incorrect equation in help page
-  '2. Cell coordinates and cell indices'.
+
+DOCUMENTATION:
+
+ o Fixed typos and incorrect equation in help page '2. Cell coordinates and
+   cell indices'.
 
 
 Version: 1.13.5 [2008-08-09]
-o BUG FIX: writeCdf() would write 'CustomSeq' units as 'Tag' units,
-  and vice versa.  This means that *ASCII* CDFs containing such
-  units and converted with convertCdf() would be have an incorrect
-  unit type for these units.  Also, unit type 'Copy Number' is
-  reported as "copynumber" and no longer as "unknown".
-o BUG FIX: The increase of the internal buffer for reading the
-  'refseq' header field of ASCII CDFs that was done in v1.11.2
-  was mistakenly undone in v1.13.3.
-o Made readCdf() recognize more unit types.
+
+NEW FEATURES:
+
+ o Made readCdf() recognize more unit types.
+
+BUG FIXES:
+
+ o writeCdf() would write 'CustomSeq' units as 'Tag' units, and vice versa.
+   This means that *ASCII* CDFs containing such units and converted with
+   convertCdf() would be have an incorrect unit type for these units.
+   Also, unit type 'Copy Number' is reported as "copynumber" and no longer
+   as "unknown".
+
+ o The increase of the internal buffer for reading the 'refseq' header field
+   of ASCII CDFs that was done in 1.11.2 was mistakenly undone in 1.13.3.
 
 
 Version: 1.13.4 [2008-08-05]
-o Renamed the HISTORY file to NEWS.
-o Now help(createCel) (and its example) clarifies that the
-  template CEL header can be of v3 (ASCII), v4 (binary;XDA),
-  or v1 (binary;Calvin).
+
+DOCUMENTATION:
+
+ o Now help(createCel) (and its example) clarifies that the template CEL header
+   can be of v3 (ASCII), v4 (binary;XDA), or v1 (binary;Calvin).
+
+CODE REFACTORING:
+
+ o Renamed the HISTORY file to NEWS.
 
 
 Version: 1.13.3 [2008-05-20]
-o BUG FIX: Now writeTpmap works.
+
+BUG FIXES:
+
+ o Now writeTpmap() works.
 
 
 Version: 1.13.2 [2008-05-08]
-o Copied all updates in v1.12.2 (release) to v1.13.2 (devel).
+
+NOTES:
+
+ o Copied all updates in v1.12.2 (release) to v1.13.2 (devel).
 
 
 Version: 1.13.1 [2008-05-02]
-o Copied all updates in v1.12.1 (release) to v1.13.1 (devel).
+
+NOTES:
+
+ o Copied all updates in v1.12.1 (release) to v1.13.1 (devel).
 
 
 Version: 1.13.0 [2008-04-29]
-o Devel version bumped because of the new Bioconductor release.
+
+NOTES:
+
+ o Devel version bumped because of the new Bioconductor release.
 
 
 Version: 1.12.2 [2008-05-09]
-o BUG FIX: v1.12.1 would not build on Windows.  Fix by Martin Morgan.
+
+BUG FIXES:
+
+ o affxparser 1.12.1 would not build on Windows.  Fix by Martin Morgan.
 
 
 Version: 1.12.1 [2008-05-02]
-o Added readChp().  Contribution by Robert Gentleman.
+
+NEW FEATURES:
+
+ o Added readChp(). Contribution by Robert Gentleman.
 
 
 Version: 1.12.0 [2008-04-29]
-o Release version bumped because of the new Bioconductor 2.2 release.
+
+NOTES:
+
+ o Release version bumped because of the new Bioconductor 2.2 release.
 
 
 Version: 1.11.13 [2008-04-13]
-o Updated to Fusion SDK v1.0.10b.
+
+SIGNIFICANT CHANGES:
+
+ o Updated to Fusion SDK v1.0.10b.
 
 
 Version: 1.11.? [2008-03-06]
-o BUG FIX: Regular expression pattern 'a-Z' is illegal on (at least)
-  some locale, e.g. 'C' (where 'A-z' works). The only way to specify
-  the ASCII alphabet is to list all characters explicitly, which we now
-  do in all methods of the package.  See the r-devel thread
-  "invalid regular expression '[a-Z]'" on 2008-03-05 for details.
+
+BUG FIXES:
+
+ o Regular expression pattern 'a-Z' is illegal on (at least) some locale, e.g.
+   'C' (where 'A-z' works). The only way to specify the ASCII alphabet is to
+   list all characters explicitly, which we now do in all methods of the
+   package.  See the r-devel thread "invalid regular expression '[a-Z]'" on
+   2008-03-05 for details.
 
 
 Version: 1.11.6 [2008-03-04]
-o Added trial versions of readClf() and readPgf().
+
+NEW FEATURES:
+
+ o Added trial versions of readClf() and readPgf().
 
 
 Version: 1.11.5 [2008-02-29]
-o Updated cdfMergeStrands() to merge any even number of groups,
-  not only units with two or four group pairs.
-o BUG FIX: The code in findFiles() for testing if R.utils is loaded
-  or not was not correct making it fail to detect R.utils.
+
+NEW FEATURES:
+
+ o Updated cdfMergeStrands() to merge any even number of groups, not only units
+   with two or four group pairs.
+
+BUG FIXES:
+
+ o The code in findFiles() for testing if R.utils is loaded or not was not
+   correct making it fail to detect R.utils.
 
 
 Version: 1.11.4 [2008-02-20]
-o Now findFiles() and hence findCdf() is only utilizing the R.utils
-  package if it is already loaded.  It will no longer try to load
-  R.utils.
-o Added argument 'allFiles=TRUE' to findFiles().
-o Updated readCcg() according to the newer file format specifications.
-  Now it is possible to do low-level reading of copy-number CNCHP
-  files generated by the Affymetrix Genotype Console v2.
+
+NEW FEATURES:
+
+ o Added argument 'allFiles=TRUE' to findFiles().
+
+ o Updated readCcg() according to the newer file format specifications. Now it
+   is possible to do low-level reading of copy-number CNCHP files generated by
+   the Affymetrix Genotype Console v2.
+
+CODE REFACTORING:
+
+ o Now findFiles() and hence findCdf() is only utilizing the R.utils package
+   if it is already loaded.  It will no longer try to load R.utils.
 
 
 Version: 1.11.3 [2007-12-01]
-o Removed argument 'reorder' from readCel() and  readCelUnits()
-  since its name was misleading (the returned value was identical
-  regardless of 'reorder', but the reading speed was faster when
-  'reorder' was TRUE, which is how it is now hardwired).
+
+NEW FEATURES:
+
+ o Removed argument 'reorder' from readCel() and readCelUnits() since its name
+   was misleading (the returned value was identical regardless of 'reorder',
+   but the reading speed was faster when 'reorder' was TRUE, which is how it
+   is now hardwired).
 
 
 Version: 1.11.2 [2007-11-06]
-o BUG FIX: Reading a CDF that has a 'refseq' header field longer
-  than 65,000 symbols would crash R, e.g. when reading certain CDFs
-  for resequencing chip types.  A buffer size internal of Fusion SDK
-  was increased from 65,000 to 400,000 bytes.  Thanks Wenyi Wang for
-  reporting this.
-o BUG FIX: Argument 'verbose' of tpmap2bpmap() was not coerced to
-  integer before passed to the native code.
-o TYPO FIX: The internal .initializeCdf(), used when creating new CDFs,
-  had an error message refering to an invalid 'qcUnitLengths' when
-  it was supposed to be 'unitLengths'.  Thanks Elizabeth Purdom for
-  reporting this.
-o CLEAN UP: created a Makefile in /inst/info for comparing Fusion SDK
-  with affxparser
+
+BUG FIXES:
+
+ o Reading a CDF that has a 'refseq' header field longer than 65,000 symbols
+   would crash R, e.g. when reading certain CDFs for resequencing chip types.
+   A buffer size internal of Fusion SDK was increased from 65,000 to 400,000
+   bytes.  Thanks Wenyi Wang for reporting this.
+
+ o Argument 'verbose' of tpmap2bpmap() was not coerced to integer before
+   passed to the native code.
+
+ o The internal .initializeCdf(), used when creating new CDFs, had an error
+   message refering to an invalid 'qcUnitLengths' when it was supposed to be
+   'unitLengths'.  Thanks Elizabeth Purdom for reporting this.
+
+CODE REFACTORING:
+
+ o created a Makefile in /inst/info for comparing Fusion SDK with affxparser.
 
 
 Version: 1.11.1 [2007-10-12]
-o BUG FIX: For some Calvin CEL files the CEL header does not contain
-  "parent parameter" 'affymetrix-dat-header' but only parameter
-  'affymetrix-partial-dat-header'. In that case convertCel() would
-  throw an error about 'sprintf("DatHeader=%s\n", datHeader)'.  Now
-  a "fake" DAT header is created from the partial one.  If neither is
-  found, a slightly more informative exception is thrown.
-o CLEAN UP: convertCel() will no longer generate a warning if the
-  corresponding CDF file was not found.
+
+NEW FEATURES:
+
+ o convertCel() will no longer generate a warning if the corresponding CDF
+   file was not found.
+   
+BUG FIXES:
+
+ o For some Calvin CEL files the CEL header does not contain "parent parameter"
+   'affymetrix-dat-header' but only parameter 'affymetrix-partial-dat-header'.
+   In that case convertCel() would throw an error about 'sprintf("DatHeader=
+   %s\n", datHeader)'.  Now a "fake" DAT header is created from the partial
+   one.  If neither is found, a slightly more informative exception is thrown.
 
 
 Version: 1.11.0 [2007-10-02]
-o Version bumped because of the new Bioconductor release.
+
+NOTES:
+
+ o Version bumped because of the new Bioconductor release.
 
 
 Version: 1.9.5 [2007-09-16]
-o Added argument 'recursive=TRUE' to findCdf().  Note, the current
-  working directory is always scanned first, but never recursively
-  (unless explicitly added to the search path). This is to avoid
-  "endless" scans in case the search path has not been set.
-o findFiles() now do a breath-first search in lexicographic order.
-o Removed default search paths cdf/ and data/cdf/.  We do not want
-  to enforce a standard path.
-o Now the examples (as well as test scripts) utilize data available
-  in the new Bioconductor AffymetrixDataTestFiles package.  This
-  means that R CMD check now runs much more tests, which is good.
-o CLEAN UP: Removed many of the old testscripts/ scripts.  They
-  are now under tests/.
-o BUG FIX: findFiles() was not robust against broken Unix links.
-o BUG FIX: If the destination file already existed, convertCel() would
-  correctly detect that, but would report the name of the source file.
+
+NEW FEATURES:
+
+ o Added argument 'recursive=TRUE' to findCdf().  Note, the current working
+   directory is always scanned first, but never recursively (unless explicitly
+   added to the search path). This is to avoid "endless" scans in case the
+   search path has not been set.
+
+ o findFiles() now do a breath-first search in lexicographic order.
+
+ o Removed default search paths cdf/ and data/cdf/.  We do not want to enforce
+   a standard path.
+
+CODE REFACTORING:
+
+ o Now the examples (as well as test scripts) utilize data available in the
+   new Bioconductor AffymetrixDataTestFiles package.  This means that
+   'R CMD check' now runs much more tests, which is good.
+
+ o CLEAN UP: Removed many of the old testscripts/ scripts.  They are now under
+   tests/.
+
+BUG FIXES:
+
+ o findFiles() was not robust against broken Unix links.
+
+ o If the destination file already existed, convertCel() would correctly
+   detect that, but would report the name of the source file.
 
 
 Version: 1.9.4 [2007-08-25]
-o Updated to Fusion SDK v1.0.9.
+
+SIGNIFICANT CHANGES:
+
+ o Updated to Fusion SDK v1.0.9.
 
 
 Version: 1.9.3 [2007-08-16]
-o See updated made to release v1.8.3 below.
-o The only difference between v1.9.3 and v1.8.3 is the modification
-  of findCfd() in v1.9.2.
+
+NOTES:
+
+ o See updated made to release v1.8.3 below.
+
+ o The only difference between v1.9.3 and v1.8.3 is the modification of
+   findCdf() in v1.9.2.
 
 
 Version: 1.9.2 [2007-07-27]
-o This BioC devel version requires R v2.6.0 due to a change of
-  how strings are handled in C by BioC.
-o Modified findCdf() such that it is possible to set an alternative
-  function for how CDFs are located.
+
+SIGNIFICANT CHANGES:
+
+ o This BioC devel version requires R v2.6.0 due to a change of how strings
+   are handled in C by Bioconductor.
+
+NEW FEATURES:
+
+ o Modified findCdf() such that it is possible to set an alternative function
+   for how CDFs are located.
 
 
 Version: 1.8.3 [2007-08-16] (also added to devel v1.9.3)
-o Made several updated so that affxparser better supports CEL files
-  in the new Command Console (Calvin) file format:
-  - isCelFile() recognized Calvin CEL files.
-  - convertCel() can convert a Calvin CEL files into v4 CEL files.
-  - writeCelHeader() can write v4 CEL headers given Calvin CEL header.
-o Added internal/private function to read Command Console Generic (CCG)
-  files, also known as Calvin files.  Note, these functions are
-  currently *not* utilizing the Fusion SDK library, but are instead
-  written from scratch based on the Affymetrix' file format definitions.
+
+NEW FEATURES:
+
+ o Made several updated so that affxparser better supports CEL files in the
+   new Command Console (Calvin) file format:
+   - isCelFile() recognized Calvin CEL files.
+   - convertCel() can convert a Calvin CEL files into v4 CEL files.
+   - writeCelHeader() can write v4 CEL headers given Calvin CEL header.
+
+CODE REFACTORING:
+
+ o Added internal/private function to read Command Console Generic (CCG) files,
+   also known as Calvin files.  Note, these functions are currently *not*
+   utilizing the Fusion SDK library, but are instead written from scratch
+   based on the Affymetrix' file format definitions.
 
 
 Version: 1.8.2 [2007-08-01]
-None of the fixes changes the API/function of the BioC release version:
-o Optimized writeCdfHeader() for memory.  For a CDF with 1,200,000+ units
-  just writing the unit names would consume 1-1.5GB RAM.  Now it writes
-  unit names in chunks keeping the memory overhead around 100-200MB.
-o Made convertCdf() more memory efficient.
-o BUG FIX: The error message in isCelFile() when the file was not
-  found was broken.
+
+PERFORMANCE:
+
+ o Optimized writeCdfHeader() for memory.  For a CDF with 1,200,000+ units
+   just writing the unit names would consume 1-1.5GB RAM.  Now it writes unit
+   names in chunks keeping the memory overhead around 100-200MB.
+
+ o Made convertCdf() more memory efficient.
+
+BUG FIXES:
+
+ o error message in isCelFile() when the file was not found was broken.
 
 
 Version: 1.8.1 [2007-07-26]
-o Now affxparser install on OSX with PPC.
+
+SIGNIFICANT CHANGES:
+
+ o Now affxparser install on OSX with PPC.
 
 
 Version: 1.8.0 [2007-04-24]
-o The version number was bumped up with the Bioconductor release.
+
+NOTES:
+
+ o The version number was bumped up with the Bioconductor release.
 
 
 Version: 1.7.5 [2007-03-08]
-o Added argument 'truncateGroupNames' to readCdfGroupNames()
-  which defaults to TRUE for backward compatibility.  When
-  TRUE, any prefix of group names identical to the unit name
-  will be stripped of the group names.
+
+NEW FEATURES:
+
+ o Added argument 'truncateGroupNames' to readCdfGroupNames() which defaults
+   to TRUE for backward compatibility.  When TRUE, any prefix of group names
+   identical to the unit name will be stripped of the group names.
 
 
 Version: 1.7.4 [2007-02-21]
-o Now readCelUnits() can handle unit groups for which there are
-  no probes, e.g. when stratifying on PM in a unit containing
-  only MMs.
-o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().
-  These are all used by writeCdf(). They also make it possible
-  to write a CDF in chunks in order to for instance convertCdf()
-  in constant memory.
+
+NEW FEATURES:
+
+ o Now readCelUnits() can handle unit groups for which there are no probes,
+   e.g. when stratifying on PM in a unit containing only MMs.
+
+ o Added writeCdfHeader(), writeCdfQcUnits() and writeCdfUnits().  These are
+   all used by writeCdf(). They also make it possible to write a CDF in chunks
+   in order to for instance convertCdf() in constant memory.
 
 
 Version: 1.7.3 [2007-01-05]
-o Added cdfAddPlasqTypes().
-o Now readCdfUnits(..., readDirections=TRUE) also returns group
-  directions.
-o Now readCdf() reads all unit and group fields by default.
-o In addition to optimizing IO time, read maps can be used to
-  unrotate CEL data rotated by the dChip software. For more
-  information, see help on "Cell-index maps for reading and writing".
-o BUG FIX: Using read maps for readCel() would give an error saying
-  the read map is invalid even when it is not.
+
+NEW FEATURES:
+
+ o Added cdfAddPlasqTypes().
+
+ o Now readCdfUnits(..., readDirections=TRUE) also returns group directions.
+
+ o Now readCdf() reads all unit and group fields by default.
+
+ o In addition to optimizing IO time, read maps can be used to unrotate CEL
+   data rotated by the dChip software. For more information, see help on
+   "Cell-index maps for reading and writing".
+
+BUG FIXES:
+
+ o Using read maps for readCel() would give an error saying the read map is
+   invalid even when it is not.
 
 
 Version: 1.7.2 [2006-12-10]
-o BUG FIX: readCdfUnits() and readCdfCellIndices() with stratifyBy="mm"
-  would return the same as stratifyBy="pm".  Options "pm" and "pmmm"
-  are unaffected by this fix.
-o Added argument 'isPm' to readCdf().
+
+NEW FEATURES:
+
+ o Added argument 'isPm' to readCdf().
+ 
+BUG FIXES:
+
+ o readCdfUnits() and readCdfCellIndices() with stratifyBy="mm" would return
+   the same as stratifyBy="pm".  Options "pm" and "pmmm" are unaffected by
+   this fix.
 
 
 Version: 1.7.1 [2006-11-03]
-o Updated to Fusion SDK v1.0.8.
-o BUG FIX: In Fusion SDK (v1.0.5) that previous version of affxparser
-  used, a CDF file was never closed on Unix platforms (this bug was
-  not in the Windows version).  Since Fusion allocated memory for
-  the complete CDF (even if a subset is only read), this caused the
-  memory usage to blow up, when reading the same or different CDF
-  files multiple times, because the memory was never deallocated.
-  Thanks Seth Falcon and Ken Simpson for reporting this problem.
-o Windows build change: The Windows version is building against
-  the Windows code of Fusion SDK not the POSIX code. In order to do
-  this we have had to patch the preprocessor code in several of the
-  Fusion SDK source-code files, which has to be redone manually
-  whenever Fusion is updated.  Starting with this version, we instead
-  set the _MSC_VER flag used in the Fusion code to indicate Windows
-  (set by the Microsoft Visual C++ compiler). Since we are using
-  MINGW this flag is obviously not set. Faking _MSC_VER this way
-  leaves us only having to patch one single file in the Fusion
-  release instead of 10-20. Hopefully there are no other side effects.
+
+SIGNIFICANT CHANGES:
+
+ o Updated to Fusion SDK v1.0.8.
+
+ o Windows build change: The Windows version is building against the Windows
+   code of Fusion SDK not the POSIX code. In order to do this we have had to
+   patch the preprocessor code in several of the Fusion SDK source-code files,
+   which has to be redone manually whenever Fusion is updated.  Starting with
+   this version, we instead set the _MSC_VER flag used in the Fusion code to
+   indicate Windows (set by the Microsoft Visual C++ compiler). Since we are
+   using MINGW this flag is obviously not set. Faking _MSC_VER this way leaves
+   us only having to patch one single file in the Fusion release instead of
+   10-20. Hopefully there are no other side effects.
+
+BUG FIXES:
+
+ o In Fusion SDK (v1.0.5) that previous version of affxparser used, a CDF file
+   was never closed on Unix platforms (this bug was not in the Windows
+   version).  Since Fusion allocated memory for the complete CDF (even if a
+   subset is only read), this caused the memory usage to blow up, when reading
+   the same or different CDF files multiple times, because the memory was
+   never deallocated.  Thanks Seth Falcon and Ken Simpson for reporting this
+   problem.
 
 
 Version: 1.7.0 [2006-10-25]
-o BUG FIX: writeCdf() would create an invalid CDF file if there were
-  no QC units.  This would in turn make readCdfUnits() etc core dump.
-o BUG FIX: Similar to get bug fix in the C code for readCelHeader(),
-  much of the C-level code for CDF (and BPMAP) files assumes that the
-  strings from Fusion SDK have a null terminator. At least for CDF
-  unit names, this is not necessarily the case.  To be on the safe
-  side, for all retrieved Fusion SDK strings we now make sure there
-  is a null terminator before converting it into an R string.
-  Thanks to Ken Simpson at WEHI for all troubleshooting on this.
-o Because of the above bug fix, the ASCII mouse exon CDF can now be
-  converted into a valid binary CDF.
-o Made readCelUnits() a bit more clever if a 'cdf' structure with only
-  cell indices is passed. Then all fields are just indices and one can
-  call unlist immediately.  This speeds things up a bit.
-o The devel version number was bumped up with the Bioconductor release.
+
+NEW FEATURES:
+
+ o Made readCelUnits() a bit more clever if a 'cdf' structure with only cell
+   indices is passed. Then all fields are just indices and one can call unlist
+   immediately.  This speeds things up a bit.
+
+BUG FIXES:
+
+ o writeCdf() would create an invalid CDF file if there were no QC units.
+   This would in turn make readCdfUnits() etc core dump.
+
+ o Similar to get bug fix in the C code for readCelHeader(), much of the
+   C-level code for CDF (and BPMAP) files assumes that the strings from Fusion
+   SDK have a null terminator. At least for CDF unit names, this is not
+   necessarily the case.  To be on the safe side, for all retrieved Fusion SDK
+   strings we now make sure there is a null terminator before converting it
+   into an R string.  Thanks to Ken Simpson at WEHI for all the troubleshooting.
+
+ o Because of the above bug fix, the ASCII mouse exon CDF can now be converted
+   into a valid binary CDF.
+
+NOTES:
+
+ o The devel version number was bumped up with the Bioconductor release.
 
 
 Version: 1.6.0 [2006-10-03]
-o The version number was bumped up with the Bioconductor release.
+
+NOTES:
+
+ o The version number was bumped up with the Bioconductor release.
 
 
 Version: 1.5.x [2006-09-21]
-o Now the package passes R CMD check without warnings.
-o BUG FIX: The C code for readCelHeader() did not allocate space for
-  the string null terminator for the header elements that originates
-  from wide C++ string.  This caused readCelHeader() to contain
-  string elements with random characters at the end.
-o BUG FIX: nrows and ncols were swapped in the CDF header when written
-  by writeCdf(). This was missed because all tested CDFs were square.
-o Added compareCdfs() to verify that a converted CDF is correct.
-o Added convertCdf() utilizing the new writeCdf().
-o Added trial version of createCel().
-o Added trial version of updateCelUnits().
+
+NEW FEATURES:
+
+ o Added compareCdfs() to verify that a converted CDF is correct.
+
+ o Added convertCdf() utilizing the new writeCdf().
+
+ o Added trial version of createCel().
+
+ o Added trial version of updateCelUnits().
+
+BUG FIXES:
+
+ o The C code for readCelHeader() did not allocate space for the string null
+   terminator for the header elements that originates from wide C++ string.
+   This caused readCelHeader() to contain string elements with random
+   characters at the end.
+
+ o nrows and ncols were swapped in the CDF header when written by writeCdf().
+   This was missed because all tested CDFs were square.
+   
+SOFTWARE QUALITY:
+
+ o Now the package passes R CMD check without warnings.
 
 
 Version: 1.5.4 [2006-08-18]
-o Updated Fusion SDK to version 1.0.7.
-o BUG FIX: The new implementation of updateCel() utilizing raw vectors
-  was not correct; extra zeros was written too.  The example code of
-  updateCel reveals such errors much easier now.
-o BUG FIX: updateCel() would in some cases give "Error: subscript out of
-  bounds" when writing the last chunk.
+
+SIGNIFICANT CHANGES:
+
+ o Updated Fusion SDK to version 1.0.7.
+
+BUG FIXES:
+
+ o The new implementation of updateCel() utilizing raw vectors was not correct;
+   extra zeros was written too.  The example code of updateCel() reveals such
+   errors much easier now.
+
+ o updateCel() would in some cases give "Error: subscript out of bounds" when
+   writing the last chunk.
 
 
 Version: 1.5.3 [2006-07-24]
-o Improved the speed of updateCel() substantially by first working with
-  raw vector in memory and then write binary data to file.  Data is also
-  written in chunks (instead of all at once), to minimize the memory
-  overhead of using raw vectors, which is especially important for
-  the larger chips, e.g. 500K.
-o Added functional prototype of updateCel() to *update* binary (v4) CEL
-  files.  Currently, the code does make use the Fusion SDK.  There is
-  currently no writeCel() to create a CEL file from scratch.  However,
-  with the auxillary function copyCel() one can copy an existing CEL
-  file and then update that one.  Thus, it is now possible to write,
-  say, normalized probe intensities to a CEL file.  Note that this is
-  only a first prototype and functions may change in a future release.
+ 
+NEW FEATURES:
+
+ o Added functional prototype of updateCel() to *update* binary (v4) CEL files.
+   Currently, the code does make use the Fusion SDK.  There is currently no
+   writeCel() to create a CEL file from scratch.  However, with the auxillary
+   function copyCel() one can copy an existing CEL file and then update that
+   one.  Thus, it is now possible to write, say, normalized probe intensities
+   to a CEL file.  Note that this is only a first prototype and functions may
+   change in a future release.
+
+PERFORMANCE:
+
+ o Improved the speed of updateCel() substantially by first working with raw
+   vector in memory and then write binary data to file.  Data is also written
+   in chunks (instead of all at once), to minimize the memory overhead of
+   using raw vectors, which is especially important for the larger chips,
+   e.g. 500K.
 
 
 Version: 1.5.2 [2006-05-31]
-o Updated Fusion SDK to version 1.0.6.
+
+SIGNIFICANT CHANGES:
+
+ o Updated Fusion SDK to version 1.0.6.
 
 
 Version: 1.5.1 [2006-05-15]
-o Updated Fusion SDK to version 1.0.5.
-o BUG FIX; Made small changes to the SDK to allow it to compile
-  under Mac OS X with GCC-4.0.3 shipping with R-2.3.0
-o Made changes to the Makevars, _Makefile and cmd_line scripts.
+
+SIGNIFICANT CHANGES:
+
+ o Updated Fusion SDK to version 1.0.5.
+
+BUG FIXES:
+
+ o Made small changes to the SDK to allow it to compile under Mac OS X with
+   GCC-4.0.3 shipping with R-2.3.0.
+
+CODE REFACTORING:
+
+ o Made changes to the Makevars, _Makefile and cmd_line scripts.
 
 
 Version: 1.5.0 [2006-05-12]
-o Cleaned up and restructured the help pages; several Rd pages are
-  now made "internal" so they do not show up on the help index page.
-  Instead they are accessable from within other help pages (if you
-  browsing via HTML that is).  Added a help page on common terms.
-o Added cdfOrderBy() and cdfOrderColumnsBy() for restructuring group
-  fields in a CDF list structure.  Added cdfGetGroups() too.
-o Added a bit more documentation on how to set the default CDF path.
-o BUG FIX: On Linux 64-bit read CEL intensities would all be zero.
-  This was due to compiler settings in the Fusion SDK package, which
-  is circumvented by gcc compile it with a lower optimization level.
-o BUG FIX: When argument 'cdf' was a CDF list structure with elements
-  'type' or 'direction', readCelUnits() would not read the correct cells
-  because the values of 'type' and 'direction' would be included in the
-  extracted list of cell indices.
+
+NEW FEATURES:
+
+ o Added cdfOrderBy() and cdfOrderColumnsBy() for restructuring group fields
+   in a CDF list structure.  Added cdfGetGroups() too.
+
+DOCUMENTATION:
+
+ o Cleaned up and restructured the help pages; several Rd pages are now made
+   "internal" so they do not show up on the help index page.  Instead they are
+   accessable from within other help pages (if you browsing via HTML that is).
+   Added a help page on common terms.
+
+ o Added a bit more documentation on how to set the default CDF path.
+
+BUG FIXES:
+
+ o On Linux 64-bit read CEL intensities would all be zero.  This was due to
+   compiler settings in the Fusion SDK package, which is circumvented by
+   gcc compile it with a lower optimization level.
+
+ o When argument 'cdf' was a CDF list structure with elements 'type' or
+   'direction', readCelUnits() would not read the correct cells because the
+   values of 'type' and 'direction' would be included in the extracted list
+   of cell indices.
 
 
 Version: 1.4.0 [2006-04-27]
-o The stable version for Bioconductor 1.8.
+
+NOTES:
+
+ o The stable version for Bioconductor 1.8.
 
 
 Version: 1.3.3 [2006-04-15]
-o Updated the Fusion SDK to version 1.0.5 (an unofficial release).
-  It now works on Solaris.
-o New method readCdfCellIndices(), which is a 5-10 times faster
-  special-case implementation of readCdfUnits() to read cell
-  indices only.
-o Now readCelUnits() sorts the cell indices before reading the
-  data from each file.  This minimizes the amount of jumping around
-  in the CEL files resulting in a speed-up of about 5-10 times.
-o Renamed readCdfUnitsMap() to readCdfUnitsWriteMap().
-o New method invertMap() for fast inversion of maps.
-o KNOWN BUGS: The weird bug as in v1.3.2 remains with the new
-  Fusion SDK, R v2.3.0 beta (2006-04-10 r37715) on WinXP.
-  Internally readCdfCellIndices() replaces readCdfUnits(),
-  but the error is still the same.
+
+SIGNIFICANT CHANGES:
+
+ o The package now works on Solaris.
+
+ o Updated the Fusion SDK to version 1.0.5 (an unofficial release).
+
+NEW FEATURES:
+
+ o New method readCdfCellIndices(), which is a 5-10 times faster special-case
+   implementation of readCdfUnits() to read cell indices only.
+
+ o Renamed readCdfUnitsMap() to readCdfUnitsWriteMap().
+
+ o New method invertMap() for fast inversion of maps.
+
+PERFORMANCE:
+
+ o Now readCelUnits() sorts the cell indices before reading the data from each
+   file.  This minimizes the amount of jumping around in the CEL files
+   resulting in a speed-up of about 5-10 times.
+
+KNOWN ISSUES:
+
+ o KNOWN BUGS: The weird bug as in v1.3.2 remains with the new Fusion SDK,
+   R v2.3.0 beta (2006-04-10 r37715) on WinXP. Internally readCdfCellIndices()
+   replaces readCdfUnits(), but the error is still the same.
 
 
 Version: 1.3.2 [2006-03-28]
-o All cell and unit indices are now starting from one and not
-  from zero.  This change requires that all code that have
-  been using a previous version of this package have to be
-  updated!
-o Further optimization in speed and memory for most methods.
-o New methods readCelRectangle() to read probe signals from a
-  specify area of the chip.
-o Added extensive help on cell coordinates and cell indices
-  as well read and write maps.
-o KNOWN BUGS: At least on WinXP, heavy use of readCelUnits()
-  will sooner or later core dump R; it seems to be a memory
-  related from that occur when reading the CDF and extracting
-  the name of the unit.  However, when "torturing" readCdfUnits()
-  the crash won't happen so it might be that readCel() does
-  something.  Have not tried on other platforms.
+
+SIGNIFICANT CHANGES:
+
+ o All cell and unit indices are now starting from one and not from zero.
+   This change requires that all code that have been using a previous version
+   of this package have to be updated!
+
+NEW FEATURES:
+
+ o New methods readCelRectangle() to read probe signals from a specify area
+   of the chip.
+
+DOCUMENTATION:
+
+ o Added extensive help on cell coordinates and cell indices as well read and
+   write maps.
+
+KNOWN ISSUES:
+
+ o KNOWN BUGS: At least on WinXP, heavy use of readCelUnits() will sooner or
+   later core dump R; it seems to be a memory related from that occur when
+   reading the CDF and extracting the name of the unit.  However, when
+   "torturing" readCdfUnits() the crash won't happen so it might be that
+   readCel() does something.  Have not tried on other platforms.
+
+PERFORMANCE:
+
+ o Further optimization in speed and memory for most methods.
 
 
 Version: 1.3.1
-o ...
+
+ o ...
