@@ -5,8 +5,9 @@
 R package affxparser is available on [Bioconductor](http://www.bioconductor.org/packages/devel/bioc/html/affxparser.html) and can be installed in R as:
 
 ```r
-source('http://bioconductor.org/biocLite.R')
-biocLite('affxparser')
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install('affxparser')
 ```
 
 ### Pre-release version
