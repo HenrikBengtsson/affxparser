@@ -51,7 +51,7 @@ readBpmapSeqinfo(filename, seqIndices = NULL, verbose = 0)
   containing the sequence info.
 }
 
-\author{Kasper Daniel Hansen <khansen@stat.berkeley.edu>}
+\author{Kasper Daniel Hansen}
 
 \seealso{\code{\link{tpmap2bpmap}} for information on how to write
   Bpmap files.}

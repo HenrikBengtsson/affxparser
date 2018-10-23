@@ -58,7 +58,7 @@ readPgf(file, indices = NULL)
     within the probe, at which interrogation occurs.}
   \item{probeSequence}{character vector of the probe sequence.}
 }
-\author{Martin Morgan \url{mtmorgan@fhcrc.org}}
+\author{Martin Morgan}
 \seealso{
   \url{https://www.affymetrix.com/support/developer/fusion/File_Format_PGF_aptv161.pdf}
   describes PGF file content.

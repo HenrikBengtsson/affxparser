@@ -24,7 +24,7 @@
 }
 
 \author{
-  Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}
+  Kasper Daniel Hansen
 }
 
 \seealso{

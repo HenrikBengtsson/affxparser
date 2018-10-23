@@ -139,8 +139,8 @@ readCel(filename,
   } # for (zzz in 0)
 }
 
-\author{James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
-  Daniel Hansen, \email{khansen@stat.berkeley.edu}} 
+\author{James Bullard and Kasper
+  Daniel Hansen} 
 
 \seealso{
   \code{\link{readCelHeader}()} for a description of the header output.

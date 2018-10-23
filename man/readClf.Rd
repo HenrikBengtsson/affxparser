@@ -26,7 +26,7 @@ readClf(file)
   \item{y}{An integer vector of length \code{prod(dims)} containing
     y-coordinates corresponding to the entries in \code{id}.}
 }
-\author{Martin Morgan \url{mtmorgan@fhcrc.org}}
+\author{Martin Morgan}
 \seealso{
   \url{https://www.affymetrix.com/support/developer/fusion/File_Format_CLF_aptv161.pdf}
   describes CLF file content.

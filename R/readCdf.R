@@ -87,8 +87,8 @@
 # }
 #
 # \author{
-#  James Bullard, \email{bullard@stat.berkeley.edu} and
-#  Kasper Daniel Hansen, \email{khansen@stat.berkeley.edu}.
+#  James Bullard and
+#  Kasper Daniel Hansen.
 # }
 #
 # \seealso{
