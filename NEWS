@@ -1,9 +1,50 @@
 Package: affxparser
 ===================
 
-Version: 1.47.0-9000 [2016-10-18]
+Version: 1.53.1-9000 [2018-10-22]
 
  o ...
+
+
+Version: 1.53.1 [2018-08-28]
+
+ o Updated installation instructions in README.md.
+
+
+Version: 1.53.0 [2018-04-30]
+
+ o The version number was bumped for the Bioconductor devel version, which is
+   now BioC 3.8 for R (>= 3.5.0).
+
+
+Version: 1.52.0 [2018-04-30]
+
+ o The version number was bumped for the Bioconductor release version, which is
+   now BioC 3.7 for R (>= 3.5.0).
+ 
+
+Version: 1.51.0 [2017-10-30]
+
+ o The version number was bumped for the Bioconductor devel version, which is
+   now BioC 3.7 for R (>= 3.5.0).
+
+
+Version: 1.50.0 [2017-10-30]
+
+ o The version number was bumped for the Bioconductor release version, which is
+   now BioC 3.6 for R (>= 3.4.0).
+
+
+Version: 1.49.0 [2017-04-23]
+
+ o The version number was bumped for the Bioconductor devel version, which is
+   now BioC 3.6 for R (>= 3.4.0).
+
+
+Version: 1.48.0 [2017-04-23]
+
+ o The version number was bumped for the Bioconductor release version, which is
+   now BioC 3.5 for R (>= 3.4.0).
 
 
 Version: 1.47.0 [2016-10-18]
