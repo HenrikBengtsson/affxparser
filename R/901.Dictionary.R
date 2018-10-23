@@ -22,7 +22,7 @@
 #   \item{DAT}{A file format: contains pixel intensity
 #      values collected from an Affymetrix GeneArray scanner.}
 #   \item{feature}{A probe.}
-#   \item{Fusion SDK}{Open-source sofware development kit (SDK) provided
+#   \item{Fusion SDK}{Open-source software development kit (SDK) provided
 #     by Affymetrix to access their data files.}
 #   \item{group}{(aka block)
 #     Defines a unique subset of the cells in a unit.

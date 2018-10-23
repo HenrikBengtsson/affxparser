@@ -51,7 +51,7 @@ readCel(filename,
   If \code{readIndices=NULL}, cell values for all cells are returned,
   Only cell values specified by argument \code{readIndices} are returned.
 
-  This value returns a named list with compontents described below:
+  This value returns a named list with components described below:
 
    \item{\code{header}}{The header of the CEL file. Equivalent to the 
       output from \code{readCelHeader}, see the documentation for that
@@ -98,7 +98,7 @@ readCel(filename,
   indices listing which cells \emph{of the queried cells} are outliers and
   masked, respectively.
   The current community view seems to be that this should be done based on
-  statistical modelling of the actual probe intensities and should be based
+  statistical modeling of the actual probe intensities and should be based
   on the choice of preprocessing algorithm.  Most algorithms are only using
   the intensities from the CEL file.
 }

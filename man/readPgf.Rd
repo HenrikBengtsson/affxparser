@@ -65,7 +65,7 @@ readPgf(file, indices = NULL)
 
   The internal function \code{.pgfProbeIndexFromProbesetIndex} provides
   a map between
-  the indicies of probe set entries and the indicies of the probes
+  the indices of probe set entries and the indices of the probes
   contained in the probe set.
 }
 \keyword{file}

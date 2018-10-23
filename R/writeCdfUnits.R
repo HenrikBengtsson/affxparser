@@ -7,7 +7,7 @@
 # 
 # \description{
 #   @get "title".
-#   \emph{This method is not indended to be used explicitly. 
+#   \emph{This method is not intended to be used explicitly. 
 #   To write a CDF, use @see "writeCdf" instead.}
 # }
 # 

@@ -33,7 +33,7 @@
 #
 # \section{Windows Shortcut links}{
 #   If package \pkg{R.utils} is available and loaded , Windows Shortcut links (*.lnk)
-#   are recognized and can be used to immitate links to directories
+#   are recognized and can be used to imitate links to directories
 #   elsewhere.  For more details, see @see "R.utils::filePath".
 # }
 #

@@ -34,7 +34,7 @@
 #
 # \section{Benchmarking of ASCII and binary CELs}{
 #   Binary CELs are much faster to read than ASCII CELs.  Here are some
-#   example for reading complete CELs (the differnce is even larger when
+#   example for reading complete CELs (the difference is even larger when
 #   reading CELs in subsets):
 #   \itemize{
 #     \item To do
@@ -45,7 +45,7 @@
 #   The \code{newChipType} argument changes the label in the
 #   part of DAT header that specifies the chip type of the
 #   CEL file.  Note that it does not change anything else in
-#   the CEL file.  This type of relabelling is valid for updating
+#   the CEL file.  This type of relabeling is valid for updating
 #   the chip type \emph{label} of CEL files that where generated
 #   during, say, an "Early Access" period leading to a different
 #   chip type label than what more recent CEL files of the same

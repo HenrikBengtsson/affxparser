@@ -14,10 +14,10 @@ readClfEnv(file, readBody = TRUE)
     input.}
   \item{readBody}{\code{logical(1)} indicating whether the entire file should
     be parsed (\code{TRUE}) or only the file header information describing
-    the chips to which the file is releavant.}
+    the chips to which the file is relevant.}
 }
 \value{
-  An enviroment. The \code{header} element is always present; the
+  An environment. The \code{header} element is always present; the
   remainder are present when \code{readBody=TRUE}.
   \item{header}{A list with information about the CLF file. The list
     contains elements described in the CLF file format document

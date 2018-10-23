@@ -26,8 +26,8 @@
 #
 # \details{
 #  If a unit has two strands, they are merged such that the elements
-#  for the second strand are concattenated to the end of the elements
-#  of first strand (This is done seperately for the two alleles).
+#  for the second strand are concatenated to the end of the elements
+#  of first strand (This is done separately for the two alleles).
 # }
 #
 # \seealso{

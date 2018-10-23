@@ -50,7 +50,7 @@ applyCdfGroups(cdf, fcn, ...)
      allele B mismatching nucleotides of the probes in a CDF structure.
    \item \code{\link{cdfAddProbeOffsets}}() - Adds probe offsets to the groups in
      a CDF structure.
-   \item \code{\link{cdfGtypeCelToPQ}}() - Function to immitate Affymetrix'
+   \item \code{\link{cdfGtypeCelToPQ}}() - Function to imitate Affymetrix'
      \code{gtype_cel_to_pq} software.
    \item \code{\link{cdfMergeAlleles}}() - Function to join CDF allele A and
      allele B groups strand by strand.

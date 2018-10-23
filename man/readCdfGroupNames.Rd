@@ -36,7 +36,7 @@ readCdfGroupNames(filename, units=NULL, truncateGroupNames=TRUE, verbose=0)
 \value{
    A named \code{\link[base]{list}} structure where the names of the elements are the names
    of the units read.  Each element is a \code{\link[base]{character}} \code{\link[base]{vector}} with group
-   names for the corrsponding unit.
+   names for the corresponding unit.
  }
 
 \author{Henrik Bengtsson}

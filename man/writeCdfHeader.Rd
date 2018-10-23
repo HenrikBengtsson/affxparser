@@ -18,7 +18,7 @@ writeCdfHeader(con, cdfHeader, unitNames, qcUnitLengths, unitLengths, verbose=0)
 
  \description{
    Writes a CDF header.
-   \emph{This method is not indended to be used explicitly.
+   \emph{This method is not intended to be used explicitly.
    To write a CDF, use \code{\link{writeCdf}}() instead.}
  }
 

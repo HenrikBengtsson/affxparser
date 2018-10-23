@@ -29,7 +29,7 @@
 #   This provides an easy way to override other files in the search path.
 #
 #   If \code{paths} is @NULL, then a set of default paths are searched.
-#   The default search path consitutes:
+#   The default search path constitutes:
 #   \enumerate{
 #    \item \code{getOption("AFFX_CDF_PATH")}
 #    \item \code{Sys.getenv("AFFX_CDF_PATH")}

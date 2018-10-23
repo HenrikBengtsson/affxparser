@@ -10,10 +10,10 @@
 \alias{cdfGtypeCelToPQ}
 
 
-\title{Function to immitate Affymetrix' gtype\_cel\_to\_pq software}
+\title{Function to imitate Affymetrix' gtype\_cel\_to\_pq software}
 
 \description{
- Function to immitate Affymetrix' gtype\_cel\_to\_pq software.
+ Function to imitate Affymetrix' gtype\_cel\_to\_pq software.
 
  This \code{\link[base]{function}} is design to be used with \code{\link{applyCdfGroups}}()
  on an Affymetrix Mapping (SNP) CDF \code{\link[base]{list}} structure.
