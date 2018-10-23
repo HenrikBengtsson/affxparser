@@ -24,3 +24,4 @@ LazyLoad: yes
 URL: https://github.com/HenrikBengtsson/affxparser
 BugReports: https://github.com/HenrikBengtsson/affxparser/issues
 biocViews: Infrastructure, DataImport, Microarray, ProprietaryPlatforms, OneChannel
+RoxygenNote: 6.1.0
