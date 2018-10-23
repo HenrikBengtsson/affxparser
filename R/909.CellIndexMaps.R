@@ -24,7 +24,7 @@
 # \section{Motivation}{
 #   When reading data from file, it is faster to read the data in
 #   the order that it is stored compared with, say, in a random order.
-#   The main reason for this is that the read arm of the harddrive
+#   The main reason for this is that the read arm of the hard drive
 #   has to move more if data is not read consecutively.  Same applies
 #   when writing data to file.  The read and write cache of the file
 #   system may compensate a bit for this, but not completely.
@@ -139,7 +139,7 @@
 #   arrays 90 degrees clockwise, which remains rotated when exported 
 #   as CEL files.  To read such data in a non-rotated way, a read
 #   map can be used to "unrotate" the data.  The 90-degree clockwise 
-#   rotation that dChip effectly uses to store such data is explained by:
+#   rotation that dChip effectively uses to store such data is explained by:
 #   \preformatted{
 #     h <- readCdfHeader(cdfFile)
 #     # (x,y) chip layout rotated 90 degrees clockwise

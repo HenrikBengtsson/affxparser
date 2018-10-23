@@ -25,7 +25,7 @@
 # \value{
 #    A named @list structure where the names of the elements are the names
 #    of the units read.  Each element is a @character @vector with group
-#    names for the corrsponding unit.
+#    names for the corresponding unit.
 #  }
 #
 # @author "HB"

@@ -40,7 +40,7 @@ readBpmapSeqinfo(filename, seqIndices = NULL, verbose = 0)
   Here sequence means some kind of reference sequence, typically a
   chromosome or a scaffold. \code{readBpmapHeader} reads the header of
   the BPMAP file, and \code{readBpmapSeqinfo} reads the sequence info of
-  the sequences (so this function is merely a convinience function). 
+  the sequences (so this function is merely a convenience function). 
 }
 \value{
   For \code{readBpmap}: A list of lists, one list for every sequence
@@ -51,7 +51,7 @@ readBpmapSeqinfo(filename, seqIndices = NULL, verbose = 0)
   containing the sequence info.
 }
 
-\author{Kasper Daniel Hansen <khansen@stat.berkeley.edu>}
+\author{Kasper Daniel Hansen}
 
 \seealso{\code{\link{tpmap2bpmap}} for information on how to write
   Bpmap files.}

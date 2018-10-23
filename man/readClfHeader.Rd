@@ -4,7 +4,7 @@
 \title{Read the header of a CLF file.}
 \description{
   Reads the header of a CLF file. The exact information stored in this
-  file can be viewed in the readClfEnv documentation which reads the
+  file can be viewed in the \code{\link{readClfEnv}()} documentation which reads the
   header in addition to the body.
 }
 \usage{

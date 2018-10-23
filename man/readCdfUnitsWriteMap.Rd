@@ -20,7 +20,7 @@ readCdfUnitsWriteMap(filename, units=NULL, ..., verbose=FALSE)
   Generates an Affymetrix cell-index write map from a CDF file.
 
   The purpose of this method is to provide a re-ordering of cell elements
-  such that cells in units (probesets) can be stored in contigous blocks.
+  such that cells in units (probesets) can be stored in contiguous blocks.
   When reading cell elements unit by unit, minimal file re-position is
   required resulting in a faster reading.
 

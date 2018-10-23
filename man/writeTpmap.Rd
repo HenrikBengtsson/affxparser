@@ -29,7 +29,7 @@ tpmap2bpmap(tpmapname, bpmapname, verbose = 0)
   These functions are called for their side effects (creating files).
 }
 
-\author{Kasper Daniel Hansen <khansen@stat.berkeley.edu>}
+\author{Kasper Daniel Hansen}
 
 \seealso{\code{\link{readBpmap}}}
 

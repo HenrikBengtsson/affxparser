@@ -85,7 +85,7 @@
    Note that, in addition to (x,y) coordinates, a CDF file also contains
    a one-based "index" for each cell.  This "index" is redundant to
    the (x,y) coordinate and can be calculated analogously to the
-   above \emph{cell index} while leaving out the addition (subtration)
+   above \emph{cell index} while leaving out the addition (subtraction)
    of 1:s.
    Importantly, since this "index" is redundant (and exists only in
    CDF files), we have decided to treat this field as an internal field.

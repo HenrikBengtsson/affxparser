@@ -28,7 +28,7 @@ convertCdf(filename, outFilename, version="4", force=FALSE, ..., .validate=TRUE,
    \item{outFilename}{The pathname of the destination CDF file.
      If the same as the source file, an exception is thrown.}
    \item{version}{The version of the output file format.}
-   \item{force}{If \code{\link[base:logical]{FALSE}}, and the version of the orignal CDF is the
+   \item{force}{If \code{\link[base:logical]{FALSE}}, and the version of the original CDF is the
      same as the output version, the new CDF will not be generated,
      otherwise it will.}
    \item{...}{Not used.}
@@ -45,7 +45,7 @@ convertCdf(filename, outFilename, version="4", force=FALSE, ..., .validate=TRUE,
 
  \section{Benchmarking of ASCII and binary CDFs}{
    Binary CDFs are much faster to read than ASCII CDFs.  Here are some
-   example for reading complete CDFs (the differnce is even larger when
+   example for reading complete CDFs (the difference is even larger when
    reading CDFs in subsets):
    \itemize{
      \item HG-U133A (22283 units): ASCII 11.7s (9.3x), binary 1.20s (1x).
@@ -53,7 +53,7 @@ convertCdf(filename, outFilename, version="4", force=FALSE, ..., .validate=TRUE,
    }
  }
 
- \section{Confirmed convertions to binary (XDA) CDFs}{
+ \section{Confirmed conversions to binary (XDA) CDFs}{
    The following chip types have been converted using \code{convertCdf()}
    and then verified for correctness using \code{compareCdfs()}:
    ASCII-to-binary: HG-U133A, Hu6800.

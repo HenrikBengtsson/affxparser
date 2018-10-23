@@ -14,10 +14,10 @@ readClfEnv(file, readBody = TRUE)
     input.}
   \item{readBody}{\code{logical(1)} indicating whether the entire file should
     be parsed (\code{TRUE}) or only the file header information describing
-    the chips to which the file is releavant.}
+    the chips to which the file is relevant.}
 }
 \value{
-  An enviroment. The \code{header} element is always present; the
+  An environment. The \code{header} element is always present; the
   remainder are present when \code{readBody=TRUE}.
   \item{header}{A list with information about the CLF file. The list
     contains elements described in the CLF file format document
@@ -30,7 +30,7 @@ readClfEnv(file, readBody = TRUE)
   \item{y}{An integer vector of length \code{prod(dims)} containing
     y-coordinates corresponding to the entries in \code{id}.}
 }
-\author{Martin Morgan \url{mtmorgan@fhcrc.org}}
+\author{Martin Morgan}
 \seealso{
   \url{https://www.affymetrix.com/support/developer/fusion/File_Format_CLF_aptv161.pdf}
   describes CLF file content.

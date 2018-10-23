@@ -40,7 +40,7 @@ cdfAddPlasqTypes(groups, ...)
 \details{
  This function identifies the number of nucleotides (bases) in probe
  sequences that mismatch the the target sequence for allele A and the
- allele B, as used by PLASQ [1], and adds an integer [0,15] interepreted
+ allele B, as used by PLASQ [1], and adds an integer [0,15] interpreted
  as one of 16 probe types.  In PLASQ these probe types are referred to as:
  0=MMoBR, 1=MMoBF, 2=MMcBR, 3=MMcBF, 4=MMoAR, 5=MMoAF, 6=MMcAR, 7=MMcAF,
  8=PMoBR, 9=PMoBF, 10=PMcBR, 11=PMcBF, 12=PMoAR, 13=PMoAF, 14=PMcAR,

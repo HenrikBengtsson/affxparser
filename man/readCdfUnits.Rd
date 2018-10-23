@@ -83,8 +83,8 @@ readCdfUnits(filename, units=NULL, readXY=TRUE, readBases=TRUE, readExpos=TRUE,
 }
 
 \author{
- James Bullard, \email{bullard@stat.berkeley.edu} and Kasper
- Daniel Hansen, \email{khansen@stat.berkeley.edu}.
+ James Bullard and Kasper
+ Daniel Hansen.
  Modified by Henrik Bengtsson (\url{http://www.braju.com/R/}) to read
  any subset of units and/or subset of parameters, to stratify by PM/MM,
  and to return cell indices.d

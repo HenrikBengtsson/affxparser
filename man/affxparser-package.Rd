@@ -8,7 +8,7 @@
 \description{
   The \pkg{affxparser} package provides methods for fast and memory
   efficient parsing of Affymetrix files [1] using the Affymetrix' 
-  Fusion SDK [2].  Both traditional ASCII- and binary (XDA)-based files are
+  Fusion SDK [2,3].  Both traditional ASCII- and binary (XDA)-based files are
   supported, as well as Affymetrix future binary format "Calvin". The
   efficiency of the parsing is dependent on whether a specific file is
   binary or ASCII.
@@ -56,7 +56,7 @@ Some of the functions in this package search for CDF files automatically by scan
   used.  There are both small are very large data sets available. 
 }
 
-\section{Tecnical details}{
+\section{Technical details}{
   This package implements an interface to the Fusion SDK from
   Affymetrix.com. This SDK (software development kit) is an open source
   library used for parsing the various files formats used by the
@@ -66,7 +66,7 @@ Some of the functions in this package search for CDF files automatically by scan
   which may be parsed using Fusion.
 
   The SDK supports parsing of all the different versions of a specific
-  fileformat. This means that ASCII, binary as well as the new binary
+  file format. This means that ASCII, binary as well as the new binary
   format (codename Calvin) used by Affymetrix is supported through a
   single API. We also expect any future changes to the file formats to
   be reflected in the SDK, and subsequently in this package.
@@ -83,7 +83,7 @@ Some of the functions in this package search for CDF files automatically by scan
 
   For older file, certain entries in the files have been removed from
   newer specifications, and the SDK does not provide utilities for
-  reading these entries. This includes eg. the FEAT column of CDF files.
+  reading these entries. This includes for instance the FEAT column of CDF files.
   
   Currently the package as well as the Fusion SDK is in beta stage. Bugs
   may be related to either codebase. We are very interested in users
@@ -105,7 +105,7 @@ Some of the functions in this package search for CDF files automatically by scan
   With the introduction of the Fusion SDK (and the next version of their
   file formats) Affymetrix has made it possible to use multibyte
   character sets. This implies that character information may be
-  inaccesible if the compiler used to compile the C++ code does not
+  inaccessible if the compiler used to compile the C++ code does not
   support multibyte character sets (specifically we require that the R
   installation has defined the macro \code{SUPPORT_MCBS} in the
   \code{Rconfig.h} header file). For example GCC needs to be version 3.4
@@ -139,6 +139,8 @@ Some of the functions in this package search for CDF files automatically by scan
       \url{http://www.affymetrix.com/support/developer/}\cr
   [2] Affymetrix Inc, Fusion Software Developers Kit (SDK), 2006.
       \url{http://www.affymetrix.com/support/developer/fusion/}\cr
+  [3] Henrik Bengtsson, unofficial archive of Affymetrix Fusion Software Developers Kit (SDK),
+      \url{https://github.com/HenrikBengtsson/Affx-Fusion-SDK}\cr
 }
 
 \keyword{package}

@@ -31,7 +31,7 @@ arrangeCelFilesByChipType(pathnames=list.files(pattern = "[.](cel|CEL)$"),
  \item{aliases}{A named \code{\link[base]{character}} string with chip type aliases.
     For instance, \code{aliases=c("Focus"="HG-Focus")} will treat
     a CEL file with chiptype label 'Focus' (early-access name) as
-    if it was 'HG-Focus' (offical name).}
+    if it was 'HG-Focus' (official name).}
  \item{...}{Not used.}
 }
 
