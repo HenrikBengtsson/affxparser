@@ -3,8 +3,8 @@ Version: 1.53.1
 Depends:
   R (>= 2.14.0)
 Suggests:
-  R.oo (>= 1.20.0),
-  R.utils (>= 2.4.0),
+  R.oo (>= 1.22.0),
+  R.utils (>= 2.7.0),
   AffymetrixDataTestFiles
 Date: 2018-08-28
 Title: Affymetrix File Parsing SDK
