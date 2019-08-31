@@ -29,7 +29,7 @@ Contributing to this package is easy.  Just send a [pull request](https://help.g
 
 ## Software status
 
-| Resource:     | Bioconductor        | Travis CI       | Appveyor         |
+| Resource:     | Bioconductor        | Travis CI       | AppVeyor         |
 | ------------- | ------------------- | --------------- | ---------------- |
 | _Platforms:_  | _Multiple_          | _Linux & macOS_ | _Windows_        |
 | R CMD check   | <a href="https://bioconductor.org/checkResults/release/bioc-LATEST/affxparser/"><img border="0" src="https://bioconductor.org/shields/build/release/bioc/affxparser.svg" alt="Build status"></a> (release)</br><a href="https://bioconductor.org/checkResults/devel/bioc-LATEST/affxparser/"><img border="0" src="https://bioconductor.org/shields/build/devel/bioc/affxparser.svg" alt="Build status"></a> (devel) | <a href="https://travis-ci.org/HenrikBengtsson/affxparser"><img src="https://travis-ci.org/HenrikBengtsson/affxparser.svg" alt="Build status"></a>   | <a href="https://ci.appveyor.com/project/HenrikBengtsson/affxparser"><img src="https://ci.appveyor.com/api/projects/status/github/HenrikBengtsson/affxparser?svg=true" alt="Build status"></a> |
