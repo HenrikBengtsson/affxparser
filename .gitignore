@@ -13,3 +13,5 @@
 *.Rproj*
 *.swp
 .make/README.md.rsp
+.make/CONTRIBUTING.md.rsp
+

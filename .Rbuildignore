@@ -3,21 +3,16 @@
 #----------------------------
 ^.svn
 ^.git
+^.github
 ^.make
 INSTALL[.]md
 OVERVIEW[.]md
 README[.]md
 
 #----------------------------
-# Travis-CI et al.
+# CI et al.
 #----------------------------
-^[.]travis[.]yml$
-^travis-tool[.]sh$
-^pkg-build[.]sh$
 ^appveyor[.]yml$
-^covr-utils.R$
-^[.]covr[.]R$
-^[.]covr[.]rds$
 
 #----------------------------
 # R related
@@ -29,18 +24,5 @@ Rplots.pdf$
 ^vignettes/[.]install_extras$
 ^Makefile$
 ^incl
-^NAMESPACE,.*[.]txt$
-^nohup.*$
-^[.]R
-^[.]benchmark
-^[.]devel
-^[.]test
-^[.]check
 ^.*[.]tar[.]gz$
-
-#----------------------------
-# Package specific
-#----------------------------
-^[.]BatchJobs[.]R$
-[.]async
-
+[.]Rdump
