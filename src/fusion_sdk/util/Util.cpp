@@ -855,7 +855,7 @@ bool Util::isFinite(double x) {
 #ifdef WIN32
   isOk = _finite(x);
 #else
-  isOk = finite(x);
+  isOk = isfinite(x);
 #endif
   return isOk;
 }
