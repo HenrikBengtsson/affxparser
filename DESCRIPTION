@@ -1,5 +1,5 @@
 Package: affxparser
-Version: 1.65.1
+Version: 1.64.1
 Depends:
   R (>= 2.14.0)
 Suggests:
