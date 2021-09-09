@@ -1,5 +1,5 @@
 antisense
-aut
+AppVeyor
 Benchmarking
 Beroukhim
 bijective
@@ -16,10 +16,9 @@ CELs
 chiptype
 CHP
 CLF
+CMD
 codebase
 codename
-cre
-ctb
 CustomSeq
 dat
 dChip
@@ -30,8 +29,10 @@ GeneArray
 gtype
 Hu
 indexpos
+Kasper
 LaFramboise
 lnk
+macOS
 matchscore
 Meyerson
 MMA
@@ -63,11 +64,13 @@ PMoAR
 PMoBF
 PMoBR
 pq
+pre
 Pre
 probelength
 probeset
 probesets
 resequencing
+Rtools
 SDK
 subgrids
 th
@@ -76,6 +79,7 @@ unrotate
 unrotated
 WEHI
 WR
+Xcode
 XDA
 xrange
 yrange

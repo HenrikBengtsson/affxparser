@@ -70,11 +70,9 @@
 # }
 #
 # \author{
-#  James Bullard and Kasper
-#  Daniel Hansen.
-#  Modified by Henrik Bengtsson (\url{http://www.braju.com/R/}) to read
-#  any subset of units and/or subset of parameters, to stratify by PM/MM,
-#  and to return cell indices.d
+#  James Bullard and Kasper Daniel Hansen.
+#  Modified by Henrik Bengtsson to read any subset of units and/or subset of
+#  parameters, to stratify by PM/MM, and to return cell indices.
 # }
 #
 # @examples "../incl/readCdfUnits.Rex"
