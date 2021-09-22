@@ -1,9 +1,11 @@
 Package: affxparser
 ===================
 
-Version: 1.65.2-9000 [2021-09-22]
+Version: 1.65.3 [2021-09-22]
 
- * ...
+SOFTWARE QUALITY:
+
+ * Making sure all pathnames are of length 100 or shorter.
  
 
 Version: 1.65.2 [2021-09-22]
