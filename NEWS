@@ -1,6 +1,13 @@
 Package: affxparser
 ===================
 
+Version: 1.65.2 [2021-09-22]
+
+SOFTWARE QUALITY:
+
+ * Now properly registering native routines.
+ 
+
 Version: 1.65.1 [2021-09-09]
 
 BUG FIXES:

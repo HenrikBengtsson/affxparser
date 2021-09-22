@@ -73,7 +73,7 @@ Some of the functions in this package search for CDF files automatically by scan
 
   However, as the current Fusion SDK does not support compressed files,
   neither does \pkg{affxparser}. This is in contrast to some of the
-  existing code in \pkg{affy} and relatives (see below for links).
+  existing code in \bold{affy} and relatives (see below for links).
 
   In general we aim to provide functions returning all information in
   the respective files. Currently it seems that future Affymetrix chip
