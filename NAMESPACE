@@ -1,7 +1,7 @@
 ##
 ## NAMESPACE file for the affxparser package.
 ##
-useDynLib(affxparser)
+useDynLib(affxparser, .registration = TRUE)
 
 importFrom("stats", "df")
 importFrom("utils", "packageDescription")
