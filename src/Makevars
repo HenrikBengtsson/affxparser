@@ -30,7 +30,7 @@ PKG_CPPFLAGS = \
  -I$(FUSION_SDK)\
  -D_USE_MEM_MAPPING_
 
-PKG_SOURCES = \
+PKG_CPP_SOURCES = \
 	$(FUSION_SDK)/calvin_files/data/src/CDFData.cpp\
 	$(FUSION_SDK)/calvin_files/data/src/CDFProbeGroupInformation.cpp\
 	$(FUSION_SDK)/calvin_files/data/src/CDFProbeInformation.cpp\
@@ -119,10 +119,17 @@ PKG_SOURCES = \
 	R_affx_cdf_extras.cpp\
 	R_affx_bpmap_parser.cpp\
 	R_affx_clf_pgf_parser.cpp\
-	R_affx_chp_parser.cpp\
-        000.init.c
+	R_affx_chp_parser.cpp
 
-OBJECTS=$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(PKG_SOURCES)))
+PKG_C_SOURCES = \
+	000.init.c
+
+PKG_SOURCES=$(PKG_CPP_SOURCES) $(PKG_C_SOURCES)
+
+CPP_OBJECTS=$(PKG_CPP_SOURCES:.cpp=.o)
+C_OBJECTS=$(PKG_C_SOURCES:.c=.o)
+
+OBJECTS=$(CPP_OBJECTS) $(C_OBJECTS)
 
 all: myclean $(SHLIB)
 
