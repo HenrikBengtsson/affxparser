@@ -4,6 +4,9 @@ MYCXXFLAGS = -Wno-sign-compare -O0
 %.o: %.cpp
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
 
+%.o: %.c
+	$(CC) $(ALL_CPPFLAGS) -c $< -o $@
+
 FUSION_SDK = fusion
 
 PKG_CPPFLAGS = \
@@ -116,9 +119,10 @@ PKG_SOURCES = \
 	R_affx_cdf_extras.cpp\
 	R_affx_bpmap_parser.cpp\
 	R_affx_clf_pgf_parser.cpp\
-	R_affx_chp_parser.cpp
+	R_affx_chp_parser.cpp\
+        000.init.c
 
-OBJECTS=$(PKG_SOURCES:.cpp=.o)
+OBJECTS=$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(PKG_SOURCES)))
 
 all: myclean $(SHLIB)
 

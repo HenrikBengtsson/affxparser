@@ -11,13 +11,9 @@ README[.]md
 CONTRIBUTING[.]md
 
 #----------------------------
-# CI et al.
-#----------------------------
-^appveyor[.]yml$
-
-#----------------------------
 # R related
 #----------------------------
+.o$
 Rplots.pdf$
 ^cran-comments[.].*$
 ^vignettes/.*[.](pdf|PDF)$
