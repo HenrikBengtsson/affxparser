@@ -1,9 +1,12 @@
 Package: affxparser
 ===================
 
-Version: 1.67.0-9001 [2022-03-23]
+Version: 1.67.0-9002 [2022-03-23]
 
 SOFTWARE QUALITY:
+
+ * Updates to build package from source on MS Windows with UCRT.  Thanks
+   to Tomas Kalibera for the contribution.
 
  * Now registering native routines - apparently never happened before.
 
