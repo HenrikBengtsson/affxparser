@@ -1,4 +1,5 @@
 rm -f src/affxparser.so\
+   src/000.init.o\
    src/R_affx_cdf_parser.o\
    src/R_affx_bpmap_parser.o\
    src/R_affx_clf_pgf_parser.o\

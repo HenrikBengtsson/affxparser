@@ -4,7 +4,10 @@ PKG_LIBS = -lws2_32
 MYCXXFLAGS = -Wno-sign-compare -Wno-unknown-pragmas
 
 %.o: %.cpp
-	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@ 
+	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
+
+%.o: %.c
+	$(CC) $(ALL_CPPFLAGS) -c $< -o $@
 
 FUSION_SDK = fusion
 
@@ -30,7 +33,7 @@ PKG_CPPFLAGS = \
  -D_USE_MEM_MAPPING_\
  -D_MSC_VER
 
-PKG_SOURCES = \
+PKG_CPP_SOURCES = \
 	$(FUSION_SDK)/calvin_files/data/src/CDFData.cpp\
 	$(FUSION_SDK)/calvin_files/data/src/CDFProbeGroupInformation.cpp\
 	$(FUSION_SDK)/calvin_files/data/src/CDFProbeInformation.cpp\
@@ -121,7 +124,15 @@ PKG_SOURCES = \
 	R_affx_clf_pgf_parser.cpp\
 	R_affx_chp_parser.cpp
 
-OBJECTS=$(PKG_SOURCES:.cpp=.o)
+PKG_C_SOURCES = \
+	000.init.c
+
+PKG_SOURCES=$(PKG_CPP_SOURCES) $(PKG_C_SOURCES)
+
+CPP_OBJECTS=$(PKG_CPP_SOURCES:.cpp=.o)
+C_OBJECTS=$(PKG_C_SOURCES:.c=.o)
+
+OBJECTS=$(CPP_OBJECTS) $(C_OBJECTS)
 
 all: myclean $(SHLIB)
 

@@ -6,9 +6,4 @@ useDynLib(affxparser, .registration = TRUE)
 importFrom("stats", "df")
 importFrom("utils", "packageDescription")
 
-##
-## export anything w/out a dot in front. (I like to know if it is
-## when reading the code public)
-##
-exportPattern("^[^\\.]")
-#exportPattern(".*")
+exportPattern("^([^R\\.])")
