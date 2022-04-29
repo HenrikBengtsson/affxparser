@@ -1,7 +1,20 @@
 Package: affxparser
 ===================
 
-Version: 1.69.0-9001 [2022-04-28]
+Version: 1.69.0-9002 [2022-04-28]
+
+BUG FIXES:
+
+ * Ported bug fix from affxparser 1.68.1.
+ 
+
+Version: 1.69.0 [2022-04-26]
+
+ * The version number was bumped for the Bioconductor devel version, which is
+   now BioC 3.16 for R-devel.
+
+
+Version: 1.68.1 [2022-04-28]
 
 BUG FIXES:
 
@@ -12,16 +25,10 @@ BUG FIXES:
    status'.
  
 
-Version: 1.69.0 [2022-04-26]
-
- * The version number was bumped for the Bioconductor devel version, which is
-   now BioC 3.16 for R-devel.
-
-
 Version: 1.68.0 [2022-04-26]
 
- * The version number was bumped for the Bioconductor release version, which is
-   now BioC 3.15 for R (>= 4.2.0).
+ * The version number was bumped for the Bioconductor release version,
+   which is now BioC 3.15 for R (>= 4.2.0).
 
 
 Version: 1.67.1 [2022-03-23]
