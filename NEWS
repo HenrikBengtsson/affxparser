@@ -1,10 +1,21 @@
 Package: affxparser
 ===================
 
+Version: 1.68.1 [2022-04-28]
+
+BUG FIXES:
+
+ * affxparser (>= 1.67.1) failed to install with R built with '-fpic'
+   flag. The symptom was a linking error 'ld: 000.init.o: relocation
+   R_X86_64_32 against `.rodata' can not be used when making a shared
+   object; recompile with -fPIC collect2: error: ld returned 1 exit
+   status'.
+ 
+
 Version: 1.68.0 [2022-04-26]
 
- * The version number was bumped for the Bioconductor release version, which is
-   now BioC 3.15 for R (>= 4.2.0).
+ * The version number was bumped for the Bioconductor release version,
+   which is now BioC 3.15 for R (>= 4.2.0).
 
 
 Version: 1.67.1 [2022-03-23]

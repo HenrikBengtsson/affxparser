@@ -5,7 +5,7 @@ MYCXXFLAGS = -Wno-sign-compare -O0
 	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) $(MYCXXFLAGS) -c $< -o $@
 
 %.o: %.c
-	$(CC) $(ALL_CPPFLAGS) -c $< -o $@
+	$(CC) $(ALL_CPPFLAGS) $(ALL_CFLAGS) -c $< -o $@
 
 FUSION_SDK = fusion
 
