@@ -48,21 +48,21 @@
 #   }
 #   \item Data
 #    \enumerate{
-#     \item Data Group \#1
+#     \item Data Group #1
 #      \enumerate{
-#       \item Data Set \#1
+#       \item Data Set #1
 #        \itemize{
 #         \item Parameters
 #         \item Column definitions
 #         \item Matrix of data
 #        }
-#       \item Data Set \#2
+#       \item Data Set #2
 #       \item ...
-#       \item Data Set \#L
+#       \item Data Set #L
 #      }
-#     \item Data Group \#2
+#     \item Data Group #2
 #     \item ...
-#     \item Data Group \#K
+#     \item Data Group #K
 #    }
 #  }
 # }
