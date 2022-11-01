@@ -1,6 +1,12 @@
 Package: affxparser
 ===================
 
+Version 1.70.0 [2022-11-01]
+
+ * The version number was bumped for the Bioconductor release version,
+   which is now Bioconductor 3.16 for R (>= 4.2.2).
+
+
 Version: 1.69.1 [2022-04-28]
 
 BUG FIXES:
