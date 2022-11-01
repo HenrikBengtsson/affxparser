@@ -6,6 +6,8 @@ jobs:
   R-CMD-check:
     if: "! contains(github.event.head_commit.message, '[ci skip]')"    
 
+    timeout-minutes: 30
+
     runs-on: ${{ matrix.config.os }}
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }}) ${{ matrix.config.label }}
@@ -17,8 +19,9 @@ jobs:
           - {os: windows-latest, r: devel   }
           - {os: windows-latest, r: release }
           - {os: windows-latest, r: oldrel  }
-          - {os: windows-latest, r: 3.6     }
-          - {os: windows-latest, r: 3.4     }
+# FIXME: affxparser (>= 1.27.1) does not install on R (< 4.0.0) on MS Windows
+#          - {os: windows-latest, r: 3.6     }
+#          - {os: windows-latest, r: 3.4     }
 #         - {os: macOS-latest,   r: devel   }
           - {os: macOS-latest,   r: release }
           - {os: macOS-latest,   r: oldrel  }
