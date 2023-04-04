@@ -1,4 +1,4 @@
-# Version (development version)
+# Version 1.71.1 [2023-04-04]
 
 ### Bug Fixes
 
@@ -8,11 +8,19 @@
 
 # Version 1.71.0 [2022-11-01]
 
+## Notes
+
  * The version number was bumped for the Bioconductor devel version,
    which is now Bioconductor 3.17 for R devel.
 
 
 # Version 1.70.0 [2022-11-01]
+
+## Miscellaneous
+
+ * Remove extra backslash escaping in a few help pages.
+ 
+## Notes
 
  * The version number was bumped for the Bioconductor release version,
    which is now Bioconductor 3.16 for R (>= 4.2.2).
