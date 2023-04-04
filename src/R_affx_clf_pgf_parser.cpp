@@ -281,7 +281,7 @@ extern "C" {
           R_affx_get_body(clf, rho);
       }
       delete Err::popHandler();
-    } catch (Except ex) {
+    } catch (Except& ex) {
       delete Err::popHandler();
       clf->close();
       delete clf;
@@ -324,7 +324,7 @@ extern "C" {
       }
       pgf->close();
       delete Err::popHandler();
-    } catch (Except ex) {
+    } catch (Except& ex) {
       delete Err::popHandler();	// errors now are fatal
       pgf->close();
       delete pgf;
