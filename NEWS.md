@@ -1,6 +1,10 @@
 # Version (development version)
 
- * ...
+### Bug Fixes
+
+ * Fix two instances of "watching polymorphic type 'class Except' by
+   value [-Wcatch-value=]" compiler warnings.
+
 
 # Version 1.71.0 [2022-11-01]
 
@@ -56,7 +60,9 @@
  
 # Version 1.67.0 [2021-10-27]
  
+
 # Version 1.66.0 [2021-10-27]
+
  
 # Version 1.65.3 [2021-09-22]
  
