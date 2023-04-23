@@ -1,4 +1,3 @@
-CXX_STD = CXX14
 ## -Wno-unused-private-field gives notes/errors with some compiler
 MYCXXFLAGS = -Wno-sign-compare -O0
 
