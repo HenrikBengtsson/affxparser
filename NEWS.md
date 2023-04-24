@@ -1,3 +1,9 @@
+# Version 1.17.2 [2023-04-23]
+
+### Bug Fixes
+
+ * fix to `src/_mingw.h` provided by Tomas Kalibera.
+
 # Version 1.71.1 [2023-04-04]
 
 ### Bug Fixes
