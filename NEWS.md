@@ -2,7 +2,7 @@
 
 ## Notes
 
- * The version number was bumped for the Bioconductor release version,
+ * The version number was bumped for the Bioconductor develop version,
    which is now Bioconductor 3.18 for R (>= 4.4.0).
 
 
