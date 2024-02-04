@@ -13,7 +13,7 @@
 #   \item{con}{A @connection.}
 #   \item{header}{A @list structure describing the CEL header, similar
 #     to the structure returned by @see "readCelHeader".}
-#   \item{outputFormat}{A @character string specifying the output format.
+#   \item{outputVersion}{A @character string specifying the output format.
 #     Currently only CEL version 4 (binary;XDA) are supported.}
 #   \item{...}{Not used.}
 # }

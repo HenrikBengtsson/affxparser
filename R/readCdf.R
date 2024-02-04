@@ -30,7 +30,6 @@
 #     retrieved, otherwise not.}
 #  \item{readBases}{If @TRUE, cell P and T bases are retrieved, otherwise not.}
 #  \item{readIndexpos}{If @TRUE, cell indexpos are retrieved, otherwise not.}
-#  \item{readExpos}{If @TRUE, cell "expos" values are retrieved, otherwise not.}
 #  \item{readUnitType}{If @TRUE, unit types are retrieved, otherwise not.}
 #  \item{readUnitDirection}{If @TRUE, unit directions are retrieved, otherwise not.}
 #  \item{readUnitNumber}{If @TRUE, unit numbers are retrieved, otherwise not.}

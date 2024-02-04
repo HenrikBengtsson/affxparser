@@ -1,3 +1,10 @@
+# Version (development version)
+
+### Documentation
+
+ * Fix incorrectly documented arguments in a few functions.
+ 
+
 # Version 1.75.0 [2023-10-24]
 
 ## Notes

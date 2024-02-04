@@ -12,8 +12,8 @@
 # @synopsis
 #
 # \arguments{
-#  \item{groups}{A @list of groups.}
-#  \item{which}{An @integer or @character @vector of groups be returned.}
+#  \item{field}{An R object.}
+#  \item{dim}{An @integer vector.}
 #  \item{...}{Not used.}
 # }
 #
