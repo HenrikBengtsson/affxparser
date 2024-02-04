@@ -19,6 +19,7 @@ jobs:
           - {os: windows-latest, r: devel    }
           - {os: windows-latest, r: release  }
           - {os: windows-latest, r: oldrel   }
+          - {os: macOS-14,       r: devel    }  ## M1 architecture
           - {os: macOS-latest,   r: devel    }
           - {os: macOS-latest,   r: release  }
           - {os: macOS-latest,   r: oldrel   }
@@ -44,11 +45,11 @@ jobs:
       RCMDCHECK_ERROR_ON: note
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
 
-      - uses: r-lib/actions/setup-tinytex@v1
+      - uses: r-lib/actions/setup-tinytex@v2
       
       - name: Install additional LaTeX packages
         if: runner.os != 'Windows'
@@ -71,7 +72,7 @@ jobs:
 
       - name: Cache R packages
         if: runner.os != 'Windows'
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ${{ env.R_LIBS_USER }}
           key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
