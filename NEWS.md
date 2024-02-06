@@ -6,6 +6,9 @@
 
 ## Bug Fixes
 
+ * Fixed one sprintf-related coercion issue, reported by the GCC
+   compiler, that would produce an incorrect warning message.
+
  * Fixed two sprintf-related flag issues, reported by the GCC
    compiler, in internal assertions, which would never be reached.
 

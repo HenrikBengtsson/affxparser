@@ -142,7 +142,7 @@ R_affx_GetList(ParameterNameValueTypeList params)
       case ParameterNameValueType::UInt16Type:
       case ParameterNameValueType::UInt32Type:
 	warning("reading 'unsigned int' parameter '%s' as NA", 
-		   pName);
+                CHAR(pName));
 	PROTECT(pVal = ScalarInteger(R_NaInt));
 	break;
       case ParameterNameValueType::FloatType:
