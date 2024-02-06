@@ -1,9 +1,5 @@
 # Version (development version)
 
-## Documentation
-
- * Fix incorrectly documented arguments in a few functions.
-
 ## Bug Fixes
 
  * Fixed one sprintf-related coercion issue, reported by the GCC
@@ -11,6 +7,13 @@
 
  * Fixed two sprintf-related flag issues, reported by the GCC
    compiler, in internal assertions, which would never be reached.
+
+
+# Version 1.75.1 [2024-02-05]
+
+## Documentation
+
+ * Fix incorrectly documented arguments in a few functions.
 
 
 # Version 1.75.0 [2023-10-24]
