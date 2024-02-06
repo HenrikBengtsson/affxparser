@@ -39,7 +39,6 @@
     retrieved, otherwise not.}
  \item{readBases}{If \code{\link[base:logical]{TRUE}}, cell P and T bases are retrieved, otherwise not.}
  \item{readIndexpos}{If \code{\link[base:logical]{TRUE}}, cell indexpos are retrieved, otherwise not.}
- \item{readExpos}{If \code{\link[base:logical]{TRUE}}, cell "expos" values are retrieved, otherwise not.}
  \item{readUnitType}{If \code{\link[base:logical]{TRUE}}, unit types are retrieved, otherwise not.}
  \item{readUnitDirection}{If \code{\link[base:logical]{TRUE}}, unit directions are retrieved, otherwise not.}
  \item{readUnitNumber}{If \code{\link[base:logical]{TRUE}}, unit numbers are retrieved, otherwise not.}

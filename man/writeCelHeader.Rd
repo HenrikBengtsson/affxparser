@@ -24,7 +24,7 @@ writeCelHeader(con, header, outputVersion=c("4"), ...)
    \item{con}{A \code{\link[base:connections]{connection}}.}
    \item{header}{A \code{\link[base]{list}} structure describing the CEL header, similar
      to the structure returned by \code{\link{readCelHeader}}().}
-   \item{outputFormat}{A \code{\link[base]{character}} string specifying the output format.
+   \item{outputVersion}{A \code{\link[base]{character}} string specifying the output format.
      Currently only CEL version 4 (binary;XDA) are supported.}
    \item{...}{Not used.}
  }

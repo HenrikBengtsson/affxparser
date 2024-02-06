@@ -23,8 +23,8 @@ cdfSetDimension(field, dim, ...)
 }
 
 \arguments{
- \item{groups}{A \code{\link[base]{list}} of groups.}
- \item{which}{An \code{\link[base]{integer}} or \code{\link[base]{character}} \code{\link[base]{vector}} of groups be returned.}
+ \item{field}{An R object.}
+ \item{dim}{An \code{\link[base]{integer}} vector.}
  \item{...}{Not used.}
 }
 

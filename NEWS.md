@@ -1,4 +1,4 @@
-# Version (development version)
+# Version 1.75.2 [2024-02-06]
 
 ## Bug Fixes
 
