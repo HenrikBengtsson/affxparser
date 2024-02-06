@@ -258,7 +258,7 @@ extern "C" {
       error("argument '%s' should be '%s'", "readBody",
                "logical(1)");
     if (TYPEOF(rho) != ENVSXP)
-      error("argument '%' should be '%s'", "rho", "environment");
+      error("argument '%s' should be '%s'", "rho", "environment");
     
     const char *clfFileName = CHAR(STRING_ELT(fname, 0));
 
@@ -303,7 +303,7 @@ extern "C" {
       error("argument '%s' should be '%s'", "readBody",
                "logical(1)");
     if (TYPEOF(rho) != ENVSXP)
-      error("argument '%' should be '%s'", "rho", "environments");
+      error("argument '%s' should be '%s'", "rho", "environments");
 
     const char *pgfFileName = CHAR(STRING_ELT(fname, 0));
 
