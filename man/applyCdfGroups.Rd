@@ -33,7 +33,7 @@ applyCdfGroups(cdf, fcn, ...)
 }
 
 \section{Pre-defined restructuring functions}{
- \itemize{
+ \describe{
   \item{Generic:}{
   \itemize{
    \item \code{\link{cdfGetFields}}() - Gets a subset of groups fields in a CDF
