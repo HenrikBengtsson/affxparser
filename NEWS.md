@@ -1,3 +1,35 @@
+# Version 1.79.0 [2024-10-30]
+
+## Notes
+
+ * The version number was bumped for the Bioconductor develop version,
+   which is now Bioconductor 3.21 for R (>= 4.5).
+
+
+# Version 1.78.0 [2024-10-30]
+
+## Notes
+
+ * The version number was bumped for the Bioconductor release version,
+   which is now Bioconductor 3.20 for R (>= 4.4).
+
+
+# Version 1.77.0 [2024-05-01]
+
+## Notes
+
+ * The version number was bumped for the Bioconductor develop version,
+   which is now Bioconductor 3.20 for R (>= 4.4).
+
+
+# Version 1.76.0 [2024-05-01]
+
+## Notes
+
+ * The version number was bumped for the Bioconductor release version,
+   which is now Bioconductor 3.19 for R (>= 4.4).
+
+
 # Version 1.75.2 [2024-02-06]
 
 ## Bug Fixes
