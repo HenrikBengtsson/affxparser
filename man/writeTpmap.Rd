@@ -2,7 +2,7 @@
 \alias{writeTpmap}
 \alias{tpmap2bpmap}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{Writes BPMAP and TPMAP files.}
+\title{Writes BPMAP and TPMAP files}
 \description{
   Writes BPMAP and TPMAP files.
 }
