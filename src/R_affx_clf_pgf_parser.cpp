@@ -15,7 +15,7 @@ new_int_elt(const char* symbol, int length, SEXP rho)
 {
   SEXP tmp;
   PROTECT(tmp = NEW_INTEGER(length));
-  defineVar(install(symbol), tmp, rho);
+  Rf_defineVar(Rf_install(symbol), tmp, rho);
   UNPROTECT(1);
   return INTEGER(tmp);
 }
@@ -25,7 +25,7 @@ new_char_elt(const char* symbol, int length, SEXP rho)
 {
   SEXP tmp;
   PROTECT(tmp = NEW_CHARACTER(length));
-  defineVar(install(symbol), tmp, rho);
+  Rf_defineVar(Rf_install(symbol), tmp, rho);
   UNPROTECT(1);
   return tmp;
 }
@@ -55,15 +55,15 @@ R_affx_read_tsv_header(TsvFile& tsv)
   while (tsv.headersNext(key, value) == TSV_OK) {
     if (key=="chip_type") {
       SET_STRING_ELT(chipTypeHeaders, nChipTypeHeaders++, 
-                     mkChar(value.c_str()));
+                     Rf_mkChar(value.c_str()));
     } else {
-      SET_ELEMENT(headers, nOtherHeaders, mkString(value.c_str()));
-      SET_STRING_ELT(headerNames, nOtherHeaders, mkChar(key.c_str()));
+      SET_ELEMENT(headers, nOtherHeaders, Rf_mkString(value.c_str()));
+      SET_STRING_ELT(headerNames, nOtherHeaders, Rf_mkChar(key.c_str()));
       ++nOtherHeaders;
     }
   }
   SET_ELEMENT(headers, 0, chipTypeHeaders);
-  SET_STRING_ELT(headerNames, 0, mkChar("chip_type"));
+  SET_STRING_ELT(headerNames, 0, Rf_mkChar("chip_type"));
   SET_NAMES(headers, headerNames);
   UNPROTECT(3);
   return headers;
@@ -106,12 +106,12 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
         pindices = INTEGER(indices);
         prevIndex = 0;
         maxIndex = 0;
-        for (i=0; i < length(indices); i++) {
+        for (i=0; i < Rf_length(indices); i++) {
 	    currIndex = pindices[i];
             if (currIndex == prevIndex) {
-	        error("Argument 'indices' must not contain duplicated entries: %d", currIndex);
+	        Rf_error("Argument 'indices' must not contain duplicated entries: %d", currIndex);
             } else if (currIndex < prevIndex) {
-	        error("Argument 'indices' must be sorted.");
+	        Rf_error("Argument 'indices' must be sorted.");
 	    } else if (currIndex > maxIndex) {
                 maxIndex = currIndex;
 	    }
@@ -151,18 +151,18 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
     // (c) Setup/validate 'indices'
     if (readAll) {
         // indices <- 1:maxIndex
-        PROTECT(indices = allocVector(INTSXP, maxIndex));
+        PROTECT(indices = Rf_allocVector(INTSXP, maxIndex));
         pindices = INTEGER(indices);
-        for (i=0; i < length(indices); i++) {
+        for (i=0; i < Rf_length(indices); i++) {
             pindices[i] = i+1; 
         }
     } else {
-        for (i=0; i < length(indices); i++) {
+        for (i=0; i < Rf_length(indices); i++) {
             currIndex = pindices[i];
             if (currIndex <= 0) {
-                error("Argument 'indices' contains a non-positive element: %d", currIndex);
+                Rf_error("Argument 'indices' contains a non-positive element: %d", currIndex);
             } else if (currIndex > maxIndex) {
-                error("Argument 'indices' contains an element out of range [1,%d]: %d", maxIndex, currIndex);
+                Rf_error("Argument 'indices' contains an element out of range [1,%d]: %d", maxIndex, currIndex);
             }
         }
     }
@@ -177,10 +177,10 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
         *probe_interrogation_position;
     
     // probeset
-    probeset_id = new_int_elt("probesetId", length(indices), rho);
-    probeset_type = new_char_elt("probesetType", length(indices), rho);
-    probeset_name = new_char_elt("probesetName", length(indices), rho);
-    probeset_start_atom = new_int_elt("probesetStartAtom", length(indices), rho);
+    probeset_id = new_int_elt("probesetId", Rf_length(indices), rho);
+    probeset_type = new_char_elt("probesetType", Rf_length(indices), rho);
+    probeset_name = new_char_elt("probesetName", Rf_length(indices), rho);
+    probeset_start_atom = new_int_elt("probesetStartAtom", Rf_length(indices), rho);
     // atom
     atom_id = new_int_elt("atomId", nAtoms, rho);
     // FIXME: where's atom_type? in docs but not .h or .cpp
@@ -200,7 +200,7 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
     // (e) Read (probesets, atoms, probes)
     nProbesets = 0;
     nAtoms = nProbes = 0;
-    for (i=0; i < length(indices); i++) {
+    for (i=0; i < Rf_length(indices); i++) {
         // Next index to read
         nextIndex = pindices[i];
   
@@ -211,13 +211,13 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
   
         // Sanity check
         if (nProbesets < nextIndex) {
-          error("INTERNAL ERROR: Expected %d more probesets to skip in PGF file, but reached end of file.", nextIndex-nProbesets);
+          Rf_error("INTERNAL ERROR: Expected %d more probesets to skip in PGF file, but reached end of file.", nextIndex-nProbesets);
         }
   
         // Read probeset
         probeset_id[i] = pgf->probeset_id;
-        SET_STRING_ELT(probeset_type, i, mkChar(pgf->probeset_type.c_str()));
-        SET_STRING_ELT(probeset_name, i, mkChar(pgf->probeset_name.c_str()));
+        SET_STRING_ELT(probeset_type, i, Rf_mkChar(pgf->probeset_type.c_str()));
+        SET_STRING_ELT(probeset_name, i, Rf_mkChar(pgf->probeset_name.c_str()));
         probeset_start_atom[i] = 1 + nAtoms;
   
         while (pgf->next_atom() == TSV_OK) {
@@ -230,13 +230,13 @@ R_affx_get_body(PgfFile* pgf, SEXP rho, SEXP indices)
             while (pgf->next_probe() == TSV_OK) {
                 probe_id[nProbes] = pgf->probe_id;
                 SET_STRING_ELT(probe_type, nProbes, 
-                               mkChar(pgf->probe_type.c_str()));
+                               Rf_mkChar(pgf->probe_type.c_str()));
                 probe_gc_count[nProbes] = pgf->gc_count;
                 probe_length[nProbes] = pgf->probe_length;
                 probe_interrogation_position[nProbes] = 
                     pgf->interrogation_position;
                 SET_STRING_ELT(probe_sequence, nProbes,
-                               mkChar(pgf->probe_sequence.c_str()));
+                               Rf_mkChar(pgf->probe_sequence.c_str()));
                 ++nProbes;
             } // while (pgf->next_probe() == TSV_OK)
         } // while (pgf->next_atom() == TSV_OK)
@@ -252,13 +252,13 @@ extern "C" {
   R_affx_get_clf_file(SEXP fname, SEXP readBody, SEXP rho)
   {
     if (IS_CHARACTER(fname) == FALSE || LENGTH(fname) != 1)
-      error("argument '%s' should be '%s'", "fname",
+      Rf_error("argument '%s' should be '%s'", "fname",
                "character(1)");
     if (IS_LOGICAL(readBody) == FALSE || LENGTH(readBody) !=1)
-      error("argument '%s' should be '%s'", "readBody",
+      Rf_error("argument '%s' should be '%s'", "readBody",
                "logical(1)");
     if (TYPEOF(rho) != ENVSXP)
-      error("argument '%s' should be '%s'", "rho", "environment");
+      Rf_error("argument '%s' should be '%s'", "rho", "environment");
     
     const char *clfFileName = CHAR(STRING_ELT(fname, 0));
 
@@ -270,12 +270,12 @@ extern "C" {
       Err::pushHandler(err);
       if (clf->open(string(clfFileName)) != TSV_OK) {
         delete clf;
-        error("could not open clf file '%s'", clfFileName);
+        Rf_error("could not open clf file '%s'", clfFileName);
       }
       // header
       SEXP tmp;
       PROTECT(tmp = R_affx_read_tsv_header(clf->m_tsv));
-      defineVar(install("header"), tmp, rho);
+      Rf_defineVar(Rf_install("header"), tmp, rho);
       UNPROTECT(1);
       if (LOGICAL(readBody)[0] == TRUE) {
           R_affx_get_body(clf, rho);
@@ -285,7 +285,7 @@ extern "C" {
       delete Err::popHandler();
       clf->close();
       delete clf;
-      error("%s", ex.what());
+      Rf_error("%s", ex.what());
     }
 
     clf->close();
@@ -297,13 +297,13 @@ extern "C" {
   R_affx_get_pgf_file(SEXP fname, SEXP readBody, SEXP rho, SEXP indices)
   {
     if (IS_CHARACTER(fname) == FALSE || LENGTH(fname) != 1)
-      error("argument '%s' should be '%s'", "fname",
+      Rf_error("argument '%s' should be '%s'", "fname",
                "character(1)");
     if (IS_LOGICAL(readBody) == FALSE || LENGTH(readBody) != 1)
-      error("argument '%s' should be '%s'", "readBody",
+      Rf_error("argument '%s' should be '%s'", "readBody",
                "logical(1)");
     if (TYPEOF(rho) != ENVSXP)
-      error("argument '%s' should be '%s'", "rho", "environments");
+      Rf_error("argument '%s' should be '%s'", "rho", "environments");
 
     const char *pgfFileName = CHAR(STRING_ELT(fname, 0));
 
@@ -313,11 +313,11 @@ extern "C" {
       Err::pushHandler(err);
       if (pgf->open(string(pgfFileName)) != TSV_OK) {
         delete pgf;
-        error("could not open pgf file '%s'", pgfFileName);
+        Rf_error("could not open pgf file '%s'", pgfFileName);
       }
       SEXP tmp;
       PROTECT(tmp = R_affx_read_tsv_header(pgf->m_tsv));
-      defineVar(install("header"), tmp, rho);
+      Rf_defineVar(Rf_install("header"), tmp, rho);
       UNPROTECT(1);
       if (LOGICAL(readBody)[0] == TRUE) {
           R_affx_get_body(pgf, rho, indices);
@@ -328,7 +328,7 @@ extern "C" {
       delete Err::popHandler();	// errors now are fatal
       pgf->close();
       delete pgf;
-      error("%s", ex.what());
+      Rf_error("%s", ex.what());
     }
 
     delete pgf;

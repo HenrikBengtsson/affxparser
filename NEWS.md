@@ -1,5 +1,12 @@
 # Version 1.79.0 [2024-10-30]
 
+## Bug Fixes
+
+ * Extensive use of (say) Rf_allocVector instead of allocVactor.
+   Similar for other R forms, like R_Calloc etc.
+
+# Version 1.79.0 [2024-10-30]
+
 ## Notes
 
  * The version number was bumped for the Bioconductor develop version,

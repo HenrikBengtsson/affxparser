@@ -39,7 +39,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      error("Failed to read the CDF file.");
+      Rf_error("Failed to read the CDF file.");
     }
 
     header = cdf.GetHeader();
@@ -53,14 +53,14 @@ extern "C" {
     for (int iset = 0; iset < nsets; iset++) {
       str = cdf.GetProbeSetName(iset);
       str_length = str.size();
-      cstr = Calloc(str_length+1, char);
+      cstr = R_Calloc(str_length+1, char);
       strncpy(cstr, str.c_str(), str_length);
       cstr[str_length] = '\0';
-      SET_STRING_ELT(names, iset, mkChar(cstr));
+      SET_STRING_ELT(names, iset, Rf_mkChar(cstr));
       if (i_verboseFlag >= R_AFFX_VERBOSE) {
         Rprintf("Processing probeset: %s\n", cstr);
       }
-      Free(cstr);
+      R_Free(cstr);
 
       FusionCDFProbeSetInformation set;
       cdf.GetProbeSetInformation(iset, set);
@@ -99,7 +99,7 @@ extern "C" {
       }
     }
     /** set the names of the list. **/
-    setAttrib(pmmm, R_NamesSymbol, names);
+    Rf_setAttrib(pmmm, R_NamesSymbol, names);
 
     /** pop the names, and the vector. **/
     UNPROTECT(2);  /* 'names' and then 'pmmm' */
@@ -157,18 +157,18 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      error("Failed to read the CDF file.");
+      Rf_error("Failed to read the CDF file.");
     }
 
     numQCUnitsInFile  = cdf.GetHeader().GetNumQCProbeSets();
     numCols = cdf.GetHeader().GetCols();
-    if(length(unitIndices) != 0){
-        for (int i = 0; i < length(unitIndices); i++) {
+    if(Rf_length(unitIndices) != 0){
+        for (int i = 0; i < Rf_length(unitIndices); i++) {
             if(INTEGER(unitIndices)[i] < 1 || 
                INTEGER(unitIndices)[i] > numQCUnitsInFile)
-	      error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numQCUnitsInFile, INTEGER(unitIndices)[i]);
+	      Rf_error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numQCUnitsInFile, INTEGER(unitIndices)[i]);
         }
-        numQCUnits = length(unitIndices);
+        numQCUnits = Rf_length(unitIndices);
         readEveryUnit = false;
     } else {
         numQCUnits = numQCUnitsInFile;
@@ -196,26 +196,26 @@ extern "C" {
 
     ii = 0;
     if(i_returnXY) {
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("x"));
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("y"));
+        SET_STRING_ELT(r_qcunit_names, ii++, Rf_mkChar("x"));
+        SET_STRING_ELT(r_qcunit_names, ii++, Rf_mkChar("y"));
     }
     if(i_returnIndices) {
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("indices"));
+        SET_STRING_ELT(r_qcunit_names, ii++, Rf_mkChar("indices"));
     }
     if(i_returnLengths) {
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("length"));
+        SET_STRING_ELT(r_qcunit_names, ii++, Rf_mkChar("length"));
     }
     if(i_returnPMInfo) {
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("pm"));
+        SET_STRING_ELT(r_qcunit_names, ii++, Rf_mkChar("pm"));
     }
     if(i_returnBackgroundInfo) {
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("background"));
+        SET_STRING_ELT(r_qcunit_names, ii++, Rf_mkChar("background"));
     }
     if(i_returnType) {
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("type"));
+        SET_STRING_ELT(r_qcunit_names, ii++, Rf_mkChar("type"));
     }
     if(i_returnQCNumbers) {
-        SET_STRING_ELT(r_qcunit_names, ii++, mkChar("ncells"));
+        SET_STRING_ELT(r_qcunit_names, ii++, Rf_mkChar("ncells"));
     }
 
     /*
@@ -224,25 +224,25 @@ extern "C" {
 
     SEXP r_qcTypeAsString;
     PROTECT(r_qcTypeAsString = NEW_CHARACTER(19));
-    SET_STRING_ELT(r_qcTypeAsString, 0, mkChar("unknown"));
-    SET_STRING_ELT(r_qcTypeAsString, 1, mkChar("checkerboardNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 2, mkChar("checkerboardPositive"));
-    SET_STRING_ELT(r_qcTypeAsString, 3, mkChar("hybeNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 4, mkChar("hybePositive"));
-    SET_STRING_ELT(r_qcTypeAsString, 5, mkChar("textFeaturesNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 6, mkChar("textFeaturesPositive"));
-    SET_STRING_ELT(r_qcTypeAsString, 7, mkChar("centralNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 8, mkChar("centralPositive"));
-    SET_STRING_ELT(r_qcTypeAsString, 9, mkChar("geneExpNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 10, mkChar("geneExpPositive"));
-    SET_STRING_ELT(r_qcTypeAsString, 11, mkChar("cycleFidelityNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 12, mkChar("cycleFidelityPositive"));
-    SET_STRING_ELT(r_qcTypeAsString, 13, mkChar("centralCrossNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 14, mkChar("centralCrossPositive"));
-    SET_STRING_ELT(r_qcTypeAsString, 15, mkChar("crossHybeNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 16, mkChar("crossHybePositive"));
-    SET_STRING_ELT(r_qcTypeAsString, 17, mkChar("SpatialNormNegative"));
-    SET_STRING_ELT(r_qcTypeAsString, 18, mkChar("SpatialNormPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 0, Rf_mkChar("unknown"));
+    SET_STRING_ELT(r_qcTypeAsString, 1, Rf_mkChar("checkerboardNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 2, Rf_mkChar("checkerboardPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 3, Rf_mkChar("hybeNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 4, Rf_mkChar("hybePositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 5, Rf_mkChar("textFeaturesNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 6, Rf_mkChar("textFeaturesPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 7, Rf_mkChar("centralNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 8, Rf_mkChar("centralPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 9, Rf_mkChar("geneExpNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 10, Rf_mkChar("geneExpPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 11, Rf_mkChar("cycleFidelityNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 12, Rf_mkChar("cycleFidelityPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 13, Rf_mkChar("centralCrossNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 14, Rf_mkChar("centralCrossPositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 15, Rf_mkChar("crossHybeNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 16, Rf_mkChar("crossHybePositive"));
+    SET_STRING_ELT(r_qcTypeAsString, 17, Rf_mkChar("SpatialNormNegative"));
+    SET_STRING_ELT(r_qcTypeAsString, 18, Rf_mkChar("SpatialNormPositive"));
 
     PROTECT(r_qcunits_list = NEW_LIST(numQCUnits));
 
@@ -335,92 +335,92 @@ extern "C" {
           switch (qcunit.GetQCProbeSetType()) {
           case affxcdf::UnknownQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 0)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 0)));
               break;
           case affxcdf::CheckerboardNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 1)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 1)));
               break;
           case affxcdf::CheckerboardPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 2)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 2)));
               break;
           case affxcdf::HybNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 3)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 3)));
               break;
           case affxcdf::HybPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 4)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 4)));
               break;
           case affxcdf::TextFeaturesNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 5)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 5)));
               break;
           case affxcdf::TextFeaturesPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 6)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 6)));
               break;
           case affxcdf::CentralNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 7)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 7)));
               break;
           case affxcdf::CentralPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 8)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 8)));
               break;
           case affxcdf::GeneExpNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 9)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 9)));
               break;
           case affxcdf::GeneExpPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 10)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 10)));
               break;
           case affxcdf::CycleFidelityNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 11)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 11)));
               break;
           case affxcdf::CycleFidelityPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 12)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 12)));
               break;
           case affxcdf::CentralCrossNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 13)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 13)));
               break;
           case affxcdf::CentralCrossPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 14)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 14)));
               break;
           case affxcdf::CrossHybNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 15)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 15)));
               break;
           case affxcdf::CrossHybPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 16)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 16)));
               break;
           case affxcdf::SpatialNormalizationNegativeQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 17)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 17)));
               break;
           case affxcdf::SpatialNormalizationPositiveQCProbeSetType:
               SET_VECTOR_ELT(r_qcunit, ii++,
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 18)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 18)));
               break;
           default:
               SET_VECTOR_ELT(r_qcunit, ii++, 
-                             ScalarString(STRING_ELT(r_qcTypeAsString, 0)));
+                             Rf_ScalarString(STRING_ELT(r_qcTypeAsString, 0)));
               break;
           }
       }
 
       if(i_returnQCNumbers) {
-          SET_VECTOR_ELT(r_qcunit, ii++, ScalarInteger(nqccells));
+          SET_VECTOR_ELT(r_qcunit, ii++, Rf_ScalarInteger(nqccells));
       }
       
-      setAttrib(r_qcunit, R_NamesSymbol, r_qcunit_names);
+      Rf_setAttrib(r_qcunit, R_NamesSymbol, r_qcunit_names);
       SET_VECTOR_ELT(r_qcunits_list, iqcunit, r_qcunit);
       UNPROTECT(1);
     }
@@ -449,7 +449,7 @@ extern "C" {
     cdf.SetFileName(cdfFileName);
    
     if (cdf.ReadHeader() == false) {
-      error("Failed to read the CDF file header for: %s\n", cdfFileName);
+      Rf_error("Failed to read the CDF file header for: %s\n", cdfFileName);
     }
 
     SEXP
@@ -471,59 +471,59 @@ extern "C" {
      * Luis should add a version number
      */
 
-    SET_STRING_ELT(names, ii, mkChar("ncols"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, ii, Rf_mkChar("ncols"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = header.GetCols();
     SET_VECTOR_ELT(vals, ii++, tmp); 
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, ii, mkChar("nrows"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, ii, Rf_mkChar("nrows"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = header.GetRows();
     SET_VECTOR_ELT(vals, ii++, tmp); 
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, ii, mkChar("nunits"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, ii, Rf_mkChar("nunits"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = header.GetNumProbeSets();
     SET_VECTOR_ELT(vals, ii++, tmp); 
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, ii, mkChar("nqcunits"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, ii, Rf_mkChar("nqcunits"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = header.GetNumQCProbeSets();
     SET_VECTOR_ELT(vals, ii++, tmp); 
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, ii, mkChar("refseq"));
+    SET_STRING_ELT(names, ii, Rf_mkChar("refseq"));
     str = header.GetReference();
     str_length = str.size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     strncpy(cstr, str.c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_VECTOR_ELT(vals, ii++, mkString(cstr));
-    Free(cstr);
+    SET_VECTOR_ELT(vals, ii++, Rf_mkString(cstr));
+    R_Free(cstr);
 
-    SET_STRING_ELT(names, ii, mkChar("chiptype"));
+    SET_STRING_ELT(names, ii, Rf_mkChar("chiptype"));
     str = cdf.GetChipType();
     str_length = str.size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     strncpy(cstr, str.c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_VECTOR_ELT(vals, ii++, mkString(cstr));
-    Free(cstr);
+    SET_VECTOR_ELT(vals, ii++, Rf_mkString(cstr));
+    R_Free(cstr);
 
-    SET_STRING_ELT(names, ii, mkChar("filename"));
+    SET_STRING_ELT(names, ii, Rf_mkChar("filename"));
     str = cdf.GetFileName();
     str_length = str.size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     strncpy(cstr, str.c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_VECTOR_ELT(vals, ii++, mkString(cstr));
-    Free(cstr);
+    SET_VECTOR_ELT(vals, ii++, Rf_mkString(cstr));
+    R_Free(cstr);
 
     /** set the names down here at the end. **/
-    setAttrib(vals, R_NamesSymbol, names);
+    Rf_setAttrib(vals, R_NamesSymbol, names);
 
     /** Unprotect the returned list. **/
     UNPROTECT(2);  /* 'names' and then 'vals' */
@@ -605,18 +605,18 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      error("Failed to read the CDF file.\n");
+      Rf_error("Failed to read the CDF file.\n");
     }
 
     numUnitsInFile  = cdf.GetHeader().GetNumProbeSets();
     numCols = cdf.GetHeader().GetCols();
-    if(length(unitIndices) != 0){
-        for (int i = 0; i < length(unitIndices); i++) {
+    if(Rf_length(unitIndices) != 0){
+        for (int i = 0; i < Rf_length(unitIndices); i++) {
             if(INTEGER(unitIndices)[i] < 1 || 
                INTEGER(unitIndices)[i] > numUnitsInFile)
-                error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numUnitsInFile, INTEGER(unitIndices)[i]);
+                Rf_error("Argument 'units' contains an element out of range [%d,%d]: %d", 1, numUnitsInFile, INTEGER(unitIndices)[i]);
         }
-        numUnits = length(unitIndices);
+        numUnits = Rf_length(unitIndices);
         readEveryUnit = false;
     } else {
         numUnits = numUnitsInFile;
@@ -651,18 +651,18 @@ extern "C" {
         i_returnUnitNumber + 1;
     PROTECT(r_unit_names = NEW_CHARACTER(numUnitArguments));
     ii = 0;
-    SET_STRING_ELT(r_unit_names, ii++, mkChar("groups"));
+    SET_STRING_ELT(r_unit_names, ii++, Rf_mkChar("groups"));
     if(i_returnUnitType)
-        SET_STRING_ELT(r_unit_names, ii++, mkChar("unittype"));
+        SET_STRING_ELT(r_unit_names, ii++, Rf_mkChar("unittype"));
     if(i_returnUnitDirection)
-        SET_STRING_ELT(r_unit_names, ii++, mkChar("unitdirection"));
+        SET_STRING_ELT(r_unit_names, ii++, Rf_mkChar("unitdirection"));
     if(i_returnUnitAtomNumbers) {
-        SET_STRING_ELT(r_unit_names, ii++, mkChar("natoms"));
-        SET_STRING_ELT(r_unit_names, ii++, mkChar("ncells"));
-        SET_STRING_ELT(r_unit_names, ii++, mkChar("ncellsperatom"));
+        SET_STRING_ELT(r_unit_names, ii++, Rf_mkChar("natoms"));
+        SET_STRING_ELT(r_unit_names, ii++, Rf_mkChar("ncells"));
+        SET_STRING_ELT(r_unit_names, ii++, Rf_mkChar("ncellsperatom"));
     }
     if(i_returnUnitNumber)
-        SET_STRING_ELT(r_unit_names, ii++, mkChar("unitnumber"));
+        SET_STRING_ELT(r_unit_names, ii++, Rf_mkChar("unitnumber"));
     
     /*
     ** Because the length of the block list can change
@@ -680,39 +680,39 @@ extern "C" {
     PROTECT(r_block_names = NEW_CHARACTER(numBlockArguments));
     ii = 0;
     if(i_returnXY) {
-        SET_STRING_ELT(r_block_names, ii++, mkChar("x"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("x"));
         unprotectBlockInfo++;
-        SET_STRING_ELT(r_block_names, ii++, mkChar("y"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("y"));
         unprotectBlockInfo++;
     }
     if(i_returnIndices) {
-        SET_STRING_ELT(r_block_names, ii++, mkChar("indices"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("indices"));
         unprotectBlockInfo++;
     }
     if(i_returnBases) {
-        SET_STRING_ELT(r_block_names, ii++, mkChar("pbase"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("pbase"));
         unprotectBlockInfo++;
-        SET_STRING_ELT(r_block_names, ii++, mkChar("tbase"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("tbase"));
         unprotectBlockInfo++;
     }
     if(i_returnAtoms) {
-        SET_STRING_ELT(r_block_names, ii++, mkChar("atom"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("atom"));
         unprotectBlockInfo++;
     }
     if(i_returnIndexpos) {
-        SET_STRING_ELT(r_block_names, ii++, mkChar("indexpos"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("indexpos"));
         unprotectBlockInfo++;
     }
     if(i_returnIsPm) {
-        SET_STRING_ELT(r_block_names, ii++, mkChar("ispm"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("ispm"));
         unprotectBlockInfo++;
     }
     if(i_returnBlockDirection) {
-        SET_STRING_ELT(r_block_names, ii++, mkChar("groupdirection"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("groupdirection"));
     }
     if(i_returnBlockAtomNumbers){
-        SET_STRING_ELT(r_block_names, ii++, mkChar("natoms"));
-        SET_STRING_ELT(r_block_names, ii++, mkChar("ncellsperatom"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("natoms"));
+        SET_STRING_ELT(r_block_names, ii++, Rf_mkChar("ncellsperatom"));
     } 
 
     /*
@@ -721,21 +721,21 @@ extern "C" {
 
     SEXP r_typeAsString;
     PROTECT(r_typeAsString = NEW_STRING(8));
-    SET_STRING_ELT(r_typeAsString, 0, mkChar("unknown"));
-    SET_STRING_ELT(r_typeAsString, 1, mkChar("expression"));
-    SET_STRING_ELT(r_typeAsString, 2, mkChar("genotyping"));
-    SET_STRING_ELT(r_typeAsString, 3, mkChar("resequencing"));
-    SET_STRING_ELT(r_typeAsString, 4, mkChar("tag"));
-    SET_STRING_ELT(r_typeAsString, 5, mkChar("copynumber"));
-    SET_STRING_ELT(r_typeAsString, 6, mkChar("genotypingcontrol"));
-    SET_STRING_ELT(r_typeAsString, 7, mkChar("expressioncontrol"));
+    SET_STRING_ELT(r_typeAsString, 0, Rf_mkChar("unknown"));
+    SET_STRING_ELT(r_typeAsString, 1, Rf_mkChar("expression"));
+    SET_STRING_ELT(r_typeAsString, 2, Rf_mkChar("genotyping"));
+    SET_STRING_ELT(r_typeAsString, 3, Rf_mkChar("resequencing"));
+    SET_STRING_ELT(r_typeAsString, 4, Rf_mkChar("tag"));
+    SET_STRING_ELT(r_typeAsString, 5, Rf_mkChar("copynumber"));
+    SET_STRING_ELT(r_typeAsString, 6, Rf_mkChar("genotypingcontrol"));
+    SET_STRING_ELT(r_typeAsString, 7, Rf_mkChar("expressioncontrol"));
 
     SEXP r_directionAsString;
     PROTECT(r_directionAsString = NEW_STRING(4));
-    SET_STRING_ELT(r_directionAsString, 0, mkChar("nodirection"));
-    SET_STRING_ELT(r_directionAsString, 1, mkChar("sense"));
-    SET_STRING_ELT(r_directionAsString, 2, mkChar("antisense"));
-    SET_STRING_ELT(r_directionAsString, 3, mkChar("unknown"));
+    SET_STRING_ELT(r_directionAsString, 0, Rf_mkChar("nodirection"));
+    SET_STRING_ELT(r_directionAsString, 1, Rf_mkChar("sense"));
+    SET_STRING_ELT(r_directionAsString, 2, Rf_mkChar("antisense"));
+    SET_STRING_ELT(r_directionAsString, 3, Rf_mkChar("unknown"));
 
     /*
     ** Reading in the units.
@@ -759,7 +759,7 @@ extern "C" {
       PROTECT(r_unit = NEW_LIST(numUnitArguments));
       str = cdf.GetProbeSetName(unit_idx);
       str_length = str.size();
-      unitName = Calloc(str_length+1, char);
+      unitName = R_Calloc(str_length+1, char);
       strncpy(unitName, str.c_str(), str_length);
       unitName[str_length] = '\0';
       if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -774,39 +774,39 @@ extern "C" {
           switch (unit.GetProbeSetType()) {
           case affxcdf::UnknownProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++, 
-                             ScalarString(STRING_ELT(r_typeAsString, 0)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 0)));
               break;
           case affxcdf::ExpressionProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++,
-                             ScalarString(STRING_ELT(r_typeAsString, 1)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 1)));
               break;
           case affxcdf::GenotypingProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++,
-                             ScalarString(STRING_ELT(r_typeAsString, 2)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 2)));
               break;
           case affxcdf::ResequencingProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++, 
-                             ScalarString(STRING_ELT(r_typeAsString, 3)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 3)));
               break;
           case affxcdf::TagProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++,
-                             ScalarString(STRING_ELT(r_typeAsString, 4)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 4)));
               break;
           case affxcdf::CopyNumberProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++,
-                             ScalarString(STRING_ELT(r_typeAsString, 5)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 5)));
               break;
           case affxcdf::GenotypeControlProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++,
-                             ScalarString(STRING_ELT(r_typeAsString, 6)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 6)));
               break;
           case affxcdf::ExpressionControlProbeSetType:
               SET_VECTOR_ELT(r_unit, ii++,
-                             ScalarString(STRING_ELT(r_typeAsString, 7)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 7)));
               break;
           default:
               SET_VECTOR_ELT(r_unit, ii++, 
-                             ScalarString(STRING_ELT(r_typeAsString, 0)));
+                             Rf_ScalarString(STRING_ELT(r_typeAsString, 0)));
               break;
           }
       }
@@ -815,35 +815,35 @@ extern "C" {
           switch (unit.GetDirection()) {
           case affxcdf::NoDirection:
               SET_VECTOR_ELT(r_unit, ii++, 
-                             ScalarString(STRING_ELT(r_directionAsString, 0)));
+                             Rf_ScalarString(STRING_ELT(r_directionAsString, 0)));
               break;
           case affxcdf::SenseDirection:
               SET_VECTOR_ELT(r_unit, ii++, 
-                             ScalarString(STRING_ELT(r_directionAsString, 1)));
+                             Rf_ScalarString(STRING_ELT(r_directionAsString, 1)));
               break;
           case affxcdf::AntiSenseDirection:
               SET_VECTOR_ELT(r_unit, ii++, 
-                             ScalarString(STRING_ELT(r_directionAsString, 2)));
+                             Rf_ScalarString(STRING_ELT(r_directionAsString, 2)));
               break;
           default:
               SET_VECTOR_ELT(r_unit, ii++, 
-                             ScalarString(STRING_ELT(r_directionAsString, 3)));
+                             Rf_ScalarString(STRING_ELT(r_directionAsString, 3)));
               break;
           }
       }
 
       if(i_returnUnitAtomNumbers) {
           SET_VECTOR_ELT(r_unit, ii++, 
-                         ScalarInteger(unit.GetNumLists()));
+                         Rf_ScalarInteger(unit.GetNumLists()));
           SET_VECTOR_ELT(r_unit, ii++, 
-                         ScalarInteger(unit.GetNumCells()));
+                         Rf_ScalarInteger(unit.GetNumCells()));
           SET_VECTOR_ELT(r_unit, ii++, 
-                         ScalarInteger(unit.GetNumCellsPerList()));
+                         Rf_ScalarInteger(unit.GetNumCellsPerList()));
       }
 
       if(i_returnUnitNumber)
           SET_VECTOR_ELT(r_unit, ii++,
-                         ScalarInteger(unit.GetProbeSetNumber()));
+                         Rf_ScalarInteger(unit.GetProbeSetNumber()));
 
       PROTECT(r_blocks_list = NEW_LIST(unitNumBlocks));
       PROTECT(r_blocks_list_names = NEW_CHARACTER(unitNumBlocks));
@@ -897,9 +897,9 @@ extern "C" {
 
           if(i_returnBases) {
               pbaseString = probe.GetPBase();
-              SET_STRING_ELT(r_pbase, icell, mkChar(pbaseString.c_str()));
+              SET_STRING_ELT(r_pbase, icell, Rf_mkChar(pbaseString.c_str()));
               tbaseString = probe.GetTBase();
-              SET_STRING_ELT(r_tbase, icell, mkChar(tbaseString.c_str()));
+              SET_STRING_ELT(r_tbase, icell, Rf_mkChar(tbaseString.c_str()));
           }
 
           if(i_returnAtoms)
@@ -950,58 +950,58 @@ extern "C" {
           switch (block.GetDirection()) {
           case affxcdf::NoDirection:
               SET_VECTOR_ELT(r_block, ii++, 
-                             ScalarString(STRING_ELT(r_directionAsString, 0)));
+                             Rf_ScalarString(STRING_ELT(r_directionAsString, 0)));
               break;
           case affxcdf::SenseDirection:
               SET_VECTOR_ELT(r_block, ii++, 
-                             ScalarString(STRING_ELT(r_directionAsString, 1)));
+                             Rf_ScalarString(STRING_ELT(r_directionAsString, 1)));
               break;
           case affxcdf::AntiSenseDirection:
               SET_VECTOR_ELT(r_block, ii++, 
-                             ScalarString(STRING_ELT(r_directionAsString, 2)));
+                             Rf_ScalarString(STRING_ELT(r_directionAsString, 2)));
               break;
           default:
               SET_VECTOR_ELT(r_block, ii++, 
-                             ScalarString(STRING_ELT(r_directionAsString, 3)));
+                             Rf_ScalarString(STRING_ELT(r_directionAsString, 3)));
               break;
 
           }
         }
         if(i_returnBlockAtomNumbers) {
             SET_VECTOR_ELT(r_block, ii++,
-                           ScalarInteger(block.GetNumLists()));
+                           Rf_ScalarInteger(block.GetNumLists()));
             SET_VECTOR_ELT(r_block, ii++, 
-                           ScalarInteger(block.GetNumCellsPerList()));
+                           Rf_ScalarInteger(block.GetNumCellsPerList()));
         }
-        setAttrib(r_block, R_NamesSymbol, r_block_names);
+        Rf_setAttrib(r_block, R_NamesSymbol, r_block_names);
         UNPROTECT(unprotectBlockInfo);
 
         /** Put the block into the r_blocks_list and unprotect it **/
         str = block.GetName();
         str_length = str.size();
-        cstr = Calloc(str_length+1, char);
+        cstr = R_Calloc(str_length+1, char);
         strncpy(cstr, str.c_str(), str_length);
         cstr[str_length] = '\0';
         SET_VECTOR_ELT(r_blocks_list, iblock, r_block);
-        SET_STRING_ELT(r_blocks_list_names, iblock, mkChar(cstr));
-        Free(cstr);
+        SET_STRING_ELT(r_blocks_list_names, iblock, Rf_mkChar(cstr));
+        R_Free(cstr);
         UNPROTECT(1);
       }
 
       /** set the r_block_list names. **/
-      setAttrib(r_blocks_list, R_NamesSymbol, r_blocks_list_names);
+      Rf_setAttrib(r_blocks_list, R_NamesSymbol, r_blocks_list_names);
 
       /** Finalize the unit object, and unprotect
        ** the r_blocks_list and r_blocks_list_names **/
       SET_VECTOR_ELT(r_unit, 0, r_blocks_list);
-      setAttrib(r_unit, R_NamesSymbol, r_unit_names);
+      Rf_setAttrib(r_unit, R_NamesSymbol, r_unit_names);
       UNPROTECT(2);
 
       /** now set the unit in the main units_list, 
        ** and unprotect it. **/
       SET_VECTOR_ELT(r_units_list, iunit, r_unit);
-      SET_STRING_ELT(r_units_list_names, iunit, mkChar(unitName));
-      Free(unitName);
+      SET_STRING_ELT(r_units_list_names, iunit, Rf_mkChar(unitName));
+      R_Free(unitName);
       UNPROTECT(1);
     }
 
@@ -1009,7 +1009,7 @@ extern "C" {
     UNPROTECT(2);
     
     /** set the names down here at the end. **/
-    setAttrib(r_units_list, R_NamesSymbol, r_units_list_names);
+    Rf_setAttrib(r_units_list, R_NamesSymbol, r_units_list_names);
 
     /* unprotect everything we started with, that is 
     ** r_units_list, r_units_list_names as well as
@@ -1076,7 +1076,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      error("Failed to read the CDF file.");
+      Rf_error("Failed to read the CDF file.");
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1084,7 +1084,7 @@ extern "C" {
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     FusionCDFFileHeader header = cdf.GetHeader();
     maxNbrOfUnits = header.GetNumProbeSets();
-    nbrOfUnits = length(units);
+    nbrOfUnits = Rf_length(units);
     if (nbrOfUnits == 0) {
       nbrOfUnits  = maxNbrOfUnits;
     } else {
@@ -1094,7 +1094,7 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error("Argument 'units' contains an element out of range: %d", unitIdx);
+          Rf_error("Argument 'units' contains an element out of range: %d", unitIdx);
         }
       }
     }
@@ -1118,11 +1118,11 @@ extern "C" {
      * about 10-20%.
 		 * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     PROTECT(cell_list_names = NEW_STRING(1));
-    SET_STRING_ELT(cell_list_names, 0, mkChar("indices"));
+    SET_STRING_ELT(cell_list_names, 0, Rf_mkChar("indices"));
 
     /* Same for all unit elements */
     PROTECT(r_probe_set_names = NEW_STRING(1));
-    SET_STRING_ELT(r_probe_set_names, 0, mkChar("groups"));
+    SET_STRING_ELT(r_probe_set_names, 0, Rf_mkChar("groups"));
 
 
 
@@ -1148,12 +1148,12 @@ extern "C" {
       /* 'name' is a pointer to a const char: */
       str = cdf.GetProbeSetName(unitIdx);
       str_length = str.size();
-      cstr = Calloc(str_length+1, char);
+      cstr = R_Calloc(str_length+1, char);
       strncpy(cstr, str.c_str(), str_length);
       cstr[str_length] = '\0';
       /** ...and add to list of unit names. **/
-			SET_STRING_ELT(unitNames, uu, mkChar(cstr));
-      Free(cstr);
+			SET_STRING_ELT(unitNames, uu, Rf_mkChar(cstr));
+      R_Free(cstr);
 
       PROTECT(r_probe_set = NEW_LIST(1));
 
@@ -1198,30 +1198,30 @@ extern "C" {
 
         /** set the names of the new list, dont really know if I need 
             to do this each and every time. **/
-        setAttrib(cell_list, R_NamesSymbol, cell_list_names);
+        Rf_setAttrib(cell_list, R_NamesSymbol, cell_list_names);
 
         /** set these cells in the group list. **/
         SET_VECTOR_ELT(r_group_list, igroup, cell_list);
         str = group.GetName();
         str_length = str.size();
-        cstr = Calloc(str_length+1, char);
+        cstr = R_Calloc(str_length+1, char);
         strncpy(cstr, str.c_str(), str_length);
         cstr[str_length] = '\0';
-        SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
-        Free(cstr);
+        SET_STRING_ELT(r_group_names, igroup, Rf_mkChar(cstr));
+        R_Free(cstr);
 
         /* Unprotect in reverse order */
  		    UNPROTECT(2);  /* 'indices' and then 'cell_list' */
       } /* for (int igroup ...) */
 
       /** set the group names. **/
-      setAttrib(r_group_list, R_NamesSymbol, r_group_names);
+      Rf_setAttrib(r_group_list, R_NamesSymbol, r_group_names);
 
       /** add groups to current unit. **/
       SET_VECTOR_ELT(r_probe_set, 0, r_group_list);
 
       /** add current unit to list of all units. **/
-      setAttrib(r_probe_set, R_NamesSymbol, r_probe_set_names);
+      Rf_setAttrib(r_probe_set, R_NamesSymbol, r_probe_set_names);
       SET_VECTOR_ELT(resUnits, uu, r_probe_set);
 
       /* 'r_group_names' and then 'r_group_list' and 'r_probe_set' */
@@ -1231,7 +1231,7 @@ extern "C" {
     UNPROTECT(2);  /* 'r_probe_set_names' and then  'cell_list_names' */
     
     /** set all unit names. **/
-    setAttrib(resUnits, R_NamesSymbol, unitNames);
+    Rf_setAttrib(resUnits, R_NamesSymbol, unitNames);
 
     /** unprotect return list. **/
     UNPROTECT(2); /* 'unitNames' and then 'resUnits' */
@@ -1332,7 +1332,7 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      error("Failed to read the CDF file.");
+      Rf_error("Failed to read the CDF file.");
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1340,7 +1340,7 @@ extern "C" {
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     FusionCDFFileHeader header = cdf.GetHeader();
     maxNbrOfUnits = header.GetNumProbeSets();
-    nbrOfUnits = length(units);
+    nbrOfUnits = Rf_length(units);
     if (nbrOfUnits == 0) {
       nbrOfUnits = maxNbrOfUnits;
     } else {
@@ -1350,7 +1350,7 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error("Argument 'units' contains an element out of range: %d", unitIdx);
+          Rf_error("Argument 'units' contains an element out of range: %d", unitIdx);
         }
       }
     }
@@ -1383,25 +1383,25 @@ extern "C" {
     if (i_readGroups) {
       PROTECT(cell_list_names = NEW_STRING(nbrOfGroupElements));
       if (i_readXY) {
-        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("x"));
-        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("y"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, Rf_mkChar("x"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, Rf_mkChar("y"));
       }
   
       if (i_readIndices) {
-        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("indices"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, Rf_mkChar("indices"));
       }
        
       if (i_readBases) {
-        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("pbase"));
-        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("tbase"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, Rf_mkChar("pbase"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, Rf_mkChar("tbase"));
       }
       
       if (i_readExpos) {
-        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("expos"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, Rf_mkChar("expos"));
       }
 
       if (i_readDirection) {
-        SET_STRING_ELT(cell_list_names, fieldIdx++, mkChar("direction"));
+        SET_STRING_ELT(cell_list_names, fieldIdx++, Rf_mkChar("direction"));
       }
     }
 
@@ -1411,16 +1411,16 @@ extern "C" {
     int rpsi = 0;
     if (i_readType) {
       /* get the type */
-      SET_STRING_ELT(r_probe_set_names, rpsi++, mkChar("type"));
+      SET_STRING_ELT(r_probe_set_names, rpsi++, Rf_mkChar("type"));
     }
 
     if (i_readDirection) {
       /* get the direction */
-      SET_STRING_ELT(r_probe_set_names, rpsi++, mkChar("direction"));
+      SET_STRING_ELT(r_probe_set_names, rpsi++, Rf_mkChar("direction"));
     }
 
     if (i_readGroups) {
-      SET_STRING_ELT(r_probe_set_names, rpsi++, mkChar("groups"));
+      SET_STRING_ELT(r_probe_set_names, rpsi++, Rf_mkChar("groups"));
     }
 
 
@@ -1464,12 +1464,12 @@ extern "C" {
       /* get the name */
       str = cdf.GetProbeSetName(unitIdx);
       str_length = str.size();
-      cstr = Calloc(str_length+1, char);
+      cstr = R_Calloc(str_length+1, char);
       strncpy(cstr, str.c_str(), str_length);
       cstr[str_length] = '\0';
       /** ...and add to list of unit names. **/
-			SET_STRING_ELT(unitNames, uu, mkChar(cstr));
-      Free(cstr);
+			SET_STRING_ELT(unitNames, uu, Rf_mkChar(cstr));
+      R_Free(cstr);
 
       
       PROTECT(r_probe_set = NEW_LIST(nbrOfUnitElements));
@@ -1477,7 +1477,7 @@ extern "C" {
 
       if (i_readType) {
         /* get the type */
-        PROTECT(tmp = allocVector(INTSXP, 1));
+        PROTECT(tmp = Rf_allocVector(INTSXP, 1));
         INTEGER(tmp)[0] = probeset.GetProbeSetType();
         SET_VECTOR_ELT(r_probe_set, rpsi++, tmp);
         UNPROTECT(1);
@@ -1485,7 +1485,7 @@ extern "C" {
 
       if (i_readDirection) {
         /* get the direction */
-        PROTECT(tmp = allocVector(INTSXP, 1));
+        PROTECT(tmp = Rf_allocVector(INTSXP, 1));
         INTEGER(tmp)[0] = probeset.GetDirection();
         SET_VECTOR_ELT(r_probe_set, rpsi++, tmp);
         UNPROTECT(1);
@@ -1566,8 +1566,8 @@ extern "C" {
             if (i_readBases) {
               p_base[0] = probe.GetPBase();
               t_base[0] = probe.GetTBase();
-              SET_STRING_ELT(pbase, icell, mkChar(p_base));
-              SET_STRING_ELT(tbase, icell, mkChar(t_base));
+              SET_STRING_ELT(pbase, icell, Rf_mkChar(p_base));
+              SET_STRING_ELT(tbase, icell, Rf_mkChar(t_base));
             }
             
             if (i_readExpos) {
@@ -1605,7 +1605,7 @@ extern "C" {
           }
 
           if (i_readDirection) {
-            PROTECT(tmp = allocVector(INTSXP, 1));
+            PROTECT(tmp = Rf_allocVector(INTSXP, 1));
             INTEGER(tmp)[0] = group.GetDirection();
             UNPROTECT(1);
             SET_VECTOR_ELT(cell_list, fieldIdx++, tmp);
@@ -1616,17 +1616,17 @@ extern "C" {
           
           /** set the names of the new list, dont really know if I need 
               to do this each and every time. **/
-          setAttrib(cell_list, R_NamesSymbol, cell_list_names);
+          Rf_setAttrib(cell_list, R_NamesSymbol, cell_list_names);
 
           /** set these cells in the group list. **/
           SET_VECTOR_ELT(r_group_list, igroup, cell_list);
           str = group.GetName();
           str_length = str.size();
-          cstr = Calloc(str_length+1, char);
+          cstr = R_Calloc(str_length+1, char);
           strncpy(cstr, str.c_str(), str_length);
           cstr[str_length] = '\0';
-          SET_STRING_ELT(r_group_names, igroup, mkChar(cstr));
-          Free(cstr);
+          SET_STRING_ELT(r_group_names, igroup, Rf_mkChar(cstr));
+          R_Free(cstr);
           UNPROTECT(1); /* 'cell_list' */
 
 					/*
@@ -1637,7 +1637,7 @@ extern "C" {
         } /* for (int igroup ...) */
 
         /** set the group names. **/
-        setAttrib(r_group_list, R_NamesSymbol, r_group_names);
+        Rf_setAttrib(r_group_list, R_NamesSymbol, r_group_names);
 
         /** add groups to current unit. **/
         SET_VECTOR_ELT(r_probe_set, rpsi, r_group_list);
@@ -1647,7 +1647,7 @@ extern "C" {
  
 
       /** add current unit to list of all units. **/
-      setAttrib(r_probe_set, R_NamesSymbol, r_probe_set_names);
+      Rf_setAttrib(r_probe_set, R_NamesSymbol, r_probe_set_names);
       SET_VECTOR_ELT(resUnits, uu, r_probe_set);
 
       UNPROTECT(1);  /* 'r_probe_set' */
@@ -1664,7 +1664,7 @@ extern "C" {
     }
     
     /** set all unit names. **/
-    setAttrib(resUnits, R_NamesSymbol, unitNames);
+    Rf_setAttrib(resUnits, R_NamesSymbol, unitNames);
 
     if (i_verboseFlag >= R_AFFX_REALLY_VERBOSE) {
       Rprintf("R_affx_get_cdf_units()...done\n");
@@ -1705,13 +1705,13 @@ extern "C" {
     }
 
     if (cdf.Read() == false) {
-      error("Failed to read the CDF file.");
+      Rf_error("Failed to read the CDF file.");
     }
 
     FusionCDFFileHeader header = cdf.GetHeader();
     maxNbrOfUnits = header.GetNumProbeSets();
 
-    nbrOfUnits = length(units);
+    nbrOfUnits = Rf_length(units);
     if (nbrOfUnits == 0) {
       nbrOfUnits = maxNbrOfUnits;
     } else {
@@ -1721,7 +1721,7 @@ extern "C" {
         unitIdx = INTEGER(units)[uu];
         /* Unit indices are zero-based in Fusion SDK. */
         if (unitIdx < 1 || unitIdx > maxNbrOfUnits) {
-          error("Argument 'units' contains an element out of range: %d", unitIdx);
+          Rf_error("Argument 'units' contains an element out of range: %d", unitIdx);
         }
       }
     }
@@ -1732,11 +1732,11 @@ extern "C" {
       for (int uu = 0; uu < nbrOfUnits; uu++) {
         str = cdf.GetProbeSetName(uu);
         str_length = str.size();
-        cstr = Calloc(str_length+1, char);
+        cstr = R_Calloc(str_length+1, char);
         strncpy(cstr, str.c_str(), str_length);
         cstr[str_length] = '\0';
-        SET_STRING_ELT(names, uu, mkChar(cstr));
-        Free(cstr);
+        SET_STRING_ELT(names, uu, Rf_mkChar(cstr));
+        R_Free(cstr);
       }
     } else {
       for (int uu = 0; uu < nbrOfUnits; uu++) {
@@ -1744,11 +1744,11 @@ extern "C" {
         unitIdx = INTEGER(units)[uu] - 1;
         str = cdf.GetProbeSetName(unitIdx);
         str_length = str.size();
-        cstr = Calloc(str_length+1, char);
+        cstr = R_Calloc(str_length+1, char);
         strncpy(cstr, str.c_str(), str_length);
         cstr[str_length] = '\0';
-        SET_STRING_ELT(names, uu, mkChar(cstr));
-        Free(cstr);
+        SET_STRING_ELT(names, uu, Rf_mkChar(cstr));
+        R_Free(cstr);
       }
     }
 
@@ -1782,7 +1782,7 @@ extern "C" {
  * o Added group directions to R_affx_get_cdf_units() too.  That is the
  *   most important group element missing. /HB
  * 2006-08-28
- * o If a unit index is out of range, the error now show the invalid index.
+ * o If a unit index is out of range, the errorg now show the invalid index.
  * 2006-04-02
  * o Added R_affx_get_cdf_cell_indices() for faster reading of cell indices.
  * 2006-04-01

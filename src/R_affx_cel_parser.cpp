@@ -31,35 +31,35 @@ extern "C" {
     PROTECT(names = NEW_CHARACTER(14));
     PROTECT(vals  = NEW_LIST(14));
 
-    SET_STRING_ELT(names, kk, mkChar("filename"));
+    SET_STRING_ELT(names, kk, Rf_mkChar("filename"));
     str = cel.GetFileName();
     str_length = str.size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     strncpy(cstr, str.c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
-    Free(cstr);
+    SET_VECTOR_ELT(vals, kk++, Rf_mkString(cstr));
+    R_Free(cstr);
 
-    SET_STRING_ELT(names, kk, mkChar("version"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, kk, Rf_mkChar("version"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = cel.GetVersion();
     SET_VECTOR_ELT(vals, kk++, tmp);
     UNPROTECT(1);
 
-    SET_STRING_ELT(names, kk, mkChar("cols"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, kk, Rf_mkChar("cols"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = cel.GetCols();
     SET_VECTOR_ELT(vals, kk++, tmp);
     UNPROTECT(1);
 
-    SET_STRING_ELT(names, kk, mkChar("rows"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, kk, Rf_mkChar("rows"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = cel.GetRows();
     SET_VECTOR_ELT(vals, kk++, tmp);
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, kk, mkChar("total"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, kk, Rf_mkChar("total"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = cel.GetNumCells();
     SET_VECTOR_ELT(vals, kk++, tmp);
     UNPROTECT(1);
@@ -67,95 +67,95 @@ extern "C" {
 
 #ifdef SUPPORT_MBCS
     str_length = cel.GetAlg().size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetAlg().c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_STRING_ELT(names, kk, mkChar("algorithm"));
-    SET_VECTOR_ELT(vals, kk++, mkString(cstr)); 
-    Free(cstr);
+    SET_STRING_ELT(names, kk, Rf_mkChar("algorithm"));
+    SET_VECTOR_ELT(vals, kk++, Rf_mkString(cstr)); 
+    R_Free(cstr);
 
     str_length = cel.GetParams().size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetParams().c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_STRING_ELT(names, kk, mkChar("parameters"));
-    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
-    Free(cstr);
+    SET_STRING_ELT(names, kk, Rf_mkChar("parameters"));
+    SET_VECTOR_ELT(vals, kk++, Rf_mkString(cstr));
+    R_Free(cstr);
    
     str_length = cel.GetChipType().size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetChipType().c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_STRING_ELT(names, kk, mkChar("chiptype"));
-    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
-    Free(cstr);
+    SET_STRING_ELT(names, kk, Rf_mkChar("chiptype"));
+    SET_VECTOR_ELT(vals, kk++, Rf_mkString(cstr));
+    R_Free(cstr);
         
     str_length = cel.GetHeader().size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetHeader().c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_STRING_ELT(names, kk, mkChar("header"));
-    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
-    Free(cstr);
+    SET_STRING_ELT(names, kk, Rf_mkChar("header"));
+    SET_VECTOR_ELT(vals, kk++, Rf_mkString(cstr));
+    R_Free(cstr);
 
     str_length = cel.GetDatHeader().size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetDatHeader().c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_STRING_ELT(names, kk, mkChar("datheader"));
-    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
-    Free(cstr);
+    SET_STRING_ELT(names, kk, Rf_mkChar("datheader"));
+    SET_VECTOR_ELT(vals, kk++, Rf_mkString(cstr));
+    R_Free(cstr);
 
     str_length = cel.GetLibraryPackageName().size();
-    cstr = Calloc(str_length+1, char);
+    cstr = R_Calloc(str_length+1, char);
     wcstombs(cstr, cel.GetLibraryPackageName().c_str(), str_length);
     cstr[str_length] = '\0';
-    SET_STRING_ELT(names, kk, mkChar("librarypackage"));
-    SET_VECTOR_ELT(vals, kk++, mkString(cstr));
-    Free(cstr);
+    SET_STRING_ELT(names, kk, Rf_mkChar("librarypackage"));
+    SET_VECTOR_ELT(vals, kk++, Rf_mkString(cstr));
+    R_Free(cstr);
 
 #else
 
-    SET_STRING_ELT(names, kk, mkChar("algorithm"));
+    SET_STRING_ELT(names, kk, Rf_mkChar("algorithm"));
     SET_VECTOR_ELT(vals, kk++, R_NilValue);
 
-    SET_STRING_ELT(names, kk, mkChar("parameters"));
+    SET_STRING_ELT(names, kk, Rf_mkChar("parameters"));
     SET_VECTOR_ELT(vals, kk++, R_NilValue);
 
-    SET_STRING_ELT(names, kk, mkChar("chiptype"));
+    SET_STRING_ELT(names, kk, Rf_mkChar("chiptype"));
     SET_VECTOR_ELT(vals, kk++, R_NilValue);
 
-    SET_STRING_ELT(names, kk, mkChar("header"));
+    SET_STRING_ELT(names, kk, Rf_mkChar("header"));
     SET_VECTOR_ELT(vals, kk++, R_NilValue);
 
-    SET_STRING_ELT(names, kk, mkChar("datheader"));
+    SET_STRING_ELT(names, kk, Rf_mkChar("datheader"));
     SET_VECTOR_ELT(vals, kk++, R_NilValue);
 
-    SET_STRING_ELT(names, kk, mkChar("librarypackage"));
+    SET_STRING_ELT(names, kk, Rf_mkChar("librarypackage"));
     SET_VECTOR_ELT(vals, kk++, R_NilValue);
 
 #endif    
 
-    SET_STRING_ELT(names, kk, mkChar("cellmargin"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, kk, Rf_mkChar("cellmargin"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = cel.GetCellMargin();
     SET_VECTOR_ELT(vals, kk++, tmp);
     UNPROTECT(1);
     
-    SET_STRING_ELT(names, kk, mkChar("noutliers"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, kk, Rf_mkChar("noutliers"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = cel.GetNumOutliers();
     SET_VECTOR_ELT(vals, kk++, tmp);
     UNPROTECT(1);
 
-    SET_STRING_ELT(names, kk, mkChar("nmasked"));
-    PROTECT(tmp = allocVector(INTSXP, 1));
+    SET_STRING_ELT(names, kk, Rf_mkChar("nmasked"));
+    PROTECT(tmp = Rf_allocVector(INTSXP, 1));
     INTEGER(tmp)[0] = cel.GetNumMasked();
     SET_VECTOR_ELT(vals, kk++, tmp);
     UNPROTECT(1);
 
 
-    setAttrib(vals, R_NamesSymbol, names);
+    Rf_setAttrib(vals, R_NamesSymbol, names);
 
     UNPROTECT(2);
     
@@ -180,7 +180,7 @@ extern "C" {
     cel.SetFileName(celFileName);
     // if (cel.ReadHeader() == false) {
     if (cel.Exists() == false) {
-      error("Cannot read CEL file header. File not found: %s\n", celFileName);
+      Rf_error("Cannot read CEL file header. File not found: %s\n", celFileName);
     }
     cel.Read();
 
@@ -188,7 +188,7 @@ extern "C" {
       PROTECT(header = R_affx_extract_cel_file_meta(cel));
       UNPROTECT(1);
     } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
-      error("[affxparser Fusion SDK exception] Failed to parse header of CEL file: %s\n", celFileName);
+      Rf_error("[affxparser Fusion SDK exception] Failed to parse header of CEL file: %s\n", celFileName);
     }
     
     return header;
@@ -253,10 +253,10 @@ extern "C" {
     **/
     cel.SetFileName(celFileName);
     if (cel.Exists() == false) {
-      error("Cannot read CEL file. File not found: %s\n", celFileName);
+      Rf_error("Cannot read CEL file. File not found: %s\n", celFileName);
     }
     if (cel.Read(true) == false) {
-      error("Cannot read CEL file: %s\n", celFileName);
+      Rf_error("Cannot read CEL file: %s\n", celFileName);
     }
 
     if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -269,13 +269,13 @@ extern "C" {
      * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
     bool readAll = true;
     int maxNbrOfCells;
-    int nbrOfCells = length(indices);
+    int nbrOfCells = Rf_length(indices);
 
     try {
       maxNbrOfCells = cel.GetNumCells();
     } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
       UNPROTECT(protectCount);
-      error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+      Rf_error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
     }
     
     if (nbrOfCells == 0) {
@@ -287,10 +287,10 @@ extern "C" {
         int index = INTEGER(indices)[ii];
         /* Cell indices are zero-based in Fusion SDK. */
         if (index < 1 || index > maxNbrOfCells) {
-          error("Argument 'indices' contains an element out of range.");
+          Rf_error("Argument 'indices' contains an element out of range.");
         }
       }
-      nbrOfCells = length(indices);
+      nbrOfCells = Rf_length(indices);
     }
 
     if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -306,7 +306,7 @@ extern "C" {
         PROTECT(header = R_affx_extract_cel_file_meta(cel));
         protectCount++;
       } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
-        error("[affxparser Fusion SDK exception] Failed to parse header of CEL file: %s\n", celFileName);
+        Rf_error("[affxparser Fusion SDK exception] Failed to parse header of CEL file: %s\n", celFileName);
       }
     }
 
@@ -348,7 +348,7 @@ extern "C" {
         nbrOfOutliers = cel.GetNumOutliers();
       } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
         UNPROTECT(protectCount);
-        error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+        Rf_error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
       }
       if (i_verboseFlag >= R_AFFX_VERBOSE)
         Rprintf("Number of outliers to be read: %d\n", nbrOfOutliers);
@@ -363,7 +363,7 @@ extern "C" {
         nbrOfMasked = cel.GetNumMasked();
       } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
         UNPROTECT(protectCount);
-        error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+        Rf_error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
       }
       if (i_verboseFlag >= R_AFFX_VERBOSE)
         Rprintf("Number of masked to be read: %d\n", nbrOfMasked);
@@ -430,7 +430,7 @@ extern "C" {
         }
       } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
         UNPROTECT(protectCount);
-        error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+        Rf_error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
       }
 
 
@@ -441,11 +441,11 @@ extern "C" {
           isOutlier = cel.IsOutlier(index);
         } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
           UNPROTECT(protectCount);
-          error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+          Rf_error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
         }
         if (isOutlier) {
           if (outliersCount >= nbrOfOutliers)
-            error("Internal error: Too many cells flagged as outliers.");
+            Rf_error("Internal error: Too many cells flagged as outliers.");
           /* Cell indices are one-based in R */
           INTEGER(outliers)[outliersCount++] = index + 1;
         }
@@ -458,11 +458,11 @@ extern "C" {
           isMasked = cel.IsMasked(index);
         } catch(affymetrix_calvin_exceptions::CalvinException& ex) {
           UNPROTECT(protectCount);
-          error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
+          Rf_error("[affxparser Fusion SDK exception] Failed to parse CEL file: %s\n", celFileName);
         }
         if (isMasked) {
           if (maskedCount >= nbrOfMasked)
-            error("Internal error: Too many cells flagged as masked.");
+            Rf_error("Internal error: Too many cells flagged as masked.");
           /* Cell indices are one-based in R */
           INTEGER(masked)[maskedCount++] = index + 1;
         }
@@ -495,47 +495,47 @@ extern "C" {
     /** set up the names of the result list. **/
     int jj = 0;
     if (i_readHeader != 0) {
-      SET_STRING_ELT(names, jj, mkChar("header"));
+      SET_STRING_ELT(names, jj, Rf_mkChar("header"));
       SET_VECTOR_ELT(result_list, jj++, header);
     }
 
     if (i_readX != 0) {
-      SET_STRING_ELT(names, jj, mkChar("x"));    
+      SET_STRING_ELT(names, jj, Rf_mkChar("x"));    
       SET_VECTOR_ELT(result_list, jj++, xvals);
     }
 
     if (i_readY != 0) {
-      SET_STRING_ELT(names, jj, mkChar("y"));
+      SET_STRING_ELT(names, jj, Rf_mkChar("y"));
       SET_VECTOR_ELT(result_list, jj++, yvals);
     }
 
     if (i_readIntensities != 0) {
-      SET_STRING_ELT(names, jj, mkChar("intensities"));
+      SET_STRING_ELT(names, jj, Rf_mkChar("intensities"));
       SET_VECTOR_ELT(result_list, jj++, intensities);
     }
 
     if (i_readStdvs != 0) {
-      SET_STRING_ELT(names, jj, mkChar("stdvs"));        
+      SET_STRING_ELT(names, jj, Rf_mkChar("stdvs"));        
       SET_VECTOR_ELT(result_list, jj++, stdvs);
     }
 
     if (i_readPixels != 0) {
-      SET_STRING_ELT(names, jj, mkChar("pixels"));        
+      SET_STRING_ELT(names, jj, Rf_mkChar("pixels"));        
       SET_VECTOR_ELT(result_list, jj++, pixels);
     }
 
     if (i_readOutliers != 0) {
-      SET_STRING_ELT(names, jj, mkChar("outliers"));
+      SET_STRING_ELT(names, jj, Rf_mkChar("outliers"));
       SET_VECTOR_ELT(result_list, jj++, outliers);
     }
 
     if (i_readMasked != 0) {
-      SET_STRING_ELT(names, jj, mkChar("masked"));
+      SET_STRING_ELT(names, jj, Rf_mkChar("masked"));
       SET_VECTOR_ELT(result_list, jj++, masked);
     }
 
     /** set the names of the list entries. **/
-    setAttrib(result_list, R_NamesSymbol, names);
+    Rf_setAttrib(result_list, R_NamesSymbol, names);
 
     if (i_verboseFlag >= R_AFFX_VERBOSE) {
       Rprintf("Finished reading CEL file.\n");

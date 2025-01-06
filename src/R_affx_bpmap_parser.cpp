@@ -33,7 +33,7 @@ extern "C" {
          * - - - - - - - - - - - - - - - - - - - - - - - - - - - */
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.ReadHeader() == false) {
-            error("Unable to read file: %s\n", bpmapFileName);
+            Rf_error("Unable to read file: %s\n", bpmapFileName);
         }
 
         /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -47,17 +47,17 @@ extern "C" {
         PROTECT(returnList = NEW_LIST(2));
         PROTECT(returnListNames = NEW_CHARACTER(2));
 
-        SET_STRING_ELT(returnListNames, kk, mkChar("version"));
+        SET_STRING_ELT(returnListNames, kk, Rf_mkChar("version"));
         tmp = NEW_NUMERIC(1);
         SET_VECTOR_ELT(returnList, kk++, tmp);
         REAL(tmp)[0] = bpmap.GetVersion();
 
-        SET_STRING_ELT(returnListNames, kk, mkChar("numSequences"));
+        SET_STRING_ELT(returnListNames, kk, Rf_mkChar("numSequences"));
         tmp = NEW_INTEGER(1);
         SET_VECTOR_ELT(returnList, kk++, tmp);
         INTEGER(tmp)[0] = bpmap.GetNumberSequences();
 
-        setAttrib(returnList, R_NamesSymbol, returnListNames);
+        Rf_setAttrib(returnList, R_NamesSymbol, returnListNames);
         bpmap.Close();
         UNPROTECT(2);
         return returnList;
@@ -87,58 +87,58 @@ extern "C" {
                 PROTECT(seqInfo = NEW_LIST(8));
                 PROTECT(seqInfoNames = NEW_CHARACTER(8));
 
-                SET_STRING_ELT(seqInfoNames, kk, mkChar("name"));
+                SET_STRING_ELT(seqInfoNames, kk, Rf_mkChar("name"));
 								str = seq.GetName();
 								str_length = str.size();
-								cstr = Calloc(str_length+1, char);
+								cstr = R_Calloc(str_length+1, char);
 								strncpy(cstr, str.c_str(), str_length);
 								cstr[str_length] = '\0';
-                SET_VECTOR_ELT(seqInfo, kk++, ScalarString(mkChar(cstr)));
-                Free(cstr);
+                SET_VECTOR_ELT(seqInfo, kk++, Rf_ScalarString(Rf_mkChar(cstr)));
+                R_Free(cstr);
 
-                SET_STRING_ELT(seqInfoNames, kk, mkChar("groupname"));
+                SET_STRING_ELT(seqInfoNames, kk, Rf_mkChar("groupname"));
 								str = seq.GroupName();
 								str_length = str.size();
-								cstr = Calloc(str_length+1, char);
+								cstr = R_Calloc(str_length+1, char);
 								strncpy(cstr, str.c_str(), str_length);
 								cstr[str_length] = '\0';
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarString(mkChar(cstr)));
-                Free(cstr);
+                               Rf_ScalarString(Rf_mkChar(cstr)));
+                R_Free(cstr);
 
-                SET_STRING_ELT(seqInfoNames, kk, mkChar("fullname"));
+                SET_STRING_ELT(seqInfoNames, kk, Rf_mkChar("fullname"));
 								str = seq.FullName();
 								str_length = str.size();
-								cstr = Calloc(str_length+1, char);
+								cstr = R_Calloc(str_length+1, char);
 								strncpy(cstr, str.c_str(), str_length);
 								cstr[str_length] = '\0';
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarString(mkChar(cstr)));
-                Free(cstr);
+                               Rf_ScalarString(Rf_mkChar(cstr)));
+                R_Free(cstr);
 
-                SET_STRING_ELT(seqInfoNames, kk, mkChar("version"));
+                SET_STRING_ELT(seqInfoNames, kk, Rf_mkChar("version"));
 								str = seq.GetSeqVersion();
 								str_length = str.size();
-								cstr = Calloc(str_length+1, char);
+								cstr = R_Calloc(str_length+1, char);
 								strncpy(cstr, str.c_str(), str_length);
 								cstr[str_length] = '\0';
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarString(mkChar(cstr)));
-                Free(cstr);
+                               Rf_ScalarString(Rf_mkChar(cstr)));
+                R_Free(cstr);
                 
-                SET_STRING_ELT(seqInfoNames, kk, mkChar("mapping"));
+                SET_STRING_ELT(seqInfoNames, kk, Rf_mkChar("mapping"));
                 if(seq.GetProbeMapping() == 0)
-                    SET_VECTOR_ELT(seqInfo, kk++, ScalarString(mkChar("pmmm")));
+                    SET_VECTOR_ELT(seqInfo, kk++, Rf_ScalarString(Rf_mkChar("pmmm")));
                 else
-                    SET_VECTOR_ELT(seqInfo, kk++, ScalarString(mkChar("onlypm")));
+                    SET_VECTOR_ELT(seqInfo, kk++, Rf_ScalarString(Rf_mkChar("onlypm")));
 
-                SET_STRING_ELT(seqInfoNames, kk, mkChar("number"));
+                SET_STRING_ELT(seqInfoNames, kk, Rf_mkChar("number"));
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarInteger(seq.GetNumber() + 1));
+                               Rf_ScalarInteger(seq.GetNumber() + 1));
 
-                SET_STRING_ELT(seqInfoNames, kk, mkChar("numberOfHits"));
+                SET_STRING_ELT(seqInfoNames, kk, Rf_mkChar("numberOfHits"));
                 SET_VECTOR_ELT(seqInfo, kk++, 
-                               ScalarInteger(seq.GetNumberHits()));
+                               Rf_ScalarInteger(seq.GetNumberHits()));
 
                 /* Now we read the parameters, which is basically
                  * a long character vector of different parameter
@@ -154,29 +154,29 @@ extern "C" {
                         {
 													str = seq.GetParameter(j).Tag;
 													str_length = str.size();
-													cstr = Calloc(str_length+1, char);
+													cstr = R_Calloc(str_length+1, char);
 													strncpy(cstr, str.c_str(), str_length);
 													cstr[str_length] = '\0';
                           SET_STRING_ELT(seqInfoParameterNames, j, 
-                                          mkChar(cstr));
-	  											Free(cstr);
+                                          Rf_mkChar(cstr));
+	  											R_Free(cstr);
 													str = seq.GetParameter(j).Value;
-													cstr = Calloc(str_length+1, char);
+													cstr = R_Calloc(str_length+1, char);
 													strncpy(cstr, str.c_str(), str_length);
 													cstr[str_length] = '\0';
                           SET_STRING_ELT(seqInfoParameters, j, 
-                                           mkChar(cstr));
-		  										Free(cstr);
+                                           Rf_mkChar(cstr));
+		  										R_Free(cstr);
                         }
-                    setAttrib(seqInfoParameters, R_NamesSymbol, 
+                    Rf_setAttrib(seqInfoParameters, R_NamesSymbol, 
                               seqInfoParameterNames);
                     SET_VECTOR_ELT(seqInfo, 7, seqInfoParameters);
                     UNPROTECT(2);
                 } else {
                     SET_VECTOR_ELT(seqInfo, 7, R_NilValue);
                 }
-                SET_STRING_ELT(seqInfoNames, 7, mkChar("parameters"));
-                setAttrib(seqInfo, R_NamesSymbol, seqInfoNames);
+                SET_STRING_ELT(seqInfoNames, 7, Rf_mkChar("parameters"));
+                Rf_setAttrib(seqInfo, R_NamesSymbol, seqInfoNames);
                 UNPROTECT(2);
                 return seqInfo;
     } /* R_affx_bpmap_seqinfo_item */
@@ -209,10 +209,10 @@ extern "C" {
         }
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.Exists() == false) {
-            error("File does not exist: %s\n", bpmapFileName);
+            Rf_error("File does not exist: %s\n", bpmapFileName);
         }
         if (bpmap.Read() == false) {
-            error("Unable to read file: %s, is it a BPMAP file?\n", 
+            Rf_error("Unable to read file: %s, is it a BPMAP file?\n", 
                     bpmapFileName);
         }
         if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -222,16 +222,16 @@ extern "C" {
         /* checking whether or not we are reading everything or just
          * some of the sequences. We assume that R delivers the 
          * indices in a sorted way */
-        int nSequenceIndices = length(seqindices);
+        int nSequenceIndices = Rf_length(seqindices);
         int nSequences = bpmap.GetNumberSequences(); 
         bool readAllSequences = false;
         if(nSequenceIndices == 0) {
             readAllSequences = true;
         } else {
-            /* and some error checking of the argument */
+            /* and some Rf_error checking of the argument */
             for(int i = 0; i < nSequenceIndices; i++){
 	      if((INTEGER(seqindices)[i] < 0) || (INTEGER(seqindices)[i] > nSequences))
-                    error("seqIndices out of range");
+                    Rf_error("seqIndices out of range");
             }
             nSequences = nSequenceIndices;
         }
@@ -262,13 +262,13 @@ extern "C" {
                            R_affx_bpmap_seqinfo_item(seq, i_verboseFlag));
             str = seq.FullName();
 						str_length = str.size();
-						cstr = Calloc(str_length+1, char);
+						cstr = R_Calloc(str_length+1, char);
 						strncpy(cstr, str.c_str(), str_length);
 						cstr[str_length] = '\0';
-            SET_STRING_ELT(returnListNames, i, mkChar(cstr));
-            Free(cstr);
+            SET_STRING_ELT(returnListNames, i, Rf_mkChar(cstr));
+            R_Free(cstr);
         }
-        setAttrib(returnList, R_NamesSymbol, returnListNames);
+        Rf_setAttrib(returnList, R_NamesSymbol, returnListNames);
         bpmap.Close();
         UNPROTECT(2);
         return returnList;
@@ -318,10 +318,10 @@ extern "C" {
         }
         bpmap.SetFileName(bpmapFileName);
         if (bpmap.Exists() == false) {
-            error("File does not exist: %s\n", bpmapFileName);
+            Rf_error("File does not exist: %s\n", bpmapFileName);
         }
         if (bpmap.Read() == false) {
-            error("Unable to read file: %s, is it a BPMAP file?\n", 
+            Rf_error("Unable to read file: %s, is it a BPMAP file?\n", 
                     bpmapFileName);
         }
         if (i_verboseFlag >= R_AFFX_VERBOSE) {
@@ -332,7 +332,7 @@ extern "C" {
          * some of the sequences. We assume that R delivers the 
          * indices in a sorted way */
 
-        int nSequenceIndices = length(seqindices);
+        int nSequenceIndices = Rf_length(seqindices);
         int nSequences = bpmap.GetNumberSequences(); 
         bool readAllSequences = false;
         if(nSequenceIndices == 0) {
@@ -341,7 +341,7 @@ extern "C" {
             /* and some error checking of the argument */
             for(int i = 0; i < nSequenceIndices; i++){
 	      if((INTEGER(seqindices)[i] < 0) || (INTEGER(seqindices)[i] > nSequences))
-                    error("seqIndices out of range");
+                    Rf_error("seqIndices out of range");
             }
             nSequences = nSequenceIndices;
         }
@@ -398,7 +398,7 @@ extern "C" {
                 if(i_readSeqInfo) {
                     SET_VECTOR_ELT(seqObj, kk, 
                                    R_affx_bpmap_seqinfo_item(seq, i_verboseFlag));
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("seqInfo"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("seqInfo"));
                 }
                 
                 int nHits = seq.GetNumberHits();
@@ -469,11 +469,11 @@ extern "C" {
                         if (i_readProbeSeq) {
 													str = seqHit.PMProbe;
 													str_length = str.size();
-													cstr = Calloc(str_length+1, char);
+													cstr = R_Calloc(str_length+1, char);
 													strncpy(cstr, str.c_str(), str_length);
 													cstr[str_length] = '\0';
-                          SET_STRING_ELT(probeseq, j, mkChar(cstr));
-													Free(cstr);
+                          SET_STRING_ELT(probeseq, j, Rf_mkChar(cstr));
+													R_Free(cstr);
                         }
                         if (i_readStartPos) {
                             INTEGER(startpos)[j] = seqHit.getStartPosition();
@@ -491,59 +491,59 @@ extern "C" {
                 /* Now it is time to finalize the seqObj */
                 if (i_readPMXY) {
                     SET_VECTOR_ELT(seqObj, kk, pmx);
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("pmx"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("pmx"));
                     SET_VECTOR_ELT(seqObj, kk, pmy);
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("pmy"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("pmy"));
                 }
                 if (i_readMMXY) {
                     if(!onlyPM) {
                         SET_VECTOR_ELT(seqObj, kk, mmx);
-                        SET_STRING_ELT(seqObjNames, kk++, mkChar("mmx"));
+                        SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("mmx"));
                         SET_VECTOR_ELT(seqObj, kk, mmy);
-                        SET_STRING_ELT(seqObjNames, kk++, mkChar("mmy"));
+                        SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("mmy"));
                     } else {
                         SET_VECTOR_ELT(seqObj, kk, R_NilValue);
-                        SET_STRING_ELT(seqObjNames, kk++, mkChar("mmx"));
+                        SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("mmx"));
                         SET_VECTOR_ELT(seqObj, kk, R_NilValue);
-                        SET_STRING_ELT(seqObjNames, kk++, mkChar("mmy"));
+                        SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("mmy"));
                     }
                 }
                 if (i_readProbeSeq) {
                     SET_VECTOR_ELT(seqObj, kk, probeseq);
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("probeseq"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("probeseq"));
                 }
                 if (i_readStrand) {
                     SET_VECTOR_ELT(seqObj, kk, strand);
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("strand"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("strand"));
                 }
                 if (i_readStartPos) {
                     SET_VECTOR_ELT(seqObj, kk, startpos);
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("startpos"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("startpos"));
                 }
                 if (i_readCenterPos) {
                     SET_VECTOR_ELT(seqObj, kk, centerpos);
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("centerpos"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("centerpos"));
                 }
                 if (i_readProbeLength) {
                     SET_VECTOR_ELT(seqObj, kk, probelength);
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("probelength"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("probelength"));
                 }
                 if (i_readMatchScore) {
                     SET_VECTOR_ELT(seqObj, kk, matchscore);
-                    SET_STRING_ELT(seqObjNames, kk++, mkChar("matchscore"));
+                    SET_STRING_ELT(seqObjNames, kk++, Rf_mkChar("matchscore"));
                 }
                 if (i_verboseFlag >= R_AFFX_VERBOSE) {
                     Rprintf("Finalizing sequence %s\n", seq.FullName().c_str());
                 }
-                setAttrib(seqObj, R_NamesSymbol, seqObjNames);
+                Rf_setAttrib(seqObj, R_NamesSymbol, seqObjNames);
                 SET_VECTOR_ELT(resultList, i, seqObj);
 								str = seq.FullName();
 								str_length = str.size();
-								cstr = Calloc(str_length+1, char);
+								cstr = R_Calloc(str_length+1, char);
 								strncpy(cstr, str.c_str(), str_length);
 								cstr[str_length] = '\0';
-                SET_STRING_ELT(resultListNames, i, mkChar(cstr));
-                Free(cstr);
+                SET_STRING_ELT(resultListNames, i, Rf_mkChar(cstr));
+                R_Free(cstr);
                 UNPROTECT(protectCount);
             }
     
@@ -556,7 +556,7 @@ extern "C" {
         }
         
         bpmap.Close();
-        setAttrib(resultList, R_NamesSymbol, resultListNames);
+        Rf_setAttrib(resultList, R_NamesSymbol, resultListNames);
         UNPROTECT(2);
         return resultList;
     }/* R_affx_get_bpmap_file() */
@@ -579,21 +579,21 @@ extern "C" {
         int i_verboseFlag = INTEGER(verbose)[0];
 
         if(bpmap.TpmapExists() ==  false){
-            error("tpmap file %s does not exist.\n", tpmapFileName);
+            Rf_error("tpmap file %s does not exist.\n", tpmapFileName);
         }
         bpmap.SetTpmapFileName(tpmapFileName);
         if(i_verboseFlag >= R_AFFX_VERBOSE){
             Rprintf("Reading tpmap file: %s\n", tpmapFileName);
         }
         if(bpmap.ReadTpmap() == false){
-            error("Tpmap file %s cannot be read\n", tpmapFileName);
+            Rf_error("Tpmap file %s cannot be read\n", tpmapFileName);
         }
         if(i_verboseFlag >= R_AFFX_VERBOSE){
             Rprintf("Writing bpmap file %s\n", bpmapFileName);
         }
         bpmap.SetFileName(bpmapFileName);
         if(bpmap.WriteBpmap() == false){
-            error("Bpmap file %s could not be written\n", bpmapFileName);
+            Rf_error("Bpmap file %s could not be written\n", bpmapFileName);
         }
         return R_NilValue;
     } /** end R_affx_write_bpmap_file **/
