@@ -2,8 +2,12 @@
 
 ## Bug Fixes
 
- * Extensive use of (say) Rf_allocVector instead of allocVactor.
-   Similar for other R forms, like R_Calloc etc.
+ * The package failed to compile in R-devel (to become R 4.5.0). This
+   i because the C-level API of R is being tidied up and now requiring
+   the `R_` and `Rf_` prefixes to be used. For example, `R_Calloc()`
+   should be used instead of `Calloc()`, and `Rf_allocVector()` should
+   be used instead of `allocVector()`.
+
 
 # Version 1.79.0 [2024-10-30]
 
