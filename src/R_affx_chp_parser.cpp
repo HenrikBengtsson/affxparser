@@ -22,7 +22,7 @@ using namespace affymetrix_calvin_parameter;
 
 #define SET_NAMED_ELT(lst, index, val, nameLst, nameVal) \
   SET_ELEMENT(lst, index, val); \
-  SET_STRING_ELT(nameLst, index, mkChar(nameVal))
+  SET_STRING_ELT(nameLst, index, Rf_mkChar(nameVal))
 
 // const char *
 // wcs_to_cstr(std::wstring wstr)
@@ -42,7 +42,7 @@ wcs_to_cstr(std::wstring wstr)
   int str_length; 
   char* cstr; 
   str_length = wstr.size();
-  cstr = Calloc(str_length+1, char);
+  cstr = R_Calloc(str_length+1, char);
   wcstombs(cstr, wstr.c_str(), str_length);
   cstr[str_length] = '\0';
   return cstr;
@@ -59,16 +59,16 @@ R_affx_AddCHPMeta(AffymetrixGuidType fileId,
 		  SEXP lst, SEXP nms, int lstIdx)
 {
   char* cstr;
-  SET_NAMED_ELT(lst, lstIdx, mkString(fileId.c_str()), nms, "FileId");
-  SET_NAMED_ELT(lst, lstIdx+1, mkString(cstr = wcs_to_cstr(algName)),
+  SET_NAMED_ELT(lst, lstIdx, Rf_mkString(fileId.c_str()), nms, "FileId");
+  SET_NAMED_ELT(lst, lstIdx+1, Rf_mkString(cstr = wcs_to_cstr(algName)),
 		nms, "AlgorithmName");
-  Free(cstr);
-  SET_NAMED_ELT(lst, lstIdx+2, mkString(cstr = wcs_to_cstr(algVersion)),
+  R_Free(cstr);
+  SET_NAMED_ELT(lst, lstIdx+2, Rf_mkString(cstr = wcs_to_cstr(algVersion)),
 		nms, "AlgorithmVersion");
-  Free(cstr);
-  SET_NAMED_ELT(lst, lstIdx+3, mkString(cstr = wcs_to_cstr(arrayType)),
+  R_Free(cstr);
+  SET_NAMED_ELT(lst, lstIdx+3, Rf_mkString(cstr = wcs_to_cstr(arrayType)),
 		nms, "ArrayType");
-  Free(cstr);
+  R_Free(cstr);
   return lstIdx+4;
 }
 
@@ -78,13 +78,13 @@ R_affx_AddCHPTileMeta(AffymetrixGuidType fileId,
 		  SEXP lst, SEXP nms, int lstIdx)
 {
   char* cstr;
-  SET_NAMED_ELT(lst, lstIdx, mkString(fileId.c_str()), nms, "FileId");
-  SET_NAMED_ELT(lst, lstIdx+1, mkString(cstr = wcs_to_cstr(algName)),
+  SET_NAMED_ELT(lst, lstIdx, Rf_mkString(fileId.c_str()), nms, "FileId");
+  SET_NAMED_ELT(lst, lstIdx+1, Rf_mkString(cstr = wcs_to_cstr(algName)),
 		nms, "AlgorithmName"); 
-  Free(cstr);
-  SET_NAMED_ELT(lst, lstIdx+2, mkString(cstr = wcs_to_cstr(algVersion)),
+  R_Free(cstr);
+  SET_NAMED_ELT(lst, lstIdx+2, Rf_mkString(cstr = wcs_to_cstr(algVersion)),
 		nms, "AlgorithmVersion");
-  Free(cstr);
+  R_Free(cstr);
   return lstIdx+3;
 }
 
@@ -99,11 +99,11 @@ R_affx_GetList(FusionTagValuePairTypeList& params)
       
   for(FusionTagValuePairTypeList::iterator param=params.begin();
       param != params.end(); ++pIdx, ++param) {
-    PROTECT(pVal = mkString(cstr = wcs_to_cstr(param->Value)));
-    Free(cstr);
+    PROTECT(pVal = Rf_mkString(cstr = wcs_to_cstr(param->Value)));
+    R_Free(cstr);
     SET_NAMED_ELT(pLst, pIdx, pVal, pNms, 
 		  cstr = wcs_to_cstr(param->Tag));
-    Free(cstr);
+    R_Free(cstr);
     UNPROTECT(1);
   }
   SET_NAMES(pLst, pNms);
@@ -121,43 +121,43 @@ R_affx_GetList(ParameterNameValueTypeList params)
   PROTECT(pLst = NEW_LIST(pNbr));
   PROTECT(pNms = NEW_CHARACTER(pNbr));
   
-  /* no idea why one must use mkString to hold pName and not a char*
+  /* no idea why one must use Rf_mkString to hold pName and not a char*
      but the former works and the latter does not */    
   for(ParameterNameValueTypeList::iterator param=params.begin();
       param != params.end(); ++pIdx, ++param) {
-    PROTECT(pName = mkString(cstr = wcs_to_cstr(param->GetName())));
-    Free(cstr);
+    PROTECT(pName = Rf_mkString(cstr = wcs_to_cstr(param->GetName())));
+    R_Free(cstr);
     switch(param->GetParameterType()) 
       {
       case ParameterNameValueType::Int8Type:
-	PROTECT(pVal = ScalarInteger(param->GetValueInt8()));
+	PROTECT(pVal = Rf_ScalarInteger(param->GetValueInt8()));
 	break;
       case ParameterNameValueType::Int16Type:
-	PROTECT(pVal = ScalarInteger(param->GetValueInt16()));
+	PROTECT(pVal = Rf_ScalarInteger(param->GetValueInt16()));
 	break;
       case ParameterNameValueType::Int32Type:
-	PROTECT(pVal = ScalarInteger(param->GetValueInt32()));
+	PROTECT(pVal = Rf_ScalarInteger(param->GetValueInt32()));
 	break;
       case ParameterNameValueType::UInt8Type:
       case ParameterNameValueType::UInt16Type:
       case ParameterNameValueType::UInt32Type:
-	warning("reading 'unsigned int' parameter '%s' as NA", 
+	Rf_warning("reading 'unsigned int' parameter '%s' as NA", 
                 CHAR(pName));
-	PROTECT(pVal = ScalarInteger(R_NaInt));
+	PROTECT(pVal = Rf_ScalarInteger(R_NaInt));
 	break;
       case ParameterNameValueType::FloatType:
-	PROTECT(pVal = ScalarReal(param->GetValueFloat()));
+	PROTECT(pVal = Rf_ScalarReal(param->GetValueFloat()));
 	break;
       case ParameterNameValueType::TextType:
-	PROTECT(pVal = mkString(cstr = wcs_to_cstr(param->GetValueText())));
-        Free(cstr);
+	PROTECT(pVal = Rf_mkString(cstr = wcs_to_cstr(param->GetValueText())));
+        R_Free(cstr);
 	break;
       case ParameterNameValueType::AsciiType:
-	PROTECT(pVal = mkString(param->GetValueAscii().c_str()));
+	PROTECT(pVal = Rf_mkString(param->GetValueAscii().c_str()));
 	break;
       default:
-	warning("unhandled type for parameter '%s'", CHAR(pName));
-	PROTECT(pVal = ScalarString(R_NaString));
+	Rf_warning("unhandled type for parameter '%s'", CHAR(pName));
+	PROTECT(pVal = Rf_ScalarString(R_NaString));
       }
     SET_NAMED_ELT(pLst, pIdx, pVal, pNms, CHAR(STRING_ELT(pName,0)));
 
@@ -207,7 +207,7 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
     s[i] = (char) frResults.GetCalledBase(i);
   s[ct] = '\0';
 
-  PROTECT( call = mkString(s) );
+  PROTECT( call = Rf_mkString(s) );
   nprotect++;
 
   //scores
@@ -234,17 +234,17 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
       sr[i] = (char) ffct.GetReason();
     }
     sc[ct] = sr[ct] = '\0';
-    PROTECT(fcall = mkString(sc));
-    PROTECT(freason = mkString(sr));
+    PROTECT(fcall = Rf_mkString(sc));
+    PROTECT(freason = Rf_mkString(sr));
     nprotect+=2;
     SET_ELEMENT(force, 0, fposition);
     SET_ELEMENT(force, 1, fcall);
     SET_ELEMENT(force, 2, freason);
     PROTECT(fnms = NEW_CHARACTER(3));
     nprotect++;
-    SET_STRING_ELT(fnms, 0, mkChar("position"));
-    SET_STRING_ELT(fnms, 1, mkChar("call"));
-    SET_STRING_ELT(fnms, 2, mkChar("reason"));
+    SET_STRING_ELT(fnms, 0, Rf_mkChar("position"));
+    SET_STRING_ELT(fnms, 1, Rf_mkChar("call"));
+    SET_STRING_ELT(fnms, 2, Rf_mkChar("reason"));
     SET_NAMES(force, fnms);
   }  else
     force = R_NilValue;
@@ -261,15 +261,15 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
       sc[i] = (char) fbct.GetCall();
     }
     sc[ct] = '\0';
-    PROTECT(ocall = mkString(sc));
+    PROTECT(ocall = Rf_mkString(sc));
     PROTECT(orig = NEW_LIST(2));
     nprotect+=2;
     SET_ELEMENT(orig, 0, ocall);
     SET_ELEMENT(orig, 1, fposition);
     PROTECT(onames = NEW_CHARACTER(2));
     nprotect++;
-    SET_STRING_ELT(onames, 0, mkChar("call"));
-    SET_STRING_ELT(onames, 1, mkChar("position"));
+    SET_STRING_ELT(onames, 0, Rf_mkChar("call"));
+    SET_STRING_ELT(onames, 1, Rf_mkChar("position"));
     SET_NAMES(orig, onames);
   } else orig = R_NilValue;
 
@@ -281,9 +281,9 @@ R_affx_GetCHPReseqResults(FusionCHPLegacyData *chp)
 
   PROTECT(nms = NEW_CHARACTER(3));
   nprotect++;
-  SET_STRING_ELT(nms, 0, mkChar("call"));
-  SET_STRING_ELT(nms, 1, mkChar("force"));
-  SET_STRING_ELT(nms, 2, mkChar("orig"));
+  SET_STRING_ELT(nms, 0, Rf_mkChar("call"));
+  SET_STRING_ELT(nms, 1, Rf_mkChar("force"));
+  SET_STRING_ELT(nms, 2, Rf_mkChar("orig"));
 
   SET_NAMES(rval, nms);
 
@@ -327,8 +327,8 @@ R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
 
   //FIXME: I did not think AlgName could be "", it is, so we are stuck
   //with that
-  PROTECT(alg = mkString(cstr = wcs_to_cstr(chp->GetHeader().GetAlgName())));
-  Free(cstr);
+  PROTECT(alg = Rf_mkString(cstr = wcs_to_cstr(chp->GetHeader().GetAlgName())));
+  R_Free(cstr);
   nprotect++;
 
   if(chp->GetHeader().GetAlgName() == L"WholeGenome") {
@@ -353,7 +353,7 @@ R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
   for(i=0; i<qNbr; i++) {
     chp->GetGenotypingResults(i, f);
     INTEGER(call)[i] = f.GetAlleleCall();
-    SET_STRING_ELT(callstr, i, mkChar(f.GetAlleleCallString().c_str()));
+    SET_STRING_ELT(callstr, i, Rf_mkChar(f.GetAlleleCallString().c_str()));
     REAL(conf)[i] = f.GetConfidence();
     if( bWholeGenome ) {
       REAL(ras1)[i] =  f.GetRAS1();
@@ -378,35 +378,35 @@ R_affx_GetCHPGenotypingResults(FusionCHPLegacyData *chp)
   SET_ELEMENT(rval, 1, conf);
   SET_ELEMENT(rval, 2, callstr);
   if( bWholeGenome ) {
-    SET_ELEMENT(rval, 3, mkString("WholeGenome"));
+    SET_ELEMENT(rval, 3, Rf_mkString("WholeGenome"));
     SET_ELEMENT(rval, 4, ras1);
     SET_ELEMENT(rval, 5, ras1);
   } else if( bDynamicModel ) {
-    SET_ELEMENT(rval, 3, mkString("DynamicModel"));
+    SET_ELEMENT(rval, 3, Rf_mkString("DynamicModel"));
     SET_ELEMENT(rval, 4, aa);
     SET_ELEMENT(rval, 5, ab);
     SET_ELEMENT(rval, 6, bb);
     SET_ELEMENT(rval, 7, nocall);
   } else {
-    SET_ELEMENT(rval, 3, mkString("None"));
+    SET_ELEMENT(rval, 3, Rf_mkString("None"));
   }
 
   SEXP nms;
   PROTECT(nms = NEW_CHARACTER(nelt));
   nprotect++;
-  SET_STRING_ELT(nms, 0, mkChar("Call"));
-  SET_STRING_ELT(nms, 1, mkChar("Confidence"));
-  SET_STRING_ELT(nms, 2, mkChar("AlleleString"));
-  SET_STRING_ELT(nms, 3, mkChar("AlgName"));
+  SET_STRING_ELT(nms, 0, Rf_mkChar("Call"));
+  SET_STRING_ELT(nms, 1, Rf_mkChar("Confidence"));
+  SET_STRING_ELT(nms, 2, Rf_mkChar("AlleleString"));
+  SET_STRING_ELT(nms, 3, Rf_mkChar("AlgName"));
   if( bWholeGenome ) {
-    SET_STRING_ELT(nms, 4, mkChar("RAS1"));
-    SET_STRING_ELT(nms, 5, mkChar("RAS2"));
+    SET_STRING_ELT(nms, 4, Rf_mkChar("RAS1"));
+    SET_STRING_ELT(nms, 5, Rf_mkChar("RAS2"));
   }
   else if (bDynamicModel) {
-    SET_STRING_ELT(nms, 4, mkChar("PvalueAA"));
-    SET_STRING_ELT(nms, 5, mkChar("PvalueAB"));
-    SET_STRING_ELT(nms, 6, mkChar("PvalueBB"));
-    SET_STRING_ELT(nms, 7, mkChar("PvalueNoCall"));
+    SET_STRING_ELT(nms, 4, Rf_mkChar("PvalueAA"));
+    SET_STRING_ELT(nms, 5, Rf_mkChar("PvalueAB"));
+    SET_STRING_ELT(nms, 6, Rf_mkChar("PvalueBB"));
+    SET_STRING_ELT(nms, 7, Rf_mkChar("PvalueNoCall"));
   }
   SET_NAMES(rval, nms);
   
@@ -472,18 +472,18 @@ R_affx_GetCHPExpressionResults(FusionCHPLegacyData *chp)
   SET_ELEMENT(result, 11, change);
   SEXP nms;
   PROTECT(nms = NEW_CHARACTER(12));
-  SET_STRING_ELT(nms, 0, mkChar("DetectionPValue"));
-  SET_STRING_ELT(nms, 1, mkChar("Signal"));
-  SET_STRING_ELT(nms, 2, mkChar("NumPairs"));
-  SET_STRING_ELT(nms, 3, mkChar("NumUsedPairs"));
-  SET_STRING_ELT(nms, 4, mkChar("Detection"));
-  SET_STRING_ELT(nms, 5, mkChar("HasCompResults"));
-  SET_STRING_ELT(nms, 6, mkChar("ChangePValue"));
-  SET_STRING_ELT(nms, 7, mkChar("SignalLogRatio"));
-  SET_STRING_ELT(nms, 8, mkChar("SignalLogRatioLow"));
-  SET_STRING_ELT(nms, 9, mkChar("SignalLogRatioHigh"));
-  SET_STRING_ELT(nms, 10, mkChar("NumCommonPairs"));
-  SET_STRING_ELT(nms, 11, mkChar("Change"));
+  SET_STRING_ELT(nms, 0, Rf_mkChar("DetectionPValue"));
+  SET_STRING_ELT(nms, 1, Rf_mkChar("Signal"));
+  SET_STRING_ELT(nms, 2, Rf_mkChar("NumPairs"));
+  SET_STRING_ELT(nms, 3, Rf_mkChar("NumUsedPairs"));
+  SET_STRING_ELT(nms, 4, Rf_mkChar("Detection"));
+  SET_STRING_ELT(nms, 5, Rf_mkChar("HasCompResults"));
+  SET_STRING_ELT(nms, 6, Rf_mkChar("ChangePValue"));
+  SET_STRING_ELT(nms, 7, Rf_mkChar("SignalLogRatio"));
+  SET_STRING_ELT(nms, 8, Rf_mkChar("SignalLogRatioLow"));
+  SET_STRING_ELT(nms, 9, Rf_mkChar("SignalLogRatioHigh"));
+  SET_STRING_ELT(nms, 10, Rf_mkChar("NumCommonPairs"));
+  SET_STRING_ELT(nms, 11, Rf_mkChar("Change"));
 
   SET_NAMES(result, nms);
   UNPROTECT(14);
@@ -503,7 +503,7 @@ R_affx_GetCHPEntries(FusionCHPQuantificationData *qData)
   ProbeSetQuantificationData psData;
   for (int qIdx=0; qIdx < qNbr; ++qIdx) {
     qData->GetQuantificationEntry(qIdx, psData);
-    SET_STRING_ELT(qNm, qIdx, mkChar(psData.name.c_str()));
+    SET_STRING_ELT(qNm, qIdx, Rf_mkChar(psData.name.c_str()));
     INTEGER(qId)[qIdx] = psData.id;
     REAL(qVec)[qIdx] = psData.quantification;
   }    
@@ -514,8 +514,8 @@ R_affx_GetCHPEntries(FusionCHPQuantificationData *qData)
   SET_ELEMENT(result, 1, qVec);
   SEXP nms;
   PROTECT(nms = NEW_CHARACTER(2));
-  SET_STRING_ELT(nms, 0, mkChar("ProbeSetName"));
-  SET_STRING_ELT(nms, 1, mkChar("QuantificationValue"));
+  SET_STRING_ELT(nms, 0, Rf_mkChar("ProbeSetName"));
+  SET_STRING_ELT(nms, 1, Rf_mkChar("QuantificationValue"));
   SET_NAMES(result, nms);
 
   UNPROTECT(5);
@@ -542,7 +542,7 @@ R_affx_GetCHPEntries(FusionCHPQuantificationDetectionData *qData)
     q[qIdx] = psData.quantification;
     pValue[qIdx] = psData.pvalue;
     INTEGER(qID)[qIdx] = psData.id;
-    SET_STRING_ELT(qNm, qIdx, mkChar(psData.name.c_str()));
+    SET_STRING_ELT(qNm, qIdx, Rf_mkChar(psData.name.c_str()));
   }
     
   SEXP result;
@@ -553,10 +553,10 @@ R_affx_GetCHPEntries(FusionCHPQuantificationDetectionData *qData)
   SET_ELEMENT(result, 3, qID);
   SEXP nms;
   PROTECT(nms = NEW_CHARACTER(4));
-  SET_STRING_ELT(nms, 0, mkChar("ProbeSetName"));
-  SET_STRING_ELT(nms, 1, mkChar("QuantificationValue"));
-  SET_STRING_ELT(nms, 2, mkChar("PValue"));
-  SET_STRING_ELT(nms, 3, mkChar("ID"));
+  SET_STRING_ELT(nms, 0, Rf_mkChar("ProbeSetName"));
+  SET_STRING_ELT(nms, 1, Rf_mkChar("QuantificationValue"));
+  SET_STRING_ELT(nms, 2, Rf_mkChar("PValue"));
+  SET_STRING_ELT(nms, 3, Rf_mkChar("ID"));
   SET_NAMES(result, nms);
 
   UNPROTECT(6);
@@ -572,7 +572,7 @@ R_affx_AddCHPEntries(FusionCHPQuantificationData *chp,
     SET_ELEMENT(lst, lstIdx, quantEntries);
     UNPROTECT(1);
   }
-  SET_STRING_ELT(nms, lstIdx, mkChar("QuantificationEntries"));
+  SET_STRING_ELT(nms, lstIdx, Rf_mkChar("QuantificationEntries"));
   return lstIdx + 1;
 }
 
@@ -585,7 +585,7 @@ R_affx_AddCHPEntries(FusionCHPQuantificationDetectionData *chp,
     SET_ELEMENT(lst, lstIdx, quantEntries);
     UNPROTECT(1);
   }
-  SET_STRING_ELT(nms, lstIdx, mkChar("QuantificationEntries"));
+  SET_STRING_ELT(nms, lstIdx, Rf_mkChar("QuantificationEntries"));
   return lstIdx + 1;
 }
 
@@ -627,7 +627,7 @@ R_affx_ReadCHP(FusionCHPLegacyData *chp, bool isBrief)
 	break;
       case FusionUnknown:
       default:
-	warning("unhandled quantification entry index '%d'", 
+	Rf_warning("unhandled quantification entry index '%d'", 
 		   header.GetAssayType());
 	PROTECT(quantEntries = NEW_NUMERIC(0));
       }
@@ -649,14 +649,14 @@ SEXP R_affx_ReadTilingDataSeqHeader(TilingSequenceData seq)
   //read in the header/params
   PROTECT(header = NEW_LIST(4));
   PROTECT(hnames = NEW_CHARACTER(4));
-  SET_NAMED_ELT(header, 0, mkString(cstr = wcs_to_cstr(seq.name)), hnames, "name");
-  Free(cstr);
-  SET_NAMED_ELT(header, 1, mkString(cstr = wcs_to_cstr(seq.groupName)), hnames,
+  SET_NAMED_ELT(header, 0, Rf_mkString(cstr = wcs_to_cstr(seq.name)), hnames, "name");
+  R_Free(cstr);
+  SET_NAMED_ELT(header, 1, Rf_mkString(cstr = wcs_to_cstr(seq.groupName)), hnames,
 		"groupName"); 
-  Free(cstr);
-  SET_NAMED_ELT(header, 2, mkString(cstr = wcs_to_cstr(seq.version)), hnames,
+  R_Free(cstr);
+  SET_NAMED_ELT(header, 2, Rf_mkString(cstr = wcs_to_cstr(seq.version)), hnames,
 		"version");
-  Free(cstr);
+  R_Free(cstr);
   SET_NAMED_ELT(header, 3,
 		R_affx_GetList(seq.parameters),
 		hnames, "parameters");
@@ -686,8 +686,8 @@ SEXP R_affx_ReadTilingDataSeqEntries(FusionCHPTilingData *chp, int Entry)
   SET_ELEMENT(rval, 1, value);
 
   PROTECT(nms = NEW_CHARACTER(2));
-  SET_STRING_ELT(nms, 0, mkChar("position"));
-  SET_STRING_ELT(nms, 1, mkChar("value"));
+  SET_STRING_ELT(nms, 0, Rf_mkChar("position"));
+  SET_STRING_ELT(nms, 1, Rf_mkChar("value"));
   SET_NAMES(rval, nms);
   UNPROTECT(4);
   return rval;
@@ -724,8 +724,8 @@ R_affx_ReadCHP(FusionCHPTilingData *chp, bool isBrief)
 		R_affx_ReadTilingDataSeqHeader(chp->GetTilingSequenceData())); 
     SET_ELEMENT(seqi, 1, R_affx_ReadTilingDataSeqEntries(chp, i));
     PROTECT(seqiNms = NEW_CHARACTER(2));
-    SET_STRING_ELT(seqiNms, 0, mkChar("seq"));
-    SET_STRING_ELT(seqiNms, 1, mkChar("entries"));
+    SET_STRING_ELT(seqiNms, 0, Rf_mkChar("seq"));
+    SET_STRING_ELT(seqiNms, 1, Rf_mkChar("entries"));
     SET_NAMES(seqi, seqiNms);
     SET_ELEMENT(seqList, i, seqi);
     UNPROTECT(2);
@@ -794,10 +794,10 @@ R_affx_ReadCHP(FusionCHPMultiDataData *chp, bool isBrief)
   INTEGER(cts)[3] = nGenoC = chp->GetEntryCount(GenotypeControlMultiDataType);
 
   PROTECT(nms = NEW_CHARACTER(4));
-  SET_STRING_ELT(nms, 0, mkChar("Expression"));
-  SET_STRING_ELT(nms, 1, mkChar("ExpressionControl"));
-  SET_STRING_ELT(nms, 2, mkChar("Genotype"));
-  SET_STRING_ELT(nms, 3, mkChar("GenotypeControl"));
+  SET_STRING_ELT(nms, 0, Rf_mkChar("Expression"));
+  SET_STRING_ELT(nms, 1, Rf_mkChar("ExpressionControl"));
+  SET_STRING_ELT(nms, 2, Rf_mkChar("Genotype"));
+  SET_STRING_ELT(nms, 3, Rf_mkChar("GenotypeControl"));
   SET_NAMES(cts, nms);
   UNPROTECT(1);
 
@@ -839,7 +839,7 @@ R_affx_ReadCHP(FusionCHPMultiDataData *chp, bool isBrief)
       INTEGER(call)[i] = chp->GetGenoCall(GenotypeMultiDataType, i);
       REAL(conf)[i] = chp->GetGenoConfidence(GenotypeMultiDataType, i);
       SET_STRING_ELT(probenames, i,
-		     mkChar(chp->GetProbeSetName(GenotypeMultiDataType,
+		     Rf_mkChar(chp->GetProbeSetName(GenotypeMultiDataType,
 						 i).c_str())); 
     }
     PROTECT(genodata = NEW_LIST(3));
@@ -885,11 +885,11 @@ extern "C" {
   R_affx_get_chp_file(SEXP fname, SEXP withQuantifications)
   {
     if (IS_CHARACTER(fname) == FALSE || LENGTH(fname) != 1)
-      error("argument '%s' should be '%s'", "fname",
+      Rf_error("argument '%s' should be '%s'", "fname",
 	       "character(1)");
     if (IS_LOGICAL(withQuantifications) == FALSE || 
 	LENGTH(withQuantifications) != 1)
-      error("argument '%s' should be '%s'", 
+      Rf_error("argument '%s' should be '%s'", 
 	       "withQuantifications", "logical(1)");
 
     const char *chpFileName = CHAR(STRING_ELT(fname, 0));
@@ -901,7 +901,7 @@ extern "C" {
 
     FusionCHPData *chp = FusionCHPDataReg::Read(chpFileName);
     if (chp == NULL)
-      error("could not read '%s'", chpFileName);
+      Rf_error("could not read '%s'", chpFileName);
   
     if (processed == false) {
       FusionCHPLegacyData *lChp = FusionCHPLegacyData::FromBase(chp);
@@ -956,7 +956,7 @@ extern "C" {
     }
 
     if (processed==false) {
-      warning("unable to read CHP file '%s'", chpFileName);
+      Rf_warning("unable to read CHP file '%s'", chpFileName);
       delete chp;
     }
 
