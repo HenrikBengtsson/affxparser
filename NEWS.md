@@ -1,6 +1,8 @@
 # Version (development version)
 
- * ...
+## Bug Fixes
+
+ * Fixed compilation with clang on Windows arm64.
 
 
 # Version 1.79.1 [2025-01-06]
