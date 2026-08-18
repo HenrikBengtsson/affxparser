@@ -11,7 +11,9 @@
 #define GCC_VERSION (__GNUC__ * 10000 \
                               + __GNUC_MINOR__ * 100 \
                               + __GNUC_PATCHLEVEL__)
-#if GCC_VERSION >= 120200
+#if defined(__clang__)
+#include "_mingw_gcc1202.h"
+#elif GCC_VERSION >= 120200
 #include "_mingw_gcc1202.h"
 #elif GCC_VERSION >= 100200
 #include "_mingw_gcc1002.h"
